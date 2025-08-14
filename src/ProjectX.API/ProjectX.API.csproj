@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>b46c5e7c-fe2c-43e6-afae-9c0c51a6c657</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Serilog" />
+	  <PackageReference Include="Serilog.Extensions.Hosting" />
+	  <PackageReference Include="Serilog.Extensions.Logging" />
+	  <PackageReference Include="Serilog.Settings.Configuration" />
+	  <PackageReference Include="Serilog.Sinks.Console" />
+	  <PackageReference Include="Serilog.Sinks.File" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\ProjectX.Common\ProjectX.Common.csproj" />
+	  <ProjectReference Include="..\ProjectX.Model\ProjectX.Model.csproj" />
+	  <ProjectReference Include="..\ProjectX.Services\ProjectX.Services.csproj" />
+	</ItemGroup>
+
+</Project>
