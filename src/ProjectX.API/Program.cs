@@ -9,6 +9,11 @@ builder.WebHost.ConfigureKestrel((context, options) =>
     options.Configure(context.Configuration.GetSection("Kestrel"));
 });
 
+var container = new ServiceCollectionRegister(builder.Services)
+    .AddConfiguration()
+    .AddServices()
+    .AddApi();
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddUserSecrets<Program>();
@@ -19,16 +24,12 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration);
 });
 
-var container = new ServiceCollectionRegister()
-    .AddConfiguration(builder.Services)
-    .AddServices(builder.Services);
-
 var app = builder.Build();
-
-app.UseSwagger();
 
 if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))
 {
+    app.UseSwagger();
+
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "ProjectX.API");
@@ -42,6 +43,7 @@ app.UseHsts();
 app.UseHttpsRedirection();
 
 app.UseRouting();
+app.MapControllers();
 
 app.Use(async (context, next) =>
 {
@@ -51,5 +53,8 @@ app.Use(async (context, next) =>
 
     await next();
 });
+
+
+Log.Information("Starting ProjectX API");
 
 app.Run();

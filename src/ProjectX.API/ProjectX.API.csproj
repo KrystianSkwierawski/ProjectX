@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Serilog" />
+	  <PackageReference Include="Serilog.AspNetCore" />
 	  <PackageReference Include="Serilog.Extensions.Hosting" />
 	  <PackageReference Include="Serilog.Extensions.Logging" />
 	  <PackageReference Include="Serilog.Settings.Configuration" />

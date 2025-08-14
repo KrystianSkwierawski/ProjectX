@@ -4,7 +4,9 @@ namespace ProjectX.Common.Container;
 
 public interface IServiceCollectionRegister
 {
-    IServiceCollectionRegister AddConfiguration(IServiceCollection services);
+    IServiceCollectionRegister AddConfiguration();
 
-    IServiceCollectionRegister AddServices(IServiceCollection services);
+    IServiceCollectionRegister AddServices();
+
+    IServiceCollectionRegister AddApi();
 }

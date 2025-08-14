@@ -12,5 +12,5 @@ public class PlayerPosition
 
     [ForeignKey(nameof(PlayerId))]
     [InverseProperty("PlayerPositions")]
-    public virtual required Player Player { get; set; }
+    public virtual Player Player { get; set; }
 }
