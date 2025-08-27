@@ -1,8 +1,11 @@
 ﻿using Application.Common.Interfaces;
 using MediatR;
+using ProjectX.Application.Common.Attributes;
 using ProjectX.Domain.Entities;
 
 namespace ProjectX.Application.PlayerPositions.Commands.SavePlayerPosition;
+
+[Authorize]
 public record SavePlayerPositionCommand : IRequest
 {
     public int PlayerId { get; set; }

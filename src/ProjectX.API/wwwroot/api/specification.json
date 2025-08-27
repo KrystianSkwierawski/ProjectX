@@ -6,6 +6,29 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/Accounts": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "LoginAsync",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/PlayerPositions/{id}": {
       "get": {
         "tags": [
@@ -35,7 +58,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/PlayerPositions": {
@@ -60,7 +88,12 @@
           "204": {
             "description": ""
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     }
   },

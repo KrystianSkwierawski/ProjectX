@@ -10,8 +10,10 @@ public class PlayerPositions : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetAsync, "{id}")/*.RequireAuthorization()*/;
-        groupBuilder.MapPost(SaveAsync)/*.RequireAuthorization()*/;
+        groupBuilder.RequireAuthorization();
+
+        groupBuilder.MapGet(GetAsync, "{id}");
+        groupBuilder.MapPost(SaveAsync);
     }
 
     private static async Task<Ok<PlayerPositionDto>> GetAsync(ISender sender, int id)

@@ -12,8 +12,7 @@ public static class DependencyInjection
     {
         builder.Services.AddScoped<IUser, CurrentUser>();
         builder.Services.AddHttpContextAccessor();
-        builder.Services.Configure<ApiBehaviorOptions>(options =>
-          options.SuppressModelStateInvalidFilter = true);
+        builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 
         builder.Services.AddEndpointsApiExplorer();
 

@@ -1,20 +1,17 @@
 ﻿using System.Reflection;
 using Application.Common.Interfaces;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Duende.IdentityServer.EntityFramework.Options;
+using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ProjectX.Domain.Entities;
 using ProjectX.Infrastructure.Identity;
 
 namespace ProjectX.Infrastructure.Persistance;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
+public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, IApplicationDbContext
 {
-    public ApplicationDbContext() : base()
-    {
-        
-    }
-
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions) { }
 
     public DbSet<Player> Players => Set<Player>();
 

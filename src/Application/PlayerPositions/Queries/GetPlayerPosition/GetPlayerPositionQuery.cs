@@ -1,8 +1,10 @@
 ﻿using Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Attributes;
 
 namespace ProjectX.Application.PlayerPositions.Queries.GetPlayerPosition;
+
 public record class GetPlayerPositionQuery(int PlayerId) : IRequest<PlayerPositionDto>;
 
 public class GetPlayerPositionQueryHandler : IRequestHandler<GetPlayerPositionQuery, PlayerPositionDto>
