@@ -1,5 +1,5 @@
-using ProjectX.API.Configuration;
-using ProjectX.API.Container;
+using ProjectX.API.Infrastructure;
+using ProjectX.Infrastructure.Persistance;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,15 +9,9 @@ builder.WebHost.ConfigureKestrel((context, options) =>
     options.Configure(context.Configuration.GetSection("Kestrel"));
 });
 
-var container = new ServiceCollectionRegister(builder.Services)
-    .AddConfiguration()
-    .AddServices()
-    .AddApi();
-
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets<Program>();
-}
+builder.AddApplicationServices();
+builder.AddInfrastructureServices();
+builder.AddWebServices();
 
 builder.Host.UseSerilog((context, configuration) =>
 {
@@ -26,34 +20,28 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
-if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))
+if (builder.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ProjectX.API");
-        options.RoutePrefix = "swagger";
-    });
+    builder.Configuration.AddUserSecrets<Program>();
+    await app.InitialiseDatabaseAsync();
 }
-
-app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseHsts();
 app.UseHttpsRedirection();
 
-app.UseRouting();
-app.MapControllers();
-
-app.Use(async (context, next) =>
+if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))
 {
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    app.UseStaticFiles();
 
-    context.Response.Headers.Append("Cache-Control", "no-store");
+    app.UseSwaggerUi(settings =>
+    {
+        settings.Path = "/api";
+        settings.DocumentPath = "/api/specification.json";
+    });
+}
 
-    await next();
-});
-
+app.Map("/", () => Results.Redirect("/api"));
+app.MapEndpoints();
 
 Log.Information("Starting ProjectX API");
 
