@@ -9,6 +9,8 @@ namespace ProjectX.Application.PlayerPositions.Commands.SavePlayerPosition;
 
 public record SaveCharacterPositionCommand : IRequest
 {
+    public int CharacterId { get; set; }
+
     public float X { get; set; }
 
     public float Y { get; set; }
@@ -29,22 +31,22 @@ public class SavePlayerPositionCommandHandler : IRequestHandler<SaveCharacterPos
 
     public async Task Handle(SaveCharacterPositionCommand request, CancellationToken cancellationToken)
     {
-        var userId = _currentUserService.Id;
+        //var userId = _currentUserService.Id;
 
-        var characterId = await _context.Character
-            .Where(x => x.ApplicationUserId == userId)
-            .OrderByDescending(x => x.ModDate)
-            .Select(x => x.Id)
-            .FirstAsync(cancellationToken);
+        //var characterId = await _context.Character
+        //    .Where(x => x.Id == request.CharacterId)
+        //    .OrderByDescending(x => x.ModDate)
+        //    .Select(x => x.Id)
+        //    .FirstAsync(cancellationToken);
 
-        Log.Debug("Found character: {0} for user: {1}", characterId, userId);
+        //Log.Debug("Found character: {0} for user: {1}", characterId, userId);
 
         var entity = new CharacterPosition
         {
             X = request.X,
             Y = request.Y,
             Z = request.Z,
-            CharacterId = characterId,
+            CharacterId = request.CharacterId,
             ModDate = DateTime.Now
         };
 

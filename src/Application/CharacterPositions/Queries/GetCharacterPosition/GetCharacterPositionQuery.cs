@@ -25,6 +25,7 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterPositio
             .OrderByDescending(x => x.ModDate)
             .Select(x => new CharacterPositionDto
             {
+                CharacterId = x.CharacterId,
                 X = x.X,
                 Y = x.Y,
                 Z = x.Z

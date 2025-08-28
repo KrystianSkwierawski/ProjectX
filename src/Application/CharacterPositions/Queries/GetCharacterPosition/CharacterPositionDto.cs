@@ -1,6 +1,8 @@
 ﻿namespace ProjectX.Application.PlayerPositions.Queries.GetPlayerPosition;
 public class CharacterPositionDto
 {
+    public int CharacterId { get; set; }
+
     public float X { get; set; }
 
     public float Y { get; set; }
@@ -9,6 +11,6 @@ public class CharacterPositionDto
 
     public override string ToString()
     {
-        return $"{nameof(CharacterPositionDto)} {{ X = {X}, Y = {Y}, Z = {Z} }}";
+        return $"{nameof(CharacterPositionDto)} {{ CharacterId = {CharacterId}, X = {X}, Y = {Y}, Z = {Z} }}";
     }
 }

@@ -119,6 +119,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "x": {
             "type": "number",
             "format": "float"
@@ -137,6 +141,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "x": {
             "type": "number",
             "format": "float"
