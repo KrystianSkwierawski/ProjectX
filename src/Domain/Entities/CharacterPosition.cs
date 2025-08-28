@@ -2,11 +2,11 @@
 
 namespace ProjectX.Domain.Entities;
 
-public class PlayerPosition
+public class CharacterPosition
 {
     public int Id { get; set; }
 
-    public int PlayerId { get; set; }
+    public int CharacterId { get; set; }
 
     public float X { get; set; }
 
@@ -16,7 +16,7 @@ public class PlayerPosition
 
     public DateTime ModDate { get; set; }
 
-    [ForeignKey(nameof(PlayerId))]
-    [InverseProperty("PlayerPositions")]
-    public virtual Player Player { get; set; }
+    [ForeignKey(nameof(CharacterId))]
+    [InverseProperty(nameof(Character.CharacterPositions))]
+    public virtual Character Character { get; set; }
 }

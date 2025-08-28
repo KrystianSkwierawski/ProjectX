@@ -13,17 +13,11 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions) { }
 
-    public DbSet<Player> Players => Set<Player>();
+    public DbSet<Character> Character => Set<Character>();
 
-    public DbSet<PlayerPosition> PlayerPositions => Set<PlayerPosition>();
+    public DbSet<CharacterPosition> CharacterPosition => Set<CharacterPosition>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseSqlServer("Server=localhost;Database=ProjectX;Trusted_Connection=true;TrustServerCertificate=true;");
-        }
-    }
+    public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

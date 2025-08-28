@@ -12,8 +12,8 @@ using ProjectX.Infrastructure.Persistance;
 namespace ProjectX.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250827182134_init")]
-    partial class init
+    [Migration("20250828155603_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -298,23 +298,29 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.Player", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("ModDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Players");
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("Character");
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.PlayerPosition", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterPosition", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -322,11 +328,11 @@ namespace ProjectX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ModDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("int");
 
                     b.Property<float>("X")
                         .HasColumnType("real");
@@ -339,9 +345,9 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PlayerId");
+                    b.HasIndex("CharacterId");
 
-                    b.ToTable("PlayerPositions");
+                    b.ToTable("CharacterPosition");
                 });
 
             modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>
@@ -460,20 +466,36 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.PlayerPosition", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
                 {
-                    b.HasOne("ProjectX.Domain.Entities.Player", "Player")
-                        .WithMany("PlayerPositions")
-                        .HasForeignKey("PlayerId")
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", "ApplicationUser")
+                        .WithMany("Characters")
+                        .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Player");
+                    b.Navigation("ApplicationUser");
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.Player", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterPosition", b =>
                 {
-                    b.Navigation("PlayerPositions");
+                    b.HasOne("ProjectX.Domain.Entities.Character", "Character")
+                        .WithMany("CharacterPositions")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
+                {
+                    b.Navigation("CharacterPositions");
+                });
+
+            modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("Characters");
                 });
 #pragma warning restore 612, 618
         }

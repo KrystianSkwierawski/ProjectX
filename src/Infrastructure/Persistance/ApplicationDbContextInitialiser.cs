@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectX.Domain.Constants;
+using ProjectX.Domain.Entities;
 using ProjectX.Infrastructure.Identity;
 
 namespace ProjectX.Infrastructure.Persistance;
@@ -34,27 +35,46 @@ public class ApplicationDbContextInitialiser
 
     public async Task InitialiseAsync()
     {
-        //await _context.Database.EnsureDeletedAsync();
+        await _context.Database.EnsureDeletedAsync();
         await _context.Database.EnsureCreatedAsync();
 
-        // Default roles
-        var administratorRole = new IdentityRole(Roles.Administrator);
+        await _roleManager.CreateAsync(new IdentityRole(Roles.Server));
+        await _roleManager.CreateAsync(new IdentityRole(Roles.Client));
 
-        if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
+        await CreateUserAsync("administrator1@localhost", "Administrator1!", Roles.Server);
+        await CreateUserAsync("administrator2@localhost", "Administrator2!", Roles.Server);
+        await CreateUserAsync("user1@localhost", "User1!", Roles.Client);
+        await CreateUserAsync("user2@localhost", "User2!", Roles.Client);
+    }
+
+    private async Task CreateUserAsync(string userName, string password, string role)
+    {
+        var user = new ApplicationUser { UserName = userName, Email = userName };
+
+        if (_userManager.Users.All(u => u.UserName != user.UserName))
         {
-            await _roleManager.CreateAsync(administratorRole);
-        }
+            await _userManager.CreateAsync(user, password);
+            await _userManager.AddToRolesAsync(user, [role]);
 
-        // Default users
-        var administrator = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost" };
-
-        if (_userManager.Users.All(u => u.UserName != administrator.UserName))
-        {
-            await _userManager.CreateAsync(administrator, "Administrator1!");
-            if (!string.IsNullOrWhiteSpace(administratorRole.Name))
+            var character = new Character
             {
-                await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
-            }
+                ModDate = DateTime.Now,
+                ApplicationUserId = user.Id
+            };
+
+            var characterPosition = new CharacterPosition
+            {
+                X = 0,
+                Y = 0,
+                Z = 0,
+                ModDate = DateTime.Now,
+                Character = character,
+            };
+
+            _context.Character.Add(character);
+            _context.CharacterPosition.Add(characterPosition);
+
+            await _context.SaveChangesAsync();
         }
     }
 }

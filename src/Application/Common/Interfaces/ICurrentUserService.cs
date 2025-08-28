@@ -1,5 +1,5 @@
 ﻿namespace ProjectX.Application.Common.Interfaces;
-public interface IUser
+public interface ICurrentUserService
 {
     string? Id { get; }
 

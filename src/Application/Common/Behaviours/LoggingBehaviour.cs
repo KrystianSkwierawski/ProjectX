@@ -9,9 +9,9 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(LoggingBehaviour<,>));
 
-    private readonly IUser _user;
+    private readonly ICurrentUserService _user;
 
-    public LoggingBehaviour(IUser user)
+    public LoggingBehaviour(ICurrentUserService user)
     {
         _user = user;
     }

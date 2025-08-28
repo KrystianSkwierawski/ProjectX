@@ -6,7 +6,7 @@ using ProjectX.Domain.Entities;
 namespace ProjectX.Application.PlayerPositions.Commands.SavePlayerPosition;
 
 [Authorize]
-public record SavePlayerPositionCommand : IRequest
+public record SaveCharacterPositionCommand : IRequest
 {
     public int PlayerId { get; set; }
 
@@ -17,7 +17,7 @@ public record SavePlayerPositionCommand : IRequest
     public float Z { get; set; }
 }
 
-public class SavePlayerPositionCommandHandler : IRequestHandler<SavePlayerPositionCommand>
+public class SavePlayerPositionCommandHandler : IRequestHandler<SaveCharacterPositionCommand>
 {
     private readonly IApplicationDbContext _context;
 
@@ -26,18 +26,18 @@ public class SavePlayerPositionCommandHandler : IRequestHandler<SavePlayerPositi
         _context = context;
     }
 
-    public async Task Handle(SavePlayerPositionCommand request, CancellationToken cancellationToken)
+    public async Task Handle(SaveCharacterPositionCommand request, CancellationToken cancellationToken)
     {
-        var entity = new PlayerPosition
+        var entity = new CharacterPosition
         {
-            PlayerId = request.PlayerId,
+            CharacterId = request.PlayerId,
             X = request.X,
             Y = request.Y,
             Z = request.Z,
             ModDate = DateTime.Now
         };
 
-        _context.PlayerPositions.Add(entity);
+        _context.CharacterPosition.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -6,24 +6,24 @@ using ProjectX.Application.PlayerPositions.Queries.GetPlayerPosition;
 
 namespace ProjectX.API.Endpoints;
 
-public class PlayerPositions : EndpointGroupBase
+public class CharacterPositions : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.RequireAuthorization();
+        //groupBuilder.RequireAuthorization();
 
         groupBuilder.MapGet(GetAsync, "{id}");
         groupBuilder.MapPost(SaveAsync);
     }
 
-    private static async Task<Ok<PlayerPositionDto>> GetAsync(ISender sender, int id)
+    private static async Task<Ok<CharacterPositionDto>> GetAsync(ISender sender, int id)
     {
-        var result = await sender.Send(new GetPlayerPositionQuery(id));
+        var result = await sender.Send(new GetCharacterPositionQuery(id));
 
         return TypedResults.Ok(result);
     }
 
-    private static async Task<NoContent> SaveAsync(ISender sender, SavePlayerPositionCommand command)
+    private static async Task<NoContent> SaveAsync(ISender sender, SaveCharacterPositionCommand command)
     {
         await sender.Send(command);
 
