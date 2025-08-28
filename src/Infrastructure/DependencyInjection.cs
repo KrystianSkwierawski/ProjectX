@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common;
+using ProjectX.Domain.Constants;
 using ProjectX.Infrastructure.Identity;
 using ProjectX.Infrastructure.Persistance;
 
@@ -60,8 +61,13 @@ public static class DependencyInjection
 
         builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromHours(2));
 
-        builder.Services.AddAuthorization();
-
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Policies.Server, policy => policy.RequireRole(Roles.Server));
+            options.AddPolicy(Policies.Client, policy => policy.RequireRole(Roles.Client));
+            options.AddPolicy(Policies.ServerOrClient, policy => policy.RequireRole(Roles.Server, Roles.Client));
+        });
+     
         builder.Services.AddScoped<JwtHandler>();
     }
 }

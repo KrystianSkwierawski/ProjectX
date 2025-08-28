@@ -22,7 +22,7 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
         try
         {
-            Log.Debug("{0} -> Start. Request: {1}, UserId: {2}", requestName, request, _user.Id);
+            Log.Debug("{0} -> Start. UserId: {1}, Request: {2}", requestName, _user.Id, request);
 
             var sw = Stopwatch.StartNew();
 
@@ -30,7 +30,7 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
             sw.Stop();
 
-            Log.Debug("{0} -> Stop. Response: {1}, Elapsed: {2}, UserId: {3}", requestName, response, sw.Elapsed, _user.Id);
+            Log.Debug("{0} -> Stop. UserId: {1}, Elapsed: {2}, Response: {3}", requestName, _user.Id, sw.Elapsed, response);
 
             return response;
         }

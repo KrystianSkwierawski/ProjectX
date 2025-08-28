@@ -1,18 +1,25 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using ProjectX.Infrastructure.Identity;
 
 namespace ProjectX.Application.Common;
 public class JwtHandler
 {
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(JwtHandler));
+
     private readonly IConfiguration _configuration;
     private readonly IConfigurationSection _jwtSettings;
-    public JwtHandler(IConfiguration configuration)
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public JwtHandler(IConfiguration configuration, UserManager<ApplicationUser> userManager)
     {
         _configuration = configuration;
         _jwtSettings = _configuration.GetSection("JwtSettings");
+        _userManager = userManager;
     }
 
     private SigningCredentials GetSigningCredentials()
@@ -23,19 +30,19 @@ public class JwtHandler
         return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
     }
 
-    public List<Claim> GetClamis(string email, string userId)
+    public async Task<string> GenerateToken(ApplicationUser user)
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.NameIdentifier, userId)
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
         };
 
-        return claims;
-    }
+        var roles = await _userManager.GetRolesAsync(user);
 
-    public string GenerateToken(List<Claim> claims)
-    {
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
         JwtSecurityToken tokenOptions = new(
             issuer: _jwtSettings.GetSection("ValidIssuer").Value,
             audience: _jwtSettings.GetSection("ValidAudience").Value,
@@ -44,7 +51,10 @@ public class JwtHandler
             signingCredentials: GetSigningCredentials()
         );
 
-        string token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+        var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+
+        Log.Verbose("Generated token. UserName: {0}, Token: {1}", user.UserName, token);
+
         return token;
     }
 }

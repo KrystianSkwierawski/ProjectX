@@ -1,25 +1,27 @@
 ﻿using Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ProjectX.Application.Common.Attributes;
+using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.PlayerPositions.Queries.GetPlayerPosition;
 
-public record class GetCharacterPositionQuery(int PlayerId) : IRequest<CharacterPositionDto>;
+public record class GetCharacterPositionQuery : IRequest<CharacterPositionDto>;
 
 public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterPositionQuery, CharacterPositionDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GetPlayerPositionQueryHandler(IApplicationDbContext context)
+    public GetPlayerPositionQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<CharacterPositionDto> Handle(GetCharacterPositionQuery request, CancellationToken cancellationToken)
     {
         return await _context.CharacterPosition
-            .Where(x => x.CharacterId == request.PlayerId)
+            .Where(x => x.Character.ApplicationUserId == _currentUserService.Id)
             .OrderByDescending(x => x.ModDate)
             .Select(x => new CharacterPositionDto
             {
@@ -27,6 +29,6 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterPositio
                 Y = x.Y,
                 Z = x.Z
             })
-            .FirstOrDefaultAsync(cancellationToken) ?? new CharacterPositionDto { X = 0, Y = 0, Z = 0 };
+            .FirstAsync(cancellationToken);
     }
 }
