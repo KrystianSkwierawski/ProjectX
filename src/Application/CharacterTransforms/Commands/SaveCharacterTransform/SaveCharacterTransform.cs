@@ -4,6 +4,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ProjectX.Application.Common.Behaviours;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using Serilog;
@@ -25,6 +26,8 @@ public record SaveTransformTransformCommand : IRequest
 
 public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTransformCommand>
 {
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(SavePlayerTransformCommandHandler));
+
     private readonly IApplicationDbContext _context;
     private readonly TokenValidationParameters _validationParameters;
 
@@ -102,17 +105,17 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
 
         if (Math.Abs(request.PositionX - last.PositionX) > 30)
         {
-            throw new ValidationException($"Invalid PositionX: {request.PositionX}");
+            Log.Warning("Suspected PositionX: {0}", request.PositionX);
         }
 
         if (Math.Abs(request.PositionY - last.PositionY) > 30)
         {
-            throw new ValidationException($"Invalid PositionY: {request.PositionY}");
+            Log.Warning("Suspected PositionY: {0}", request.PositionY);
         }
 
         if (Math.Abs(request.PositionZ - last.PositionZ) > 30)
         {
-            throw new ValidationException($"Invalid PositionZ: {request.PositionZ}");
+            Log.Warning("Suspected PositionZ: {0}", request.PositionZ);
         }
     }
 }

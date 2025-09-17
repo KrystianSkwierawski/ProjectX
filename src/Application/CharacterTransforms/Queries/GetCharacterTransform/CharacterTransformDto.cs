@@ -3,14 +3,16 @@ public class CharacterTransformDto
 {
     public int CharacterId { get; set; }
 
-    public float X { get; set; }
+    public float PositionX { get; set; }
 
-    public float Y { get; set; }
+    public float PositionY { get; set; }
 
-    public float Z { get; set; }
+    public float PositionZ { get; set; }
+
+    public float RotationY { get; set; }
 
     public override string ToString()
     {
-        return $"{nameof(CharacterTransformDto)} {{ CharacterId = {CharacterId}, X = {X}, Y = {Y}, Z = {Z} }}";
+        return $"{nameof(CharacterTransformDto)} {{ CharacterId = {CharacterId}, PositionX = {PositionX}, PositionY = {PositionY}, PositionZ = {PositionZ}, RotationY = {RotationY} }}";
     }
 }

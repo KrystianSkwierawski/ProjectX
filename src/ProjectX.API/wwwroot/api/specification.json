@@ -123,15 +123,19 @@
             "type": "integer",
             "format": "int32"
           },
-          "x": {
+          "positionX": {
             "type": "number",
             "format": "float"
           },
-          "y": {
+          "positionY": {
             "type": "number",
             "format": "float"
           },
-          "z": {
+          "positionZ": {
+            "type": "number",
+            "format": "float"
+          },
+          "rotationY": {
             "type": "number",
             "format": "float"
           }

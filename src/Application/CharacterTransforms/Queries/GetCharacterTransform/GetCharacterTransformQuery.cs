@@ -25,9 +25,10 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransfo
             .Select(x => new CharacterTransformDto
             {
                 CharacterId = x.CharacterId,
-                X = x.PositionX,
-                Y = x.PositionY,
-                Z = x.PositionZ
+                PositionX = x.PositionX,
+                PositionY = x.PositionY,
+                PositionZ = x.PositionZ,
+                RotationY = x.RotationY
             })
             .FirstAsync(cancellationToken);
     }
