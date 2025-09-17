@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ProjectX.Infrastructure.Identity;
+using ProjectX.Domain.Entities;
 
 namespace ProjectX.Infrastructure.Persistance.Configurations;
 public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>

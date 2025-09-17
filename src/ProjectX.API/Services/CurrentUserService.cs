@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using ProjectX.Application.Common.Interfaces;
 
-namespace ProjetX.API.Services;
+namespace ProjectX.API.Services;
 
 public class CurrentUserService : ICurrentUserService
 {

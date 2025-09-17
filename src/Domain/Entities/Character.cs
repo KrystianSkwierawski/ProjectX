@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using ProjectX.Infrastructure.Identity;
 
 namespace ProjectX.Domain.Entities;
 public class Character
 {
     public Character()
     {
-        CharacterPositions = new HashSet<CharacterPosition>();
+        CharacterPositions = new HashSet<CharacterTransform>();
     }
 
     public int Id { get; set; }
@@ -15,8 +14,8 @@ public class Character
 
     public DateTime ModDate { get; set; }
 
-    [InverseProperty(nameof(CharacterPosition.Character))]
-    public virtual ICollection<CharacterPosition> CharacterPositions { get; set; }
+    [InverseProperty(nameof(CharacterTransform.Character))]
+    public virtual ICollection<CharacterTransform> CharacterPositions { get; set; }
 
     [ForeignKey(nameof(ApplicationUserId))]
     [InverseProperty(nameof(ApplicationUser.Characters))]

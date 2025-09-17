@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using ProjectX.Application.Common;
-using ProjectX.Infrastructure.Identity;
+using ProjectX.Domain.Entities;
 
 namespace ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
 public record LoginApplicationUserCommand : IRequest<LoginApplicationUserDto>

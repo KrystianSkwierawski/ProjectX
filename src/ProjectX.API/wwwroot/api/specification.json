@@ -38,10 +38,10 @@
         }
       }
     },
-    "/api/CharacterPositions": {
+    "/api/CharacterTransforms": {
       "get": {
         "tags": [
-          "CharacterPositions"
+          "CharacterTransforms"
         ],
         "operationId": "GetAsync",
         "responses": {
@@ -50,7 +50,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CharacterPositionDto"
+                  "$ref": "#/components/schemas/CharacterTransformDto"
                 }
               }
             }
@@ -64,7 +64,7 @@
       },
       "post": {
         "tags": [
-          "CharacterPositions"
+          "CharacterTransforms"
         ],
         "operationId": "SaveAsync",
         "requestBody": {
@@ -72,7 +72,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SaveCharacterPositionCommand"
+                "$ref": "#/components/schemas/SaveTransformTransformCommand"
               }
             }
           },
@@ -115,7 +115,7 @@
           }
         }
       },
-      "CharacterPositionDto": {
+      "CharacterTransformDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -137,25 +137,28 @@
           }
         }
       },
-      "SaveCharacterPositionCommand": {
+      "SaveTransformTransformCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "x": {
+          "positionX": {
             "type": "number",
             "format": "float"
           },
-          "y": {
+          "positionY": {
             "type": "number",
             "format": "float"
           },
-          "z": {
+          "positionZ": {
             "type": "number",
             "format": "float"
+          },
+          "rotationY": {
+            "type": "number",
+            "format": "float"
+          },
+          "clientToken": {
+            "type": "string"
           }
         }
       }

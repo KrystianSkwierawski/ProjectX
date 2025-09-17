@@ -1,11 +1,10 @@
 ﻿using System.Reflection;
-using Application.Common.Interfaces;
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
-using ProjectX.Infrastructure.Identity;
 
 namespace ProjectX.Infrastructure.Persistance;
 
@@ -13,9 +12,9 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions) { }
 
-    public DbSet<Character> Character => Set<Character>();
+    public DbSet<Character> Characters => Set<Character>();
 
-    public DbSet<CharacterPosition> CharacterPosition => Set<CharacterPosition>();
+    public DbSet<CharacterTransform> CharacterTransforms => Set<CharacterTransform>();
 
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
 

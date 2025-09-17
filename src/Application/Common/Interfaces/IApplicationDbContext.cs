@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectX.Domain.Entities;
 
-namespace Application.Common.Interfaces;
+namespace ProjectX.Application.Common.Interfaces;
 public interface IApplicationDbContext
 {
-    DbSet<Character> Character { get; }
+    DbSet<Character> Characters { get; }
 
-    DbSet<CharacterPosition> CharacterPosition { get; }
+    DbSet<CharacterTransform> CharacterTransforms { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectX.Domain.Constants;
 using ProjectX.Domain.Entities;
-using ProjectX.Infrastructure.Identity;
 
 namespace ProjectX.Infrastructure.Persistance;
 public static class InitialiserExtensions
@@ -37,8 +36,8 @@ public class ApplicationDbContextInitialiser
     {
         Log.Information("InitialiseAsync -> Start");
 
-        //await _context.Database.EnsureDeletedAsync();
-        //Log.Debug("InitialiseAsync -> Ensured deleted database");
+        await _context.Database.EnsureDeletedAsync();
+        Log.Debug("InitialiseAsync -> Ensured deleted database");
 
         await _context.Database.EnsureCreatedAsync();
         Log.Debug("InitialiseAsync -> Ensured created database");
@@ -78,17 +77,17 @@ public class ApplicationDbContextInitialiser
                 ApplicationUserId = user.Id
             };
 
-            var characterPosition = new CharacterPosition
+            var characterPosition = new CharacterTransform
             {
-                X = 1,
-                Y = 0,
-                Z = 0,
+                PositionX = 1,
+                PositionY = 0,
+                PositionZ = 0,
                 ModDate = DateTime.Now,
                 Character = character,
             };
 
-            _context.Character.Add(character);
-            _context.CharacterPosition.Add(characterPosition);
+            _context.Characters.Add(character);
+            _context.CharacterTransforms.Add(characterPosition);
 
             await _context.SaveChangesAsync();
 

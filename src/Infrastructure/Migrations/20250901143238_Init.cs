@@ -214,7 +214,7 @@ namespace ProjectX.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Character",
+                name: "Characters",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -224,9 +224,9 @@ namespace ProjectX.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Character", x => x.Id);
+                    table.PrimaryKey("PK_Characters", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Character_AspNetUsers_ApplicationUserId",
+                        name: "FK_Characters_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -234,24 +234,25 @@ namespace ProjectX.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CharacterPosition",
+                name: "CharacterTransforms",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CharacterId = table.Column<int>(type: "int", nullable: false),
-                    X = table.Column<float>(type: "real", nullable: false),
-                    Y = table.Column<float>(type: "real", nullable: false),
-                    Z = table.Column<float>(type: "real", nullable: false),
+                    PositionX = table.Column<float>(type: "real", nullable: false),
+                    PositionY = table.Column<float>(type: "real", nullable: false),
+                    PositionZ = table.Column<float>(type: "real", nullable: false),
+                    RotationY = table.Column<float>(type: "real", nullable: false),
                     ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CharacterPosition", x => x.Id);
+                    table.PrimaryKey("PK_CharacterTransforms", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CharacterPosition_Character_CharacterId",
+                        name: "FK_CharacterTransforms_Characters_CharacterId",
                         column: x => x.CharacterId,
-                        principalTable: "Character",
+                        principalTable: "Characters",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -296,13 +297,13 @@ namespace ProjectX.Infrastructure.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Character_ApplicationUserId",
-                table: "Character",
+                name: "IX_Characters_ApplicationUserId",
+                table: "Characters",
                 column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CharacterPosition_CharacterId",
-                table: "CharacterPosition",
+                name: "IX_CharacterTransforms_CharacterId",
+                table: "CharacterTransforms",
                 column: "CharacterId");
 
             migrationBuilder.CreateIndex(
@@ -361,7 +362,7 @@ namespace ProjectX.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "CharacterPosition");
+                name: "CharacterTransforms");
 
             migrationBuilder.DropTable(
                 name: "DeviceCodes");
@@ -376,7 +377,7 @@ namespace ProjectX.Infrastructure.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Character");
+                name: "Characters");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

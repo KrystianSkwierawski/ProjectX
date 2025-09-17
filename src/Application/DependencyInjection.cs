@@ -1,9 +1,10 @@
 ﻿using System.Reflection;
 using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProjectX.Application.Common.Behaviours;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace ProjectX.Application;
 
 public static class DependencyInjection
 {

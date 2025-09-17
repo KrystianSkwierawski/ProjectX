@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using ProjectX.Infrastructure.Identity;
+using ProjectX.Domain.Entities;
 
 namespace ProjectX.Application.Common;
 public class JwtHandler

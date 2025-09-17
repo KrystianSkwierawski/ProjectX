@@ -2,9 +2,9 @@
 using ProjectX.Application.Common.Interfaces;
 using NSwag;
 using NSwag.Generation.Processors.Security;
-using ProjetX.API.Services;
+using ProjectX.API.Services;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace ProjectX.API;
 
 public static class DependencyInjection
 {

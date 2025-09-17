@@ -314,10 +314,10 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Character");
+                    b.ToTable("Characters");
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterPosition", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -331,20 +331,23 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<DateTime>("ModDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<float>("X")
+                    b.Property<float>("PositionX")
                         .HasColumnType("real");
 
-                    b.Property<float>("Y")
+                    b.Property<float>("PositionY")
                         .HasColumnType("real");
 
-                    b.Property<float>("Z")
+                    b.Property<float>("PositionZ")
+                        .HasColumnType("real");
+
+                    b.Property<float>("RotationY")
                         .HasColumnType("real");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CharacterId");
 
-                    b.ToTable("CharacterPosition");
+                    b.ToTable("CharacterTransforms");
                 });
 
             modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>
@@ -474,7 +477,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterPosition", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
                 {
                     b.HasOne("ProjectX.Domain.Entities.Character", "Character")
                         .WithMany("CharacterPositions")
