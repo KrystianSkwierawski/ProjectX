@@ -19,7 +19,7 @@ public static class InitialiserExtensions
 
 public class ApplicationDbContextInitialiser
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(ApplicationDbContextInitialiser));
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<ApplicationDbContextInitialiser>();
 
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;

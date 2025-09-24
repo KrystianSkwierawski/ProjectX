@@ -9,7 +9,7 @@ using ProjectX.Domain.Entities;
 namespace ProjectX.Application.Common;
 public class JwtHandler
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(JwtHandler));
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<JwtHandler>();
 
     private readonly IConfiguration _configuration;
     private readonly IConfigurationSection _jwtSettings;

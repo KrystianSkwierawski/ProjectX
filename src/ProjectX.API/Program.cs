@@ -26,8 +26,9 @@ var app = builder.Build();
 if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddUserSecrets<Program>();
-    await app.InitialiseDatabaseAsync();
 }
+
+await app.InitialiseDatabaseAsync();
 
 app.UseHsts();
 app.UseHttpsRedirection();
