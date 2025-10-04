@@ -98,7 +98,7 @@ public class Target : NetworkBehaviour
     {
         var fireball = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId].GetComponent<Fireball>();
 
-        var selectedTargetTransform = NetworkManager.Singleton.SpawnManager.SpawnedObjects[selectedTargetTransformObjectId].GetComponent<Transform>();
+        var selectedTargetTransform = NetworkManager.Singleton.SpawnManager.SpawnedObjects[selectedTargetTransformObjectId];
         fireball.Cast(selectedTargetTransform);
     }
 

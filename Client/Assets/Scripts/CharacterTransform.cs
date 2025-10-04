@@ -55,13 +55,13 @@ public class CharacterTransform : NetworkBehaviour
             clientToken = token
         }), "application/json");
         
-        Debug.Log($"Server token: {ServerTokenManager.Instance.Token}, UserName: {ServerTokenManager.Instance.UserName}");
+        //Debug.Log($"Server token: {ServerTokenManager.Instance.Token}, UserName: {ServerTokenManager.Instance.UserName}");
         request.SetRequestHeader("Authorization", $"Bearer {ServerTokenManager.Instance.Token}");
 
         yield return request.SendWebRequest();
 
-        Debug.Log($"SaveTransform result: {request.result}");
-        Debug.Log($"SaveTransform text: {request.downloadHandler.text}");
+        //Debug.Log($"SaveTransform result: {request.result}");
+        //Debug.Log($"SaveTransform text: {request.downloadHandler.text}");
     }
 
     private IEnumerator GetTransform()

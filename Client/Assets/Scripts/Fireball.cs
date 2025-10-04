@@ -12,7 +12,8 @@ public class Fireball : NetworkBehaviour
 
     private AudioSource _audioSource;
     private VisualEffect _visualEffect;
-    private Transform _target;
+    private NetworkObject _target;
+    private bool _damageDealt;
 
     private void Awake()
     {
@@ -31,10 +32,10 @@ public class Fireball : NetworkBehaviour
         _audioSource.PlayOneShot(PreCastSfx, 0.7f);
     }
 
-    public void Cast(Transform targetTransform)
+    public void Cast(NetworkObject target)
     {
         CastClientRpc();
-        _target = targetTransform;
+        _target = target;
     }
 
     [ClientRpc]
@@ -83,20 +84,31 @@ public class Fireball : NetworkBehaviour
 
     private void MoveTowardsTarget()
     {
-        Vector3 direction = (_target.position - transform.position).normalized;
+        // todo: set in Cast()
+        var targetTransform = _target.GetComponent<Transform>();
+
+        Vector3 direction = (targetTransform.position - transform.position).normalized;
         transform.position += direction * Speed * Time.deltaTime;
     }
 
     private bool IsCloseToTarget()
     {
-        return Vector3.Distance(transform.position, _target.position) < 0.5f;
+        // todo: set in Cast()
+        var targetTransform = _target.GetComponent<Transform>();
+
+        return Vector3.Distance(transform.position, targetTransform.position) < 0.5f;
     }
 
     private void OnHitTarget()
     {
-        _target = null;
-        Destroy(gameObject, ImpactSfx.length);
+        if (!_damageDealt)
+        {
+            _damageDealt = _target.GetComponent<Health>().DealDamage(50f);
+        }
+
+        Destroy(gameObject, ImpactSfx.length); // despawn
         OnHitTargetClientRpc();
+        _target = null;
     }
 
     [ClientRpc]
