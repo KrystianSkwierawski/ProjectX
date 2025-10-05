@@ -1,3 +1,4 @@
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,14 +20,16 @@ public class Target : NetworkBehaviour
     private float _interruptTimer = 0f;
     private Color _originalBarColor;
     private Image _castProgressBar;
-    private GameObject _canvas;
+    private GameObject _progressBarCanvas;
+    private GameObject _targetCanvas;
 
     private void Start()
     {
         if (IsOwner)
         {
-            _canvas = GameObject.Find("Canvas");
+            _progressBarCanvas = GameObject.Find("ProgressBarCanvas");
             _castProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
+            _targetCanvas = GameObject.Find("TargetCanvas");
 
             HideCastBar();
         }
@@ -50,11 +53,12 @@ public class Target : NetworkBehaviour
         if (mouse.leftButton.wasPressedThisFrame)
         {
             Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
-            if (Physics.Raycast(ray, out RaycastHit hit) && hit.transform.name == "Capsule")
+            if (Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Target")
             {
                 if (_currentlySelectedRenderer != null)
                 {
                     _currentlySelectedRenderer.material.color = _originalSelectedColor;
+                    _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
                 }
 
                 var newRenderer = hit.transform.GetComponent<Renderer>();
@@ -62,6 +66,10 @@ public class Target : NetworkBehaviour
                 _originalSelectedColor = newRenderer.material.color;
                 newRenderer.material.color = Color.green;
                 SelectedTargetTransform = hit.transform;
+
+                _targetCanvas.transform.Find("Target").gameObject.SetActive(true);
+                _targetCanvas.transform.Find("Target/Name").GetComponent<TextMeshProUGUI>().text = "Bean";
+                _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = SelectedTargetTransform.GetComponent<Health>().Value.ToString();
             }
         }
     }
@@ -118,7 +126,7 @@ public class Target : NetworkBehaviour
     {
         if (_castProgressBar != null)
         {
-            _canvas.SetActive(true);
+            _progressBarCanvas.SetActive(true);
             _castProgressBar.fillAmount = Mathf.Clamp01(progress);
         }
     }
@@ -127,7 +135,7 @@ public class Target : NetworkBehaviour
     {
         if (_castProgressBar != null)
         {
-            _canvas.SetActive(false);
+            _progressBarCanvas.SetActive(false);
         }
     }
 
@@ -196,7 +204,7 @@ public class Target : NetworkBehaviour
         {
             _castProgressBar.color = Color.red;
             _castProgressBar.fillAmount = 1f;
-            _canvas.SetActive(true);
+            _progressBarCanvas.SetActive(true);
         }
     }
 

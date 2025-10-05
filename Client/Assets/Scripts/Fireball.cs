@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -13,7 +14,7 @@ public class Fireball : NetworkBehaviour
     private AudioSource _audioSource;
     private VisualEffect _visualEffect;
     private NetworkObject _target;
-    private bool _damageDealt;
+    private bool _hit;
 
     private void Awake()
     {
@@ -101,14 +102,21 @@ public class Fireball : NetworkBehaviour
 
     private void OnHitTarget()
     {
-        if (!_damageDealt)
+        if (!_hit)
         {
-            _damageDealt = _target.GetComponent<Health>().DealDamage(50f);
-        }
+            _hit = _target.GetComponent<Health>().DealDamage(50f);
 
-        Destroy(gameObject, ImpactSfx.length); // despawn
-        OnHitTargetClientRpc();
-        _target = null;
+            OnHitTargetClientRpc();
+
+            StartCoroutine(DespawnAfterImpact());
+        }
+    }
+
+    private IEnumerator DespawnAfterImpact()
+    {
+        yield return new WaitForSeconds(ImpactSfx.length);
+
+        GetComponent<NetworkObject>().Despawn();
     }
 
     [ClientRpc]

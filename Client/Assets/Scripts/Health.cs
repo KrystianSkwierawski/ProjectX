@@ -1,47 +1,56 @@
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
 public class Health : NetworkBehaviour
 {
-    public float _value = 100;
+    public float Value { get; private set; } = 100;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    private GameObject _targetCanvas;
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        if(!IsServer)
+        if (IsClient)
         {
-            return;
+            _targetCanvas = GameObject.Find("TargetCanvas");
         }
+    }
+    public bool DealDamage(float damage)
+    {
+        Value -= damage;
+        Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {Value}");
 
-        if (_value <= 0)
+
+        if (Value <= 0)
         {
             Debug.Log("Object killed");
 
             // send to db
 
-            // todo: spawn/despawn it later
-            DestroyOnClientRpc();
-            Destroy(gameObject);
+            HideTargetCanvasClientRpc();
+
+            gameObject.GetComponent<NetworkObject>().Despawn();
+
+            return true;
         }
+
+        UpdateTargetCanvasClientRpc(Value);
+
+        return true;
     }
 
     [ClientRpc]
-    void DestroyOnClientRpc()
+    private void HideTargetCanvasClientRpc()
     {
-        Destroy(gameObject);
+        _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
     }
 
-    public bool DealDamage(float damage)
+    [ClientRpc]
+    private void UpdateTargetCanvasClientRpc(float value)
     {
-        _value -= damage;
-        Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {_value}");
+        Debug.Log("Updating health UI");
 
-        return true;
+        Value = value;
+        _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = value.ToString();
     }
 }
