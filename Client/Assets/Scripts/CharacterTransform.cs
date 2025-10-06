@@ -1,11 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class CharacterTransform : NetworkBehaviour
 {
-    private const string _baseUrl = "https://localhost:5001/api";
     private float period = 0.0f;
     private const float _saveInterval = 5f;
 
@@ -46,7 +46,7 @@ public class CharacterTransform : NetworkBehaviour
 
     private IEnumerator SaveTransform(string token)
     {
-        using var request = UnityWebRequest.Post($"{_baseUrl}/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
+        using var request = UnityWebRequest.Post("https://localhost:5001/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
         {
             positionX = transform.position.x,
             positionY = transform.position.y,
@@ -55,7 +55,6 @@ public class CharacterTransform : NetworkBehaviour
             clientToken = token
         }), "application/json");
         
-        //Debug.Log($"Server token: {ServerTokenManager.Instance.Token}, UserName: {ServerTokenManager.Instance.UserName}");
         request.SetRequestHeader("Authorization", $"Bearer {ServerTokenManager.Instance.Token}");
 
         yield return request.SendWebRequest();
@@ -66,9 +65,8 @@ public class CharacterTransform : NetworkBehaviour
 
     private IEnumerator GetTransform()
     {
-        using var request = UnityWebRequest.Get($"{_baseUrl}/CharacterTransforms");
+        using var request = UnityWebRequest.Get("https://localhost:5001/api/CharacterTransforms");
 
-        Debug.Log($"Client token: {ClientTokenManager.Instance.Token}, UserName: {ClientTokenManager.Instance.UserName}");
         request.SetRequestHeader("Authorization", $"Bearer {ClientTokenManager.Instance.Token}");
 
         yield return request.SendWebRequest();
@@ -78,14 +76,13 @@ public class CharacterTransform : NetworkBehaviour
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            var json = request.downloadHandler.text;
-            var result = JsonUtility.FromJson<CharacterTransformDto>(json);
+            var result = JsonUtility.FromJson<CharacterTransformDto>(request.downloadHandler.text);
             transform.position = new Vector3(result.positionX, result.positionY, result.positionZ);
             transform.rotation.Set(0, result.rotationY, 0, 0);
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     private class CharacterTransformDto // wydziel osobno na get i save
     {
         public int characterId;

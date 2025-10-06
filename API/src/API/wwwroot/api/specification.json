@@ -38,6 +38,43 @@
         }
       }
     },
+    "/api/CharacterExperiences": {
+      "post": {
+        "tags": [
+          "CharacterExperiences"
+        ],
+        "operationId": "AddAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCharacterExperienceCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddCharacterExperienceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterTransforms": {
       "get": {
         "tags": [
@@ -114,6 +151,155 @@
             "type": "string"
           }
         }
+      },
+      "AddCharacterExperienceDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "level": {
+            "type": "integer",
+            "format": "byte"
+          },
+          "skillPoints": {
+            "type": "integer",
+            "format": "byte"
+          },
+          "experience": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leveledUp": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AddCharacterExperienceCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ExperienceTypeEnum"
+          },
+          "clientToken": {
+            "type": "string"
+          }
+        }
+      },
+      "ExperienceTypeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "Combat",
+          "Crafting",
+          "Gathering",
+          "Exploration",
+          "Questing",
+          "Trading",
+          "Survival",
+          "Technology",
+          "Healing",
+          "Building",
+          "Farming",
+          "Fishing",
+          "Cooking",
+          "Alchemy",
+          "Enchanting"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "Combat",
+          "Crafting",
+          "Gathering",
+          "Exploration",
+          "Questing",
+          "Trading",
+          "Survival",
+          "Technology",
+          "Healing",
+          "Building",
+          "Farming",
+          "Fishing",
+          "Cooking",
+          "Alchemy",
+          "Enchanting"
+        ],
+        "x-enumNames": [
+          "None",
+          "Combat",
+          "Crafting",
+          "Gathering",
+          "Exploration",
+          "Questing",
+          "Trading",
+          "Survival",
+          "Technology",
+          "Healing",
+          "Building",
+          "Farming",
+          "Fishing",
+          "Cooking",
+          "Alchemy",
+          "Enchanting"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
       },
       "CharacterTransformDto": {
         "type": "object",

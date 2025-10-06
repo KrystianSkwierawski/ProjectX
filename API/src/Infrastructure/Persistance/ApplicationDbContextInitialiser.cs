@@ -36,8 +36,8 @@ public class ApplicationDbContextInitialiser
     {
         Log.Information("InitialiseAsync -> Start");
 
-        //await _context.Database.EnsureDeletedAsync();
-        //Log.Debug("InitialiseAsync -> Ensured deleted database");
+        await _context.Database.EnsureDeletedAsync();
+        Log.Debug("InitialiseAsync -> Ensured deleted database");
 
         await _context.Database.EnsureCreatedAsync();
         Log.Debug("InitialiseAsync -> Ensured created database");

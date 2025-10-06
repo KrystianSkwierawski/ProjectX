@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class Target : NetworkBehaviour
+public class TargetSelector : NetworkBehaviour
 {
     public float MaxCastDistance = 10.0f;
     public GameObject FireballPrefab;
@@ -86,17 +86,17 @@ public class Target : NetworkBehaviour
         var targetPos = SelectedTargetTransform.position;
         var direction = (targetPos - spawnPos).normalized;
 
-        SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId);
+        SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, ClientTokenManager.Instance.Token);
     }
 
     [ServerRpc(RequireOwnership = true)]
-    public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId)
+    public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId, string token)
     {
         var fireball = Instantiate(FireballPrefab, position, Quaternion.LookRotation(direction));
         var netObj = fireball.GetComponent<NetworkObject>();
         netObj.SpawnWithOwnership(clientId);
         var spawnedFireball = fireball.GetComponent<Fireball>();
-        spawnedFireball.PreCast();
+        spawnedFireball.PreCast(token);
 
         NotifyClientRpc(netObj.NetworkObjectId, clientId);
     }

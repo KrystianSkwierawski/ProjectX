@@ -37,7 +37,7 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
 
     public async Task Handle(SaveTransformTransformCommand request, CancellationToken cancellationToken)
     {
-        var userId = GetUserId(request);
+        var userId = GetUserId(request.ClientToken);
 
         int characterId = await GetCharacterIdAsync(userId, cancellationToken);
 
@@ -60,6 +60,8 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
 
         _context.CharacterTransforms.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
+
+        Log.Debug("Saved position for character: {0}", characterId);
     }
 
     private async Task<int> GetCharacterIdAsync(string userId, CancellationToken cancellationToken)
@@ -75,10 +77,10 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
         return result;
     }
 
-    private string GetUserId(SaveTransformTransformCommand request)
+    private string GetUserId(string clientToken)
     {
         var handler = new JwtSecurityTokenHandler();
-        var principal = handler.ValidateToken(request.ClientToken, _validationParameters, out var validatedToken);
+        var principal = handler.ValidateToken(clientToken, _validationParameters, out var validatedToken);
 
         var userId = principal.Claims
             .Where(x => x.Type == ClaimTypes.NameIdentifier)

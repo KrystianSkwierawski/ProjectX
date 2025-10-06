@@ -11,6 +11,7 @@ public class Fireball : NetworkBehaviour
     public AudioClip FailedSfx;
     public float Speed = 15f;
 
+    private string _clientToken;
     private AudioSource _audioSource;
     private VisualEffect _visualEffect;
     private NetworkObject _target;
@@ -22,8 +23,9 @@ public class Fireball : NetworkBehaviour
         _visualEffect = GetComponent<VisualEffect>();
     }
 
-    public void PreCast()
+    public void PreCast(string token)
     {
+        _clientToken = token;
         PreCastClientRpc();
     }
 
@@ -104,7 +106,7 @@ public class Fireball : NetworkBehaviour
     {
         if (!_hit)
         {
-            _hit = _target.GetComponent<Health>().DealDamage(50f);
+            _hit = _target.GetComponent<Health>().DealDamage(50f, _clientToken);
 
             OnHitTargetClientRpc();
 
