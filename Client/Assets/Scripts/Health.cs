@@ -28,7 +28,7 @@ public class Health : NetworkBehaviour
         if (Value <= 0)
         {
             Debug.Log("Object killed");
-            HideTargetCanvasClientRpc();
+            //HideTargetCanvasClientRpc();
             StartCoroutine(HandleKill(token));
             return true;
         }
@@ -43,10 +43,17 @@ public class Health : NetworkBehaviour
         gameObject.GetComponent<NetworkObject>().Despawn();
     }
 
+    //[ClientRpc]
+    //private void HideTargetCanvasClientRpc()
+    //{
+    //    _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+    //}
+
     [ClientRpc]
-    private void HideTargetCanvasClientRpc()
+    private void UpdateLevelClientRpc(int level)
     {
-        _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+        // todo: only owner
+        _targetCanvas.transform.Find("Target/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
     }
 
     [ClientRpc]
@@ -62,7 +69,7 @@ public class Health : NetworkBehaviour
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
         {
-            amount = 500,
+            amount = 1000,
             type = ExperienceTypeEnum.Combat,
             clientToken = token
         }), "application/json");
@@ -82,6 +89,7 @@ public class Health : NetworkBehaviour
             {
                 Debug.Log($"LevelUp! Level: {result.level}, SkillPoints: {result.skillPoints}, Experience: {result.experience}");
                 // todo: notify player
+                UpdateLevelClientRpc(result.level);
             }
         }
     }

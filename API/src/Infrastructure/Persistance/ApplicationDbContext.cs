@@ -35,9 +35,5 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-        builder.Entity<Character>()
-            .Property(x => x.Level)
-            .HasDefaultValue(1);
     }
 }

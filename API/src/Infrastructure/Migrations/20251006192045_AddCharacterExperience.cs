@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectX.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCharacterExperiences : Migration
+    public partial class AddCharacterExperience : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

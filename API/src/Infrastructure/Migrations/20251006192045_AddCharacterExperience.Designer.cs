@@ -12,8 +12,8 @@ using ProjectX.Infrastructure.Persistance;
 namespace ProjectX.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251006184134_AddCharacterExperiences")]
-    partial class AddCharacterExperiences
+    [Migration("20251006192045_AddCharacterExperience")]
+    partial class AddCharacterExperience
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

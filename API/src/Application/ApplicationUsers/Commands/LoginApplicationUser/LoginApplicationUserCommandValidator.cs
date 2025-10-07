@@ -10,7 +10,7 @@ public class LoginApplicationUserCommandValidator : AbstractValidator<LoginAppli
             .NotEmpty();
 
         RuleFor(x => x.Password)
-            .MinimumLength(6)
+           .MinimumLength(6)
            .MaximumLength(256)
            .NotEmpty();
     }
