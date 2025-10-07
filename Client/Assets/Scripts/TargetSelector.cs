@@ -105,7 +105,6 @@ public class TargetSelector : NetworkBehaviour
     public void CastServerRpc(ulong objectId, ulong clientId, ulong selectedTargetTransformObjectId)
     {
         var fireball = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId].GetComponent<Fireball>();
-
         var selectedTargetTransform = NetworkManager.Singleton.SpawnManager.SpawnedObjects[selectedTargetTransformObjectId];
         fireball.Cast(selectedTargetTransform);
     }
@@ -170,6 +169,14 @@ public class TargetSelector : NetworkBehaviour
         if (!_isCasting)
             return;
 
+        if (SelectedTargetTransform == null)
+        {
+            StopCasting();
+            DespawnFireballServerRpc(_objectId);
+
+            return;
+        }
+
         if (Keyboard.current.wKey.isPressed ||
             Keyboard.current.aKey.isPressed ||
             Keyboard.current.sKey.isPressed ||
@@ -185,12 +192,18 @@ public class TargetSelector : NetworkBehaviour
 
         if (_castTimer >= _castTime)
         {
-            _isCasting = false;
-            _castTimer = 0f;
-            HideCastBar();
+            StopCasting();
+
             var selectedTargetTransformObjectId = SelectedTargetTransform.GetComponent<NetworkObject>().NetworkObjectId;
             CastServerRpc(_objectId, NetworkManager.Singleton.LocalClientId, selectedTargetTransformObjectId);
         }
+    }
+
+    private void StopCasting()
+    {
+        _isCasting = false;
+        _castTimer = 0f;
+        HideCastBar();
     }
 
     private void InterruptCast()
@@ -215,6 +228,13 @@ public class TargetSelector : NetworkBehaviour
         var _fireball = netObj.GetComponent<Fireball>();
 
         _fireball.Failed();
+    }
+
+    [ServerRpc]
+    private void DespawnFireballServerRpc(ulong objectId)
+    {
+        var netObj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
+        netObj.Despawn();
     }
 
     private bool CheckMaxDistance()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -31,13 +32,13 @@ public class BaseTokenManager : MonoBehaviour
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     private class LoginApplicationUserDto
     {
         public string token;
     }
 
-    [System.Serializable]
+    [Serializable]
     private class LoginApplicationUserCommand
     {
         public string userName;

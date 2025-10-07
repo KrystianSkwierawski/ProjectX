@@ -11,12 +11,14 @@ public class Health : NetworkBehaviour
     public float Value { get; private set; } = 100;
 
     private GameObject _targetCanvas;
+    private GameObject _playerCanvas;
 
     private void Start()
     {
         if (IsClient)
         {
             _targetCanvas = GameObject.Find("TargetCanvas");
+            _playerCanvas = GameObject.Find("PlayerCanvas");
         }
     }
 
@@ -28,7 +30,7 @@ public class Health : NetworkBehaviour
         if (Value <= 0)
         {
             Debug.Log("Object killed");
-            //HideTargetCanvasClientRpc();
+            HideTargetCanvasClientRpc();
             StartCoroutine(HandleKill(token));
             return true;
         }
@@ -39,21 +41,22 @@ public class Health : NetworkBehaviour
 
     private IEnumerator HandleKill(string token)
     {
-        yield return StartCoroutine(AddExperience(token));
+        yield return AddExperience(token);
         gameObject.GetComponent<NetworkObject>().Despawn();
     }
 
-    //[ClientRpc]
-    //private void HideTargetCanvasClientRpc()
-    //{
-    //    _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
-    //}
+    [ClientRpc]
+    private void HideTargetCanvasClientRpc()
+    {
+        _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+    }
 
     [ClientRpc]
     private void UpdateLevelClientRpc(int level)
     {
         // todo: only owner
-        _targetCanvas.transform.Find("Target/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
+        _playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
+        //GetComponent<AudioSource>().PlayOneShot(LevelUpSfx); // todo: play on owner player
     }
 
     [ClientRpc]

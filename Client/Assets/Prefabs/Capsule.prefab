@@ -214,4 +214,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _value: 100
+  LevelUpSfx: {fileID: 8300000, guid: b6db863c0a9a8f642a1f150493db927d, type: 3}
