@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class ServerTokenManager : BaseTokenManager
 {
     public static ServerTokenManager Instance { get; private set; }

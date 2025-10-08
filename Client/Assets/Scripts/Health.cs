@@ -12,6 +12,7 @@ public class Health : NetworkBehaviour
 
     private GameObject _targetCanvas;
     private GameObject _playerCanvas;
+    public AudioClip LevelUpSfx;
 
     private void Start()
     {
@@ -56,6 +57,7 @@ public class Health : NetworkBehaviour
     {
         // todo: only owner
         _playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
+        GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(LevelUpSfx, 0.4f);
         //GetComponent<AudioSource>().PlayOneShot(LevelUpSfx); // todo: play on owner player
     }
 

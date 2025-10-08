@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 722243217}
   - component: {fileID: 722243221}
   - component: {fileID: 722243222}
+  - component: {fileID: 722243223}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -238,6 +239,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UserName: server1@localhost
   Password: Server1!
+--- !u!114 &722243223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 722243216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 397de46d9f9e4174a9c42de18deab7ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EnemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
+  BeansCount: 2
 --- !u!1 &1959549265
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,8 +297,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad596d932679887419a25a5136d1829e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EnemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
-  BeansCount: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
