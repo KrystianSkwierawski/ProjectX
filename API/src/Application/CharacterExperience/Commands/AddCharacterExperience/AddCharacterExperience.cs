@@ -9,13 +9,13 @@ using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Experience.Commands.AddExperience;
-public class AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto>
+public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto>
 {
-    public int Amount { get; set; }
+    public int Amount { get; init; }
 
-    public ExperienceTypeEnum Type { get; set; }
+    public ExperienceTypeEnum Type { get; init; }
 
-    public string ClientToken { get; set; }
+    public string ClientToken { get; init; }
 }
 
 public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacterExperienceCommand, AddCharacterExperienceDto>

@@ -11,10 +11,10 @@ public class CharacterExperiences : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapPost(AddAsync).RequireAuthorization(Policies.Server);
+        groupBuilder.MapPost(AddCharacterExperience).RequireAuthorization(Policies.Server);
     }
 
-    private static async Task<Ok<AddCharacterExperienceDto>> AddAsync(ISender sender, AddCharacterExperienceCommand command)
+    private static async Task<Ok<AddCharacterExperienceDto>> AddCharacterExperience(ISender sender, AddCharacterExperienceCommand command)
     {
         var result = await sender.Send(command);
 

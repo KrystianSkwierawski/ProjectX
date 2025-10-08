@@ -11,15 +11,15 @@ namespace ProjectX.Application.CharacterTransforms.Commands.SaveCharacterTransfo
 
 public record SaveTransformTransformCommand : IRequest
 {
-    public float PositionX { get; set; }
+    public float PositionX { get; init; }
 
-    public float PositionY { get; set; }
+    public float PositionY { get; init; }
 
-    public float PositionZ { get; set; }
+    public float PositionZ { get; init; }
 
-    public float RotationY { get; set; }
+    public float RotationY { get; init; }
 
-    public string ClientToken { get; set; }
+    public string ClientToken { get; init; }
 }
 
 public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTransformCommand>

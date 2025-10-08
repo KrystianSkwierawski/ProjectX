@@ -10,6 +10,7 @@ public class BeanSpawner : MonoBehaviour
 
     void Update()
     {
+#if UNITY_SERVER
         if (_isSpawning)
         {
             return;
@@ -22,6 +23,7 @@ public class BeanSpawner : MonoBehaviour
             _isSpawning = true;
             StartCoroutine(Respawn(BeansCount - beans.Length));
         }
+#endif
     }
 
     private IEnumerator Respawn(int count)

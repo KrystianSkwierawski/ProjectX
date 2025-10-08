@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using TMPro;
 using Unity.Netcode;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -11,7 +10,6 @@ public class Health : NetworkBehaviour
     public float Value { get; private set; } = 100;
 
     private GameObject _targetCanvas;
-    private GameObject _playerCanvas;
     public AudioClip LevelUpSfx;
 
     private void Start()
@@ -19,11 +17,10 @@ public class Health : NetworkBehaviour
         if (IsClient)
         {
             _targetCanvas = GameObject.Find("TargetCanvas");
-            _playerCanvas = GameObject.Find("PlayerCanvas");
         }
     }
 
-    public bool DealDamage(float damage, string token)
+    public bool DealDamage(float damage, string token, ulong clientId)
     {
         Value -= damage;
         Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {Value}");
@@ -32,7 +29,7 @@ public class Health : NetworkBehaviour
         {
             Debug.Log("Object killed");
             HideTargetCanvasClientRpc();
-            StartCoroutine(HandleKill(token));
+            StartCoroutine(HandleKill(token, clientId));
             return true;
         }
 
@@ -40,9 +37,9 @@ public class Health : NetworkBehaviour
         return true;
     }
 
-    private IEnumerator HandleKill(string token)
+    private IEnumerator HandleKill(string token, ulong clientId)
     {
-        yield return AddExperience(token);
+        yield return AddExperience(token, clientId);
         gameObject.GetComponent<NetworkObject>().Despawn();
     }
 
@@ -53,12 +50,13 @@ public class Health : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void UpdateLevelClientRpc(int level)
+    private void UpdateLevelClientRpc(int level, ulong clientId)
     {
-        // todo: only owner
-        _playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
-        GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(LevelUpSfx, 0.4f);
-        //GetComponent<AudioSource>().PlayOneShot(LevelUpSfx); // todo: play on owner player
+        if (NetworkManager.Singleton.LocalClientId == clientId)
+        {
+            GameObject.Find("PlayerCanvas").transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
+            GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(LevelUpSfx, 0.4f);
+        }
     }
 
     [ClientRpc]
@@ -70,7 +68,7 @@ public class Health : NetworkBehaviour
         _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = Value.ToString();
     }
 
-    private IEnumerator AddExperience(string token)
+    private IEnumerator AddExperience(string token, ulong clientId)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
         {
@@ -94,7 +92,7 @@ public class Health : NetworkBehaviour
             {
                 Debug.Log($"LevelUp! Level: {result.level}, SkillPoints: {result.skillPoints}, Experience: {result.experience}");
                 // todo: notify player
-                UpdateLevelClientRpc(result.level);
+                UpdateLevelClientRpc(result.level, clientId);
             }
         }
     }

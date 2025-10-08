@@ -89,7 +89,7 @@ public class TargetSelector : NetworkBehaviour
         SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, ClientTokenManager.Instance.Token);
     }
 
-    [ServerRpc(RequireOwnership = true)]
+    [ServerRpc]
     public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId, string token)
     {
         var fireball = Instantiate(FireballPrefab, position, Quaternion.LookRotation(direction));
@@ -101,7 +101,7 @@ public class TargetSelector : NetworkBehaviour
         NotifyClientRpc(netObj.NetworkObjectId, clientId);
     }
 
-    [ServerRpc(RequireOwnership = true)]
+    [ServerRpc]
     public void CastServerRpc(ulong objectId, ulong clientId, ulong selectedTargetTransformObjectId)
     {
         var fireball = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId].GetComponent<Fireball>();

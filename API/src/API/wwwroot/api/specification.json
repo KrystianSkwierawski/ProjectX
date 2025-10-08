@@ -43,7 +43,7 @@
         "tags": [
           "CharacterExperiences"
         ],
-        "operationId": "AddAsync",
+        "operationId": "AddCharacterExperience",
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -75,12 +75,49 @@
         ]
       }
     },
+    "/api/Characters/{id}": {
+      "get": {
+        "tags": [
+          "Characters"
+        ],
+        "operationId": "GetCharacterQuery",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterTransforms": {
       "get": {
         "tags": [
           "CharacterTransforms"
         ],
-        "operationId": "GetAsync",
+        "operationId": "GetCharacterTransform",
         "responses": {
           "200": {
             "description": "",
@@ -103,7 +140,7 @@
         "tags": [
           "CharacterTransforms"
         ],
-        "operationId": "SaveAsync",
+        "operationId": "SaveTransformTransform",
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -117,7 +154,7 @@
           "x-position": 1
         },
         "responses": {
-          "204": {
+          "201": {
             "description": ""
           }
         },
@@ -300,6 +337,27 @@
           14,
           15
         ]
+      },
+      "CharacterDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer",
+            "format": "byte"
+          },
+          "skillPoints": {
+            "type": "integer",
+            "format": "byte"
+          },
+          "health": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "CharacterTransformDto": {
         "type": "object",

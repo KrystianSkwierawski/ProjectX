@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectX.Domain.Constants;
 using ProjectX.Domain.Entities;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Infrastructure.Persistance;
 public static class InitialiserExtensions
@@ -46,7 +47,7 @@ public class ApplicationDbContextInitialiser
         await CreateRoleAsync(Roles.Client);
 
         await CreateUserAsync("server1@localhost", "Server1!", Roles.Server);
-        await CreateUserAsync("server2@localhost", "Server1!", Roles.Server);
+        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server);
         await CreateUserAsync("user1@localhost", "User1!", Roles.Client);
         await CreateUserAsync("user2@localhost", "User2!", Roles.Client);
 
@@ -73,8 +74,11 @@ public class ApplicationDbContextInitialiser
 
             var character = new Character
             {
+                ApplicationUserId = user.Id,
+                Name = userName.Split('@')[0],
+                Status = StatusEnum.Active,
+                Health = 100,
                 ModDate = DateTime.Now,
-                ApplicationUserId = user.Id
             };
 
             var characterPosition = new CharacterTransform

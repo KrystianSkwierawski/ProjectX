@@ -28,7 +28,7 @@ public class BaseTokenManager : MonoBehaviour
             var json = request.downloadHandler.text;
             var result = JsonUtility.FromJson<LoginApplicationUserDto>(json);
             Token = result.token;
-            Debug.Log($"Login Token: {Token}");
+            Debug.Log($"Login -> UserName: {UserName}, Token: {Token}");
         }
     }
 

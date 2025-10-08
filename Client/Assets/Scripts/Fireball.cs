@@ -106,7 +106,7 @@ public class Fireball : NetworkBehaviour
     {
         if (!_hit)
         {
-            _hit = _target.GetComponent<Health>().DealDamage(50f, _clientToken);
+            _hit = _target.GetComponent<Health>().DealDamage(50f, _clientToken, OwnerClientId);
 
             OnHitTargetClientRpc();
 
