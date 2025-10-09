@@ -6,11 +6,12 @@ public class BeanSpawner : MonoBehaviour
 {
     public GameObject EnemyPrefab;
     public int BeansCount = 2;
+
     private bool _isSpawning;
 
+#if UNITY_SERVER && !UNITY_EDITOR
     void Update()
     {
-#if UNITY_SERVER
         if (_isSpawning)
         {
             return;
@@ -23,7 +24,6 @@ public class BeanSpawner : MonoBehaviour
             _isSpawning = true;
             StartCoroutine(Respawn(BeansCount - beans.Length));
         }
-#endif
     }
 
     private IEnumerator Respawn(int count)
@@ -47,4 +47,6 @@ public class BeanSpawner : MonoBehaviour
         _isSpawning = false;
         Debug.Log($"{count} beans spawned");
     }
+#endif
 }
+

@@ -46,7 +46,7 @@ public class CharacterTransform : NetworkBehaviour
 
     private IEnumerator SaveTransform(string token)
     {
-        using var request = UnityWebRequest.Post("https://localhost:5001/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
+        using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
         {
             positionX = transform.position.x,
             positionY = transform.position.y,

@@ -1,7 +1,0 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/Client_clone_0
-/API/src/Infrastructure/Migrations/20251006181300_AddCharacterExperiences.cs
-/API/src/Infrastructure/Migrations/20251006181300_AddCharacterExperiences.Designer.cs

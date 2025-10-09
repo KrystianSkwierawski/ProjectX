@@ -347,6 +347,8 @@ GameObject:
   - component: {fileID: 358118084}
   - component: {fileID: 358118083}
   - component: {fileID: 358118086}
+  - component: {fileID: 358118087}
+  - component: {fileID: 358118088}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -399,7 +401,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 358118083}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 2599698213384624033, guid: 31287fd960052de4f954cad63c9ea181, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 86aeb024ca801b740a7fa6186fba63e9, type: 2}
@@ -411,7 +413,7 @@ MonoBehaviour:
     TimeResyncInterval: 30
     EnsureNetworkVariableLengthSafety: 0
     EnableSceneManagement: 1
-    ForceSamePrefabs: 0
+    ForceSamePrefabs: 1
     RecycleNetworkIds: 1
     NetworkIdRecycleDelay: 120
     RpcHashSize: 0
@@ -454,6 +456,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UserName: user1@localhost
   Password: User1!
+--- !u!114 &358118087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358118082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a094af39aeee5941b1399952112b698, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  UserName: 
+  Password: 
+--- !u!114 &358118088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358118082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 397de46d9f9e4174a9c42de18deab7ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EnemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
+  BeansCount: 2
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1864,7 +1894,7 @@ GameObject:
   - component: {fileID: 1964602099}
   - component: {fileID: 1964602098}
   m_Layer: 0
-  m_Name: ClientStarter
+  m_Name: ClientServerStarter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
