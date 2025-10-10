@@ -7,13 +7,11 @@ using UnityEngine.Networking;
 public class Player : NetworkBehaviour
 {
     private GameObject _playerCanvas;
-    public AudioClip BackgroundMusic;
 
     private void Start()
     {
         if (IsOwner)
         {
-            GetComponent<AudioSource>().PlayOneShot(BackgroundMusic, 0.05f);
             _playerCanvas = GameObject.Find("PlayerCanvas");
             StartCoroutine(GetCharacter());
         }
