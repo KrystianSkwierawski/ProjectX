@@ -378,6 +378,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  BackgroundMusic: {fileID: 8300000, guid: 29ce91c6611e7d743af0c9122cc96228, type: 3}
 --- !u!82 &6307337214493261193
 AudioSource:
   m_ObjectHideFlags: 0
