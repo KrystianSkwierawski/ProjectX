@@ -19,7 +19,7 @@ public class MusicPlayer : MonoBehaviour
             return;
         }
 
-        PlayRandomClip();
+        //PlayRandomClip();
     }
 
     private void PlayRandomClip()

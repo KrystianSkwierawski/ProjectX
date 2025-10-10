@@ -8,11 +8,16 @@ public class BeanSpawner : MonoBehaviour
     public int BeansCount = 2;
 
     private bool _isSpawning;
+    private Collider _collider;
 
-#if UNITY_SERVER && !UNITY_EDITOR
+    private void Start()
+    {
+        _collider = GetComponent<Collider>();
+    }
+
     void Update()
     {
-        if (_isSpawning)
+        if (_isSpawning || NetworkManager.Singleton.IsClient)
         {
             return;
         }
@@ -34,10 +39,11 @@ public class BeanSpawner : MonoBehaviour
 
     private void SpawnBeans(int count)
     {
+        var bounds = _collider.bounds;
+
         for (int i = 1; i <= count; i++)
         {
-            var offset = i + 1f;
-            var position = new Vector3(offset, -3.5f, offset);
+            var position = new Vector3(Random.Range(bounds.min.x, bounds.max.x), -3.5f, Random.Range(bounds.min.z, bounds.max.z));
 
             var enemy = Instantiate(EnemyPrefab, position, new Quaternion(0f, 0f, 0f, 0f));
             var netObj = enemy.GetComponent<NetworkObject>();
@@ -47,6 +53,5 @@ public class BeanSpawner : MonoBehaviour
         _isSpawning = false;
         Debug.Log($"{count} beans spawned");
     }
-#endif
 }
 
