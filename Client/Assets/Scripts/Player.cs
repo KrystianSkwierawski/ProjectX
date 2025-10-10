@@ -1,4 +1,4 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -8,22 +8,22 @@ public class Player : NetworkBehaviour
 {
     private GameObject _playerCanvas;
 
-    private void Start()
+    private async void Start()
     {
         if (IsOwner)
         {
             _playerCanvas = GameObject.Find("PlayerCanvas");
-            StartCoroutine(GetCharacter());
+            await GetCharacterAsync();
         }
     }
 
-    private IEnumerator GetCharacter()
+    private async UniTask GetCharacterAsync()
     {
         using var request = UnityWebRequest.Get("https://localhost:5001/api/Characters/1");
 
         request.SetRequestHeader("Authorization", $"Bearer {ClientTokenManager.Instance.Token}");
 
-        yield return request.SendWebRequest();
+        await request.SendWebRequest();
 
         Debug.Log($"GetCharacter result: {request.result}");
         Debug.Log($"GetCharacter text: {request.downloadHandler.text}");

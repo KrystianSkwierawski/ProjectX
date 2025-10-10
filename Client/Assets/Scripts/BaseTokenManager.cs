@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -11,7 +11,7 @@ public class BaseTokenManager : MonoBehaviour
 
     public string Password;
 
-    protected IEnumerator Login()
+    protected async UniTask LoginAsync()
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/ApplicationUsers", JsonUtility.ToJson(new LoginApplicationUserCommand
         {
@@ -19,7 +19,7 @@ public class BaseTokenManager : MonoBehaviour
             password = Password
         }), "application/json");
 
-        yield return request.SendWebRequest();
+        await request.SendWebRequest();
 
         Debug.Log($"Login result: {request.result}");
 

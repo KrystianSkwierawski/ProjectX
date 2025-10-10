@@ -1,4 +1,5 @@
-using System.Collections;
+using System;
+using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -70,7 +71,7 @@ public class Fireball : NetworkBehaviour
         _audioSource.PlayOneShot(FailedSfx, 1f);
     }
 
-    private void Update()
+    private async void Update()
     {
         if (!IsServer || _target == null)
         {
@@ -81,7 +82,7 @@ public class Fireball : NetworkBehaviour
 
         if (IsCloseToTarget())
         {
-            OnHitTarget();
+            await OnHitTargetAsync();
         }
     }
 
@@ -102,7 +103,7 @@ public class Fireball : NetworkBehaviour
         return Vector3.Distance(transform.position, targetTransform.position) < 0.5f;
     }
 
-    private void OnHitTarget()
+    private async UniTask OnHitTargetAsync()
     {
         if (!_hit)
         {
@@ -110,15 +111,15 @@ public class Fireball : NetworkBehaviour
 
             OnHitTargetClientRpc();
 
-            StartCoroutine(DespawnAfterImpact());
+            await DespawnAfterImpactAsync();
         }
     }
 
-    private IEnumerator DespawnAfterImpact()
+    private async UniTask DespawnAfterImpactAsync()
     {
-        yield return new WaitForSeconds(ImpactSfx.length);
+        await UniTask.Delay(TimeSpan.FromSeconds(ImpactSfx.length));
 
-        GetComponent<NetworkObject>().Despawn();
+        GetComponent<NetworkObject>()?.Despawn();
     }
 
     [ClientRpc]

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -9,13 +9,13 @@ public class CharacterTransform : NetworkBehaviour
     private float period = 0.0f;
     private const float _saveInterval = 5f;
 
-    public override void OnNetworkSpawn()
+    public override async void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
         if (IsOwner)
         {
-            StartCoroutine(GetTransform());
+            await GetTransformAsync();
         }
     }
 
@@ -41,10 +41,10 @@ public class CharacterTransform : NetworkBehaviour
     [ServerRpc]
     private void SaveTransformServerRpc(string token)
     {
-        StartCoroutine(SaveTransform(token));
+        _ = SaveTransformAsync(token);
     }
 
-    private IEnumerator SaveTransform(string token)
+    private async UniTask SaveTransformAsync(string token)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
         {
@@ -57,22 +57,22 @@ public class CharacterTransform : NetworkBehaviour
         
         request.SetRequestHeader("Authorization", $"Bearer {ServerTokenManager.Instance.Token}");
 
-        yield return request.SendWebRequest();
+        await request.SendWebRequest();
 
         //Debug.Log($"SaveTransform result: {request.result}");
         //Debug.Log($"SaveTransform text: {request.downloadHandler.text}");
     }
 
-    private IEnumerator GetTransform()
+    private async UniTask GetTransformAsync()
     {
         using var request = UnityWebRequest.Get("https://localhost:5001/api/CharacterTransforms");
 
         request.SetRequestHeader("Authorization", $"Bearer {ClientTokenManager.Instance.Token}");
 
-        yield return request.SendWebRequest();
+        await request.SendWebRequest();
 
         Debug.Log($"GetTransform result: {request.result}");
-        Debug.Log($"GetTransform text: {request.downloadHandler.text}");
+        Debug.Log($"GetTransformA text: {request.downloadHandler.text}");
 
         if (request.result == UnityWebRequest.Result.Success)
         {

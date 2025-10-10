@@ -1,23 +1,28 @@
-using System.Collections;
+using System;
+using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
 public class BeanSpawner : MonoBehaviour
 {
+
+
     public GameObject EnemyPrefab;
     public int BeansCount = 2;
 
     private bool _isSpawning;
     private Collider _collider;
 
+#if UNITY_SERVER && !UNITY_EDITOR
+
     private void Start()
     {
         _collider = GetComponent<Collider>();
     }
 
-    void Update()
+    private async void Update()
     {
-        if (_isSpawning || NetworkManager.Singleton.IsClient)
+        if (_isSpawning)
         {
             return;
         }
@@ -27,13 +32,13 @@ public class BeanSpawner : MonoBehaviour
         if (beans.Length < BeansCount)
         {
             _isSpawning = true;
-            StartCoroutine(Respawn(BeansCount - beans.Length));
+            await RespawnAsync(BeansCount - beans.Length);
         }
     }
 
-    private IEnumerator Respawn(int count)
+    private async UniTask RespawnAsync(int count)
     {
-        yield return new WaitForSeconds(5);
+        await UniTask.Delay(TimeSpan.FromSeconds(5));
         SpawnBeans(count);
     }
 
@@ -43,7 +48,7 @@ public class BeanSpawner : MonoBehaviour
 
         for (int i = 1; i <= count; i++)
         {
-            var position = new Vector3(Random.Range(bounds.min.x, bounds.max.x), -3.5f, Random.Range(bounds.min.z, bounds.max.z));
+            var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), -3.5f, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
 
             var enemy = Instantiate(EnemyPrefab, position, new Quaternion(0f, 0f, 0f, 0f));
             var netObj = enemy.GetComponent<NetworkObject>();
@@ -53,5 +58,6 @@ public class BeanSpawner : MonoBehaviour
         _isSpawning = false;
         Debug.Log($"{count} beans spawned");
     }
+#endif
 }
 

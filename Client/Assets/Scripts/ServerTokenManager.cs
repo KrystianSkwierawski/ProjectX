@@ -1,12 +1,9 @@
-using Unity.Netcode;
-using Unity.VisualScripting;
-
 public class ServerTokenManager : BaseTokenManager
 {
     public static ServerTokenManager Instance { get; private set; }
 
 #if UNITY_SERVER && !UNITY_EDITOR
-    private void Awake()
+    private async void Awake()
     {
 
         if (Instance != null && Instance != this)
@@ -20,7 +17,7 @@ public class ServerTokenManager : BaseTokenManager
 
         UserName = "server1@localhost";
         Password = "Server1!";
-        StartCoroutine(Login());
+        await LoginAsync();
     }
 #endif
 }

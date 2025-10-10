@@ -1,4 +1,4 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -21,30 +21,30 @@ public class MonsterPatrol : NetworkBehaviour
         }
     }
 
-    private void Update()
+    private async void Update()
     {
         if (IsServer && !_isWaiting)
         {
-            Patrol();
+            await PatrolAsync();
         }
     }
 
-    private void Patrol()
+    private async UniTask PatrolAsync()
     {
         Vector3 direction = (_currentTarget - transform.position).normalized;
         transform.position += direction * MoveSpeed * Time.deltaTime;
 
         if (Vector3.Distance(transform.position, _currentTarget) < PointTolerance)
         {
-            StartCoroutine(WaitBeforeNextPoint());
+            await WaitBeforeNextPointAsync();
         }
     }
 
-    private IEnumerator WaitBeforeNextPoint()
+    private async UniTask WaitBeforeNextPointAsync()
     {
         _isWaiting = true;
         float delay = new System.Random().Next(1, 5);
-        yield return new WaitForSeconds(delay);
+        await UniTask.Delay(System.TimeSpan.FromSeconds(delay));    
         PickNewPatrolPoint();
         _isWaiting = false;
     }

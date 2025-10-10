@@ -5,7 +5,7 @@ public class ClientTokenManager : BaseTokenManager
     public static ClientTokenManager Instance { get; private set; }
 
 #if UNITY_EDITOR
-    private void Awake()
+    private async void Awake()
     {
         if (Instance != null && Instance != this)
         {
@@ -30,7 +30,7 @@ public class ClientTokenManager : BaseTokenManager
             Debug.Log("Login player2");
         }
 
-        StartCoroutine(Login());
+        await LoginAsync();
     }
 #endif
 }
