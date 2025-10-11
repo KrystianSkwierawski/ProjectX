@@ -2,6 +2,7 @@ public class ServerTokenManager : BaseTokenManager
 {
     public static ServerTokenManager Instance { get; private set; }
 
+#if UNITY_SERVER && !UNITY_EDITOR
     private async void Awake()
     {
 
@@ -18,4 +19,5 @@ public class ServerTokenManager : BaseTokenManager
         Password = "Server1!";
         await LoginAsync();
     }
+#endif
 }

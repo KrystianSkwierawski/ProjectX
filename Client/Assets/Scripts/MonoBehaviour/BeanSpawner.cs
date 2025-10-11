@@ -11,6 +11,7 @@ public class BeanSpawner : MonoBehaviour
     private bool _isSpawning;
     private Collider _collider;
 
+    #if UNITY_SERVER && !UNITY_EDITOR
     private void Start()
     {
         _collider = GetComponent<Collider>();
@@ -54,5 +55,6 @@ public class BeanSpawner : MonoBehaviour
         _isSpawning = false;
         Debug.Log($"{count} beans spawned");
     }
+#endif
 }
 
