@@ -5,15 +5,11 @@ using UnityEngine;
 
 public class BeanSpawner : MonoBehaviour
 {
-
-
     public GameObject EnemyPrefab;
     public int BeansCount = 2;
 
     private bool _isSpawning;
     private Collider _collider;
-
-#if UNITY_SERVER && !UNITY_EDITOR
 
     private void Start()
     {
@@ -58,6 +54,5 @@ public class BeanSpawner : MonoBehaviour
         _isSpawning = false;
         Debug.Log($"{count} beans spawned");
     }
-#endif
 }
 

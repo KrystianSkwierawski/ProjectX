@@ -4,7 +4,6 @@ public class ClientTokenManager : BaseTokenManager
 {
     public static ClientTokenManager Instance { get; private set; }
 
-#if UNITY_EDITOR
     private async void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,5 +31,4 @@ public class ClientTokenManager : BaseTokenManager
 
         await LoginAsync();
     }
-#endif
 }
