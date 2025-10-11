@@ -13,7 +13,7 @@ public class BasicRigidBodyPush : MonoBehaviour
 
 	private void PushRigidBodies(ControllerColliderHit hit)
 	{
-		// https://docs.unity3d.com/ScriptReference/CharacterController.OnControllerColliderHit.html
+		// https://docs.unity3d.com/ScriptReference/CharacterNetworkBehaviour.OnControllerColliderHit.html
 
 		// make sure we hit a non kinematic rigidbody
 		Rigidbody body = hit.collider.attachedRigidbody;

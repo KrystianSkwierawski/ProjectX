@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace StarterAssets
 {
-    [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(UnityEngine.CharacterController))]
 #if ENABLE_INPUT_SYSTEM 
     [RequireComponent(typeof(PlayerInput))]
 #endif
@@ -47,13 +47,13 @@ namespace StarterAssets
         public float FallTimeout = 0.15f;
 
         [Header("Player Grounded")]
-        [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
+        [Tooltip("If the character is grounded or not. Not part of the CharacterNetworkBehaviour built in grounded check")]
         public bool Grounded = true;
 
         [Tooltip("Useful for rough ground")]
         public float GroundedOffset = -0.14f;
 
-        [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
+        [Tooltip("The radius of the grounded check. Should match the radius of the CharacterNetworkBehaviour")]
         public float GroundedRadius = 0.28f;
 
         [Tooltip("What layers the character uses as ground")]
@@ -98,7 +98,7 @@ namespace StarterAssets
         private PlayerInput _playerInput;
 #endif
         private Animator _animator;
-        private CharacterController _controller;
+        private UnityEngine.CharacterController _controller;
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemachineVirtualCamera;
@@ -132,7 +132,7 @@ namespace StarterAssets
 
             _animator = GetComponent<Animator>();
             _hasAnimator = _animator != null;
-            _controller = GetComponent<CharacterController>();
+            _controller = GetComponent<UnityEngine.CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
 
             AssignAnimationIDs();
