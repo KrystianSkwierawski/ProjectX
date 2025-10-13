@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace StarterAssets
 {
-    [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(UnityEngine.CharacterController))]
 #if ENABLE_INPUT_SYSTEM 
     [RequireComponent(typeof(PlayerInput))]
 #endif
@@ -98,7 +98,7 @@ namespace StarterAssets
         private PlayerInput _playerInput;
 #endif
         private Animator _animator;
-        private CharacterController _controller;
+        private UnityEngine.CharacterController _controller;
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemachineVirtualCamera;
@@ -132,7 +132,7 @@ namespace StarterAssets
 
             _animator = GetComponent<Animator>();
             _hasAnimator = _animator != null;
-            _controller = GetComponent<CharacterController>();
+            _controller = GetComponent<UnityEngine.CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
 
             AssignAnimationIDs();

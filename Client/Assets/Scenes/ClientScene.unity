@@ -344,7 +344,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 371005454}
-  - component: {fileID: 371005453}
   - component: {fileID: 371005455}
   m_Layer: 0
   m_Name: ClientStarter
@@ -353,18 +352,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &371005453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 371005452}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aaaa689e807a418419426b53d50a5a10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &371005454
 Transform:
   m_ObjectHideFlags: 0
