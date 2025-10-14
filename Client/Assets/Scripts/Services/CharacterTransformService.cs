@@ -64,8 +64,8 @@ public class CharacterTransformService : ICharacterService
 
         await request.SendWebRequest();
 
-        Debug.Log($"SaveTransform result: {request.result}");
-        Debug.Log($"SaveTransform text: {request.downloadHandler.text}");
+        //Debug.Log($"SaveTransform result: {request.result}");
+        //Debug.Log($"SaveTransform text: {request.downloadHandler.text}");
     }
 }
 

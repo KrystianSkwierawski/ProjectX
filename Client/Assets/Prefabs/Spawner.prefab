@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 6700262430872735754}
   - component: {fileID: 2492402506199289033}
   - component: {fileID: 9215540093486265301}
-  - component: {fileID: 8508740748101012333}
   - component: {fileID: 1294064713967650092}
+  - component: {fileID: 1858406037258605685}
+  - component: {fileID: 2513873296000749082}
   m_Layer: 0
   m_Name: Spawner
   m_TagString: Untagged
@@ -88,20 +89,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8508740748101012333
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6783068697003640940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 397de46d9f9e4174a9c42de18deab7ee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  EnemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
-  BeansCount: 2
 --- !u!65 &1294064713967650092
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -123,3 +110,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 0.99999994}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1858406037258605685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6783068697003640940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f40ac64c1d1ee9247b7d3be5ceaed0c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+--- !u!114 &2513873296000749082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6783068697003640940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31546d3fdeed7bf43a1e5771e2b11500, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _enemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
+  _beansCount: 2
+  _collider: {fileID: 1294064713967650092}

@@ -14,8 +14,7 @@ GameObject:
   - component: {fileID: 3696680866453560561}
   - component: {fileID: 6281970205948669045}
   - component: {fileID: 3261350837771284739}
-  - component: {fileID: 1636234288627873302}
-  - component: {fileID: 3328108770336092963}
+  - component: {fileID: 7594853852026457039}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Target
@@ -185,7 +184,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &1636234288627873302
+--- !u!114 &7594853852026457039
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -194,24 +193,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7630075145136831269}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b989659850a595418f02d1298345806, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  PatrolRadius: 5
-  MoveSpeed: 2
-  PointTolerance: 0.2
---- !u!114 &3328108770336092963
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7630075145136831269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c06ed864abaa4e4286befcff5133a84, type: 3}
+  m_Script: {fileID: 11500000, guid: df0cd0c31b251e14b914fd763a090d1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   LevelUpSfx: {fileID: 8300000, guid: b6db863c0a9a8f642a1f150493db927d, type: 3}
+  PatrolRadius: 5
+  MoveSpeed: 2
+  PointTolerance: 0.2
