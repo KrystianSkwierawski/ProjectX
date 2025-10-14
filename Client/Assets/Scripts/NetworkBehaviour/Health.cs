@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -20,7 +21,7 @@ public class Health : NetworkBehaviour
         }
     }
 
-    public bool DealDamage(float damage, string token, ulong clientId)
+    public async UniTask<bool> DealDamageAsync(float damage, string token, ulong clientId)
     {
         Value -= damage;
         Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {Value}");
@@ -28,8 +29,11 @@ public class Health : NetworkBehaviour
         if (Value <= 0)
         {
             Debug.Log("Object killed");
+
             HideTargetCanvasClientRpc();
-            StartCoroutine(HandleKill(token, clientId));
+
+            await HandleKillAsync(token, clientId);
+
             return true;
         }
 
@@ -37,9 +41,9 @@ public class Health : NetworkBehaviour
         return true;
     }
 
-    private IEnumerator HandleKill(string token, ulong clientId)
+    private async UniTask HandleKillAsync(string token, ulong clientId)
     {
-        yield return AddExperience(token, clientId);
+        await AddExperienceAsync(token, clientId);
         gameObject.GetComponent<NetworkObject>().Despawn();
     }
 
@@ -68,7 +72,7 @@ public class Health : NetworkBehaviour
         _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = Value.ToString();
     }
 
-    private IEnumerator AddExperience(string token, ulong clientId)
+    private async UniTask AddExperienceAsync(string token, ulong clientId)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
         {
@@ -79,7 +83,7 @@ public class Health : NetworkBehaviour
 
         request.SetRequestHeader("Authorization", $"Bearer {ServerTokenManager.Instance.Token}");
 
-        yield return request.SendWebRequest();
+        await request.SendWebRequest();
 
         Debug.Log($"AddExperience result: {request.result}");
         Debug.Log($"AddExperience text: {request.downloadHandler.text}");
