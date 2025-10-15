@@ -75,12 +75,84 @@
         ]
       }
     },
+    "/api/CharacterQuests": {
+      "get": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "GetCharacterQuest",
+        "parameters": [
+          {
+            "name": "CharacterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterQuestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "AddCharacterExperience2",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCharacterExperienceCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddCharacterExperienceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Characters/{id}": {
       "get": {
         "tags": [
           "Characters"
         ],
-        "operationId": "GetCharacterQuery",
+        "operationId": "GetCharacter",
         "parameters": [
           {
             "name": "id",
@@ -156,6 +228,43 @@
         "responses": {
           "201": {
             "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Quest": {
+      "get": {
+        "tags": [
+          "Quest"
+        ],
+        "operationId": "GetQuestQuery",
+        "parameters": [
+          {
+            "name": "QuestId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestoDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -338,6 +447,57 @@
           15
         ]
       },
+      "CharacterQuestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CharacterQuestStatusEnum"
+          },
+          "progress": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CharacterQuestStatusEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "Active",
+          "Completed",
+          "Abandoned"
+        ],
+        "x-enum-varnames": [
+          "Active",
+          "Completed",
+          "Abandoned"
+        ],
+        "x-enumNames": [
+          "Active",
+          "Completed",
+          "Abandoned"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
       "CharacterDto": {
         "type": "object",
         "additionalProperties": false,
@@ -409,6 +569,80 @@
             "type": "string"
           }
         }
+      },
+      "QuestoDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/QuestTypeEnum"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "statusText": {
+            "type": "string"
+          },
+          "reward": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "QuestTypeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "Indefinite",
+          "Kill",
+          "Epxlore",
+          "Find",
+          "Gather",
+          "Drop"
+        ],
+        "x-enum-varnames": [
+          "Indefinite",
+          "Kill",
+          "Epxlore",
+          "Find",
+          "Gather",
+          "Drop"
+        ],
+        "x-enumNames": [
+          "Indefinite",
+          "Kill",
+          "Epxlore",
+          "Find",
+          "Gather",
+          "Drop"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
       }
     },
     "securitySchemes": {

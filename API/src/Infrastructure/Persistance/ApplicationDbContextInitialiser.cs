@@ -43,6 +43,8 @@ public class ApplicationDbContextInitialiser
         await _context.Database.EnsureCreatedAsync();
         Log.Debug("InitialiseAsync -> Ensured created database");
 
+        await CreateQuestsAsync();
+
         await CreateRoleAsync(Roles.Server);
         await CreateRoleAsync(Roles.Client);
 
@@ -97,5 +99,35 @@ public class ApplicationDbContextInitialiser
 
             Log.Debug("CreateUserAsync -> Created user. UserName: {0}, Role: {1}, CharacterId: {2}, CharacterPositionId: {3}", user, role, character.Id, characterPosition.Id);
         }
+    }
+
+    private async Task CreateQuestsAsync()
+    {
+        _context.Quests.AddRange([
+            new Quest
+            {
+                Type = QuestTypeEnum.Kill,
+                Title = "Kill 6 beans",
+                Description = "Bla bla bla kill 6 beans, ok?",
+                StatusText = "Killed {0}/{1} beans",
+                Requirements = 6,
+                Reward = 10,
+                ModDate = DateTime.Now
+            },
+            new Quest
+            {
+                Type = QuestTypeEnum.Collect,
+                Title = "Collect 6 cans",
+                Description = "Bla bla bla collec 6 cans, ok?",
+                StatusText = "Collected {0}/{1} cands",
+                Requirements = 6,
+                Reward = 10,
+                ModDate = DateTime.Now
+            }
+        ]);
+
+        await _context.SaveChangesAsync();
+
+        Log.Debug("CreateQuestAsync -> Created quests");
     }
 }

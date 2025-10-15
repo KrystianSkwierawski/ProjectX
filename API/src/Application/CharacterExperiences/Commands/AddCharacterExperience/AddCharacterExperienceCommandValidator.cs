@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using ProjectX.Application.Experience.Commands.AddExperience;
 
-namespace ProjectX.Application.CharacterExperience.Commands.AddCharacterExperience;
+namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 public class AddCharacterExperienceCommandValidator : AbstractValidator<AddCharacterExperienceCommand>
 {
     public AddCharacterExperienceCommandValidator()

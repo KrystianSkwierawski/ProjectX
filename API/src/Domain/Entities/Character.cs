@@ -8,6 +8,7 @@ public class Character
     {
         CharacterPositions = new HashSet<CharacterTransform>();
         CharacterExperiences = new HashSet<CharacterExperience>();
+        CharacterQuests = new HashSet<CharacterQuest>();
     }
 
     public int Id { get; set; }
@@ -31,6 +32,9 @@ public class Character
 
     [InverseProperty(nameof(CharacterExperience.Character))]
     public virtual ICollection<CharacterExperience> CharacterExperiences { get; set; }
+
+    [InverseProperty(nameof(CharacterQuest.Character))]
+    public virtual ICollection<CharacterQuest> CharacterQuests { get; set; }
 
     [ForeignKey(nameof(ApplicationUserId))]
     [InverseProperty(nameof(ApplicationUser.Characters))]

@@ -4,11 +4,10 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ProjectX.Application.CharacterExperience.Commands.AddCharacterExperience;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.Experience.Commands.AddExperience;
+namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto>
 {
     public int Amount { get; init; }

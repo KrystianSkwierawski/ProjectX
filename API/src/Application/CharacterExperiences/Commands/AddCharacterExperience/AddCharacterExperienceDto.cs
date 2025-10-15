@@ -1,6 +1,4 @@
-﻿using ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
-
-namespace ProjectX.Application.CharacterExperience.Commands.AddCharacterExperience;
+﻿namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 public class AddCharacterExperienceDto
 {
     public byte Level { get; set; }

@@ -19,6 +19,10 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<CharacterExperience> CharacterExperiences => Set<CharacterExperience>();
 
+    public DbSet<CharacterQuest> CharacterQuests => Set<CharacterQuest>();
+
+    public DbSet<Quest> Quests => Set<Quest>();
+
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
 
     public TransactionScope CreateTransactionScope()
