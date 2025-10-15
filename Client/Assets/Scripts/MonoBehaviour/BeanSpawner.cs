@@ -5,13 +5,13 @@ using UnityEngine;
 
 public class BeanSpawner : MonoBehaviour
 {
-    public GameObject EnemyPrefab;
-    public int BeansCount = 2;
+    [SerializeField] private GameObject _enemyPrefab;
+    [SerializeField] private int _beansCount = 2;
 
     private bool _isSpawning;
     private Collider _collider;
 
-    #if UNITY_SERVER && !UNITY_EDITOR
+#if UNITY_SERVER && !UNITY_EDITOR
     private void Start()
     {
         _collider = GetComponent<Collider>();
@@ -26,10 +26,10 @@ public class BeanSpawner : MonoBehaviour
 
         var beans = GameObject.FindGameObjectsWithTag("Target");
 
-        if (beans.Length < BeansCount)
+        if (beans.Length < _beansCount)
         {
             _isSpawning = true;
-            await RespawnAsync(BeansCount - beans.Length);
+            await RespawnAsync(_beansCount - beans.Length);
         }
     }
 
@@ -47,9 +47,9 @@ public class BeanSpawner : MonoBehaviour
         {
             var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), -3.5f, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
 
-            var enemy = Instantiate(EnemyPrefab, position, new Quaternion(0f, 0f, 0f, 0f));
-            var netObj = enemy.GetComponent<NetworkObject>();
-            netObj.Spawn();
+            var instance = Instantiate(_enemyPrefab, position, new Quaternion(0f, 0f, 0f, 0f));
+            var obj = instance.GetComponent<NetworkObject>();
+            obj.Spawn();
         }
 
         _isSpawning = false;

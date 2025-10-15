@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class CharacterTransform : NetworkBehaviour
 {
-    private float period = 0.0f;
+    private float _period = 0.0f;
     private const float _saveInterval = 5f;
 
     public override async void OnNetworkSpawn()
@@ -29,13 +29,13 @@ public class CharacterTransform : NetworkBehaviour
 
     private void CheckSaveTransform()
     {
-        if (period > _saveInterval)
+        if (_period > _saveInterval)
         {
-            SaveTransformServerRpc(ClientTokenManager.Instance.Token);
-            period = 0;
+            SaveTransformServerRpc(TokenManager.Instance.Token);
+            _period = 0;
         }
 
-        period += Time.deltaTime;
+        _period += Time.deltaTime;
     }
 
     [ServerRpc]
@@ -55,7 +55,7 @@ public class CharacterTransform : NetworkBehaviour
             clientToken = token
         }), "application/json");
         
-        request.SetRequestHeader("Authorization", $"Bearer {ServerTokenManager.Instance.Token}");
+        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
 
         await request.SendWebRequest();
 
@@ -67,7 +67,7 @@ public class CharacterTransform : NetworkBehaviour
     {
         using var request = UnityWebRequest.Get("https://localhost:5001/api/CharacterTransforms");
 
-        request.SetRequestHeader("Authorization", $"Bearer {ClientTokenManager.Instance.Token}");
+        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
 
         await request.SendWebRequest();
 

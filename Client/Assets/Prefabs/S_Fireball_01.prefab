@@ -259,11 +259,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  PreCastSfx: {fileID: 8300000, guid: 651113b3fc1e6fa49ba597d67c8581dd, type: 3}
-  CastSfx: {fileID: 8300000, guid: f575abd54d45e4447a1a4aaff8f8c988, type: 3}
-  ImpactSfx: {fileID: 8300000, guid: d39d1252f4484d14b8a22b275e8a044b, type: 3}
+  _preCastSfx: {fileID: 8300000, guid: 2a5f01113b342bb48a958ecdacc15747, type: 3}
+  _castSfx: {fileID: 8300000, guid: 550cad4a891ff31468617041c7022416, type: 3}
+  _impactSfx: {fileID: 8300000, guid: bc62d974446988941831cac84771e1d8, type: 3}
   FailedSfx: {fileID: 8300000, guid: db325f18381107742a9089ed03438b08, type: 3}
-  Speed: 15
+  _speed: 15
 --- !u!114 &-1735210066325763825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,12 +294,12 @@ MonoBehaviour:
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01

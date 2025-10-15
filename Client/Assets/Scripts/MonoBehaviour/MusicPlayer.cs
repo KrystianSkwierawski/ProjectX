@@ -2,17 +2,17 @@ using UnityEngine;
 
 public class MusicPlayer : MonoBehaviour
 {
-    public AudioClip[] MusicList;
-    public float Volume = 0.05f;
+    [SerializeField] private AudioClip[] _musicList;
+    [SerializeField] private float _volume = 0.05f;
 
     private AudioSource _audioSource;
 
-    void Start()
+    private void Start()
     {
         _audioSource = GetComponent<AudioSource>();
     }
 
-    void Update()
+    private void Update()
     {
         if (_audioSource.isPlaying)
         {
@@ -24,7 +24,7 @@ public class MusicPlayer : MonoBehaviour
 
     private void PlayRandomClip()
     {
-        var clip = MusicList[Random.Range(0, MusicList.Length)];
-        _audioSource.PlayOneShot(clip, Volume);
+        var clip = _musicList[Random.Range(0, _musicList.Length)];
+        _audioSource.PlayOneShot(clip, _volume);
     }
 }

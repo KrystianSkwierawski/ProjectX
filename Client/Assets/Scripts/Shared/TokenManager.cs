@@ -3,20 +3,31 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class BaseTokenManager : MonoBehaviour
+public sealed class TokenManager
 {
+    private static readonly TokenManager _instance = new TokenManager();
+
+    private TokenManager()
+    {
+
+    }
+
+    public static TokenManager Instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
     public string Token { get; private set; }
 
-    public string UserName;
-
-    public string Password;
-
-    protected async UniTask LoginAsync()
+    public async UniTask LoginAsync(string userName, string password)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/ApplicationUsers", JsonUtility.ToJson(new LoginApplicationUserCommand
         {
-            userName = UserName,
-            password = Password
+            userName = userName,
+            password = password
         }), "application/json");
 
         await request.SendWebRequest();
@@ -28,7 +39,7 @@ public class BaseTokenManager : MonoBehaviour
             var json = request.downloadHandler.text;
             var result = JsonUtility.FromJson<LoginApplicationUserDto>(json);
             Token = result.token;
-            Debug.Log($"Login -> UserName: {UserName}, Token: {Token}");
+            Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
         }
     }
 

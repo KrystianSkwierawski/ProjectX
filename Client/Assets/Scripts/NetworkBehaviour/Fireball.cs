@@ -6,17 +6,18 @@ using UnityEngine.VFX;
 
 public class Fireball : NetworkBehaviour
 {
-    public AudioClip PreCastSfx;
-    public AudioClip CastSfx;
-    public AudioClip ImpactSfx;
-    public AudioClip FailedSfx;
-    public float Speed = 15f;
+    [SerializeField] private AudioClip _preCastSfx;
+    [SerializeField] private AudioClip _castSfx;
+    [SerializeField] private AudioClip _impactSfx;
+    [SerializeField] private AudioClip FailedSfx;
+    [SerializeField] private float _speed = 15f;
 
     private string _clientToken;
     private AudioSource _audioSource;
     private VisualEffect _visualEffect;
     private NetworkObject _target;
     private bool _hit;
+    private Transform _targetTransform;
 
     private void Awake()
     {
@@ -33,13 +34,14 @@ public class Fireball : NetworkBehaviour
     [ClientRpc]
     private void PreCastClientRpc()
     {
-        _audioSource.PlayOneShot(PreCastSfx, 0.7f);
+        _audioSource.PlayOneShot(_preCastSfx, 0.7f);
     }
 
     public void Cast(NetworkObject target)
     {
         CastClientRpc();
         _target = target;
+        _targetTransform = target.transform;
     }
 
     [ClientRpc]
@@ -50,7 +52,7 @@ public class Fireball : NetworkBehaviour
             _audioSource.Stop();
         }
 
-        _audioSource.PlayOneShot(CastSfx, 0.7f);
+        _audioSource.PlayOneShot(_castSfx, 0.7f);
     }
 
     public void Failed()
@@ -88,26 +90,21 @@ public class Fireball : NetworkBehaviour
 
     private void MoveTowardsTarget()
     {
-        // todo: set in Cast()
-        var targetTransform = _target.GetComponent<Transform>();
-
-        Vector3 direction = (targetTransform.position - transform.position).normalized;
-        transform.position += direction * Speed * Time.deltaTime;
+        Vector3 direction = (_targetTransform.position - transform.position).normalized;
+        transform.position += direction * _speed * Time.deltaTime;
     }
 
     private bool IsCloseToTarget()
     {
-        // todo: set in Cast()
-        var targetTransform = _target.GetComponent<Transform>();
-
-        return Vector3.Distance(transform.position, targetTransform.position) < 0.5f;
+        return Vector3.Distance(transform.position, _targetTransform.position) < 0.5f;
     }
 
     private async UniTask OnHitTargetAsync()
     {
         if (!_hit)
         {
-            _hit = await _target.GetComponent<Health>().DealDamageAsync(50f, _clientToken, OwnerClientId);
+            _hit = true;
+            await _target.GetComponent<Health>().DealDamageAsync(50f, _clientToken, OwnerClientId);
 
             OnHitTargetClientRpc();
 
@@ -117,7 +114,7 @@ public class Fireball : NetworkBehaviour
 
     private async UniTask DespawnAfterImpactAsync()
     {
-        await UniTask.Delay(TimeSpan.FromSeconds(ImpactSfx.length));
+        await UniTask.Delay(TimeSpan.FromSeconds(_impactSfx.length));
 
         GetComponent<NetworkObject>()?.Despawn();
     }
@@ -126,6 +123,6 @@ public class Fireball : NetworkBehaviour
     private void OnHitTargetClientRpc()
     {
         _visualEffect.enabled = false;
-        _audioSource.PlayOneShot(ImpactSfx, 1f);
+        _audioSource.PlayOneShot(_impactSfx, 1f);
     }
 }

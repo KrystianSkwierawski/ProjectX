@@ -6,8 +6,9 @@ using UnityEngine.UI;
 
 public class TargetSelector : NetworkBehaviour
 {
-    public float MaxCastDistance = 10.0f;
-    public GameObject FireballPrefab;
+    [SerializeField] private float _maxCastDistance = 10.0f;
+    [SerializeField] private GameObject _fireballPrefab;
+
     private Transform SelectedTargetTransform;
     private static Renderer _currentlySelectedRenderer = null;
     private static Color _originalSelectedColor;
@@ -86,13 +87,13 @@ public class TargetSelector : NetworkBehaviour
         var targetPos = SelectedTargetTransform.position;
         var direction = (targetPos - spawnPos).normalized;
 
-        SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, ClientTokenManager.Instance.Token);
+        SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, TokenManager.Instance.Token);
     }
 
     [ServerRpc]
     public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId, string token)
     {
-        var fireball = Instantiate(FireballPrefab, position, Quaternion.LookRotation(direction));
+        var fireball = Instantiate(_fireballPrefab, position, Quaternion.LookRotation(direction));
         var netObj = fireball.GetComponent<NetworkObject>();
         netObj.SpawnWithOwnership(clientId);
         var spawnedFireball = fireball.GetComponent<Fireball>();
@@ -151,16 +152,22 @@ public class TargetSelector : NetworkBehaviour
     private void UpdateInterrupt()
     {
         if (!_isInterrupted)
+        {
             return;
+        }
 
         _interruptTimer += Time.deltaTime;
+
         if (_interruptTimer >= _interruptDuration)
         {
             _isInterrupted = false;
             _interruptTimer = 0f;
             HideCastBar();
+
             if (_castProgressBar != null)
+            {
                 _castProgressBar.color = _originalBarColor;
+            }
         }
     }
 
@@ -224,25 +231,25 @@ public class TargetSelector : NetworkBehaviour
     [ServerRpc]
     private void FailedServerRpc(ulong objectId, ulong clientId)
     {
-        var netObj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
-        var _fireball = netObj.GetComponent<Fireball>();
+        var obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
+        var fireball = obj.GetComponent<Fireball>();
 
-        _fireball.Failed();
+        fireball.Failed();
     }
 
     [ServerRpc]
     private void DespawnFireballServerRpc(ulong objectId)
     {
-        var netObj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
-        netObj.Despawn();
+        var obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
+        obj.Despawn();
     }
 
     private bool CheckMaxDistance()
     {
         float distance = Vector3.Distance(transform.position, SelectedTargetTransform.position);
-        var result = distance <= MaxCastDistance;
+        var result = distance <= _maxCastDistance;
 
-        Debug.Log($"CheckMaxDistance -> IsValid: {result}, Distance: {distance}, MaxCastDistance: {MaxCastDistance}");
+        Debug.Log($"CheckMaxDistance -> IsValid: {result}, Distance: {distance}, MaxCastDistance: {_maxCastDistance}");
 
         return result;
     }

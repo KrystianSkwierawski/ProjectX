@@ -6,13 +6,10 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
-    private GameObject _playerCanvas;
-
     private async void Start()
     {
         if (IsOwner)
         {
-            _playerCanvas = GameObject.Find("PlayerCanvas");
             await GetCharacterAsync();
         }
     }
@@ -21,7 +18,7 @@ public class Player : NetworkBehaviour
     {
         using var request = UnityWebRequest.Get("https://localhost:5001/api/Characters/1");
 
-        request.SetRequestHeader("Authorization", $"Bearer {ClientTokenManager.Instance.Token}");
+        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
 
         await request.SendWebRequest();
 
@@ -32,9 +29,11 @@ public class Player : NetworkBehaviour
         {
             var result = JsonUtility.FromJson<CharacterDto>(request.downloadHandler.text);
 
-            _playerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>().text = result.name;
-            _playerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>().text = result.health.ToString();
-            _playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {result.level}";
+            var playerCanvas = GameObject.Find("PlayerCanvas");
+
+            playerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>().text = result.name;
+            playerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>().text = result.health.ToString();
+            playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {result.level}";
         }
     }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
@@ -8,10 +7,11 @@ using UnityEngine.Networking;
 
 public class Health : NetworkBehaviour
 {
+    [SerializeField] private AudioClip _levelUpSfx;
+
     public float Value { get; private set; } = 100;
 
     private GameObject _targetCanvas;
-    public AudioClip LevelUpSfx;
 
     private void Start()
     {
@@ -21,7 +21,7 @@ public class Health : NetworkBehaviour
         }
     }
 
-    public async UniTask<bool> DealDamageAsync(float damage, string token, ulong clientId)
+    public async UniTask DealDamageAsync(float damage, string token, ulong clientId)
     {
         Value -= damage;
         Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {Value}");
@@ -34,11 +34,12 @@ public class Health : NetworkBehaviour
 
             await HandleKillAsync(token, clientId);
 
-            return true;
+            return;
         }
 
         UpdateTargetCanvasClientRpc(Value);
-        return true;
+
+        return;
     }
 
     private async UniTask HandleKillAsync(string token, ulong clientId)
@@ -59,7 +60,7 @@ public class Health : NetworkBehaviour
         if (NetworkManager.Singleton.LocalClientId == clientId)
         {
             GameObject.Find("PlayerCanvas").transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
-            GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(LevelUpSfx, 0.4f);
+            GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(_levelUpSfx, 0.4f);
         }
     }
 
@@ -81,7 +82,7 @@ public class Health : NetworkBehaviour
             clientToken = token
         }), "application/json");
 
-        request.SetRequestHeader("Authorization", $"Bearer {ServerTokenManager.Instance.Token}");
+        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
 
         await request.SendWebRequest();
 
@@ -95,7 +96,7 @@ public class Health : NetworkBehaviour
             if (result.leveledUp)
             {
                 Debug.Log($"LevelUp! Level: {result.level}, SkillPoints: {result.skillPoints}, Experience: {result.experience}");
-                // todo: notify player
+
                 UpdateLevelClientRpc(result.level, clientId);
             }
         }
