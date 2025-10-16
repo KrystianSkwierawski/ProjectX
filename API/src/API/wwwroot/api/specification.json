@@ -115,13 +115,13 @@
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "AddCharacterExperience2",
+        "operationId": "AddCharacterQuestProgress",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddCharacterExperienceCommand"
+                "$ref": "#/components/schemas/AddCharacterQuestProgresCommand"
               }
             }
           },
@@ -134,7 +134,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AddCharacterExperienceDto"
+                  "$ref": "#/components/schemas/AddCharacterQuestProgresDto"
                 }
               }
             }
@@ -237,16 +237,16 @@
         ]
       }
     },
-    "/api/Quest": {
+    "/api/Quests/{id}": {
       "get": {
         "tags": [
-          "Quest"
+          "Quests"
         ],
         "operationId": "GetQuestQuery",
         "parameters": [
           {
-            "name": "QuestId",
-            "in": "query",
+            "name": "id",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "integer",
@@ -498,6 +498,36 @@
           2
         ]
       },
+      "AddCharacterQuestProgresDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/CharacterQuestStatusEnum"
+          },
+          "reward": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AddCharacterQuestProgresCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "progres": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "clientToken": {
+            "type": "string"
+          }
+        }
+      },
       "CharacterDto": {
         "type": "object",
         "additionalProperties": false,
@@ -601,7 +631,8 @@
           "Epxlore",
           "Find",
           "Gather",
-          "Drop"
+          "Drop",
+          "Collect"
         ],
         "x-enum-varnames": [
           "Indefinite",
@@ -609,7 +640,8 @@
           "Epxlore",
           "Find",
           "Gather",
-          "Drop"
+          "Drop",
+          "Collect"
         ],
         "x-enumNames": [
           "Indefinite",
@@ -617,9 +649,11 @@
           "Epxlore",
           "Find",
           "Gather",
-          "Drop"
+          "Drop",
+          "Collect"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -633,6 +667,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -641,7 +676,8 @@
           2,
           3,
           4,
-          5
+          5,
+          6
         ]
       }
     },

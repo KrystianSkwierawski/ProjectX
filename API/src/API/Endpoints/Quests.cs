@@ -6,16 +6,16 @@ using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
-public class Quest : EndpointGroupBase
+public class Quests : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetQuestQuery).RequireAuthorization(Policies.Client);
+        groupBuilder.MapGet(GetQuestQuery, "{id}").RequireAuthorization(Policies.Client);
     }
 
-    private static async Task<Ok<QuestoDto>> GetQuestQuery(ISender sender, [AsParameters] GetQuestQuery query)
+    private static async Task<Ok<QuestoDto>> GetQuestQuery(ISender sender, int id)
     {
-        var result = await sender.Send(query);
+        var result = await sender.Send(new GetQuestQuery(id));
 
         return TypedResults.Ok(result);
     } 

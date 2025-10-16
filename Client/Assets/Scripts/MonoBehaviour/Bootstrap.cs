@@ -19,15 +19,6 @@ public class Bootstrap : MonoBehaviour
         SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
         Debug.Log("MainScene Loaded");
 
-        SceneManager.LoadScene("EnvironmentScene", LoadSceneMode.Additive);
-        Debug.Log("EnvironmentScene Loaded");
-
-        SceneManager.LoadScene("UIScene", LoadSceneMode.Additive);
-        Debug.Log("UIScene Loaded");
-
-        SceneManager.LoadScene("NPCScene", LoadSceneMode.Additive);
-        Debug.Log("NPCScene Loaded");
-
         if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
         {
             await TokenManager.Instance.LoginAsync("user1@localhost", "User1!");
@@ -36,6 +27,15 @@ public class Bootstrap : MonoBehaviour
         {
             await TokenManager.Instance.LoginAsync("user2@localhost", "User2!");
         }
+
+        SceneManager.LoadScene("EnvironmentScene", LoadSceneMode.Additive);
+        Debug.Log("EnvironmentScene Loaded");
+
+        SceneManager.LoadScene("UIScene", LoadSceneMode.Additive);
+        Debug.Log("UIScene Loaded");
+
+        SceneManager.LoadScene("NpcScene", LoadSceneMode.Additive);
+        Debug.Log("NpcScene Loaded");
 
         NetworkManager.Singleton.StartClient();
 
