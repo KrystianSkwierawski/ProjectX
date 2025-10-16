@@ -19,11 +19,14 @@ public class Bootstrap : MonoBehaviour
         SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
         Debug.Log("MainScene Loaded");
 
-        SceneManager.LoadScene("ClientScene", LoadSceneMode.Additive);
-        Debug.Log("ClientScene Loaded");
-
         SceneManager.LoadScene("EnvironmentScene", LoadSceneMode.Additive);
         Debug.Log("EnvironmentScene Loaded");
+
+        SceneManager.LoadScene("UIScene", LoadSceneMode.Additive);
+        Debug.Log("UIScene Loaded");
+
+        SceneManager.LoadScene("NPCScene", LoadSceneMode.Additive);
+        Debug.Log("NPCScene Loaded");
 
         if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
         {
