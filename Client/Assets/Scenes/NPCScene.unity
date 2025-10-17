@@ -263,6 +263,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
       propertyPath: m_Name
       value: ExclamationMark
