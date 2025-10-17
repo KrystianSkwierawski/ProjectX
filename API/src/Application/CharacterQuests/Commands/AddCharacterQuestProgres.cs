@@ -38,7 +38,7 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
         characterQuest.Progress += request.Progres;
         characterQuest.ModDate = DateTime.Now;
 
-        if (characterQuest.Progress >= characterQuest.Quest.Requirements)
+        if (characterQuest.Progress >= characterQuest.Quest.Requirement)
         {
             Log.Debug("Completed character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 

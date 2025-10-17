@@ -110,7 +110,7 @@ public class ApplicationDbContextInitialiser
                 Title = "Kill 6 beans",
                 Description = "Bla bla bla kill 6 beans, ok?",
                 StatusText = "Killed {0}/{1} beans",
-                Requirements = 6,
+                Requirement = 6,
                 Reward = 10,
                 ModDate = DateTime.Now
             },
@@ -120,7 +120,7 @@ public class ApplicationDbContextInitialiser
                 Title = "Collect 6 cans",
                 Description = "Bla bla bla collec 6 cans, ok?",
                 StatusText = "Collected {0}/{1} cands",
-                Requirements = 6,
+                Requirement = 6,
                 Reward = 10,
                 ModDate = DateTime.Now
             }

@@ -19,7 +19,7 @@ public class Quest
 
     public required string StatusText { get; set; }
 
-    public int Requirements { get; set; }
+    public int Requirement { get; set; }
 
     public int Reward { get; set; }
 
