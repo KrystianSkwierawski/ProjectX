@@ -1,8 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
-using ProjectX.Application.CharacterExperience.Commands.AddCharacterExperience;
-using ProjectX.Application.Experience.Commands.AddExperience;
+using ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;

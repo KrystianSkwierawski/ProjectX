@@ -427,6 +427,44 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("CharacterExperiences");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ModDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuestId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("QuestId");
+
+                    b.ToTable("CharacterQuests");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
                 {
                     b.Property<int>("Id")
@@ -458,6 +496,43 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasIndex("CharacterId");
 
                     b.ToTable("CharacterTransforms");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Requirements")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Reward")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StatusText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Quests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -533,6 +608,25 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("Character");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", "Character")
+                        .WithMany("CharacterQuests")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectX.Domain.Entities.Quest", "Quest")
+                        .WithMany("CharacterQuests")
+                        .HasForeignKey("QuestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Quest");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
                 {
                     b.HasOne("ProjectX.Domain.Entities.Character", "Character")
@@ -554,6 +648,13 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("CharacterExperiences");
 
                     b.Navigation("CharacterPositions");
+
+                    b.Navigation("CharacterQuests");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
+                {
+                    b.Navigation("CharacterQuests");
                 });
 #pragma warning restore 612, 618
         }

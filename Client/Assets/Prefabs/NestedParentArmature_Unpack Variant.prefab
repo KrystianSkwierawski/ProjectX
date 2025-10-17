@@ -258,12 +258,12 @@ MonoBehaviour:
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 1
-  SyncRotAngleX: 1
+  SyncRotAngleX: 0
   SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
@@ -292,8 +292,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  MaxCastDistance: 10
-  FireballPrefab: {fileID: 2527298531764070780, guid: 2bddad797c2838042a856f26f2f43f67, type: 3}
+  _maxCastDistance: 10
+  _fireballPrefab: {fileID: 2527298531764070780, guid: 2bddad797c2838042a856f26f2f43f67, type: 3}
 --- !u!114 &876567953949062037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -490,7 +490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bf7a1550c98d6b43862130d71cb067e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MusicList:
+  _musicList:
   - {fileID: 8300000, guid: 29ce91c6611e7d743af0c9122cc96228, type: 3}
   - {fileID: 8300000, guid: c942535ec6240654c830205ca553eff7, type: 3}
-  Volume: 0.1
+  _volume: 0.05

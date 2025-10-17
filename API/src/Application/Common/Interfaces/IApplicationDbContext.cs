@@ -11,6 +11,10 @@ public interface IApplicationDbContext
 
     DbSet<ProjectX.Domain.Entities.CharacterExperience> CharacterExperiences { get; }
 
+    DbSet<CharacterQuest> CharacterQuests { get; }
+
+    DbSet<Quest> Quests { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     TransactionScope CreateTransactionScope();

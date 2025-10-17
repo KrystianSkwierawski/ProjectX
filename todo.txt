@@ -1,3 +1,4 @@
+- quests
 - skill tree
 - simple combat system
 - fix cast validations

@@ -19,7 +19,7 @@ public record SaveTransformTransformCommand : IRequest
 
     public float RotationY { get; init; }
 
-    public string ClientToken { get; init; }
+    public required string ClientToken { get; init; }
 }
 
 public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTransformCommand>

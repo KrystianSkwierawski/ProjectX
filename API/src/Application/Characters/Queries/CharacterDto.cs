@@ -1,7 +1,7 @@
 ﻿namespace ProjectX.Application.Characters.Queries;
 public class CharacterDto
 {
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     public byte Level { get; set; }
 
