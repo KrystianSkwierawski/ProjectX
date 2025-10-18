@@ -20,10 +20,12 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestoDto>
             .Where(x => x.Id == request.QuestId)
             .Select(x => new QuestoDto
             {
+                Id = x.Id,
                 Type = x.Type,
                 Title = x.Title,
                 Description = x.Description,
                 StatusText = x.StatusText,
+                Requirement = x.Requirement,
                 Reward = x.Reward
             })
             .SingleAsync(cancellationToken);

@@ -1,4 +1,3 @@
-using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -41,19 +40,5 @@ public sealed class TokenManager
             Token = result.token;
             Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
         }
-    }
-
-    [Serializable]
-    private class LoginApplicationUserDto
-    {
-        public string token;
-    }
-
-    [Serializable]
-    private class LoginApplicationUserCommand
-    {
-        public string userName;
-
-        public string password;
     }
 }

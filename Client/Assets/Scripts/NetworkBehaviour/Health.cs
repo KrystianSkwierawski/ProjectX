@@ -1,9 +1,10 @@
-using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
+using static Cinemachine.DocumentationSortingAttribute;
 
 public class Health : NetworkBehaviour
 {
@@ -45,6 +46,11 @@ public class Health : NetworkBehaviour
     private async UniTask HandleKillAsync(string token, ulong clientId)
     {
         await AddExperienceAsync(token, clientId);
+
+        var progres = await QuestManager.Instance.AddCharacterQuestProgresAsync(1, 1, token);
+
+        UpdateQuestLogClientRpc(1, 1, progres.status, clientId);
+
         gameObject.GetComponent<NetworkObject>().Despawn();
     }
 
@@ -52,6 +58,22 @@ public class Health : NetworkBehaviour
     private void HideTargetCanvasClientRpc()
     {
         _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+    }
+
+    [ClientRpc]
+    private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == clientId)
+        {
+            var characterQuest = QuestManager.Instance.CharacterQuests
+                .Where(x => x.id == characterQuestId)
+                .Single();
+
+            characterQuest.progress += progres;
+            characterQuest.status = status;
+
+            QuestManager.Instance.AddedProgresEvent.Invoke();
+        }
     }
 
     [ClientRpc]
@@ -100,62 +122,5 @@ public class Health : NetworkBehaviour
                 UpdateLevelClientRpc(result.level, clientId);
             }
         }
-    }
-
-    [Serializable]
-    private class AddCharacterExperienceCommand
-    {
-        public int amount;
-
-        public ExperienceTypeEnum type;
-
-        public string clientToken;
-    }
-
-    [Serializable]
-    private class AddCharacterExperienceDto
-    {
-        public byte level;
-
-        public byte skillPoints;
-
-        public int experience;
-
-        public bool leveledUp;
-    }
-
-    private enum ExperienceTypeEnum : byte
-    {
-        None,
-
-        Combat,
-
-        Crafting,
-
-        Gathering,
-
-        Exploration,
-
-        Questing,
-
-        Trading,
-
-        Survival,
-
-        Technology,
-
-        Healing,
-
-        Building,
-
-        Farming,
-
-        Fishing,
-
-        Cooking,
-
-        Alchemy,
-
-        Enchanting,
     }
 }

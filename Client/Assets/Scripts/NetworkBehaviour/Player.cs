@@ -36,15 +36,4 @@ public class Player : NetworkBehaviour
             playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {result.level}";
         }
     }
-
-    private class CharacterDto
-    {
-        public string name;
-
-        public byte level;
-
-        public byte skillPoints;
-
-        public int health;
-    }
 }

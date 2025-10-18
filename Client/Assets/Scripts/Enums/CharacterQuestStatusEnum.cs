@@ -1,5 +1,3 @@
-﻿namespace ProjectX.Domain.Enums;
-
 public enum CharacterQuestStatusEnum : byte
 {
     Accepted,

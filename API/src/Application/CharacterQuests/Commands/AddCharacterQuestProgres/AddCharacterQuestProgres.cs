@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.CharacterQuests.Commands;
+namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
 
 public record AddCharacterQuestProgresCommand(int CharacterQuestId, int Progres, string ClientToken) : IRequest<AddCharacterQuestProgresDto>;
 

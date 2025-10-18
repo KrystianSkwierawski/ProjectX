@@ -1,66 +1,38 @@
-using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class QuestNpc : MonoBehaviour
 {
     [SerializeReference] private int _id = 1;
 
-    private QuestoDto _quest;
+    public QuestDto Quest { get; set; }
+
+    public CharacterQuestDto CharacterQuest { get; set; }
+
 
     private async void Start()
     {
-        _quest = await GetQuestAsync(_id);
-    }
+        var token = this.GetCancellationTokenOnDestroy();
 
-    private async UniTask<QuestoDto> GetQuestAsync(int id)
-    {
-        using var request = UnityWebRequest.Get($"https://localhost:5001/api/Quests/{id}");
+        await UniTask.WaitUntil(
+            () => QuestManager.Instance.Quests != null && QuestManager.Instance.CharacterQuests != null,
+            cancellationToken: token
+        );
 
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+        Quest = QuestManager.Instance.Quests
+            .Where(x => x.id == _id)
+            .Single();
 
-        await request.SendWebRequest();
+        CharacterQuest = QuestManager.Instance.CharacterQuests
+            .Where(x => x.questId == _id)
+            .FirstOrDefault();
 
-        Debug.Log($"GetQuest result: {request.result}");
-        Debug.Log($"GetQuest text: {request.downloadHandler.text}");
-
-        if (request.result == UnityWebRequest.Result.Success)
+        if (CharacterQuest == null)
         {
-            return JsonUtility.FromJson<QuestoDto>(request.downloadHandler.text);
+            gameObject.transform.Find("ExclamationMark").gameObject.SetActive(true);
         }
 
-        throw new Exception(request.error);
-    }
-
-    private class QuestoDto
-    {
-        public QuestTypeEnum type;
-
-        public string title;
-
-        public string description;
-
-        public string statusText;
-
-        public int reward;
-    }
-
-    private enum QuestTypeEnum : byte
-    {
-        Indefinite,
-
-        Kill,
-
-        Epxlore,
-
-        Find,
-
-        Gather,
-
-        Drop,
-
-        Collect
+        QuestManager.Instance.AcceptedQuestEvent.AddListener(() => gameObject.transform.Find("ExclamationMark").gameObject.SetActive(false));
     }
 }

@@ -75,16 +75,16 @@
         ]
       }
     },
-    "/api/CharacterQuests": {
+    "/api/CharacterQuests/{id}": {
       "get": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "GetCharacterQuest",
+        "operationId": "GetCharacterQuests",
         "parameters": [
           {
-            "name": "CharacterId",
-            "in": "query",
+            "name": "id",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "integer",
@@ -99,7 +99,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CharacterQuestDto"
+                  "$ref": "#/components/schemas/GetCharacterQuestsDto"
                 }
               }
             }
@@ -110,7 +110,47 @@
             "JWT": []
           }
         ]
-      },
+      }
+    },
+    "/api/CharacterQuests": {
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "AcceptCharacterQuest",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptCharacterQuestCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/CharacterQuests/Progres": {
       "post": {
         "tags": [
           "CharacterQuests"
@@ -242,7 +282,7 @@
         "tags": [
           "Quests"
         ],
-        "operationId": "GetQuestQuery",
+        "operationId": "GetQuest",
         "parameters": [
           {
             "name": "id",
@@ -262,6 +302,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/QuestoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Quests": {
+      "get": {
+        "tags": [
+          "Quests"
+        ],
+        "operationId": "GetQuests",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetQuestsDto"
                 }
               }
             }
@@ -447,11 +512,27 @@
           15
         ]
       },
+      "GetCharacterQuestsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CharacterQuestDto"
+            }
+          }
+        }
+      },
       "CharacterQuestDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "questId": {
             "type": "integer",
             "format": "int32"
           },
@@ -468,21 +549,25 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
-          "Active",
+          "Accepted",
+          "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enum-varnames": [
-          "Active",
+          "Accepted",
+          "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enumNames": [
-          "Active",
+          "Accepted",
+          "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null
@@ -490,13 +575,25 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3
         ]
+      },
+      "AcceptCharacterQuestCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "questId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "AddCharacterQuestProgresDto": {
         "type": "object",
@@ -604,6 +701,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "type": {
             "$ref": "#/components/schemas/QuestTypeEnum"
           },
@@ -615,6 +716,10 @@
           },
           "statusText": {
             "type": "string"
+          },
+          "requirement": {
+            "type": "integer",
+            "format": "int32"
           },
           "reward": {
             "type": "integer",
@@ -679,6 +784,18 @@
           5,
           6
         ]
+      },
+      "GetQuestsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestoDto"
+            }
+          }
+        }
       }
     },
     "securitySchemes": {
