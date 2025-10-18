@@ -295,6 +295,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  _uiManager: {fileID: 11400000, guid: 79dd8568e3a450d4985e2bedc406349f, type: 2}
   _maxCastDistance: 10
   _fireballPrefab: {fileID: 2527298531764070780, guid: 2bddad797c2838042a856f26f2f43f67, type: 3}
 --- !u!114 &876567953949062037
@@ -384,6 +385,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  _uiManager: {fileID: 0}
 --- !u!82 &6307337214493261193
 AudioSource:
   m_ObjectHideFlags: 0
@@ -511,3 +513,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _questAcceptedSfx: {fileID: 8300000, guid: 54ed85a964fdc314090cc4455e31da3f, type: 3}
+  _uiManager: {fileID: 11400000, guid: 79dd8568e3a450d4985e2bedc406349f, type: 2}

@@ -1,8 +1,6 @@
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class TargetSelector : NetworkBehaviour
 {
@@ -20,19 +18,12 @@ public class TargetSelector : NetworkBehaviour
     private float _interruptDuration = 0.2f;
     private float _interruptTimer = 0f;
     private Color _originalBarColor;
-    private Image _castProgressBar;
-    private GameObject _progressBarCanvas;
-    private GameObject _targetCanvas;
 
     private void Start()
     {
         if (IsOwner)
         {
-            _progressBarCanvas = GameObject.Find("ProgressBarCanvas");
-            _castProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
-            _targetCanvas = GameObject.Find("TargetCanvas");
-
-            HideCastBar();
+            UIManager.Instance.HideCastBar();
         }
     }
 
@@ -59,7 +50,7 @@ public class TargetSelector : NetworkBehaviour
                 if (_currentlySelectedRenderer != null)
                 {
                     _currentlySelectedRenderer.material.color = _originalSelectedColor;
-                    _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+                    UIManager.Instance.Target.SetActive(false);
                 }
 
                 var newRenderer = hit.transform.GetComponent<Renderer>();
@@ -68,16 +59,14 @@ public class TargetSelector : NetworkBehaviour
                 newRenderer.material.color = Color.green;
                 SelectedTargetTransform = hit.transform;
 
-                _targetCanvas.transform.Find("Target").gameObject.SetActive(true);
-                _targetCanvas.transform.Find("Target/Name").GetComponent<TextMeshProUGUI>().text = "Bean";
-                _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = SelectedTargetTransform.GetComponent<Health>().Value.ToString();
+                UIManager.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Value.ToString());
             }
         }
     }
 
     private void StartCast()
     {
-        _originalBarColor = _castProgressBar.color;
+        _originalBarColor = UIManager.Instance.CastProgressBar.color;
         SetFireball();
     }
 
@@ -118,24 +107,7 @@ public class TargetSelector : NetworkBehaviour
             _isCasting = true;
             _castTimer = 0f;
             _objectId = objectId;
-            ShowCastBar(0f);
-        }
-    }
-
-    private void ShowCastBar(float progress)
-    {
-        if (_castProgressBar != null)
-        {
-            _progressBarCanvas.SetActive(true);
-            _castProgressBar.fillAmount = Mathf.Clamp01(progress);
-        }
-    }
-
-    private void HideCastBar()
-    {
-        if (_castProgressBar != null)
-        {
-            _progressBarCanvas.SetActive(false);
+            UIManager.Instance.ShowCastBar(0f);
         }
     }
 
@@ -162,11 +134,11 @@ public class TargetSelector : NetworkBehaviour
         {
             _isInterrupted = false;
             _interruptTimer = 0f;
-            HideCastBar();
+            UIManager.Instance.HideCastBar();
 
-            if (_castProgressBar != null)
+            if (UIManager.Instance.CastProgressBar != null)
             {
-                _castProgressBar.color = _originalBarColor;
+                UIManager.Instance.CastProgressBar.color = _originalBarColor;
             }
         }
     }
@@ -195,7 +167,7 @@ public class TargetSelector : NetworkBehaviour
         }
 
         _castTimer += Time.deltaTime;
-        ShowCastBar(_castTimer / _castTime);
+        UIManager.Instance.ShowCastBar(_castTimer / _castTime);
 
         if (_castTimer >= _castTime)
         {
@@ -210,7 +182,7 @@ public class TargetSelector : NetworkBehaviour
     {
         _isCasting = false;
         _castTimer = 0f;
-        HideCastBar();
+        UIManager.Instance.HideCastBar();
     }
 
     private void InterruptCast()
@@ -220,12 +192,7 @@ public class TargetSelector : NetworkBehaviour
         _interruptTimer = 0f;
         FailedServerRpc(_objectId, NetworkManager.Singleton.LocalClientId);
 
-        if (_castProgressBar != null)
-        {
-            _castProgressBar.color = Color.red;
-            _castProgressBar.fillAmount = 1f;
-            _progressBarCanvas.SetActive(true);
-        }
+        UIManager.Instance.FailCastBar();
     }
 
     [ServerRpc]

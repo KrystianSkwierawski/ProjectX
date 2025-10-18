@@ -1,37 +1,34 @@
 using System.Linq;
 using System.Text;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class CharacterQuests : NetworkBehaviour
 {
-    private GameObject _questCanvas;
     private int _questId;
 
     [SerializeField] private AudioClip _questAcceptedSfx;
+    [SerializeField] private UIManager _uiManager;
 
     private async void Start()
     {
         if (!IsOwner)
         {
             return;
+
         }
 
-        _questCanvas = GameObject.Find("QuestCanvas");
-
-        _questCanvas.transform.Find("Quest/DeclineButton").GetComponent<Button>().onClick.AddListener(() => HideQuestCanvas());
-
-        _questCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>().onClick.AddListener(async () =>
+        UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
         {
             await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
-            HideQuestCanvas();
+            UIManager.Instance.HideQuestCanvas();
             await UpdateQuestLog();
             GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
         });
+
+        UIManager.Instance.QuestDeclineButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
 
         QuestManager.Instance.AddedProgresEvent.AddListener(async () => await UpdateQuestLog());
 
@@ -56,11 +53,9 @@ public class CharacterQuests : NetworkBehaviour
                 var questNpc = hit.transform.GetComponent<QuestNpc>();
                 _questId = questNpc.Quest.id;
 
-                if(questNpc.CharacterQuest == null)
+                if (questNpc.CharacterQuest == null)
                 {
-                    _questCanvas.transform.Find("Quest").gameObject.SetActive(true);
-                    _questCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>().text = questNpc.Quest.title;
-                    _questCanvas.transform.Find("Quest/Description").GetComponent<TextMeshProUGUI>().text = questNpc.Quest.description;
+                    UIManager.Instance.ShowQuest(questNpc.Quest.title, questNpc.Quest.description);
                 }
             }
         }
@@ -70,12 +65,8 @@ public class CharacterQuests : NetworkBehaviour
     {
         await UniTask.WaitUntil(() => QuestManager.Instance.CharacterQuests != null);
 
-        Debug.Log(QuestManager.Instance.CharacterQuests.Count);
-
         if (QuestManager.Instance.CharacterQuests.Any())
         {
-            _questCanvas.transform.Find("Log").gameObject.SetActive(true);
-
             var sb = new StringBuilder();
 
             foreach (var characterQuest in QuestManager.Instance.CharacterQuests.Where(x => x.status == CharacterQuestStatusEnum.Accepted))
@@ -89,12 +80,7 @@ public class CharacterQuests : NetworkBehaviour
                 sb.AppendLine(log);
             }
 
-            _questCanvas.transform.Find("Log/Text").GetComponent<TextMeshProUGUI>().text = sb.ToString();
+            UIManager.Instance.SetQuestLog(sb.ToString());
         }
-    }
-
-    private void HideQuestCanvas()
-    {
-        _questCanvas.transform.Find("Quest").gameObject.SetActive(false);
     }
 }

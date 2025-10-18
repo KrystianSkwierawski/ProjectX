@@ -299,7 +299,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QuestoDto"
+                  "$ref": "#/components/schemas/QuestDto"
                 }
               }
             }
@@ -695,7 +695,7 @@
           }
         }
       },
-      "QuestoDto": {
+      "QuestDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -713,6 +713,9 @@
             "type": "string"
           },
           "statusText": {
+            "type": "string"
+          },
+          "gameObjectName": {
             "type": "string"
           },
           "requirement": {
@@ -790,7 +793,7 @@
           "quests": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/QuestoDto"
+              "$ref": "#/components/schemas/QuestDto"
             }
           }
         }

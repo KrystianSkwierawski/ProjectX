@@ -1,11 +1,12 @@
 using Cysharp.Threading.Tasks;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour
 {
+    [SerializeField] private UIManager _uiManager;
+
     private async void Start()
     {
         if (IsOwner)
@@ -29,11 +30,7 @@ public class Player : NetworkBehaviour
         {
             var result = JsonUtility.FromJson<CharacterDto>(request.downloadHandler.text);
 
-            var playerCanvas = GameObject.Find("PlayerCanvas");
-
-            playerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>().text = result.name;
-            playerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>().text = result.health.ToString();
-            playerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {result.level}";
+            UIManager.Instance.SetPlayer(result.name, result.health.ToString(), result.level.ToString());
         }
     }
 }

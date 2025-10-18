@@ -19,6 +19,11 @@ public class Bootstrap : MonoBehaviour
         await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
         Debug.Log("MainScene Loaded");
 
+        await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
+        Debug.Log("UIScene Loaded");
+
+        UIManager.Instance.Init();
+
         if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
         {
             await TokenManager.Instance.LoginAsync("user1@localhost", "User1!");
@@ -33,9 +38,6 @@ public class Bootstrap : MonoBehaviour
 
         await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
         Debug.Log("EnvironmentScene Loaded");
-
-        await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
-        Debug.Log("UIScene Loaded");
 
         await SceneManager.LoadSceneAsync("NpcScene", LoadSceneMode.Additive);
         Debug.Log("NpcScene Loaded");

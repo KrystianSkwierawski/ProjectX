@@ -1,6 +1,5 @@
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -11,15 +10,6 @@ public class Health : NetworkBehaviour
 
     public float Value { get; private set; } = 100;
 
-    private GameObject _targetCanvas;
-
-    private void Start()
-    {
-        if (IsClient)
-        {
-            _targetCanvas = GameObject.Find("TargetCanvas");
-        }
-    }
 
     public async UniTask DealDamageAsync(float damage, string token, ulong clientId)
     {
@@ -47,7 +37,8 @@ public class Health : NetworkBehaviour
         await AddExperienceAsync(token, clientId);
 
         // todo check quest
-        if (gameObject.name == "bean")
+        Debug.Log(gameObject.name);
+        if (gameObject.name == "Bean(Clone)")
         {
             var progres = await QuestManager.Instance.AddCharacterQuestProgresAsync(1, 1, token);
 
@@ -60,7 +51,7 @@ public class Health : NetworkBehaviour
     [ClientRpc]
     private void HideTargetCanvasClientRpc()
     {
-        _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+        UIManager.Instance.Target.SetActive(false);
     }
 
     [ClientRpc]
@@ -84,7 +75,7 @@ public class Health : NetworkBehaviour
     {
         if (NetworkManager.Singleton.LocalClientId == clientId)
         {
-            GameObject.Find("PlayerCanvas").transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
+            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
             GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(_levelUpSfx, 0.4f);
         }
     }
@@ -95,7 +86,7 @@ public class Health : NetworkBehaviour
         Debug.Log("Updating target UI");
 
         Value = value;
-        _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = Value.ToString();
+        UIManager.Instance.TargetHealthPointsText.text = Value.ToString();
     }
 
     private async UniTask AddExperienceAsync(string token, ulong clientId)
