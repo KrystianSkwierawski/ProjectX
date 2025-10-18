@@ -185,6 +185,43 @@
         ]
       }
     },
+    "/api/CharacterQuests/CheckProgres": {
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "CheckCharacterQuestProgress",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckCharacterQuestProgresCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckCharacterQuestProgresDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Characters/{id}": {
       "get": {
         "tags": [
@@ -547,18 +584,21 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
+          "None",
           "Accepted",
           "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enum-varnames": [
+          "None",
           "Accepted",
           "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enumNames": [
+          "None",
           "Accepted",
           "Finished",
           "Completed",
@@ -568,9 +608,11 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "x-enumDescriptions": [
+          null,
           null,
           null,
           null,
@@ -580,7 +622,8 @@
           0,
           1,
           2,
-          3
+          3,
+          4
         ]
       },
       "AcceptCharacterQuestCommand": {
@@ -613,6 +656,43 @@
           "characterQuestId": {
             "type": "integer",
             "format": "int32"
+          },
+          "progres": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "clientToken": {
+            "type": "string"
+          }
+        }
+      },
+      "CheckCharacterQuestProgresDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "questId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CharacterQuestStatusEnum"
+          }
+        }
+      },
+      "CheckCharacterQuestProgresCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameObjectName": {
+            "type": "string"
           },
           "progres": {
             "type": "integer",

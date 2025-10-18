@@ -110,8 +110,8 @@ public class ApplicationDbContextInitialiser
                 Title = "Kill 6 beans",
                 Description = "Bla bla bla kill 6 beans, ok?",
                 StatusText = "Killed {0}/{1} beans",
-                GameObjectName = "bean",
-                Requirement = 6,
+                GameObjectName = "Bean(Clone)",
+                Requirement = 2,
                 Reward = 10,
                 ModDate = DateTime.Now
             },

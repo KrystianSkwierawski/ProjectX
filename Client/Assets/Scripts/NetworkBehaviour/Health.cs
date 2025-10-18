@@ -36,13 +36,11 @@ public class Health : NetworkBehaviour
     {
         await AddExperienceAsync(token, clientId);
 
-        // todo check quest
-        Debug.Log(gameObject.name);
-        if (gameObject.name == "Bean(Clone)")
-        {
-            var progres = await QuestManager.Instance.AddCharacterQuestProgresAsync(1, 1, token);
+        var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, token);
 
-            UpdateQuestLogClientRpc(1, 1, progres.status, clientId);
+        if (progres.status != CharacterQuestStatusEnum.None)
+        {
+            UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
         }
 
         gameObject.GetComponent<NetworkObject>().Despawn();
@@ -52,22 +50,6 @@ public class Health : NetworkBehaviour
     private void HideTargetCanvasClientRpc()
     {
         UIManager.Instance.Target.SetActive(false);
-    }
-
-    [ClientRpc]
-    private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
-    {
-        if (NetworkManager.Singleton.LocalClientId == clientId)
-        {
-            var characterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => x.id == characterQuestId)
-                .Single();
-
-            characterQuest.progress += progres;
-            characterQuest.status = status;
-
-            QuestManager.Instance.AddedProgresEvent.Invoke();
-        }
     }
 
     [ClientRpc]
@@ -115,6 +97,24 @@ public class Health : NetworkBehaviour
 
                 UpdateLevelClientRpc(result.level, clientId);
             }
+        }
+    }
+
+    [ClientRpc]
+    private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == clientId)
+        {
+            Debug.Log($"UpdateQuestLogClientRpc: {clientId}");
+
+            var characterQuest = QuestManager.Instance.CharacterQuests
+                .Where(x => x.id == characterQuestId)
+                .Single();
+
+            characterQuest.progress += progres;
+            characterQuest.status = status;
+
+            QuestManager.Instance.AddedProgresEvent.Invoke(characterQuest.questId, characterQuest.status);
         }
     }
 }

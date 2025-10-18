@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 
 public sealed class QuestManager
 {
+    public IDictionary<int, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<int, QuestNpc>();
+
     private static readonly QuestManager _instance = new QuestManager();
 
     private QuestManager()
@@ -22,9 +24,7 @@ public sealed class QuestManager
         }
     }
 
-    public UnityEvent AcceptedQuestEvent = new UnityEvent();
-
-    public UnityEvent AddedProgresEvent = new UnityEvent();
+    public UnityEvent<int, CharacterQuestStatusEnum> AddedProgresEvent = new UnityEvent<int, CharacterQuestStatusEnum>();
 
     public IList<QuestDto> Quests { get; private set; }
 
@@ -67,7 +67,7 @@ public sealed class QuestManager
         }
     }
 
-    public async UniTask AcceptCharacterQuestAsync(int questId)
+    public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(int questId)
     {
         using var request = UnityWebRequest.Post($"https://localhost:5001/api/CharacterQuests", JsonUtility.ToJson(new AcceptCharacterQuestCommand
         {
@@ -83,16 +83,16 @@ public sealed class QuestManager
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            CharacterQuests.Add(new CharacterQuestDto
+            return new CharacterQuestDto
             {
                 id = int.Parse(request.downloadHandler.text),
                 questId = questId,
                 progress = 0,
                 status = CharacterQuestStatusEnum.Accepted
-            });
-
-            AcceptedQuestEvent.Invoke();
+            };
         }
+
+        throw new Exception(request.error);
     }
 
     public async UniTask<AddCharacterQuestProgresDto> AddCharacterQuestProgresAsync(int characterQuestId, int progres, string clientToken)
@@ -114,6 +114,31 @@ public sealed class QuestManager
         if (request.result == UnityWebRequest.Result.Success)
         {
             return JsonUtility.FromJson<AddCharacterQuestProgresDto>(request.downloadHandler.text);
+        }
+
+        throw new Exception(request.error);
+    }
+
+    public async UniTask<CheckCharacterQuestProgresDto> CheckCharacterQuestProgresAsync(int characterId, string gameObjectName, int progres, string token)
+    {
+        using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterQuests/CheckProgres", JsonUtility.ToJson(new CheckCharacterQuestProgresCommand
+        {
+            characterId = characterId,
+            gameObjectName = gameObjectName,
+            progres = progres,
+            clientToken = token
+        }), "application/json");
+
+        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+
+        await request.SendWebRequest();
+
+        Debug.Log($"CheckCharacterProgres result: {request.result}");
+        Debug.Log($"CheckCharacterProgres text: {request.downloadHandler.text}");
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            return JsonUtility.FromJson<CheckCharacterQuestProgresDto>(request.downloadHandler.text);
         }
 
         throw new Exception(request.error);

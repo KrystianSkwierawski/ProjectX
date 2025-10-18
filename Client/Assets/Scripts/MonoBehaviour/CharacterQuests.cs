@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text;
 using Cysharp.Threading.Tasks;
@@ -17,12 +18,19 @@ public class CharacterQuests : NetworkBehaviour
         if (!IsOwner)
         {
             return;
-
         }
 
         UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
         {
-            await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
+            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
+
+            QuestManager.Instance.CharacterQuests.Add(characterQuest);
+
+            var npc = QuestManager.Instance.QuestNpcs[_questId];
+            npc.HideExclamationMark();
+
+            npc.CharacterQuest = characterQuest;
+
             UIManager.Instance.HideQuestCanvas();
             await UpdateQuestLog();
             GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
@@ -30,7 +38,17 @@ public class CharacterQuests : NetworkBehaviour
 
         UIManager.Instance.QuestDeclineButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
 
-        QuestManager.Instance.AddedProgresEvent.AddListener(async () => await UpdateQuestLog());
+        QuestManager.Instance.AddedProgresEvent.AddListener(async (int questId, CharacterQuestStatusEnum status) =>
+        {
+            await UpdateQuestLog();
+
+            if (status == CharacterQuestStatusEnum.Finished)
+            {
+                var npc = QuestManager.Instance.QuestNpcs[questId];
+
+                npc.ShowExclamationMark();
+            }
+        });
 
         await UpdateQuestLog();
     }
@@ -75,7 +93,7 @@ public class CharacterQuests : NetworkBehaviour
                     .Where(x => x.id == characterQuest.questId)
                     .Single();
 
-                var log = string.Format(quest.statusText, characterQuest.progress, quest.requirement);
+                var log = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
 
                 sb.AppendLine(log);
             }

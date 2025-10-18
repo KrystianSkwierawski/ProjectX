@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class QuestNpc : MonoBehaviour
 {
-    [SerializeReference] private int _id = 1;
+    public int Id { get; private set; } = 1;
 
     public QuestDto Quest { get; set; }
 
@@ -21,11 +21,11 @@ public class QuestNpc : MonoBehaviour
         );
 
         Quest = QuestManager.Instance.Quests
-            .Where(x => x.id == _id)
+            .Where(x => x.id == Id)
             .Single();
 
         CharacterQuest = QuestManager.Instance.CharacterQuests
-            .Where(x => x.questId == _id)
+            .Where(x => x.questId == Id)
             .FirstOrDefault();
 
         if (CharacterQuest == null)
@@ -33,6 +33,16 @@ public class QuestNpc : MonoBehaviour
             gameObject.transform.Find("ExclamationMark").gameObject.SetActive(true);
         }
 
-        QuestManager.Instance.AcceptedQuestEvent.AddListener(() => gameObject.transform.Find("ExclamationMark").gameObject.SetActive(false));
+        QuestManager.Instance.QuestNpcs.Add(Id, this);
+    }
+
+    public void ShowExclamationMark()
+    {
+        gameObject.transform.Find("ExclamationMark").gameObject.SetActive(true);
+    }
+
+    public void HideExclamationMark()
+    {
+        gameObject.transform.Find("ExclamationMark").gameObject.SetActive(false);
     }
 }

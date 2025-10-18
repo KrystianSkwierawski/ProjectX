@@ -6,32 +6,39 @@ using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
+namespace ProjectX.Application.CharacterQuests.Commands.CheckProgres;
+public record CheckCharacterQuestProgresCommand(int CharacterId, string GameObjectName, int Progres, string ClientToken) : IRequest<CheckCharacterQuestProgresDto>;
 
-public record AddCharacterQuestProgresCommand(int CharacterQuestId, int Progres, string ClientToken) : IRequest<AddCharacterQuestProgresDto>;
-
-public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharacterQuestProgresCommand, AddCharacterQuestProgresDto>
+public class CheckCharacterQuestProgresCommandHandler : IRequestHandler<CheckCharacterQuestProgresCommand, CheckCharacterQuestProgresDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterQuestProgresCommandHandler>();
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<CheckCharacterQuestProgresCommandHandler>();
 
     private readonly IApplicationDbContext _context;
     private readonly TokenValidationParameters _validationParameters;
 
-    public AddCharacterQuestProgresCommandHandler(IApplicationDbContext context, TokenValidationParameters validationParameters)
+    public CheckCharacterQuestProgresCommandHandler(IApplicationDbContext context, TokenValidationParameters validationParameters)
     {
         _context = context;
         _validationParameters = validationParameters;
     }
 
-    public async Task<AddCharacterQuestProgresDto> Handle(AddCharacterQuestProgresCommand request, CancellationToken cancellationToken)
+    public async Task<CheckCharacterQuestProgresDto> Handle(CheckCharacterQuestProgresCommand request, CancellationToken cancellationToken)
     {
         var userId = GetUserId(request.ClientToken);
 
-        var characterQuest = await _context.CharacterQuests
+        var characterQuest = _context.CharacterQuests
             .Include(x => x.Quest)
-            .Where(x => x.Id == request.CharacterQuestId)
             .Where(x => x.Character.ApplicationUserId == userId)
-            .SingleAsync(cancellationToken);
+            //.Where(x => x.CharacterId == request.CharacterId)
+            .Where(x => x.Status == CharacterQuestStatusEnum.Accepted)
+            .Where(x => x.Quest.GameObjectName == request.GameObjectName)
+            .FirstOrDefault();
+
+        if (characterQuest == null)
+        {
+            Log.Debug("Not found any active quests");
+            return new CheckCharacterQuestProgresDto();
+        }
 
         Log.Debug("Found character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 
@@ -48,10 +55,11 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new AddCharacterQuestProgresDto
+        return new CheckCharacterQuestProgresDto
         {
-            Status = characterQuest.Status,
-            Reward = characterQuest.Status == CharacterQuestStatusEnum.Completed ? characterQuest.Quest.Reward : 0
+            QuestId = characterQuest.QuestId,
+            CharacterQuestId = characterQuest.Id,
+            Status = characterQuest.Status
         };
     }
 
