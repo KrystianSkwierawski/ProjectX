@@ -19,6 +19,8 @@ public class Quest
 
     public required string StatusText { get; set; }
 
+    public string GameObjectName { get; set; }
+
     public int Requirement { get; set; }
 
     public int Reward { get; set; }

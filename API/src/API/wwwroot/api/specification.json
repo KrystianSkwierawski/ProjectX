@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/api/CharacterQuests/{id}": {
+    "/api/CharacterQuests": {
       "get": {
         "tags": [
           "CharacterQuests"
@@ -83,8 +83,8 @@
         "operationId": "GetCharacterQuests",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
+            "name": "CharacterId",
+            "in": "query",
             "required": true,
             "schema": {
               "type": "integer",
@@ -110,9 +110,7 @@
             "JWT": []
           }
         ]
-      }
-    },
-    "/api/CharacterQuests": {
+      },
       "post": {
         "tags": [
           "CharacterQuests"
@@ -131,7 +129,7 @@
           "x-position": 1
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "",
             "content": {
               "application/json": {

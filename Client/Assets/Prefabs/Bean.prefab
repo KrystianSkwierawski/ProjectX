@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 1636234288627873302}
   - component: {fileID: 3328108770336092963}
   m_Layer: 0
-  m_Name: Capsule
+  m_Name: Bean
   m_TagString: Target
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -198,9 +198,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  PatrolRadius: 5
-  MoveSpeed: 2
-  PointTolerance: 0.2
+  _patrolRadius: 5
+  _moveSpeed: 2
+  _pointTolerance: 0.2
 --- !u!114 &3328108770336092963
 MonoBehaviour:
   m_ObjectHideFlags: 0

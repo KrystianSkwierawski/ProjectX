@@ -15,7 +15,7 @@ public class Quests : EndpointGroupBase
         groupBuilder.MapGet(GetQuests).RequireAuthorization(Policies.Client);
     }
 
-    private static async Task<Ok<QuestoDto>> GetQuest(ISender sender, int id)
+    private static async Task<Ok<QuestDto>> GetQuest(ISender sender, int id)
     {
         var result = await sender.Send(new GetQuestQuery(id));
 

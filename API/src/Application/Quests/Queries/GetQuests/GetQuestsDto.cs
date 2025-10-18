@@ -3,5 +3,5 @@
 namespace ProjectX.Application.Quests.Queries.GetQuests;
 public class GetQuestsDto
 {
-    public IList<QuestoDto> Quests { get; set; }
+    public IList<QuestDto> Quests { get; set; }
 }

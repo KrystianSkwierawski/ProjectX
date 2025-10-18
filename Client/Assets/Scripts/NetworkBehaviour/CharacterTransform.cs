@@ -81,7 +81,5 @@ public class CharacterTransform : NetworkBehaviour
             transform.rotation.Set(0, result.rotationY, 0, 0);
         }
     }
-
- 
 }
 

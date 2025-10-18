@@ -18,13 +18,14 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
     public async Task<GetQuestsDto> Handle(GetQuestsQuery request, CancellationToken cancellationToken)
     {
         var result = await _context.Quests
-            .Select(x => new QuestoDto
+            .Select(x => new QuestDto
             {
                 Id = x.Id,
                 Type = x.Type,
                 Title = x.Title,
                 Description = x.Description,
                 StatusText = x.StatusText,
+                GameObjectName = x.GameObjectName,
                 Requirement = x.Requirement,
                 Reward = x.Reward
             })

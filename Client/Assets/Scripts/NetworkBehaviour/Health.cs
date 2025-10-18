@@ -4,7 +4,6 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
-using static Cinemachine.DocumentationSortingAttribute;
 
 public class Health : NetworkBehaviour
 {
@@ -47,9 +46,13 @@ public class Health : NetworkBehaviour
     {
         await AddExperienceAsync(token, clientId);
 
-        var progres = await QuestManager.Instance.AddCharacterQuestProgresAsync(1, 1, token);
+        // todo check quest
+        if (gameObject.name == "bean")
+        {
+            var progres = await QuestManager.Instance.AddCharacterQuestProgresAsync(1, 1, token);
 
-        UpdateQuestLogClientRpc(1, 1, progres.status, clientId);
+            UpdateQuestLogClientRpc(1, 1, progres.status, clientId);
+        }
 
         gameObject.GetComponent<NetworkObject>().Despawn();
     }

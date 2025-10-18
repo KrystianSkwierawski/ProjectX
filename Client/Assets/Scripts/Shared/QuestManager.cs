@@ -32,7 +32,7 @@ public sealed class QuestManager
 
     public async UniTask LoadQuestsAsync()
     {
-        using var request = UnityWebRequest.Get($"https://localhost:5001/api/Quests");
+        using var request = UnityWebRequest.Get($"https://localhost:5001/api/Quests?CharacterId=1");
 
         request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
 

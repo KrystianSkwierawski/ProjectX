@@ -13,6 +13,8 @@ public class QuestDto
 
     public string statusText;
 
+    public string gameObjectName;
+
     public int requirement;
 
     public int reward;
