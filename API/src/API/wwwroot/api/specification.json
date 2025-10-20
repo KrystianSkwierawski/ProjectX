@@ -423,7 +423,11 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "amount": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterQuestId": {
             "type": "integer",
             "format": "int32"
           },
@@ -790,6 +794,9 @@
             "type": "string"
           },
           "description": {
+            "type": "string"
+          },
+          "completeDescription": {
             "type": "string"
           },
           "statusText": {

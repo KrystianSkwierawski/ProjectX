@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
@@ -34,9 +35,15 @@ public class Health : NetworkBehaviour
 
     private async UniTask HandleKillAsync(string token, ulong clientId)
     {
-        await AddExperienceAsync(token, clientId);
-
+        var experience = await AddExperienceAsync(ExperienceTypeEnum.Combat, token, clientId);
         var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, token);
+
+        if (experience.leveledUp)
+        {
+            Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
+
+            UpdateLevelClientRpc(experience.level, clientId);
+        }
 
         if (progres.status != CharacterQuestStatusEnum.None)
         {
@@ -53,7 +60,7 @@ public class Health : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void UpdateLevelClientRpc(int level, ulong clientId)
+    public void UpdateLevelClientRpc(int level, ulong clientId)
     {
         if (NetworkManager.Singleton.LocalClientId == clientId)
         {
@@ -71,12 +78,14 @@ public class Health : NetworkBehaviour
         UIManager.Instance.TargetHealthPointsText.text = Value.ToString();
     }
 
-    private async UniTask AddExperienceAsync(string token, ulong clientId)
+    // TODO: change location!
+    public static async UniTask<AddCharacterExperienceDto> AddExperienceAsync(ExperienceTypeEnum type, string token, ulong clientId, int? characterQuestId = null)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
         {
-            amount = 1000,
-            type = ExperienceTypeEnum.Combat,
+            characterId = 1,
+            characterQuestId = characterQuestId ?? 0,
+            type = type,
             clientToken = token
         }), "application/json");
 
@@ -89,15 +98,10 @@ public class Health : NetworkBehaviour
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            var result = JsonUtility.FromJson<AddCharacterExperienceDto>(request.downloadHandler.text);
-
-            if (result.leveledUp)
-            {
-                Debug.Log($"LevelUp! Level: {result.level}, SkillPoints: {result.skillPoints}, Experience: {result.experience}");
-
-                UpdateLevelClientRpc(result.level, clientId);
-            }
+            return JsonUtility.FromJson<AddCharacterExperienceDto>(request.downloadHandler.text);
         }
+
+        throw new Exception(request.error);
     }
 
     [ClientRpc]

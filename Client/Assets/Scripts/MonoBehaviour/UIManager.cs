@@ -17,7 +17,8 @@ public class UIManager : MonoBehaviour
     [NonSerialized] public TextMeshProUGUI TargetNameText;
     [NonSerialized] public TextMeshProUGUI TargetHealthPointsText;
     [NonSerialized] public Button QuestAcceptButton;
-    [NonSerialized] public Button QuestDeclineButton;
+    [NonSerialized] public TextMeshProUGUI QuestAcceptButtonText;
+    [NonSerialized] public Button QuestCancelButton;
 
     [NonSerialized] public GameObject Quest;
     [NonSerialized] public TextMeshProUGUI QuestTitleText;
@@ -52,7 +53,8 @@ public class UIManager : MonoBehaviour
         TargetNameText = TargetCanvas.transform.Find("Target/Name").GetComponent<TextMeshProUGUI>();
         TargetHealthPointsText = TargetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>();
         QuestAcceptButton = QuestCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>();
-        QuestDeclineButton = QuestCanvas.transform.Find("Quest/DeclineButton").GetComponent<Button>();
+        QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
+        QuestCancelButton = QuestCanvas.transform.Find("Quest/CancelButton").GetComponent<Button>();
         Quest = QuestCanvas.transform.Find("Quest").gameObject;
         QuestTitleText = QuestCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>();
         QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description").GetComponent<TextMeshProUGUI>();
@@ -97,11 +99,15 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ShowQuest(string title, string description)
+    public void ShowQuest(QuestNpc questNpc)
     {
-        Quest.SetActive(true);
-        QuestTitleText.text = title;
-        QuestDescriptionText.text = description;
+        if (questNpc.CharacterQuest == null || questNpc.CharacterQuest.status == CharacterQuestStatusEnum.Finished)
+        {
+            Quest.SetActive(true);
+            QuestTitleText.text = questNpc.Quest.title;
+            QuestDescriptionText.text = questNpc.CharacterQuest == null ? questNpc.Quest.description : questNpc.Quest.completeDescription;
+            QuestAcceptButtonText.text = questNpc.CharacterQuest == null ? "Accept" : "Complete";
+        }
     }
 
     public void HideQuestCanvas()

@@ -11,7 +11,33 @@ public class CharacterQuests : NetworkBehaviour
     private int _questId;
 
     [SerializeField] private AudioClip _questAcceptedSfx;
-    [SerializeField] private UIManager _uiManager;
+    [SerializeField] private AudioClip _questCompletedSfx;
+
+    [ServerRpc]
+    private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
+    {
+        // TODO: validate transform.location
+        _ = CompleteQuestAsync(characterQuestId, token, clientId);
+    }
+
+    private async UniTask CompleteQuestAsync(int characterQuestId, string token, ulong clientId)
+    {
+        var result = await Health.AddExperienceAsync(ExperienceTypeEnum.Questing, token, clientId, characterQuestId);
+
+        if (result.leveledUp)
+        {
+            UpdateLevelClientRpc(result.level, clientId);
+        }
+    }
+
+    [ClientRpc]
+    public void UpdateLevelClientRpc(int level, ulong clientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == clientId)
+        {
+            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
+        }
+    }
 
     private async void Start()
     {
@@ -22,21 +48,42 @@ public class CharacterQuests : NetworkBehaviour
 
         UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
         {
-            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
-
-            QuestManager.Instance.CharacterQuests.Add(characterQuest);
-
-            var npc = QuestManager.Instance.QuestNpcs[_questId];
-            npc.HideExclamationMark();
-
-            npc.CharacterQuest = characterQuest;
-
             UIManager.Instance.HideQuestCanvas();
+
+            var questNpc = QuestManager.Instance.QuestNpcs[_questId];
+
+            if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
+            {
+                GetComponent<AudioSource>().PlayOneShot(_questCompletedSfx, 0.5f);
+
+                questNpc.HideQuestionMark();
+
+                var characterQuest = QuestManager.Instance.CharacterQuests
+                    .Where(x => x.id == questNpc.CharacterQuest.id)
+                    .Single();
+
+                characterQuest.status = CharacterQuestStatusEnum.Completed;
+                questNpc.CharacterQuest.status = CharacterQuestStatusEnum.Completed;
+
+                CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
+            }
+            else
+            {
+                GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
+
+                questNpc.HideExclamationMark();
+
+                var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
+
+                QuestManager.Instance.CharacterQuests.Add(characterQuest);
+
+                questNpc.CharacterQuest = characterQuest;
+            }
+
             await UpdateQuestLog();
-            GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
         });
 
-        UIManager.Instance.QuestDeclineButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
+        UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
 
         QuestManager.Instance.AddedProgresEvent.AddListener(async (int questId, CharacterQuestStatusEnum status) =>
         {
@@ -46,7 +93,8 @@ public class CharacterQuests : NetworkBehaviour
             {
                 var npc = QuestManager.Instance.QuestNpcs[questId];
 
-                npc.ShowExclamationMark();
+                npc.HideExclamationMark();
+                npc.ShowQuestionMark();
             }
         });
 
@@ -71,10 +119,7 @@ public class CharacterQuests : NetworkBehaviour
                 var questNpc = hit.transform.GetComponent<QuestNpc>();
                 _questId = questNpc.Quest.id;
 
-                if (questNpc.CharacterQuest == null)
-                {
-                    UIManager.Instance.ShowQuest(questNpc.Quest.title, questNpc.Quest.description);
-                }
+                UIManager.Instance.ShowQuest(questNpc);
             }
         }
     }
@@ -87,7 +132,7 @@ public class CharacterQuests : NetworkBehaviour
         {
             var sb = new StringBuilder();
 
-            foreach (var characterQuest in QuestManager.Instance.CharacterQuests.Where(x => x.status == CharacterQuestStatusEnum.Accepted))
+            foreach (var characterQuest in QuestManager.Instance.CharacterQuests.Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
             {
                 var quest = QuestManager.Instance.Quests
                     .Where(x => x.id == characterQuest.questId)

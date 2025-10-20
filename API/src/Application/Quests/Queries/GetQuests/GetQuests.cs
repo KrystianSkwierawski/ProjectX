@@ -24,6 +24,7 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
                 Type = x.Type,
                 Title = x.Title,
                 Description = x.Description,
+                CompleteDescription = x.CompleteDescription,
                 StatusText = x.StatusText,
                 GameObjectName = x.GameObjectName,
                 Requirement = x.Requirement,

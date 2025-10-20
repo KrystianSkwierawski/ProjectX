@@ -3,7 +3,9 @@ using System;
 [Serializable]
 public class AddCharacterExperienceCommand
 {
-    public int amount;
+    public int characterId;
+
+    public int characterQuestId;
 
     public ExperienceTypeEnum type;
 

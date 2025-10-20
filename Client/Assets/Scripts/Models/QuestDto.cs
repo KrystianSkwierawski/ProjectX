@@ -11,6 +11,8 @@ public class QuestDto
 
     public string description;
 
+    public string completeDescription;
+
     public string statusText;
 
     public string gameObjectName;

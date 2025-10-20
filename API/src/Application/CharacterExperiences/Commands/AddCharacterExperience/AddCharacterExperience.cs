@@ -5,12 +5,15 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto>
 {
-    public int Amount { get; init; }
+    public int CharacterId { get; set; }
+
+    public int CharacterQuestId { get; set; }
 
     public ExperienceTypeEnum Type { get; init; }
 
@@ -48,20 +51,44 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     {
         var result = new AddCharacterExperienceDto();
 
+        int? amount = null;
+
         var userId = GetUserId(request.ClientToken);
+
+        var now = DateTime.Now;
+
+        if (request.Type == ExperienceTypeEnum.Questing)
+        {
+            var characterQuest = await _context.CharacterQuests
+                .Include(x => x.Quest)
+                .Where(x => x.Id == request.CharacterQuestId)
+                //.Where(x => x.CharacterId == request.CharacterId)
+                .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
+                .Where(x => x.Character.ApplicationUserId == userId)
+                .SingleAsync(cancellationToken);
+
+            characterQuest.EndDate = now;
+            characterQuest.ModDate = now;
+            characterQuest.Status = CharacterQuestStatusEnum.Completed;
+
+            amount = characterQuest.Quest.Reward;
+
+            Log.Debug("Completed character quest. CharacterQuestId: {0}, UserId: {1}", characterQuest.Id, userId);
+        }
 
         var character = await _context.Characters
             .Include(x => x.CharacterExperiences)
+            //.Where(x => x.Id == request.CharacterId)
             .Where(x => x.ApplicationUserId == userId)
             .FirstAsync(cancellationToken);
 
         Log.Debug("Found character. CharacterId {0}, UserId: {1}", character.Id, userId);
 
-        character.CharacterExperiences.Add(new Domain.Entities.CharacterExperience
+        character.CharacterExperiences.Add(new CharacterExperience
         {
-            Amount = request.Amount,
+            Amount = amount ?? 1000,
             Type = request.Type,
-            ModDate = DateTime.Now
+            ModDate = now
         });
 
         result.Experience = character.CharacterExperiences

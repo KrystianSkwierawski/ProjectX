@@ -107,8 +107,9 @@ public class ApplicationDbContextInitialiser
             new Quest
             {
                 Type = QuestTypeEnum.Kill,
-                Title = "Kill 6 beans",
-                Description = "Bla bla bla kill 6 beans, ok?",
+                Title = "Kill 2 beans",
+                Description = "Bla bla bla kill 2 beans, ok?",
+                CompleteDescription = "ok, u killed 2 beans",
                 StatusText = "Killed {0}/{1} beans",
                 GameObjectName = "Bean(Clone)",
                 Requirement = 2,
@@ -118,8 +119,9 @@ public class ApplicationDbContextInitialiser
             new Quest
             {
                 Type = QuestTypeEnum.Collect,
-                Title = "Collect 6 cans",
-                Description = "Bla bla bla collec 6 cans, ok?",
+                Title = "Collect 2 cans",
+                Description = "Bla bla bla collec 2 cans, ok?",
+                CompleteDescription = "ok, u collected 2 cans",
                 StatusText = "Collected {0}/{1} cands",
                 GameObjectName = "Can",
                 Requirement = 6,

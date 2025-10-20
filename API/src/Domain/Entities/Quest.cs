@@ -17,6 +17,8 @@ public class Quest
 
     public required string Description { get; set; }
 
+    public required string CompleteDescription { get; set; }
+
     public required string StatusText { get; set; }
 
     public string GameObjectName { get; set; }

@@ -30,10 +30,20 @@ public class QuestNpc : MonoBehaviour
 
         if (CharacterQuest == null)
         {
-            gameObject.transform.Find("ExclamationMark").gameObject.SetActive(true);
+            ShowExclamationMark();
         }
 
         QuestManager.Instance.QuestNpcs.Add(Id, this);
+    }
+
+    public void ShowQuestionMark()
+    {
+        gameObject.transform.Find("QuestionMark").gameObject.SetActive(true);
+    }
+
+    public void HideQuestionMark()
+    {
+        gameObject.transform.Find("QuestionMark").gameObject.SetActive(false);
     }
 
     public void ShowExclamationMark()

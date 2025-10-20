@@ -43,7 +43,6 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
             Log.Debug("Completed character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 
             characterQuest.Status = CharacterQuestStatusEnum.Finished;
-            characterQuest.EndDate = characterQuest.ModDate;
         }
 
         await _context.SaveChangesAsync(cancellationToken);
