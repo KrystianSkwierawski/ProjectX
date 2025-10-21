@@ -35,7 +35,7 @@ public class Health : NetworkBehaviour
 
     private async UniTask HandleKillAsync(string token, ulong clientId)
     {
-        var experience = await AddExperienceAsync(ExperienceTypeEnum.Combat, token, clientId);
+        var experience = await ExperienceManager.Instance.AddExperienceAsync(ExperienceTypeEnum.Combat, token, clientId);
         var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, token);
 
         if (experience.leveledUp)
@@ -76,32 +76,6 @@ public class Health : NetworkBehaviour
 
         Value = value;
         UIManager.Instance.TargetHealthPointsText.text = Value.ToString();
-    }
-
-    // TODO: change location!
-    public static async UniTask<AddCharacterExperienceDto> AddExperienceAsync(ExperienceTypeEnum type, string token, ulong clientId, int? characterQuestId = null)
-    {
-        using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
-        {
-            characterId = 1,
-            characterQuestId = characterQuestId ?? 0,
-            type = type,
-            clientToken = token
-        }), "application/json");
-
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
-
-        await request.SendWebRequest();
-
-        Debug.Log($"AddExperience result: {request.result}");
-        Debug.Log($"AddExperience text: {request.downloadHandler.text}");
-
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            return JsonUtility.FromJson<AddCharacterExperienceDto>(request.downloadHandler.text);
-        }
-
-        throw new Exception(request.error);
     }
 
     [ClientRpc]

@@ -22,7 +22,7 @@ public class CharacterQuests : NetworkBehaviour
 
     private async UniTask CompleteQuestAsync(int characterQuestId, string token, ulong clientId)
     {
-        var result = await Health.AddExperienceAsync(ExperienceTypeEnum.Questing, token, clientId, characterQuestId);
+        var result = await ExperienceManager.Instance.AddExperienceAsync(ExperienceTypeEnum.Questing, token, clientId, characterQuestId);
 
         if (result.leveledUp)
         {
