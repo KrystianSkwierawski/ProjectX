@@ -54,30 +54,11 @@ public class CharacterQuests : NetworkBehaviour
 
             if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
             {
-                GetComponent<AudioSource>().PlayOneShot(_questCompletedSfx, 0.5f);
-
-                questNpc.HideQuestionMark();
-
-                var characterQuest = QuestManager.Instance.CharacterQuests
-                    .Where(x => x.id == questNpc.CharacterQuest.id)
-                    .Single();
-
-                characterQuest.status = CharacterQuestStatusEnum.Completed;
-                questNpc.CharacterQuest.status = CharacterQuestStatusEnum.Completed;
-
-                CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
+                CompleteQuest(questNpc);
             }
             else
             {
-                GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
-
-                questNpc.HideExclamationMark();
-
-                var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
-
-                QuestManager.Instance.CharacterQuests.Add(characterQuest);
-
-                questNpc.CharacterQuest = characterQuest;
+                await AddQuestAsync(questNpc);
             }
 
             await UpdateQuestLog();
@@ -99,6 +80,35 @@ public class CharacterQuests : NetworkBehaviour
         });
 
         await UpdateQuestLog();
+    }
+
+    private async UniTask AddQuestAsync(QuestNpc questNpc)
+    {
+        GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
+
+        questNpc.HideExclamationMark();
+
+        var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
+
+        QuestManager.Instance.CharacterQuests.Add(characterQuest);
+
+        questNpc.CharacterQuest = characterQuest;
+    }
+
+    private void CompleteQuest(QuestNpc questNpc)
+    {
+        GetComponent<AudioSource>().PlayOneShot(_questCompletedSfx, 0.5f);
+
+        questNpc.HideQuestionMark();
+
+        var characterQuest = QuestManager.Instance.CharacterQuests
+            .Where(x => x.id == questNpc.CharacterQuest.id)
+            .Single();
+
+        characterQuest.status = CharacterQuestStatusEnum.Completed;
+        questNpc.CharacterQuest.status = CharacterQuestStatusEnum.Completed;
+
+        CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
     }
 
     private void Update()
@@ -124,6 +134,7 @@ public class CharacterQuests : NetworkBehaviour
         }
     }
 
+    // todo: refactor and optimization
     private async UniTask UpdateQuestLog()
     {
         await UniTask.WaitUntil(() => QuestManager.Instance.CharacterQuests != null);
