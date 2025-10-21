@@ -30,6 +30,7 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
                 Status = x.Status,
                 Progress = x.Progress,
             })
+            .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);
 
         Log.Debug("Found character quests. CharacterId: {0}, Count: {1}", request.CharacterId, characterQuests.Count);

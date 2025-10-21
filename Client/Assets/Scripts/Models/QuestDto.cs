@@ -5,6 +5,8 @@ public class QuestDto
 {
     public int id;
 
+    public int previousQuestId;
+
     public QuestTypeEnum type;
 
     public string title;

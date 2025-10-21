@@ -106,7 +106,8 @@ public class CharacterQuests : NetworkBehaviour
             .Single();
 
         characterQuest.status = CharacterQuestStatusEnum.Completed;
-        questNpc.CharacterQuest.status = CharacterQuestStatusEnum.Completed;
+
+        questNpc.CheckNextQuest();
 
         CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
     }
@@ -127,9 +128,13 @@ public class CharacterQuests : NetworkBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "QuestNpc")
             {
                 var questNpc = hit.transform.GetComponent<QuestNpc>();
-                _questId = questNpc.Quest.id;
 
-                UIManager.Instance.ShowQuest(questNpc);
+                if (questNpc?.Quest != null)
+                {
+                    _questId = questNpc.Quest.id;
+
+                    UIManager.Instance.ShowQuest(questNpc);
+                }
             }
         }
     }

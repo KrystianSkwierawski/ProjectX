@@ -787,6 +787,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "previousQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "type": {
             "$ref": "#/components/schemas/QuestTypeEnum"
           },

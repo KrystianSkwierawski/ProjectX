@@ -21,6 +21,7 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
             .Select(x => new QuestDto
             {
                 Id = x.Id,
+                PreviousQuestId = x.PreviousQuestId ?? 0,
                 Type = x.Type,
                 Title = x.Title,
                 Description = x.Description,

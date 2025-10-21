@@ -4,12 +4,11 @@ using UnityEngine;
 
 public class QuestNpc : MonoBehaviour
 {
-    public int Id { get; private set; } = 1;
+    public int[] Ids { get; private set; } = new int[] { 1, 2 };
 
     public QuestDto Quest { get; set; }
 
     public CharacterQuestDto CharacterQuest { get; set; }
-
 
     private async void Start()
     {
@@ -20,12 +19,59 @@ public class QuestNpc : MonoBehaviour
             cancellationToken: token
         );
 
+        CharacterQuest = QuestManager.Instance.CharacterQuests
+            .Where(x => Ids.Contains(x.questId))
+            .Where(x => x.status != CharacterQuestStatusEnum.Completed)
+            .FirstOrDefault();
+
+        if (CharacterQuest == null)
+        {
+            LoadNextQuest();
+        }
+        else if (CharacterQuest.status == CharacterQuestStatusEnum.Finished)
+        {
+            LoadFinishedQuest();
+        }
+
+        QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
+    }
+
+    private void LoadNextQuest()
+    {
+        var completedQuests = QuestManager.Instance.CharacterQuests
+            .Where(x => x.status == CharacterQuestStatusEnum.Completed);
+
+        var filteredIds = Ids.Where(x => !completedQuests.Any(cq => cq.questId == x));
+
         Quest = QuestManager.Instance.Quests
-            .Where(x => x.id == Id)
-            .Single();
+            .Where(x => filteredIds.Contains(x.id))
+            .First();
+
+        ShowExclamationMark();
+    }
+
+    private void LoadFinishedQuest()
+    {
+        Quest = QuestManager.Instance.Quests
+            .Where(x => x.id == CharacterQuest.questId)
+            .First();
+
+        ShowQuestionMark();
+    }
+
+    public void CheckNextQuest()
+    {
+        Quest = QuestManager.Instance.Quests
+            .Where(x => x.previousQuestId == Quest.id)
+            .FirstOrDefault();
+
+        if (Quest == null)
+        {
+            return;
+        }
 
         CharacterQuest = QuestManager.Instance.CharacterQuests
-            .Where(x => x.questId == Id)
+            .Where(x => x.questId == Quest.id)
             .FirstOrDefault();
 
         if (CharacterQuest == null)
@@ -33,7 +79,8 @@ public class QuestNpc : MonoBehaviour
             ShowExclamationMark();
         }
 
-        QuestManager.Instance.QuestNpcs.Add(Id, this);
+        QuestManager.Instance.QuestNpcs.Remove(Quest.previousQuestId);
+        QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
     }
 
     public void ShowQuestionMark()

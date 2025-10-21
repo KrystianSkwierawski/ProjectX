@@ -11,6 +11,8 @@ public class Quest
 
     public int Id { get; set; }
 
+    public int? PreviousQuestId { get; set; }
+
     public QuestTypeEnum Type { get; set; }
 
     public required string Title { get; set; }

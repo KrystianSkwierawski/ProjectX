@@ -113,19 +113,20 @@ public class ApplicationDbContextInitialiser
                 StatusText = "Killed {0}/{1} beans",
                 GameObjectName = "Bean(Clone)",
                 Requirement = 2,
-                Reward = 10,
+                Reward = 1000,
                 ModDate = DateTime.Now
             },
             new Quest
             {
+                PreviousQuestId = 1,
                 Type = QuestTypeEnum.Collect,
                 Title = "Collect 2 cans",
-                Description = "Bla bla bla collec 2 cans, ok?",
+                Description = "Bla bla bla collect 2 cans, ok?",
                 CompleteDescription = "ok, u collected 2 cans",
-                StatusText = "Collected {0}/{1} cands",
+                StatusText = "Collected {0}/{1} cans",
                 GameObjectName = "Can",
-                Requirement = 6,
-                Reward = 10,
+                Requirement = 2,
+                Reward = 1000,
                 ModDate = DateTime.Now
             }
         ]);

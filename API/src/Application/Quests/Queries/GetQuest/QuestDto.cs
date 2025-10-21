@@ -5,6 +5,8 @@ public class QuestDto
 {
     public int Id { get; set; }
 
+    public int PreviousQuestId { get; set; }
+
     public QuestTypeEnum Type { get; set; }
 
     public required string Title { get; set; }
@@ -23,6 +25,6 @@ public class QuestDto
 
     public override string ToString()
     {
-        return $"{nameof(QuestDto)} {{ Id = {Id}, Type = {Type}, Title = {Title}, Description = {Description}, CompleteDescription = {CompleteDescription}, StatusText = {StatusText}, GameObjectName = {GameObjectName}, Requirement = {Requirement}, Reward = {Reward} }}";
+        return $"{nameof(QuestDto)} {{ Id = {Id}, PreviousQuestId = {PreviousQuestId}, Type = {Type}, Title = {Title}, Description = {Description}, CompleteDescription = {CompleteDescription}, StatusText = {StatusText}, GameObjectName = {GameObjectName}, Requirement = {Requirement}, Reward = {Reward} }}";
     }
 }
