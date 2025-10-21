@@ -1,3 +1,6 @@
+- validate complete quest position
+- new question mark
+- eq
 - quests
 - skill tree
 - simple combat system
