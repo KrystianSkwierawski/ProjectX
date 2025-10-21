@@ -16,8 +16,13 @@ public class Bootstrap : MonoBehaviour
 
     private static async UniTask StartClient()
     {
-        SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
+        await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
         Debug.Log("MainScene Loaded");
+
+        await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
+        Debug.Log("UIScene Loaded");
+
+        UIManager.Instance.Init();
 
         if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
         {
@@ -28,13 +33,13 @@ public class Bootstrap : MonoBehaviour
             await TokenManager.Instance.LoginAsync("user2@localhost", "User2!");
         }
 
-        SceneManager.LoadScene("EnvironmentScene", LoadSceneMode.Additive);
+        await QuestManager.Instance.LoadQuestsAsync();
+        await QuestManager.Instance.LoadCharacterQuestsAsync();
+
+        await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
         Debug.Log("EnvironmentScene Loaded");
 
-        SceneManager.LoadScene("UIScene", LoadSceneMode.Additive);
-        Debug.Log("UIScene Loaded");
-
-        SceneManager.LoadScene("NpcScene", LoadSceneMode.Additive);
+        await SceneManager.LoadSceneAsync("NpcScene", LoadSceneMode.Additive);
         Debug.Log("NpcScene Loaded");
 
         NetworkManager.Singleton.StartClient();
@@ -44,10 +49,10 @@ public class Bootstrap : MonoBehaviour
 
     private static async UniTask StartServer()
     {
-        SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
+        await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
         Debug.Log("MainScene Loaded");
 
-        SceneManager.LoadScene("ServerScene", LoadSceneMode.Additive);
+        await SceneManager.LoadSceneAsync("ServerScene", LoadSceneMode.Additive);
         Debug.Log("ServerScene Loaded");
 
         await TokenManager.Instance.LoginAsync("server1@localhost", "Server1!");

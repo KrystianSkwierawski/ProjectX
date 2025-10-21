@@ -1,6 +1,6 @@
 using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -11,15 +11,6 @@ public class Health : NetworkBehaviour
 
     public float Value { get; private set; } = 100;
 
-    private GameObject _targetCanvas;
-
-    private void Start()
-    {
-        if (IsClient)
-        {
-            _targetCanvas = GameObject.Find("TargetCanvas");
-        }
-    }
 
     public async UniTask DealDamageAsync(float damage, string token, ulong clientId)
     {
@@ -44,22 +35,36 @@ public class Health : NetworkBehaviour
 
     private async UniTask HandleKillAsync(string token, ulong clientId)
     {
-        await AddExperienceAsync(token, clientId);
+        var experience = await ExperienceManager.Instance.AddExperienceAsync(ExperienceTypeEnum.Combat, token, clientId);
+        var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, token);
+
+        if (experience.leveledUp)
+        {
+            Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
+
+            UpdateLevelClientRpc(experience.level, clientId);
+        }
+
+        if (progres.status != CharacterQuestStatusEnum.None)
+        {
+            UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
+        }
+
         gameObject.GetComponent<NetworkObject>().Despawn();
     }
 
     [ClientRpc]
     private void HideTargetCanvasClientRpc()
     {
-        _targetCanvas.transform.Find("Target").gameObject.SetActive(false);
+        UIManager.Instance.Target.SetActive(false);
     }
 
     [ClientRpc]
-    private void UpdateLevelClientRpc(int level, ulong clientId)
+    public void UpdateLevelClientRpc(int level, ulong clientId)
     {
         if (NetworkManager.Singleton.LocalClientId == clientId)
         {
-            GameObject.Find("PlayerCanvas").transform.Find("Player/Level").GetComponent<TextMeshProUGUI>().text = $"Level: {level}";
+            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
             GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(_levelUpSfx, 0.4f);
         }
     }
@@ -70,92 +75,24 @@ public class Health : NetworkBehaviour
         Debug.Log("Updating target UI");
 
         Value = value;
-        _targetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>().text = Value.ToString();
+        UIManager.Instance.TargetHealthPointsText.text = Value.ToString();
     }
 
-    private async UniTask AddExperienceAsync(string token, ulong clientId)
+    [ClientRpc]
+    private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
     {
-        using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
+        if (NetworkManager.Singleton.LocalClientId == clientId)
         {
-            amount = 1000,
-            type = ExperienceTypeEnum.Combat,
-            clientToken = token
-        }), "application/json");
+            Debug.Log($"UpdateQuestLogClientRpc: {clientId}");
 
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+            var characterQuest = QuestManager.Instance.CharacterQuests
+                .Where(x => x.id == characterQuestId)
+                .Single();
 
-        await request.SendWebRequest();
+            characterQuest.progress += progres;
+            characterQuest.status = status;
 
-        Debug.Log($"AddExperience result: {request.result}");
-        Debug.Log($"AddExperience text: {request.downloadHandler.text}");
-
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            var result = JsonUtility.FromJson<AddCharacterExperienceDto>(request.downloadHandler.text);
-
-            if (result.leveledUp)
-            {
-                Debug.Log($"LevelUp! Level: {result.level}, SkillPoints: {result.skillPoints}, Experience: {result.experience}");
-
-                UpdateLevelClientRpc(result.level, clientId);
-            }
+            QuestManager.Instance.AddedProgresEvent.Invoke(characterQuest.questId, characterQuest.status);
         }
-    }
-
-    [Serializable]
-    private class AddCharacterExperienceCommand
-    {
-        public int amount;
-
-        public ExperienceTypeEnum type;
-
-        public string clientToken;
-    }
-
-    [Serializable]
-    private class AddCharacterExperienceDto
-    {
-        public byte level;
-
-        public byte skillPoints;
-
-        public int experience;
-
-        public bool leveledUp;
-    }
-
-    private enum ExperienceTypeEnum : byte
-    {
-        None,
-
-        Combat,
-
-        Crafting,
-
-        Gathering,
-
-        Exploration,
-
-        Questing,
-
-        Trading,
-
-        Survival,
-
-        Technology,
-
-        Healing,
-
-        Building,
-
-        Farming,
-
-        Fishing,
-
-        Cooking,
-
-        Alchemy,
-
-        Enchanting,
     }
 }

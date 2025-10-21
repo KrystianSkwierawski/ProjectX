@@ -1,66 +1,105 @@
-using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class QuestNpc : MonoBehaviour
 {
-    [SerializeReference] private int _id = 1;
+    public int[] Ids { get; private set; } = new int[] { 1, 2 };
 
-    private QuestoDto _quest;
+    public QuestDto Quest { get; set; }
+
+    public CharacterQuestDto CharacterQuest { get; set; }
 
     private async void Start()
     {
-        _quest = await GetQuestAsync(_id);
-    }
+        var token = this.GetCancellationTokenOnDestroy();
 
-    private async UniTask<QuestoDto> GetQuestAsync(int id)
-    {
-        using var request = UnityWebRequest.Get($"https://localhost:5001/api/Quests/{id}");
+        await UniTask.WaitUntil(
+            () => QuestManager.Instance.Quests != null && QuestManager.Instance.CharacterQuests != null,
+            cancellationToken: token
+        );
 
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+        CharacterQuest = QuestManager.Instance.CharacterQuests
+            .Where(x => Ids.Contains(x.questId))
+            .Where(x => x.status != CharacterQuestStatusEnum.Completed)
+            .FirstOrDefault();
 
-        await request.SendWebRequest();
-
-        Debug.Log($"GetQuest result: {request.result}");
-        Debug.Log($"GetQuest text: {request.downloadHandler.text}");
-
-        if (request.result == UnityWebRequest.Result.Success)
+        if (CharacterQuest == null)
         {
-            return JsonUtility.FromJson<QuestoDto>(request.downloadHandler.text);
+            LoadNextQuest();
+        }
+        else if (CharacterQuest.status == CharacterQuestStatusEnum.Finished)
+        {
+            LoadFinishedQuest();
         }
 
-        throw new Exception(request.error);
+        QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
     }
 
-    private class QuestoDto
+    private void LoadNextQuest()
     {
-        public QuestTypeEnum type;
+        var completedQuests = QuestManager.Instance.CharacterQuests
+            .Where(x => x.status == CharacterQuestStatusEnum.Completed);
 
-        public string title;
+        var filteredIds = Ids.Where(x => !completedQuests.Any(cq => cq.questId == x));
 
-        public string description;
+        Quest = QuestManager.Instance.Quests
+            .Where(x => filteredIds.Contains(x.id))
+            .First();
 
-        public string statusText;
-
-        public int reward;
+        ShowExclamationMark();
     }
 
-    private enum QuestTypeEnum : byte
+    private void LoadFinishedQuest()
     {
-        Indefinite,
+        Quest = QuestManager.Instance.Quests
+            .Where(x => x.id == CharacterQuest.questId)
+            .First();
 
-        Kill,
+        ShowQuestionMark();
+    }
 
-        Epxlore,
+    public void CheckNextQuest()
+    {
+        Quest = QuestManager.Instance.Quests
+            .Where(x => x.previousQuestId == Quest.id)
+            .FirstOrDefault();
 
-        Find,
+        if (Quest == null)
+        {
+            return;
+        }
 
-        Gather,
+        CharacterQuest = QuestManager.Instance.CharacterQuests
+            .Where(x => x.questId == Quest.id)
+            .FirstOrDefault();
 
-        Drop,
+        if (CharacterQuest == null)
+        {
+            ShowExclamationMark();
+        }
 
-        Collect
+        QuestManager.Instance.QuestNpcs.Remove(Quest.previousQuestId);
+        QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
+    }
+
+    public void ShowQuestionMark()
+    {
+        gameObject.transform.Find("QuestionMark").gameObject.SetActive(true);
+    }
+
+    public void HideQuestionMark()
+    {
+        gameObject.transform.Find("QuestionMark").gameObject.SetActive(false);
+    }
+
+    public void ShowExclamationMark()
+    {
+        gameObject.transform.Find("ExclamationMark").gameObject.SetActive(true);
+    }
+
+    public void HideExclamationMark()
+    {
+        gameObject.transform.Find("ExclamationMark").gameObject.SetActive(false);
     }
 }

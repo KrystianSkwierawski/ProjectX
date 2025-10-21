@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.CharacterQuests.Commands;
+namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
 
 public record AddCharacterQuestProgresCommand(int CharacterQuestId, int Progres, string ClientToken) : IRequest<AddCharacterQuestProgresDto>;
 
@@ -38,12 +38,11 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
         characterQuest.Progress += request.Progres;
         characterQuest.ModDate = DateTime.Now;
 
-        if (characterQuest.Progress >= characterQuest.Quest.Requirements)
+        if (characterQuest.Progress >= characterQuest.Quest.Requirement)
         {
             Log.Debug("Completed character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 
-            characterQuest.Status = CharacterQuestStatusEnum.Completed;
-            characterQuest.EndDate = characterQuest.ModDate;
+            characterQuest.Status = CharacterQuestStatusEnum.Finished;
         }
 
         await _context.SaveChangesAsync(cancellationToken);

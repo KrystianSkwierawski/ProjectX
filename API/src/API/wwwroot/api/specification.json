@@ -80,7 +80,7 @@
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "GetCharacterQuest",
+        "operationId": "GetCharacterQuests",
         "parameters": [
           {
             "name": "CharacterId",
@@ -99,7 +99,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CharacterQuestDto"
+                  "$ref": "#/components/schemas/GetCharacterQuestsDto"
                 }
               }
             }
@@ -111,6 +111,44 @@
           }
         ]
       },
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "AcceptCharacterQuest",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptCharacterQuestCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/CharacterQuests/Progres": {
       "post": {
         "tags": [
           "CharacterQuests"
@@ -135,6 +173,43 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AddCharacterQuestProgresDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/CharacterQuests/CheckProgres": {
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "CheckCharacterQuestProgress",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckCharacterQuestProgresCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckCharacterQuestProgresDto"
                 }
               }
             }
@@ -242,7 +317,7 @@
         "tags": [
           "Quests"
         ],
-        "operationId": "GetQuestQuery",
+        "operationId": "GetQuest",
         "parameters": [
           {
             "name": "id",
@@ -261,7 +336,32 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QuestoDto"
+                  "$ref": "#/components/schemas/QuestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Quests": {
+      "get": {
+        "tags": [
+          "Quests"
+        ],
+        "operationId": "GetQuests",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetQuestsDto"
                 }
               }
             }
@@ -323,7 +423,11 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "amount": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterQuestId": {
             "type": "integer",
             "format": "int32"
           },
@@ -447,11 +551,27 @@
           15
         ]
       },
+      "GetCharacterQuestsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CharacterQuestDto"
+            }
+          }
+        }
+      },
       "CharacterQuestDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "questId": {
             "type": "integer",
             "format": "int32"
           },
@@ -468,21 +588,29 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
-          "Active",
+          "None",
+          "Accepted",
+          "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enum-varnames": [
-          "Active",
+          "None",
+          "Accepted",
+          "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enumNames": [
-          "Active",
+          "None",
+          "Accepted",
+          "Finished",
           "Completed",
           "Abandoned"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
           null,
           null,
           null
@@ -490,13 +618,27 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3,
+          4
         ]
+      },
+      "AcceptCharacterQuestCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "questId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "AddCharacterQuestProgresDto": {
         "type": "object",
@@ -518,6 +660,43 @@
           "characterQuestId": {
             "type": "integer",
             "format": "int32"
+          },
+          "progres": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "clientToken": {
+            "type": "string"
+          }
+        }
+      },
+      "CheckCharacterQuestProgresDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "questId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CharacterQuestStatusEnum"
+          }
+        }
+      },
+      "CheckCharacterQuestProgresCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameObjectName": {
+            "type": "string"
           },
           "progres": {
             "type": "integer",
@@ -600,10 +779,18 @@
           }
         }
       },
-      "QuestoDto": {
+      "QuestDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "previousQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "type": {
             "$ref": "#/components/schemas/QuestTypeEnum"
           },
@@ -613,8 +800,18 @@
           "description": {
             "type": "string"
           },
+          "completeDescription": {
+            "type": "string"
+          },
           "statusText": {
             "type": "string"
+          },
+          "gameObjectName": {
+            "type": "string"
+          },
+          "requirement": {
+            "type": "integer",
+            "format": "int32"
           },
           "reward": {
             "type": "integer",
@@ -679,6 +876,18 @@
           5,
           6
         ]
+      },
+      "GetQuestsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestDto"
+            }
+          }
+        }
       }
     },
     "securitySchemes": {

@@ -513,7 +513,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<DateTime>("ModDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Requirements")
+                    b.Property<int>("Requirement")
                         .HasColumnType("int");
 
                     b.Property<int>("Reward")

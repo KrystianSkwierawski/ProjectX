@@ -2,7 +2,11 @@
 
 public enum CharacterQuestStatusEnum : byte
 {
-    Active,
+    None,
+
+    Accepted,
+
+    Finished,
 
     Completed,
 

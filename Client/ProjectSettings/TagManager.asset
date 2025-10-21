@@ -7,6 +7,7 @@ TagManager:
   - CinemachineTarget
   - Enemy
   - Target
+  - QuestNpc
   layers:
   - Default
   - TransparentFX

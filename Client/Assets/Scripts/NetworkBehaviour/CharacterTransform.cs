@@ -81,21 +81,5 @@ public class CharacterTransform : NetworkBehaviour
             transform.rotation.Set(0, result.rotationY, 0, 0);
         }
     }
-
-    [Serializable]
-    private class CharacterTransformDto // wydziel osobno na get i save
-    {
-        public int characterId;
-
-        public float positionX;
-
-        public float positionY;
-
-        public float positionZ;
-
-        public float rotationY;
-
-        public string clientToken;
-    }
 }
 
