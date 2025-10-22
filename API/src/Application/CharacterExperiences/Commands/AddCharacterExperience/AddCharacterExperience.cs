@@ -25,8 +25,8 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     private static readonly SortedDictionary<int, byte> _experienceToLevel = new SortedDictionary<int, byte>
     {
         { 0, 1 },
-        { 2000, 2 },
-        { 3000, 3 },
+        { 100, 2 },
+        { 400, 3 },
         { 4000, 4 },
         { 5000, 5 },
         { 6000, 6 },
@@ -86,7 +86,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
 
         character.CharacterExperiences.Add(new CharacterExperience
         {
-            Amount = amount ?? 1000,
+            Amount = amount ?? 50,
             Type = request.Type,
             ModDate = now
         });
