@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - Target
   - QuestNpc
+  - InventorySlot
   layers:
   - Default
   - TransparentFX

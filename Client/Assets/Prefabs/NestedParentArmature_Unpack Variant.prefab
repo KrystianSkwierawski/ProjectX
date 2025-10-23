@@ -513,4 +513,5 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _questAcceptedSfx: {fileID: 8300000, guid: 54ed85a964fdc314090cc4455e31da3f, type: 3}
   _questCompletedSfx: {fileID: 8300000, guid: 65605e24cf371434fbe94e62817865f6, type: 3}
-  _uiManager: {fileID: 11400000, guid: 79dd8568e3a450d4985e2bedc406349f, type: 2}
+  _openInventorySfx: {fileID: 8300000, guid: aa84f1ef741b8b54a9e864908ac0842c, type: 3}
+  _closeInventorySfx: {fileID: 8300000, guid: 88d6e1bfe2f64c742a61c7d0df985d6d, type: 3}

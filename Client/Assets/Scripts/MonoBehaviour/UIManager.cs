@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,10 +8,13 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
+    public Texture CanTexture;
+
     [NonSerialized] public GameObject ProgressBarCanvas;
     [NonSerialized] public GameObject TargetCanvas;
     [NonSerialized] public GameObject QuestCanvas;
     [NonSerialized] public GameObject PlayerCanvas;
+    [NonSerialized] public GameObject InventoryCanvas;
 
     [NonSerialized] public Image CastProgressBar;
     [NonSerialized] public GameObject Target;
@@ -28,6 +32,7 @@ public class UIManager : MonoBehaviour
     [NonSerialized] public TextMeshProUGUI PlayerLevelText;
     [NonSerialized] public TextMeshProUGUI PlayerNameText;
     [NonSerialized] public TextMeshProUGUI PlayerHealthPointsText;
+    [NonSerialized] public GameObject Inventory;
 
     private void Awake()
     {
@@ -47,6 +52,7 @@ public class UIManager : MonoBehaviour
         TargetCanvas = GameObject.Find("TargetCanvas");
         QuestCanvas = GameObject.Find("QuestCanvas");
         PlayerCanvas = GameObject.Find("PlayerCanvas");
+        InventoryCanvas = GameObject.Find("InventoryCanvas");
 
         CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
         Target = TargetCanvas.transform.Find("Target").gameObject;
@@ -63,6 +69,37 @@ public class UIManager : MonoBehaviour
         PlayerLevelText = PlayerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>();
         PlayerNameText = PlayerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>();
         PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
+        Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+    }
+
+    public void UpdateInventory(InventoryItem item)
+    {
+        var slots = GameObject.FindGameObjectsWithTag("InventorySlot");
+
+        var slot = slots
+            .Select(x => new
+            {
+                Image = x.transform.Find("Background").GetComponent<RawImage>(),
+                Text = x.transform.Find("Text").GetComponent<TextMeshProUGUI>()
+            })
+            //.Where(x => x.Image.texture == null)
+            .FirstOrDefault();
+
+        if (slot != null)
+        {
+            slot.Text.gameObject.SetActive(true);
+            slot.Text.text = item.count.ToString();
+
+            slot.Image.color = Color.white;
+
+            slot.Image.texture = item.type switch
+            {
+                CharacterInventoryTypeEnum.Can => CanTexture,
+                _ => null,
+            };
+        }
+
+        // todo: out of slots
     }
 
     public void SetTarget(string name, string health)

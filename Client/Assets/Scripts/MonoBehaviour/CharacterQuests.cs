@@ -13,6 +13,10 @@ public class CharacterQuests : NetworkBehaviour
     [SerializeField] private AudioClip _questAcceptedSfx;
     [SerializeField] private AudioClip _questCompletedSfx;
 
+    // todo: inventory class
+    [SerializeField] private AudioClip _openInventorySfx;
+    [SerializeField] private AudioClip _closeInventorySfx;
+
     [ServerRpc]
     private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
     {
@@ -84,6 +88,7 @@ public class CharacterQuests : NetworkBehaviour
 
     private async UniTask AddQuestAsync(QuestNpc questNpc)
     {
+        // todo: get audio on start
         GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
 
         questNpc.HideExclamationMark();
@@ -97,6 +102,7 @@ public class CharacterQuests : NetworkBehaviour
 
     private void CompleteQuest(QuestNpc questNpc)
     {
+        // todo: get audio on start
         GetComponent<AudioSource>().PlayOneShot(_questCompletedSfx, 0.5f);
 
         questNpc.HideQuestionMark();
@@ -117,6 +123,23 @@ public class CharacterQuests : NetworkBehaviour
         if (!IsOwner || QuestManager.Instance.CharacterQuests == null)
         {
             return;
+        }
+
+        // todo: inventory class
+        if (Keyboard.current.tabKey.wasPressedThisFrame)
+        {
+            if (UIManager.Instance.Inventory.activeSelf)
+            {
+                // todo: get audio on start
+                GetComponent<AudioSource>().PlayOneShot(_closeInventorySfx, 0.5f);
+                UIManager.Instance.Inventory.SetActive(false);
+            }
+            else
+            {
+                // todo: get audio on start
+                GetComponent<AudioSource>().PlayOneShot(_openInventorySfx, 0.5f);
+                UIManager.Instance.Inventory.SetActive(true);
+            }
         }
 
         var mouse = Mouse.current;

@@ -57,6 +57,13 @@ public class Health : NetworkBehaviour
     private void HideTargetCanvasClientRpc()
     {
         UIManager.Instance.Target.SetActive(false);
+
+        // todo
+        UIManager.Instance.UpdateInventory(new InventoryItem
+        {
+            type = CharacterInventoryTypeEnum.Can,
+            count = new System.Random().Next(1, 9)
+        });
     }
 
     [ClientRpc]
