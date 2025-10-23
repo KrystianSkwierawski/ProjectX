@@ -75,6 +75,71 @@
         ]
       }
     },
+    "/api/CharacterInventories": {
+      "get": {
+        "tags": [
+          "CharacterInventories"
+        ],
+        "operationId": "GetCharacterInventory",
+        "parameters": [
+          {
+            "name": "CharacterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterInventoryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "CharacterInventories"
+        ],
+        "operationId": "UpdateCharacterInventory",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCharacterInventoryCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterQuests": {
       "get": {
         "tags": [
@@ -149,11 +214,11 @@
       }
     },
     "/api/CharacterQuests/Progres": {
-      "post": {
+      "patch": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "AddCharacterQuestProgress",
+        "operationId": "PatchApiCharacterQuestsProgres",
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -186,11 +251,11 @@
       }
     },
     "/api/CharacterQuests/CheckProgres": {
-      "post": {
+      "patch": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "CheckCharacterQuestProgress",
+        "operationId": "PatchApiCharacterQuestsCheckProgres",
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -550,6 +615,88 @@
           14,
           15
         ]
+      },
+      "CharacterInventoryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inventory": {
+            "$ref": "#/components/schemas/Inventory"
+          }
+        }
+      },
+      "Inventory": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItem"
+            }
+          }
+        }
+      },
+      "InventoryItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/CharacterInventoryTypeEnum"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CharacterInventoryTypeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "Can"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "Can"
+        ],
+        "x-enumNames": [
+          "None",
+          "Can"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      },
+      "UpdateCharacterInventoryCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inventory": {
+            "$ref": "#/components/schemas/Inventory"
+          },
+          "clientToken": {
+            "type": "string"
+          }
+        }
       },
       "GetCharacterQuestsDto": {
         "type": "object",

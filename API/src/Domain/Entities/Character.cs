@@ -27,6 +27,8 @@ public class Character
 
     public DateTime ModDate { get; set; }
 
+    public virtual CharacterInventory CharacterInventory { get; set; }
+
     [InverseProperty(nameof(CharacterTransform.Character))]
     public virtual ICollection<CharacterTransform> CharacterPositions { get; set; }
 

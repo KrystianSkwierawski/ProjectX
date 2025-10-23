@@ -13,6 +13,8 @@ public interface IApplicationDbContext
 
     DbSet<CharacterQuest> CharacterQuests { get; }
 
+    DbSet<CharacterInventory> CharacterInventories { get; }
+
     DbSet<Quest> Quests { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);

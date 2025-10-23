@@ -21,6 +21,8 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<CharacterQuest> CharacterQuests => Set<CharacterQuest>();
 
+    public DbSet<CharacterInventory> CharacterInventories => Set<CharacterInventory>();
+
     public DbSet<Quest> Quests => Set<Quest>();
 
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();

@@ -20,7 +20,7 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
 
     public async Task<GetCharacterQuestsDto> Handle(GetCharacterQuestsQuery request, CancellationToken cancellationToken)
     {
-        var characterQuests = await _context.CharacterQuests
+        var result = await _context.CharacterQuests
             //.Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Character.ApplicationUserId == _currentUserService.Id)
             .Select(x => new CharacterQuestDto
@@ -33,11 +33,11 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
             .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);
 
-        Log.Debug("Found character quests. CharacterId: {0}, Count: {1}", request.CharacterId, characterQuests.Count);
+        Log.Debug("Found character quests. CharacterId: {0}, Count: {1}", request.CharacterId, result.Count);
 
         return new GetCharacterQuestsDto
         {
-            CharacterQuests = characterQuests
+            CharacterQuests = result
         };
     }
 }
