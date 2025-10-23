@@ -15,8 +15,8 @@ public class CharacterQuests : EndpointGroupBase
     {
         groupBuilder.MapGet(GetCharacterQuests).RequireAuthorization(Policies.Client);
         groupBuilder.MapPost(AcceptCharacterQuest).RequireAuthorization(Policies.Client);
-        groupBuilder.MapPatch("Progres", AddCharacterQuestProgress).RequireAuthorization(Policies.Server);
-        groupBuilder.MapPatch("CheckProgres", CheckCharacterQuestProgress).RequireAuthorization(Policies.Server);
+        groupBuilder.MapPost("Progres", AddCharacterQuestProgress).RequireAuthorization(Policies.Server);
+        groupBuilder.MapPost("CheckProgres", CheckCharacterQuestProgress).RequireAuthorization(Policies.Server);
     }
 
     private static async Task<Ok<GetCharacterQuestsDto>> GetCharacterQuests(ISender sender, [AsParameters] GetCharacterQuestsQuery query)
