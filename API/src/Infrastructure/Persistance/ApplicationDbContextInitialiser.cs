@@ -89,11 +89,11 @@ public class ApplicationDbContextInitialiser
                     {
                         Items =
                         [
-                            new InventoryItem
-                            {
-                                Type = CharacterInventoryTypeEnum.Can,
-                                Count = 5
-                            }
+                            //new InventoryItem
+                            //{
+                            //    Type = CharacterInventoryTypeEnum.Can,
+                            //    Count = 5
+                            //}
                         ]
                     }),
                     Count = 9

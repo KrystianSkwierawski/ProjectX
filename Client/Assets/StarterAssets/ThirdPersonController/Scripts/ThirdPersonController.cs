@@ -159,6 +159,7 @@ namespace StarterAssets
                 transform.parent.Find("PlayerFollowCamera").gameObject.SetActive(true);
                 transform.parent.Find("UI_EventSystem").gameObject.SetActive(true);
                 _cinemachineVirtualCamera.Follow = transform.Find("PlayerCameraRoot");
+                GetComponent<AudioSource>().enabled = true;
 #if ENABLE_INPUT_SYSTEM
             }
 #endif
