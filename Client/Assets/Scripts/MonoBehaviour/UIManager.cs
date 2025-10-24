@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance { get; private set; }
 
     public Texture CanTexture;
+    public GameObject InventorySlotPrefab;
 
     [NonSerialized] public GameObject ProgressBarCanvas;
     [NonSerialized] public GameObject TargetCanvas;
@@ -70,6 +71,12 @@ public class UIManager : MonoBehaviour
         PlayerNameText = PlayerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>();
         PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
         Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+
+        for (int i = 0; i < 9; i++)
+        {
+            var slot = Instantiate(InventorySlotPrefab);
+            slot.transform.SetParent(Inventory.transform);
+        }
     }
 
     public void UpdateInventory(InventoryItem item)
