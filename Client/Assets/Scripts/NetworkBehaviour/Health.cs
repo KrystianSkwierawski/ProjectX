@@ -58,12 +58,17 @@ public class Health : NetworkBehaviour
     {
         UIManager.Instance.Target.SetActive(false);
 
-        // todo
-        UIManager.Instance.UpdateInventory(new InventoryItem
+        // todo: server validation
+        int random = UnityEngine.Random.Range(0, 99);
+
+        if (random < 50)
         {
-            type = CharacterInventoryTypeEnum.Can,
-            count = new System.Random().Next(1, 9)
-        });
+            UIManager.Instance.UpdateInventory(new InventoryItem
+            {
+                type = CharacterInventoryTypeEnum.Can,
+                count = new System.Random().Next(1, 9)
+            });
+        }
     }
 
     [ClientRpc]
