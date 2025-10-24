@@ -626,6 +626,9 @@
           },
           "inventory": {
             "$ref": "#/components/schemas/Inventory"
+          },
+          "count": {
+            "type": "integer"
           }
         }
       },

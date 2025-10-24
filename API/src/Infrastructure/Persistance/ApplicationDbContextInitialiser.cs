@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Domain.Constants;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -81,23 +83,38 @@ public class ApplicationDbContextInitialiser
                 Status = StatusEnum.Active,
                 Health = 100,
                 ModDate = DateTime.Now,
-            };
-
-            var characterPosition = new CharacterTransform
-            {
-                PositionX = 1,
-                PositionY = 0,
-                PositionZ = 0,
-                ModDate = DateTime.Now,
-                Character = character,
+                CharacterInventory = new CharacterInventory
+                {
+                    Inventory = JsonSerializer.Serialize(new Inventory
+                    {
+                        Items =
+                        [
+                            new InventoryItem
+                            {
+                                Type = CharacterInventoryTypeEnum.Can,
+                                Count = 5
+                            }
+                        ]
+                    }),
+                    Count = 9
+                },
+                CharacterTransforms =
+                [
+                    new CharacterTransform
+                    {
+                        PositionX = 1,
+                        PositionY = 0,
+                        PositionZ = 0,
+                        ModDate = DateTime.Now
+                    }
+                ]
             };
 
             _context.Characters.Add(character);
-            _context.CharacterTransforms.Add(characterPosition);
 
             await _context.SaveChangesAsync();
 
-            Log.Debug("CreateUserAsync -> Created user. UserName: {0}, Role: {1}, CharacterId: {2}, CharacterPositionId: {3}", user, role, character.Id, characterPosition.Id);
+            Log.Debug("CreateUserAsync -> Created user. UserName: {0}, Role: {1}, CharacterId: {2}", user, role, character.Id);
         }
     }
 

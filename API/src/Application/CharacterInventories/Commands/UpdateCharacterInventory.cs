@@ -35,7 +35,7 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
             .Where(x => x.Character.ApplicationUserId == userId)
             .ExecuteUpdateAsync(
                 updates => updates
-                    .SetProperty(x => x.Items, x => items)
+                    .SetProperty(x => x.Inventory, x => items)
                     .SetProperty(x => x.ModDate, x => DateTime.Now),
                 cancellationToken);
     }

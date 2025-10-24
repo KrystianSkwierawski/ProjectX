@@ -8,9 +8,11 @@ public class CharacterInventory
     [ForeignKey(nameof(Character))]
     public int CharacterId { get; set; }
 
-    public required string Items { get; set; }
+    public required string Inventory { get; set; }
 
     public DateTime ModDate { get; set; }
+
+    public short Count { get; set; }
 
     public virtual Character Character { get; set; }
 }

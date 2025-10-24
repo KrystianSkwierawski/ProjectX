@@ -19,6 +19,6 @@ public class CharacterTransform
     public DateTime ModDate { get; set; }
 
     [ForeignKey(nameof(CharacterId))]
-    [InverseProperty(nameof(Character.CharacterPositions))]
+    [InverseProperty(nameof(Character.CharacterTransforms))]
     public virtual Character Character { get; set; }
 }

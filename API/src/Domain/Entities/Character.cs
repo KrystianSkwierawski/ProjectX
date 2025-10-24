@@ -6,7 +6,7 @@ public class Character
 {
     public Character()
     {
-        CharacterPositions = new HashSet<CharacterTransform>();
+        CharacterTransforms = new HashSet<CharacterTransform>();
         CharacterExperiences = new HashSet<CharacterExperience>();
         CharacterQuests = new HashSet<CharacterQuest>();
     }
@@ -30,7 +30,7 @@ public class Character
     public virtual CharacterInventory CharacterInventory { get; set; }
 
     [InverseProperty(nameof(CharacterTransform.Character))]
-    public virtual ICollection<CharacterTransform> CharacterPositions { get; set; }
+    public virtual ICollection<CharacterTransform> CharacterTransforms { get; set; }
 
     [InverseProperty(nameof(CharacterExperience.Character))]
     public virtual ICollection<CharacterExperience> CharacterExperiences { get; set; }

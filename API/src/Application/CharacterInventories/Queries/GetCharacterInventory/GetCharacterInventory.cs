@@ -21,7 +21,8 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
             .Select(x => new
             {
                 CharacterId = x.CharacterId,
-                Items = x.Items
+                Items = x.Inventory,
+                Count = x.Count
             })
             .SingleAsync(cancellationToken);
 
@@ -32,7 +33,8 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
         return new CharacterInventoryDto
         {
             CharacterId = result.CharacterId,
-            Inventory = inventory
+            Inventory = inventory,
+            Count = result.Count
         };
     }
 }
