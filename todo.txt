@@ -8,5 +8,4 @@
 - fix cast validations
 
 scale ui with scren size 1920.1080
-sound manager i osobny audio source.Wywal dezaktywację
-zmień font questy
+sound manager i osobny audio source. Wywal dezaktywację
