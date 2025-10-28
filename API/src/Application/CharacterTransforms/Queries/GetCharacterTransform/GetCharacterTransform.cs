@@ -19,8 +19,10 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransfo
 
     public async Task<CharacterTransformDto> Handle(GetCharacterTransformQuery request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.GetId();
+
         return await _context.CharacterTransforms
-            .Where(x => x.Character.ApplicationUserId == _currentUserService.Id)
+            .Where(x => x.Character.ApplicationUserId == userId)
             .OrderByDescending(x => x.ModDate)
             .Select(x => new CharacterTransformDto
             {

@@ -18,9 +18,11 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
 
     public async Task<CharacterDto> Handle(GetCharacterQuery request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.GetId();
+
         return await _context.Characters
             //.Where(x => x.Id = request.CharacterId)
-            .Where(x => x.ApplicationUserId == _currentUserService.Id)
+            .Where(x => x.ApplicationUserId == userId)
             .OrderByDescending(x => x.ModDate)
             .Select(x => new CharacterDto
             {

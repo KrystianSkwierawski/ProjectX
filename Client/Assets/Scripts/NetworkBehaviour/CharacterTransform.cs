@@ -44,7 +44,7 @@ public class CharacterTransform : NetworkBehaviour
         _ = SaveTransformAsync(token);
     }
 
-    private async UniTask SaveTransformAsync(string token)
+    private async UniTask SaveTransformAsync(string clientToken)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
         {
@@ -52,10 +52,10 @@ public class CharacterTransform : NetworkBehaviour
             positionY = transform.position.y,
             positionZ = transform.position.z,
             rotationY = transform.rotation.y,
-            clientToken = token
         }), "application/json");
         
         request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+        request.SetRequestHeader("ClientToken", clientToken);
 
         await request.SendWebRequest();
 

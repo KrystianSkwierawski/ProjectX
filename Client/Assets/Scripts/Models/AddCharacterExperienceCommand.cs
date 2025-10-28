@@ -8,6 +8,4 @@ public class AddCharacterExperienceCommand
     public int characterQuestId;
 
     public ExperienceTypeEnum type;
-
-    public string clientToken;
 }

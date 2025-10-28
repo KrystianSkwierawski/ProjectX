@@ -1,9 +1,6 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 
@@ -18,8 +15,6 @@ public record SaveTransformTransformCommand : IRequest
     public float PositionZ { get; init; }
 
     public float RotationY { get; init; }
-
-    public required string ClientToken { get; init; }
 }
 
 public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTransformCommand>
@@ -27,17 +22,17 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<SavePlayerTransformCommandHandler>();
 
     private readonly IApplicationDbContext _context;
-    private readonly TokenValidationParameters _validationParameters;
+    private readonly ICurrentUserService _currentUserService;
 
-    public SavePlayerTransformCommandHandler(IApplicationDbContext context, TokenValidationParameters validationParameters)
+    public SavePlayerTransformCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
-        _validationParameters = validationParameters;
+        _currentUserService = currentUserService;
     }
 
     public async Task Handle(SaveTransformTransformCommand request, CancellationToken cancellationToken)
     {
-        var userId = GetUserId(request.ClientToken);
+        var userId = _currentUserService.GetId();
 
         int characterId = await GetCharacterIdAsync(userId, cancellationToken);
 
@@ -75,19 +70,6 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
         Log.Debug("Found character: {0} for user: {1}", result, userId);
 
         return result;
-    }
-
-    private string GetUserId(string clientToken)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var principal = handler.ValidateToken(clientToken, _validationParameters, out var validatedToken);
-
-        var userId = principal.Claims
-            .Where(x => x.Type == ClaimTypes.NameIdentifier)
-            .Select(x => x.Value)
-            .First();
-
-        return userId;
     }
 
     private async Task ValidatePositionAsync(SaveTransformTransformCommand request, int characterId)

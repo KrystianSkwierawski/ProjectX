@@ -1,7 +1,5 @@
-- client token refactor - headers, userservice
 - validate complete quest position
 - new question mark
-- eq
 - skill tree
 - simple combat system
 - fix cast validations

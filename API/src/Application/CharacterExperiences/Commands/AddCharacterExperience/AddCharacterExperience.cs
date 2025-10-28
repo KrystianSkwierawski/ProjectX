@@ -1,9 +1,5 @@
-﻿using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -16,8 +12,6 @@ public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto
     public int CharacterQuestId { get; set; }
 
     public ExperienceTypeEnum Type { get; init; }
-
-    public string ClientToken { get; init; }
 }
 
 public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacterExperienceCommand, AddCharacterExperienceDto>
@@ -39,12 +33,12 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterExperienceCommandHandler>();
 
     private readonly IApplicationDbContext _context;
-    private readonly TokenValidationParameters _validationParameters;
+    private readonly ICurrentUserService _currentUserService;
 
-    public AddCharacterExperienceCommandHandler(IApplicationDbContext context, TokenValidationParameters validationParameters)
+    public AddCharacterExperienceCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
-        _validationParameters = validationParameters;
+        _currentUserService = currentUserService;
     }
 
     public async Task<AddCharacterExperienceDto> Handle(AddCharacterExperienceCommand request, CancellationToken cancellationToken)
@@ -53,7 +47,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
 
         int? amount = null;
 
-        var userId = GetUserId(request.ClientToken);
+        var userId = _currentUserService.GetId();
 
         var now = DateTime.Now;
 
@@ -116,18 +110,5 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
         result.SkillPoints = character.SkillPoints;
 
         return result;
-    }
-
-    private string GetUserId(string clientToken)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var principal = handler.ValidateToken(clientToken, _validationParameters, out var validatedToken);
-
-        var userId = principal.Claims
-            .Where(x => x.Type == ClaimTypes.NameIdentifier)
-            .Select(x => x.Value)
-            .First();
-
-        return userId;
     }
 }

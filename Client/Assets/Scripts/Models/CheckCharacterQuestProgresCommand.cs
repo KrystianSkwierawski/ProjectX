@@ -8,6 +8,4 @@ public class CheckCharacterQuestProgresCommand
     public string gameObjectName;
 
     public int progres;
-    
-    public string clientToken;
 }

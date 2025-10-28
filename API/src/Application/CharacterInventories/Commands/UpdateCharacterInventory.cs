@@ -1,32 +1,29 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Commands;
 
-public record UpdateCharacterInventoryCommand(int CharacterId, Inventory inventory, string ClientToken) : IRequest;
+public record UpdateCharacterInventoryCommand(int CharacterId, Inventory inventory) : IRequest;
 
 public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand>
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<UpdateCharacterInventoryCommandHandler>();
 
     private readonly IApplicationDbContext _context;
-    private readonly TokenValidationParameters _validationParameters;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UpdateCharacterInventoryCommandHandler(IApplicationDbContext context, TokenValidationParameters validationParameters)
+    public UpdateCharacterInventoryCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
-        _validationParameters = validationParameters;
+        _currentUserService = currentUserService;
     }
 
     public async Task Handle(UpdateCharacterInventoryCommand request, CancellationToken cancellationToken)
     {
-        var userId = GetUserId(request.ClientToken);
+        var userId = _currentUserService.GetId();
 
         var items = JsonSerializer.Serialize(request.inventory.Items);
 
@@ -39,18 +36,4 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
                     .SetProperty(x => x.ModDate, x => DateTime.Now),
                 cancellationToken);
     }
-
-    private string GetUserId(string clientToken)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var principal = handler.ValidateToken(clientToken, _validationParameters, out var validatedToken);
-
-        var userId = principal.Claims
-            .Where(x => x.Type == ClaimTypes.NameIdentifier)
-            .Select(x => x.Value)
-            .First();
-
-        return userId;
-    }
-
 }

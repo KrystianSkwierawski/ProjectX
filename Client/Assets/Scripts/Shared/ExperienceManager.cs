@@ -5,17 +5,17 @@ using UnityEngine.Networking;
 
 public sealed class ExperienceManager : BaseManager<ExperienceManager>
 {
-    public async UniTask<AddCharacterExperienceDto> AddExperienceAsync(ExperienceTypeEnum type, string token, ulong clientId, int? characterQuestId = null)
+    public async UniTask<AddCharacterExperienceDto> AddExperienceAsync(ExperienceTypeEnum type, string clientToken, ulong clientId, int? characterQuestId = null)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand
         {
             characterId = 1,
             characterQuestId = characterQuestId ?? 0,
-            type = type,
-            clientToken = token
+            type = type
         }), "application/json");
 
         request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+        request.SetRequestHeader("ClientToken", clientToken);
 
         await request.SendWebRequest();
 

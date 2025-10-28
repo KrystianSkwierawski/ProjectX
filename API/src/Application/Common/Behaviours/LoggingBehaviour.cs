@@ -9,11 +9,11 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(LoggingBehaviour<,>));
 
-    private readonly ICurrentUserService _user;
+    private readonly ICurrentUserService _currentUserService;
 
-    public LoggingBehaviour(ICurrentUserService user)
+    public LoggingBehaviour(ICurrentUserService currentUserService)
     {
-        _user = user;
+        _currentUserService = currentUserService;
     }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -22,7 +22,9 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
         try
         {
-            Log.Debug("{0} -> Start. UserId: {1}, Request: {2}", requestName, _user.Id, request);
+            var userId = _currentUserService.GetId();
+
+            Log.Debug("{0} -> Start. UserId: {1}, Request: {2}", requestName, userId, request);
 
             var sw = Stopwatch.StartNew();
 
@@ -30,7 +32,7 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
             sw.Stop();
 
-            Log.Debug("{0} -> Stop. UserId: {1}, Elapsed: {2}, Response: {3}", requestName, _user.Id, sw.Elapsed, response);
+            Log.Debug("{0} -> Stop. UserId: {1}, Elapsed: {2}, Response: {3}", requestName, userId, sw.Elapsed, response);
 
             return response;
         }

@@ -13,7 +13,7 @@ public class CharacterQuests : NetworkBehaviour
     [ServerRpc]
     private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
     {
-        // FIXME: validate transform.location
+        // TODO: validate transform.location
         _ = CompleteQuestAsync(characterQuestId, token, clientId);
     }
 

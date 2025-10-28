@@ -13,11 +13,19 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
+    public GetCharacterInventoryQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
     public async Task<CharacterInventoryDto> Handle(GetCharacterInventoryQuery request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.GetId();
+
         var result = await _context.CharacterInventories
             //.Where(x => x.CharacterId == request.CharacterId)
-            .Where(x => x.Character.ApplicationUserId == _currentUserService.Id)
+            .Where(x => x.Character.ApplicationUserId == userId)
             .Select(x => new
             {
                 CharacterId = x.CharacterId,

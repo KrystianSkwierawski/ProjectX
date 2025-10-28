@@ -12,6 +12,4 @@ public class CharacterTransformDto
     public float positionZ;
 
     public float rotationY;
-
-    public string clientToken;
 }

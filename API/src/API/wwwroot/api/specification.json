@@ -498,9 +498,6 @@
           },
           "type": {
             "$ref": "#/components/schemas/ExperienceTypeEnum"
-          },
-          "clientToken": {
-            "type": "string"
           }
         }
       },
@@ -695,9 +692,6 @@
           },
           "inventory": {
             "$ref": "#/components/schemas/Inventory"
-          },
-          "clientToken": {
-            "type": "string"
           }
         }
       },
@@ -814,9 +808,6 @@
           "progres": {
             "type": "integer",
             "format": "int32"
-          },
-          "clientToken": {
-            "type": "string"
           }
         }
       },
@@ -851,9 +842,6 @@
           "progres": {
             "type": "integer",
             "format": "int32"
-          },
-          "clientToken": {
-            "type": "string"
           }
         }
       },
@@ -923,9 +911,6 @@
           "rotationY": {
             "type": "number",
             "format": "float"
-          },
-          "clientToken": {
-            "type": "string"
           }
         }
       },

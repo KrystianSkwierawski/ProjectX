@@ -22,8 +22,10 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
 
     public async Task<int> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.GetId();
+
         var characterId = await _context.Characters
-            .Where(x => x.ApplicationUserId == _currentUserService.Id)
+            .Where(x => x.ApplicationUserId == userId)
             .Select(x => x.Id)
             .FirstAsync();
 

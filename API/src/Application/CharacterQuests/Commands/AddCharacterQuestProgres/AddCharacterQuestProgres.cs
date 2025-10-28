@@ -1,31 +1,28 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
 
-public record AddCharacterQuestProgresCommand(int CharacterQuestId, int Progres, string ClientToken) : IRequest<AddCharacterQuestProgresDto>;
+public record AddCharacterQuestProgresCommand(int CharacterQuestId, int Progres) : IRequest<AddCharacterQuestProgresDto>;
 
 public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharacterQuestProgresCommand, AddCharacterQuestProgresDto>
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterQuestProgresCommandHandler>();
 
     private readonly IApplicationDbContext _context;
-    private readonly TokenValidationParameters _validationParameters;
+    private readonly ICurrentUserService _currentUserService;
 
-    public AddCharacterQuestProgresCommandHandler(IApplicationDbContext context, TokenValidationParameters validationParameters)
+    public AddCharacterQuestProgresCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
-        _validationParameters = validationParameters;
+        _currentUserService = currentUserService;
     }
 
     public async Task<AddCharacterQuestProgresDto> Handle(AddCharacterQuestProgresCommand request, CancellationToken cancellationToken)
     {
-        var userId = GetUserId(request.ClientToken);
+        var userId = _currentUserService.GetId();
 
         var characterQuest = await _context.CharacterQuests
             .Include(x => x.Quest)
@@ -52,18 +49,5 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
             Status = characterQuest.Status,
             Reward = characterQuest.Status == CharacterQuestStatusEnum.Completed ? characterQuest.Quest.Reward : 0
         };
-    }
-
-    private string GetUserId(string clientToken)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var principal = handler.ValidateToken(clientToken, _validationParameters, out var validatedToken);
-
-        var userId = principal.Claims
-            .Where(x => x.Type == ClaimTypes.NameIdentifier)
-            .Select(x => x.Value)
-            .First();
-
-        return userId;
     }
 }
