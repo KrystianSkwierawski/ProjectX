@@ -143,6 +143,13 @@ namespace StarterAssets
 
             UnityEngine.Cursor.visible = true;
             UnityEngine.Cursor.lockState = CursorLockMode.None;
+
+            if (IsOwner)
+            {
+                var audioSource = GetComponent<AudioSource>();
+                audioSource.enabled = true;
+                AudioManager.Instance.Init(audioSource);
+            }
         }
 
         public override void OnNetworkSpawn()
@@ -159,7 +166,6 @@ namespace StarterAssets
                 transform.parent.Find("PlayerFollowCamera").gameObject.SetActive(true);
                 transform.parent.Find("UI_EventSystem").gameObject.SetActive(true);
                 _cinemachineVirtualCamera.Follow = transform.Find("PlayerCameraRoot");
-                GetComponent<AudioSource>().enabled = true;
 #if ENABLE_INPUT_SYSTEM
             }
 #endif

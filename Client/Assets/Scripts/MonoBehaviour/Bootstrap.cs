@@ -22,6 +22,9 @@ public class Bootstrap : MonoBehaviour
         await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
         Debug.Log("UIScene Loaded");
 
+        await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
+        Debug.Log("AudioScene Loaded");
+
         UIManager.Instance.Init();
 
         if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)

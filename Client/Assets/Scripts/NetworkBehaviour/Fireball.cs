@@ -34,7 +34,7 @@ public class Fireball : NetworkBehaviour
     [ClientRpc]
     private void PreCastClientRpc()
     {
-        _audioSource.PlayOneShot(_preCastSfx, 0.7f);
+        AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.FireballPrecast, 0.7f);
     }
 
     public void Cast(NetworkObject target)
@@ -52,7 +52,7 @@ public class Fireball : NetworkBehaviour
             _audioSource.Stop();
         }
 
-        _audioSource.PlayOneShot(_castSfx, 0.7f);
+        AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.FireballCast, 0.7f);
     }
 
     public void Failed()
@@ -70,7 +70,7 @@ public class Fireball : NetworkBehaviour
         }
 
         _visualEffect.enabled = false;
-        _audioSource.PlayOneShot(FailedSfx, 1f);
+        AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 1f);
     }
 
     private async void Update()
@@ -123,6 +123,6 @@ public class Fireball : NetworkBehaviour
     private void OnHitTargetClientRpc()
     {
         _visualEffect.enabled = false;
-        _audioSource.PlayOneShot(_impactSfx, 1f);
+        AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.FireballImpact, 1f);
     }
 }

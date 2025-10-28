@@ -88,8 +88,7 @@ public class CharacterQuests : NetworkBehaviour
 
     private async UniTask AddQuestAsync(QuestNpc questNpc)
     {
-        // todo: get audio on start
-        GetComponent<AudioSource>().PlayOneShot(_questAcceptedSfx, 0.5f);
+        AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
 
         questNpc.HideExclamationMark();
 
@@ -102,8 +101,7 @@ public class CharacterQuests : NetworkBehaviour
 
     private void CompleteQuest(QuestNpc questNpc)
     {
-        // todo: get audio on start
-        GetComponent<AudioSource>().PlayOneShot(_questCompletedSfx, 0.5f);
+        AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
         questNpc.HideQuestionMark();
 
@@ -130,14 +128,14 @@ public class CharacterQuests : NetworkBehaviour
         {
             if (UIManager.Instance.Inventory.activeSelf)
             {
-                // todo: get audio on start
-                GetComponent<AudioSource>().PlayOneShot(_closeInventorySfx, 0.5f);
+                AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
+
                 UIManager.Instance.Inventory.SetActive(false);
             }
             else
             {
-                // todo: get audio on start
-                GetComponent<AudioSource>().PlayOneShot(_openInventorySfx, 0.5f);
+                AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
+
                 UIManager.Instance.Inventory.SetActive(true);
             }
         }

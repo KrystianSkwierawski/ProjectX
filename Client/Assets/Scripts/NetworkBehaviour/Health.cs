@@ -1,10 +1,7 @@
-using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class Health : NetworkBehaviour
 {
@@ -62,7 +59,7 @@ public class Health : NetworkBehaviour
         // todo: server validation
         int random = UnityEngine.Random.Range(0, 99);
 
-        if (random < 50)
+        if (random < 90)
         {
             UIManager.Instance.UpdateInventory(new InventoryItem
             {
@@ -78,7 +75,7 @@ public class Health : NetworkBehaviour
         if (NetworkManager.Singleton.LocalClientId == clientId)
         {
             UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
-            GameObject.Find("PlayerArmature").GetComponent<AudioSource>().PlayOneShot(_levelUpSfx, 0.4f);
+            AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.4f);
         }
     }
 

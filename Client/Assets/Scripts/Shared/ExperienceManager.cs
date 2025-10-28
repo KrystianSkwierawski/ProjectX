@@ -3,23 +3,8 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public sealed class ExperienceManager
+public sealed class ExperienceManager : BaseManager<ExperienceManager>
 {
-    private static readonly ExperienceManager _instance = new ExperienceManager();
-    
-    private ExperienceManager()
-    {
-
-    }
-
-    public static ExperienceManager Instance
-    {
-        get
-        {
-            return _instance;
-        }
-    }
-
     public async UniTask<AddCharacterExperienceDto> AddExperienceAsync(ExperienceTypeEnum type, string token, ulong clientId, int? characterQuestId = null)
     {
         using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterExperiences", JsonUtility.ToJson(new AddCharacterExperienceCommand

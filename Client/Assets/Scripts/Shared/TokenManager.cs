@@ -2,23 +2,8 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public sealed class TokenManager
+public sealed class TokenManager : BaseManager<TokenManager>
 {
-    private static readonly TokenManager _instance = new TokenManager();
-
-    private TokenManager()
-    {
-
-    }
-
-    public static TokenManager Instance
-    {
-        get
-        {
-            return _instance;
-        }
-    }
-
     public string Token { get; private set; }
 
     public async UniTask LoginAsync(string userName, string password)

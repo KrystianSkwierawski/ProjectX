@@ -5,24 +5,9 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 
-public sealed class QuestManager
+public sealed class QuestManager : BaseManager<QuestManager>
 {
     public IDictionary<int, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<int, QuestNpc>();
-
-    private static readonly QuestManager _instance = new QuestManager();
-
-    private QuestManager()
-    {
-
-    }
-
-    public static QuestManager Instance
-    {
-        get
-        {
-            return _instance;
-        }
-    }
 
     public UnityEvent<int, CharacterQuestStatusEnum> AddedProgresEvent = new UnityEvent<int, CharacterQuestStatusEnum>();
 

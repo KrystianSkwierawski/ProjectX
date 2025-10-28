@@ -28,6 +28,12 @@ MonoBehaviour:
     m_path: Assets/Scenes/EnvironmentScene.unity
   - m_enabled: 1
     m_path: Assets/Scenes/ServerScene.unity
+  - m_enabled: 1
+    m_path: Assets/Scenes/UIScene.unity
+  - m_enabled: 1
+    m_path: Assets/Scenes/AudioScene.unity
+  - m_enabled: 1
+    m_path: Assets/Scenes/NpcScene.unity
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
     m_Settings:
