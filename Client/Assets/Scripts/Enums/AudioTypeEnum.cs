@@ -1,5 +1,7 @@
 public enum AudioTypeEnum : byte
 {
+    #region sfx
+
     CastingFailed,
     FireballCast,
     FireballImpact,
@@ -9,4 +11,13 @@ public enum AudioTypeEnum : byte
     LevelUp,
     QuestAccepted,
     QuestCompleted,
+
+    #endregion
+
+    #region music
+
+    BacgroundMusic,
+    BacgroundMusic2,
+
+    #endregion
 }

@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    [SerializeField] private AudioClip[] _musicList;
-
     private AudioSource _mainAudioSource;
 
-    private IDictionary<AudioTypeEnum, AudioClip> _audioClips = new Dictionary<AudioTypeEnum, AudioClip>();
+    private readonly IDictionary<AudioTypeEnum, AudioClip> _audioClips = new Dictionary<AudioTypeEnum, AudioClip>();
+
+    private readonly AudioTypeEnum[] _musicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
 
     public static AudioManager Instance { get; private set; }
 
@@ -37,7 +37,10 @@ public class AudioManager : MonoBehaviour
 
     private void PlayRandomMusic()
     {
-        var audioClip = _musicList[UnityEngine.Random.Range(0, _musicList.Length)];
+        var randomType = _musicTypes[UnityEngine.Random.Range(0, _musicTypes.Length)];
+
+        var audioClip = _audioClips[randomType];
+
         _mainAudioSource.PlayOneShot(audioClip, 0.05f);
     }
 

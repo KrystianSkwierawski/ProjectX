@@ -1,11 +1,8 @@
-- client token refactor
+- client token refactor - headers, userservice
 - validate complete quest position
 - new question mark
 - eq
-- quests
 - skill tree
 - simple combat system
 - fix cast validations
 
-scale ui with scren size 1920.1080
-sound manager i osobny audio source. Wywal dezaktywację
