@@ -10,17 +10,10 @@ public class CharacterQuests : NetworkBehaviour
 {
     private int _questId;
 
-    [SerializeField] private AudioClip _questAcceptedSfx;
-    [SerializeField] private AudioClip _questCompletedSfx;
-
-    // todo: inventory class
-    [SerializeField] private AudioClip _openInventorySfx;
-    [SerializeField] private AudioClip _closeInventorySfx;
-
     [ServerRpc]
     private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
     {
-        // TODO: validate transform.location
+        // FIXME: validate transform.location
         _ = CompleteQuestAsync(characterQuestId, token, clientId);
     }
 
@@ -123,23 +116,6 @@ public class CharacterQuests : NetworkBehaviour
             return;
         }
 
-        // todo: inventory class
-        if (Keyboard.current.tabKey.wasPressedThisFrame)
-        {
-            if (UIManager.Instance.Inventory.activeSelf)
-            {
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
-
-                UIManager.Instance.Inventory.SetActive(false);
-            }
-            else
-            {
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
-
-                UIManager.Instance.Inventory.SetActive(true);
-            }
-        }
-
         var mouse = Mouse.current;
 
         if (mouse.leftButton.wasPressedThisFrame)
@@ -160,7 +136,7 @@ public class CharacterQuests : NetworkBehaviour
         }
     }
 
-    // todo: refactor and optimization
+    // FIXME: refactor and optimization
     private async UniTask UpdateQuestLog()
     {
         await UniTask.WaitUntil(() => QuestManager.Instance.CharacterQuests != null);

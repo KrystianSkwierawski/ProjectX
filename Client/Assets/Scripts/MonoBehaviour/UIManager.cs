@@ -106,7 +106,7 @@ public class UIManager : MonoBehaviour
             };
         }
 
-        // todo: out of slots
+        // TODO: out of slots
     }
 
     public void SetTarget(string name, string health)

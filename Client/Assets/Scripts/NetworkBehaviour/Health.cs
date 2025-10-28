@@ -56,7 +56,7 @@ public class Health : NetworkBehaviour
     {
         UIManager.Instance.Target.SetActive(false);
 
-        // todo: server validation
+        // FIXME: server validation
         int random = UnityEngine.Random.Range(0, 99);
 
         if (random < 90)
