@@ -26,7 +26,7 @@ public class CharacterQuests : EndpointGroupBase
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Created<int>> AcceptCharacterQuest(ISender sender, AcceptCharacterQuestCommand command)
+    private static async Task<Created<CharacterQuestDto>> AcceptCharacterQuest(ISender sender, AcceptCharacterQuestCommand command)
     {
         var result = await sender.Send(command);
 

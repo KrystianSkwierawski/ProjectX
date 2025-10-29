@@ -4,10 +4,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour
+public class UIManager : MonoSingleton<UIManager>
 {
-    public static UIManager Instance { get; private set; }
-
     public Texture CanTexture;
     public GameObject InventorySlotPrefab;
 
@@ -34,18 +32,6 @@ public class UIManager : MonoBehaviour
     [NonSerialized] public TextMeshProUGUI PlayerNameText;
     [NonSerialized] public TextMeshProUGUI PlayerHealthPointsText;
     [NonSerialized] public GameObject Inventory;
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     public void Init()
     {

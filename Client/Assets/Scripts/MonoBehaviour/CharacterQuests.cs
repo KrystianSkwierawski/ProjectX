@@ -17,9 +17,14 @@ public class CharacterQuests : NetworkBehaviour
         _ = CompleteQuestAsync(characterQuestId, token, clientId);
     }
 
-    private async UniTask CompleteQuestAsync(int characterQuestId, string token, ulong clientId)
+    private async UniTask CompleteQuestAsync(int characterQuestId, string clientToken, ulong clientId)
     {
-        var result = await ExperienceManager.Instance.AddExperienceAsync(ExperienceTypeEnum.Questing, token, clientId, characterQuestId);
+        var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+        {
+            characterId = 1,
+            characterQuestId = characterQuestId,
+            type = ExperienceTypeEnum.Questing
+        }, clientToken);
 
         if (result.leveledUp)
         {

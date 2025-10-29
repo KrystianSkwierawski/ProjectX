@@ -1,29 +1,20 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking;
 
-public sealed class TokenManager : BaseManager<TokenManager>
+public class TokenManager : Singleton<TokenManager>
 {
     public string Token { get; private set; }
 
     public async UniTask LoginAsync(string userName, string password)
     {
-        using var request = UnityWebRequest.Post("https://localhost:5001/api/ApplicationUsers", JsonUtility.ToJson(new LoginApplicationUserCommand
+        var result = await UnityWebRequestHelper.ExecutePostAsync<LoginApplicationUserDto>("ApplicationUsers", new LoginApplicationUserCommand
         {
             userName = userName,
             password = password
-        }), "application/json");
+        });
 
-        await request.SendWebRequest();
+        Token = result.token;
 
-        Debug.Log($"Login result: {request.result}");
-
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            var json = request.downloadHandler.text;
-            var result = JsonUtility.FromJson<LoginApplicationUserDto>(json);
-            Token = result.token;
-            Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
-        }
+        Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
     }
 }

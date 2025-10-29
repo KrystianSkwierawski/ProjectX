@@ -1,13 +1,14 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
-public record AcceptCharacterQuestCommand(int QuestId) : IRequest<int>;
+public record AcceptCharacterQuestCommand(int QuestId) : IRequest<CharacterQuestDto>;
 
-public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacterQuestCommand, int>
+public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacterQuestCommand, CharacterQuestDto>
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AcceptCharacterQuestCommandHandler>();
 
@@ -20,7 +21,7 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
         _currentUserService = currentUserService;
     }
 
-    public async Task<int> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
+    public async Task<CharacterQuestDto> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
 
@@ -45,6 +46,12 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
 
         Log.Debug("AcceptCharacterQuest -> Accepted quest for id: {0}", request.QuestId);
 
-        return entity.Id;
+        return new CharacterQuestDto
+        {
+            Id = entity.Id,
+            QuestId = entity.QuestId,
+            Progress = entity.Progress,
+            Status = entity.Status,
+        };
     }
 }

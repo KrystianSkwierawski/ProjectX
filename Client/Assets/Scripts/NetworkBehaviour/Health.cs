@@ -31,10 +31,15 @@ public class Health : NetworkBehaviour
         return;
     }
 
-    private async UniTask HandleKillAsync(string token, ulong clientId)
+    private async UniTask HandleKillAsync(string clientToken, ulong clientId)
     {
-        var experience = await ExperienceManager.Instance.AddExperienceAsync(ExperienceTypeEnum.Combat, token, clientId);
-        var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, token);
+        var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+        {
+            characterId = 1,
+            type = ExperienceTypeEnum.Combat
+        }, clientToken);
+
+        var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, clientToken);
 
         if (experience.leveledUp)
         {

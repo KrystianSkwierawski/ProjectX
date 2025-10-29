@@ -15,7 +15,10 @@ public class CharacterTransform : NetworkBehaviour
 
         if (IsOwner)
         {
-            await GetTransformAsync();
+            var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterTransformDto>("CharacterTransforms");
+
+            transform.position = new Vector3(result.positionX, result.positionY, result.positionZ);
+            transform.rotation.Set(0, result.rotationY, 0, 0);
         }
     }
 
@@ -39,47 +42,15 @@ public class CharacterTransform : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void SaveTransformServerRpc(string token)
+    private void SaveTransformServerRpc(string clientToken)
     {
-        _ = SaveTransformAsync(token);
-    }
-
-    private async UniTask SaveTransformAsync(string clientToken)
-    {
-        using var request = UnityWebRequest.Post("https://localhost:5001/api/CharacterTransforms", JsonUtility.ToJson(new CharacterTransformDto
+        _ = UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterTransforms", new CharacterTransformDto
         {
             positionX = transform.position.x,
             positionY = transform.position.y,
             positionZ = transform.position.z,
             rotationY = transform.rotation.y,
-        }), "application/json");
-        
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
-        request.SetRequestHeader("ClientToken", clientToken);
-
-        await request.SendWebRequest();
-
-        //Debug.Log($"SaveTransform result: {request.result}");
-        //Debug.Log($"SaveTransform text: {request.downloadHandler.text}");
-    }
-
-    private async UniTask GetTransformAsync()
-    {
-        using var request = UnityWebRequest.Get("https://localhost:5001/api/CharacterTransforms");
-
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
-
-        await request.SendWebRequest();
-
-        Debug.Log($"GetTransform result: {request.result}");
-        Debug.Log($"GetTransformA text: {request.downloadHandler.text}");
-
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            var result = JsonUtility.FromJson<CharacterTransformDto>(request.downloadHandler.text);
-            transform.position = new Vector3(result.positionX, result.positionY, result.positionZ);
-            transform.rotation.Set(0, result.rotationY, 0, 0);
-        }
+        }, clientToken);
     }
 }
 
