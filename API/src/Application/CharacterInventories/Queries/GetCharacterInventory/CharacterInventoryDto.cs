@@ -5,7 +5,7 @@ public class CharacterInventoryDto
 {
     public int CharacterId { get; set; }
 
-    public required Inventory Inventory { get; set; }
+    public required InventoryDto Inventory { get; set; }
 
     public short Count { get; set; }
 
@@ -15,7 +15,7 @@ public class CharacterInventoryDto
     }
 }
 
-public class Inventory
+public class InventoryDto
 {
     public IList<InventoryItem> Items { get; set; } = [];
 }

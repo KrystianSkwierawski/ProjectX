@@ -34,7 +34,7 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
             })
             .SingleAsync(cancellationToken);
 
-        var inventory = JsonSerializer.Deserialize<Inventory>(result.Items);
+        var inventory = JsonSerializer.Deserialize<InventoryDto>(result.Items);
 
         ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
 

@@ -85,7 +85,7 @@ public class ApplicationDbContextInitialiser
                 ModDate = DateTime.Now,
                 CharacterInventory = new CharacterInventory
                 {
-                    Inventory = JsonSerializer.Serialize(new Inventory
+                    Inventory = JsonSerializer.Serialize(new InventoryDto
                     {
                         Items =
                         [

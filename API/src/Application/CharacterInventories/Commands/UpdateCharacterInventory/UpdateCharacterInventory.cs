@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
 
-namespace ProjectX.Application.CharacterInventories.Commands;
+namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
-public record UpdateCharacterInventoryCommand(int CharacterId, Inventory inventory) : IRequest;
+public record UpdateCharacterInventoryCommand(int CharacterId, InventoryDto inventory) : IRequest;
 
 public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand>
 {
@@ -28,7 +28,7 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         var items = JsonSerializer.Serialize(request.inventory.Items);
 
         await _context.CharacterInventories
-            .Where(x => x.CharacterId == request.CharacterId)
+            //.Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .ExecuteUpdateAsync(
                 updates => updates
