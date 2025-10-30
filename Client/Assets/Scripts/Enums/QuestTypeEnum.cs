@@ -1,3 +1,5 @@
+namespace Assets.Scripts.Enums
+{
 public enum QuestTypeEnum : byte
 {
     Indefinite,
@@ -13,4 +15,5 @@ public enum QuestTypeEnum : byte
     Drop,
 
     Collect
+}
 }

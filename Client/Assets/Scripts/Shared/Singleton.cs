@@ -1,19 +1,22 @@
 using System;
 
-public abstract class Singleton<T> where T : class
+namespace Assets.Scripts.Shared
 {
-    private static readonly T _instance = (T)Activator.CreateInstance(typeof(T));
-
-    protected Singleton()
+    public abstract class Singleton<T> where T : class
     {
+        private static readonly T _instance = (T)Activator.CreateInstance(typeof(T));
 
-    }
-
-    public static T Instance
-    {
-        get
+        protected Singleton()
         {
-            return _instance;
+
+        }
+
+        public static T Instance
+        {
+            get
+            {
+                return _instance;
+            }
         }
     }
 }

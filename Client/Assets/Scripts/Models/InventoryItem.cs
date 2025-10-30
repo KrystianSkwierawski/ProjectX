@@ -1,9 +1,21 @@
 using System;
+using Assets.Scripts.Enums;
+using Unity.Netcode;
 
-[Serializable]
-public class InventoryItem
+namespace Assets.Scripts.Models
 {
-    public CharacterInventoryTypeEnum type;
+    [Serializable]
+    public class InventoryItem : INetworkSerializable // TODO: NetworkSerializableModel
+    {
+        public CharacterInventoryTypeEnum type;
 
-    public int count;
+        public int count;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref type);
+            serializer.SerializeValue(ref count);
+        }
+    }
 }
+

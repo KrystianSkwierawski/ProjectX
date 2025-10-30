@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 2527298531764070783}
   - component: {fileID: -4577873606182041173}
   - component: {fileID: -6483590673427769986}
-  - component: {fileID: -6783946349171284442}
   - component: {fileID: -1735210066325763825}
+  - component: {fileID: 6461003937077901169}
   m_Layer: 0
   m_Name: S_Fireball_01
   m_TagString: Untagged
@@ -246,24 +246,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &-6783946349171284442
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2527298531764070780}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e276182dee8018c44951b0b322c669ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  _preCastSfx: {fileID: 8300000, guid: 2a5f01113b342bb48a958ecdacc15747, type: 3}
-  _castSfx: {fileID: 8300000, guid: 550cad4a891ff31468617041c7022416, type: 3}
-  _impactSfx: {fileID: 8300000, guid: bc62d974446988941831cac84771e1d8, type: 3}
-  FailedSfx: {fileID: 8300000, guid: db325f18381107742a9089ed03438b08, type: 3}
-  _speed: 15
 --- !u!114 &-1735210066325763825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -310,3 +292,21 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &6461003937077901169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2527298531764070780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 198d2046ecc65e24298afe5bdcd64f49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  _preCastSfx: {fileID: 0}
+  _castSfx: {fileID: 0}
+  _impactSfx: {fileID: 0}
+  FailedSfx: {fileID: 0}
+  _speed: 15

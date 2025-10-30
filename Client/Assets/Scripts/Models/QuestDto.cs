@@ -1,25 +1,29 @@
 using System;
+using Assets.Scripts.Enums;
 
-[Serializable]
-public class QuestDto
+namespace Assets.Scripts.Models
 {
-    public int id;
+    [Serializable]
+    public class QuestDto
+    {
+        public int id;
 
-    public int previousQuestId;
+        public int previousQuestId;
 
-    public QuestTypeEnum type;
+        public QuestTypeEnum type;
 
-    public string title;
+        public string title;
 
-    public string description;
+        public string description;
 
-    public string completeDescription;
+        public string completeDescription;
 
-    public string statusText;
+        public string statusText;
 
-    public string gameObjectName;
+        public string gameObjectName;
 
-    public int requirement;
+        public int requirement;
 
-    public int reward;
+        public int reward;
+    }
 }

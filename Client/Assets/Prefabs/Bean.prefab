@@ -14,8 +14,8 @@ GameObject:
   - component: {fileID: 3696680866453560561}
   - component: {fileID: 6281970205948669045}
   - component: {fileID: 3261350837771284739}
-  - component: {fileID: 1636234288627873302}
-  - component: {fileID: 3328108770336092963}
+  - component: {fileID: 5156581894214852486}
+  - component: {fileID: 6613491746221372621}
   m_Layer: 0
   m_Name: Bean
   m_TagString: Target
@@ -185,7 +185,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &1636234288627873302
+--- !u!114 &5156581894214852486
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -194,14 +194,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7630075145136831269}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b989659850a595418f02d1298345806, type: 3}
+  m_Script: {fileID: 11500000, guid: fa9da4a06f8284743adee3884291382f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _patrolRadius: 5
   _moveSpeed: 2
   _pointTolerance: 0.2
---- !u!114 &3328108770336092963
+--- !u!114 &6613491746221372621
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -210,9 +210,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 7630075145136831269}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c06ed864abaa4e4286befcff5133a84, type: 3}
+  m_Script: {fileID: 11500000, guid: 0f4ad2fb7d2d88e48af74e2172031c8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _levelUpSfx: {fileID: 8300000, guid: b6db863c0a9a8f642a1f150493db927d, type: 3}
-  _uiManager: {fileID: 11400000, guid: 79dd8568e3a450d4985e2bedc406349f, type: 2}
+  _levelUpSfx: {fileID: 0}

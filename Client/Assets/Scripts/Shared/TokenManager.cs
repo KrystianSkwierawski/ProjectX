@@ -1,20 +1,24 @@
+using Assets.Scripts.Models;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class TokenManager : Singleton<TokenManager>
+namespace Assets.Scripts.Shared
 {
-    public string Token { get; private set; }
-
-    public async UniTask LoginAsync(string userName, string password)
+    public class TokenManager : Singleton<TokenManager>
     {
-        var result = await UnityWebRequestHelper.ExecutePostAsync<LoginApplicationUserDto>("ApplicationUsers", new LoginApplicationUserCommand
+        public string Token { get; private set; }
+
+        public async UniTask LoginAsync(string userName, string password)
         {
-            userName = userName,
-            password = password
-        });
+            var result = await UnityWebRequestHelper.ExecutePostAsync<LoginApplicationUserDto>("ApplicationUsers", new LoginApplicationUserCommand
+            {
+                userName = userName,
+                password = password
+            });
 
-        Token = result.token;
+            Token = result.token;
 
-        Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
+            Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
+        }
     }
 }

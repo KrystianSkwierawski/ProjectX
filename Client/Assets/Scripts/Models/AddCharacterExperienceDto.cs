@@ -1,13 +1,16 @@
 using System;
 
-[Serializable]
-public class AddCharacterExperienceDto
+namespace Assets.Scripts.Models
 {
-    public byte level;
+    [Serializable]
+    public class AddCharacterExperienceDto
+    {
+        public byte level;
 
-    public byte skillPoints;
+        public byte skillPoints;
 
-    public int experience;
+        public int experience;
 
-    public bool leveledUp;
+        public bool leveledUp;
+    }
 }

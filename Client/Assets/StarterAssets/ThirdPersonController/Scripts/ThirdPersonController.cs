@@ -1,4 +1,5 @@
-﻿using Cinemachine;
+﻿using Assets.Scripts.Mono;
+using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 

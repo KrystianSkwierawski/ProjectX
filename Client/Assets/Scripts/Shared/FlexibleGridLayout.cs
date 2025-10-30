@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+namespace Assets.Scripts.Shared
+{
 public class FlexibleGridLayout : LayoutGroup
 {
     public enum Alignment
@@ -181,4 +183,5 @@ public class FlexibleGridLayout : LayoutGroup
     {
 
     }
+}
 }

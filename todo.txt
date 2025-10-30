@@ -1,6 +1,6 @@
-- validate complete quest position
+- validate accept/complete quest position
 - new question mark
 - skill tree
 - simple combat system
-- fix cast validations
+- fix cast validations through targets
 

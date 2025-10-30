@@ -1,7 +1,10 @@
 using System;
 
-[Serializable]
-public class AcceptCharacterQuestCommand
+namespace Assets.Scripts.Models
 {
-    public int questId;
+    [Serializable]
+    public class AcceptCharacterQuestCommand
+    {
+        public int questId;
+    }
 }

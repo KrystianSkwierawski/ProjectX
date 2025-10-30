@@ -1,7 +1,10 @@
 using System;
 
-[Serializable]
-public class LoginApplicationUserDto
+namespace Assets.Scripts.Models
 {
-    public string token;
+    [Serializable]
+    public class LoginApplicationUserDto
+    {
+        public string token;
+    }
 }

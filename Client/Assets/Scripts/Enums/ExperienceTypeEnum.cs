@@ -1,3 +1,5 @@
+namespace Assets.Scripts.Enums
+{
 public enum ExperienceTypeEnum : byte
 {
     None,
@@ -31,4 +33,5 @@ public enum ExperienceTypeEnum : byte
     Alchemy,
 
     Enchanting,
+}
 }

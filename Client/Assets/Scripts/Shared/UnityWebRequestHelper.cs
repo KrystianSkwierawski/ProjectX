@@ -1,53 +1,66 @@
 using System;
 using System.Runtime.CompilerServices;
+using Assets.Scripts.Models;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public static class UnityWebRequestHelper
+namespace Assets.Scripts.Shared
 {
-    private static readonly string _baseUrl = "https://localhost:5001/api";
-
-    public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object obj, string clientToken = null, [CallerMemberName] string memberName = "")
+    public static class UnityWebRequestHelper
     {
-        var data = JsonUtility.ToJson(obj);
+        private static readonly string _baseUrl = "https://localhost:5001/api";
 
-        using var request = UnityWebRequest.Post($"{_baseUrl}/{endpoint}", data, "application/json");
-
-        return await SendWebRequestAsync<T>(request, clientToken, memberName);
-    }
-
-    public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string clientToken = "", [CallerMemberName] string memberName = "")
-    {
-        using var request = UnityWebRequest.Get($"{_baseUrl}/{endpoint}");
-
-        return await SendWebRequestAsync<T>(request, clientToken, memberName);
-    }
-
-    private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, string memberName)
-    {
-        request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
-
-        if (clientToken != null)
+        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string clientToken = "", [CallerMemberName] string memberName = "")
         {
-            request.SetRequestHeader("ClientToken", clientToken);
+            using var request = UnityWebRequest.Get($"{_baseUrl}/{endpoint}");
+
+            return await SendWebRequestAsync<T>(request, clientToken, memberName);
         }
 
-        await request.SendWebRequest();
-
-        Debug.Log($"{memberName} result: {request.result}");
-        Debug.Log($"{memberName} text: {request.downloadHandler.text}");
-
-        if (request.result == UnityWebRequest.Result.Success)
+        public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object obj, string clientToken = null, [CallerMemberName] string memberName = "")
         {
-            if (EmptyResponse.Instance is T empty)
+            var data = JsonUtility.ToJson(obj);
+
+            using var request = UnityWebRequest.Post($"{_baseUrl}/{endpoint}", data, "application/json");
+
+            return await SendWebRequestAsync<T>(request, clientToken, memberName);
+        }
+
+        public static async UniTask<T> ExecutePutAsync<T>(string endpoint, object obj, string clientToken = null, [CallerMemberName] string memberName = "")
+        {
+            var data = JsonUtility.ToJson(obj);
+
+            using var request = UnityWebRequest.Put($"{_baseUrl}/{endpoint}", data);
+
+            return await SendWebRequestAsync<T>(request, clientToken, memberName);
+        }
+
+        private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, string memberName)
+        {
+            request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+
+            if (clientToken != null)
             {
-                return empty;
+                request.SetRequestHeader("ClientToken", clientToken);
             }
 
-            return JsonUtility.FromJson<T>(request.downloadHandler.text);
-        }
+            await request.SendWebRequest();
 
-        throw new Exception(request.error);
+            Debug.Log($"{memberName} result: {request.result}");
+            Debug.Log($"{memberName} text: {request.downloadHandler.text}");
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                if (EmptyResponse.Instance is T empty)
+                {
+                    return empty;
+                }
+
+                return JsonUtility.FromJson<T>(request.downloadHandler.text);
+            }
+
+            throw new Exception(request.error);
+        }
     }
 }

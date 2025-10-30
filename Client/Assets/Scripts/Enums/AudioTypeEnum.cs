@@ -1,3 +1,5 @@
+namespace Assets.Scripts.Enums
+{
 public enum AudioTypeEnum : byte
 {
     #region sfx
@@ -20,4 +22,5 @@ public enum AudioTypeEnum : byte
     BacgroundMusic2,
 
     #endregion
+}
 }

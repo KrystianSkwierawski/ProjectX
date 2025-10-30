@@ -1,11 +1,14 @@
 using System;
 
-[Serializable]
-public class CheckCharacterQuestProgresCommand
+namespace Assets.Scripts.Models
 {
-    public int characterId;
+    [Serializable]
+    public class CheckCharacterQuestProgresCommand
+    {
+        public int characterId;
 
-    public string gameObjectName;
+        public string gameObjectName;
 
-    public int progres;
+        public int progres;
+    }
 }

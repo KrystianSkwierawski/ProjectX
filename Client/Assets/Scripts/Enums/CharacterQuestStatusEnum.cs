@@ -1,3 +1,5 @@
+namespace Assets.Scripts.Enums
+{
 public enum CharacterQuestStatusEnum : byte
 {
     None,
@@ -9,4 +11,5 @@ public enum CharacterQuestStatusEnum : byte
     Completed,
 
     Abandoned
+}
 }

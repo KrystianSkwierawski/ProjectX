@@ -1,18 +1,21 @@
 using UnityEngine;
 
-public abstract class MonoSingleton<T> : MonoBehaviour where T : class
+namespace Assets.Scripts.Shared
 {
-    public static T Instance { get; private set; }
-
-    private void Awake()
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : class
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        public static T Instance { get; private set; }
 
-        Instance = this as T;
-        DontDestroyOnLoad(gameObject);
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this as T;
+            DontDestroyOnLoad(gameObject);
+        }
     }
 }

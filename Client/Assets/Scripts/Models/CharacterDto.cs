@@ -1,13 +1,16 @@
 using System;
 
-[Serializable]
-public class CharacterDto
+namespace Assets.Scripts.Models
 {
-    public string name;
+    [Serializable]
+    public class CharacterDto
+    {
+        public string name;
 
-    public byte level;
+        public byte level;
 
-    public byte skillPoints;
+        public byte skillPoints;
 
-    public int health;
+        public int health;
+    }
 }

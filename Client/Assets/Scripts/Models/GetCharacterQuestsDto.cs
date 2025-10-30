@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class GetCharacterQuestsDto
+namespace Assets.Scripts.Models
 {
-    public List<CharacterQuestDto> characterQuests = new List<CharacterQuestDto>();
+    [Serializable]
+    public class GetCharacterQuestsDto
+    {
+        public List<CharacterQuestDto> characterQuests = new List<CharacterQuestDto>();
+    }
 }

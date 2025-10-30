@@ -1,9 +1,12 @@
 using System;
 
-[Serializable]
-public class LoginApplicationUserCommand
+namespace Assets.Scripts.Models
 {
-    public string userName;
+    [Serializable]
+    public class LoginApplicationUserCommand
+    {
+        public string userName;
 
-    public string password;
+        public string password;
+    }
 }
