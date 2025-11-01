@@ -11,13 +11,13 @@ namespace Assets.Scripts.Mono
     {
         public CharacterInventoryDto CharacterInventory { get; set; }
 
-        //private async void Start()
-        //{
-        //    await UniTask.WaitUntil(() => !string.IsNullOrEmpty(TokenManager.Instance.Token));
+        private async void Start()
+        {
+            await UniTask.WaitUntil(() => !string.IsNullOrEmpty(TokenManager.Instance.Token));
 
-        //    CharacterInventory = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
-        //    UIManager.Instance.InitInventory(CharacterInventory.count);
-        //}
+            CharacterInventory = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
+            UIManager.Instance.InitInventory(CharacterInventory.count);
+        }
 
         private void Update()
         {

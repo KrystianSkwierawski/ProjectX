@@ -5,7 +5,7 @@ using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Commands.AddCharacterInventoryItem;
-public record AddCharacterInventoryItemCommand(int CharacterId, InventoryItem item) : IRequest;
+public record AddCharacterInventoryItemCommand(int CharacterId, InventoryItem inventoryItem) : IRequest;
 
 public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharacterInventoryItemCommand>
 {
@@ -35,12 +35,12 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
 
         ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
 
-        inventory.Items.Add(request.item);
+        inventory.Items.Add(request.inventoryItem);
 
         entity.Inventory = JsonSerializer.Serialize(inventory);
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        Log.Debug("Added item for inventory Id: {0}, Type: {1}, Count: {2}", entity.CharacterId, request.item.Type, request.item.Count);
+        Log.Debug("Added item for inventory Id: {0}, Type: {1}, Count: {2}", entity.CharacterId, request.inventoryItem.Type, request.inventoryItem.Count);
     }
 }

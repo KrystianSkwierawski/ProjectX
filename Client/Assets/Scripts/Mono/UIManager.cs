@@ -63,7 +63,7 @@ namespace Assets.Scripts.Mono
             PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
 
-            InitInventory(9);
+            //InitInventory(9);
         }
 
         public void InitInventory(int count)

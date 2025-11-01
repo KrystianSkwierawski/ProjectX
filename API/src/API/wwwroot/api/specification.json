@@ -717,7 +717,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "item": {
+          "inventoryItem": {
             "$ref": "#/components/schemas/InventoryItem"
           }
         }

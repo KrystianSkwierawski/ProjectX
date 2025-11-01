@@ -57,11 +57,9 @@ namespace Assets.Scripts.Network
 
         public void Failed()
         {
-            var delay = AudioManager.Instance.AudioClips[AudioTypeEnum.CastingFailed].length;
-
-            Destroy(gameObject, delay);
-
             FailedClientRpc();
+
+            Destroy(gameObject, 1.236463f);
         }
 
         [ClientRpc]
@@ -117,9 +115,7 @@ namespace Assets.Scripts.Network
 
         private async UniTask DespawnAfterImpactAsync()
         {
-            var delay = AudioManager.Instance.AudioClips[AudioTypeEnum.FireballImpact].length;
-
-            await UniTask.Delay(TimeSpan.FromSeconds(delay));
+            await UniTask.Delay(TimeSpan.FromSeconds(2.444512f));
 
             GetComponent<NetworkObject>()?.Despawn();
         }

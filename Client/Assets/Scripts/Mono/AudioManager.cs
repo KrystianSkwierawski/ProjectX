@@ -13,7 +13,7 @@ namespace Assets.Scripts.Mono
 
         public readonly IDictionary<AudioTypeEnum, AudioClip> AudioClips = new Dictionary<AudioTypeEnum, AudioClip>();
 
-        private readonly AudioTypeEnum[] _usicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
+        private readonly AudioTypeEnum[] _musicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
 
         private void Update()
         {
@@ -27,7 +27,7 @@ namespace Assets.Scripts.Mono
 
         private void PlayRandomMusic()
         {
-            var randomType = _usicTypes[UnityEngine.Random.Range(0, _usicTypes.Length)];
+            var randomType = _musicTypes[UnityEngine.Random.Range(0, _musicTypes.Length)];
 
             var audioClip = AudioClips[randomType];
 
@@ -46,7 +46,7 @@ namespace Assets.Scripts.Mono
 
                 if (audioClip != null)
                 {
-                    Debug.Log($"AudioManager -> Add. Type: {type}, Name: {audioClip.name}");
+                    Debug.Log($"AudioManager -> Add. Type: {type}, Name: {audioClip.name}, Length: {audioClip.length}");
 
                     AudioClips.Add(type, audioClip);
                 }
