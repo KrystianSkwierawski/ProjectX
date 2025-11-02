@@ -93,7 +93,7 @@ namespace Assets.Scripts.Mono
         {
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
 
-            questNpc.HideExclamationMark();
+            questNpc.MarkAsAccepted();
 
             var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
 

@@ -25,6 +25,7 @@ namespace Assets.Scripts.Network
 
                 HideTargetCanvasClientRpc();
 
+                // FIXME: OnKillAction
                 await HandleKillAsync(token, clientId);
 
                 return;
@@ -38,12 +39,7 @@ namespace Assets.Scripts.Network
         // FIXME: refactor and optimization!
         private async UniTask HandleKillAsync(string clientToken, ulong clientId)
         {
-            var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
-            {
-                characterId = 1,
-                type = ExperienceTypeEnum.Combat
-            }, clientToken);
-
+            #region TODO: character quest OnKillAction
             var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, clientToken);
 
             if (progres.status != CharacterQuestStatusEnum.None)
@@ -73,17 +69,26 @@ namespace Assets.Scripts.Network
                 UpdateInventoryClientRpc(item, clientId);
             }
 
+            if (progres.status != CharacterQuestStatusEnum.None)
+            {
+                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
+            }
+            #endregion
+
+            #region TODO: experience OnKillAction
+            var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+            {
+                characterId = 1,
+                type = ExperienceTypeEnum.Combat
+            }, clientToken);
+
             if (experience.leveledUp)
             {
                 Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
 
                 UpdateLevelClientRpc(experience.level, clientId);
             }
-
-            if (progres.status != CharacterQuestStatusEnum.None)
-            {
-                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
-            }
+            #endregion
 
             gameObject.GetComponent<NetworkObject>().Despawn();
         }

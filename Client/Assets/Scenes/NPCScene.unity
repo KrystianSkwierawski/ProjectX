@@ -270,13 +270,21 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 6305123443863330308, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
     - target: {fileID: 919132149155446097, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
       propertyPath: m_Name
       value: ExclamationMark
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -296,6 +304,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
+      propertyPath: _material
+      value: 
+      objectReference: {fileID: -6478536213147159724, guid: 2561fcf60d0a3764aa4247f3ee4098f4, type: 3}
     - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
       propertyPath: _questionMarkPrefab
       value: 

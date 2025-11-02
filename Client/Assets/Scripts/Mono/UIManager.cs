@@ -38,6 +38,9 @@ namespace Assets.Scripts.Mono
         [NonSerialized] public TextMeshProUGUI PlayerHealthPointsText;
         [NonSerialized] public GameObject Inventory;
 
+        [NonSerialized] public Material Material001;
+        [NonSerialized] public Material Material002;
+
         public void Init()
         {
             ProgressBarCanvas = GameObject.Find("ProgressBarCanvas");
@@ -63,7 +66,8 @@ namespace Assets.Scripts.Mono
             PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
 
-            //InitInventory(9);
+            Material001 = Resources.Load<Material>("Material.001");
+            Material002 = Resources.Load<Material>("Material.002");
         }
 
         public void InitInventory(int count)
@@ -77,6 +81,7 @@ namespace Assets.Scripts.Mono
             }
         }
 
+        // FIXME: refactor and optimization!
         public void AddInventoryItem(InventoryItem item)
         {
             var slots = GameObject.FindGameObjectsWithTag("InventorySlot");

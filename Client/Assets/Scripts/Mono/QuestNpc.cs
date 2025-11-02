@@ -15,6 +15,9 @@ namespace Assets.Scripts.Mono
 
         public CharacterQuestDto CharacterQuest { get; set; }
 
+        private GameObject _exclamationMark;
+        private GameObject _quesionMark;
+
         private async void Start()
         {
             var token = this.GetCancellationTokenOnDestroy();
@@ -23,6 +26,9 @@ namespace Assets.Scripts.Mono
                 () => QuestManager.Instance.Quests != null && QuestManager.Instance.CharacterQuests != null,
                 cancellationToken: token
             );
+
+            _exclamationMark = gameObject.transform.Find("ExclamationMark").gameObject;
+            _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
                 .Where(x => Ids.Contains(x.questId))
@@ -37,6 +43,8 @@ namespace Assets.Scripts.Mono
             {
                 LoadFinishedQuest();
             }
+
+            // TODO: load accepted?
 
             QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
         }
@@ -90,22 +98,28 @@ namespace Assets.Scripts.Mono
 
         public void ShowQuestionMark()
         {
-            gameObject.transform.Find("QuestionMark").gameObject.SetActive(true);
+            _quesionMark.SetActive(true);
         }
 
         public void HideQuestionMark()
         {
-            gameObject.transform.Find("QuestionMark").gameObject.SetActive(false);
+            _quesionMark.SetActive(false);
         }
 
         public void ShowExclamationMark()
         {
-            gameObject.transform.Find("ExclamationMark").gameObject.SetActive(true);
+            _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { UIManager.Instance.Material001, UIManager.Instance.Material002 };
+            _exclamationMark.SetActive(true);
         }
 
         public void HideExclamationMark()
         {
-            gameObject.transform.Find("ExclamationMark").gameObject.SetActive(false);
+            _exclamationMark.SetActive(false);
+        }
+
+        public void MarkAsAccepted()
+        {
+            _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { UIManager.Instance.Material001 };
         }
     }
 }
