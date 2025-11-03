@@ -28,7 +28,7 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
             .Where(x => x.Character.ApplicationUserId == userId)
             .Select(x => new
             {
-                CharacterId = x.CharacterId,
+                Id = x.Id,
                 Items = x.Inventory,
                 Count = x.Count
             })
@@ -40,7 +40,7 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
 
         return new CharacterInventoryDto
         {
-            CharacterId = result.CharacterId,
+            CharacterId = result.Id,
             Inventory = inventory,
             Count = result.Count
         };

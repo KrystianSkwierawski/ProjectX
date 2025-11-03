@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace ProjectX.Domain.Entities;
 public class ApplicationUser : IdentityUser
@@ -9,6 +8,5 @@ public class ApplicationUser : IdentityUser
         Characters = new HashSet<Character>();
     }
 
-    [InverseProperty(nameof(Character.ApplicationUser))]
     public virtual ICollection<Character> Characters { get; set; }
 }

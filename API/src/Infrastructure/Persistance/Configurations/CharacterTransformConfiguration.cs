@@ -7,5 +7,9 @@ public class CharacterTransformConfiguration : IEntityTypeConfiguration<Characte
 {
     public void Configure(EntityTypeBuilder<CharacterTransform> builder)
     {
+        builder
+            .HasOne(x => x.Character)
+            .WithMany(x => x.CharacterTransforms)
+            .HasForeignKey(x => x.CharacterId);
     }
 }

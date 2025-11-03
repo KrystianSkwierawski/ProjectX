@@ -1,12 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ProjectX.Domain.Entities;
+﻿namespace ProjectX.Domain.Entities;
 public class CharacterInventory
 {
-    [Key]
-    [ForeignKey(nameof(Character))]
-    public int CharacterId { get; set; }
+    public int Id { get; set; }
 
     public required string Inventory { get; set; }
 

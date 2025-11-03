@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using ProjectX.Domain.Enums;
+﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
 public class CharacterQuest
@@ -20,11 +19,7 @@ public class CharacterQuest
 
     public DateTime EndDate { get; set; }
 
-    [ForeignKey(nameof(CharacterId))]
-    [InverseProperty(nameof(Character.CharacterQuests))]
     public virtual Character Character { get; set; }
 
-    [ForeignKey(nameof(QuestId))]
-    [InverseProperty(nameof(Quest.CharacterQuests))]
     public virtual Quest Quest { get; set; }
 }

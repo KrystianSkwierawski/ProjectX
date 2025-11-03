@@ -29,7 +29,7 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
             .Where(x => x.Character.ApplicationUserId == userId)
             .SingleAsync(cancellationToken);
 
-        Log.Debug("Found inventory for Id: {0}", entity.CharacterId);
+        Log.Debug("Found inventory for Id: {0}", entity.Id);
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
 
@@ -41,6 +41,6 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        Log.Debug("Added item for inventory Id: {0}, Type: {1}, Count: {2}", entity.CharacterId, request.inventoryItem.Type, request.inventoryItem.Count);
+        Log.Debug("Added item for inventory Id: {0}, Type: {1}, Count: {2}", entity.Id, request.inventoryItem.Type, request.inventoryItem.Count);
     }
 }

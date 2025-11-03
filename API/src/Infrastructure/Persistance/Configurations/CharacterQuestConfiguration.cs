@@ -7,5 +7,14 @@ public class CharacterQuestConfiguration : IEntityTypeConfiguration<CharacterQue
 {
     public void Configure(EntityTypeBuilder<CharacterQuest> builder)
     {
+        builder
+            .HasOne(x => x.Character)
+            .WithMany(x => x.CharacterQuests)
+            .HasForeignKey(x => x.CharacterId);
+
+        builder
+            .HasOne(x => x.Quest)
+            .WithMany(x => x.CharacterQuests)
+            .HasForeignKey(x => x.QuestId);
     }
 }

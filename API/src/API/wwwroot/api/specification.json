@@ -532,7 +532,7 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
-          "None",
+          "Unknown",
           "Combat",
           "Crafting",
           "Gathering",
@@ -550,7 +550,7 @@
           "Enchanting"
         ],
         "x-enum-varnames": [
-          "None",
+          "Unknown",
           "Combat",
           "Crafting",
           "Gathering",
@@ -568,7 +568,7 @@
           "Enchanting"
         ],
         "x-enumNames": [
-          "None",
+          "Unknown",
           "Combat",
           "Crafting",
           "Gathering",

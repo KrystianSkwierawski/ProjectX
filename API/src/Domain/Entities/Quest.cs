@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using ProjectX.Domain.Enums;
+﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
 public class Quest
@@ -31,6 +30,5 @@ public class Quest
 
     public DateTime ModDate { get; set; }
 
-    [InverseProperty(nameof(CharacterQuest.Quest))]
     public virtual ICollection<CharacterQuest> CharacterQuests { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using ProjectX.Domain.Enums;
+﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
 public class CharacterExperience
@@ -14,7 +13,5 @@ public class CharacterExperience
 
     public DateTime ModDate { get; set; }
 
-    [ForeignKey(nameof(CharacterId))]
-    [InverseProperty(nameof(Character.CharacterExperiences))]
     public virtual Character Character { get; set; }
 }

@@ -7,5 +7,9 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 {
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
+        builder
+            .HasMany(x => x.Characters)
+            .WithOne(x => x.ApplicationUser)
+            .HasForeignKey(x => x.ApplicationUserId);
     }
 }

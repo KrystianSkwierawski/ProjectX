@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ProjectX.Domain.Entities;
+﻿namespace ProjectX.Domain.Entities;
 
 public class CharacterTransform
 {
@@ -18,7 +16,5 @@ public class CharacterTransform
 
     public DateTime ModDate { get; set; }
 
-    [ForeignKey(nameof(CharacterId))]
-    [InverseProperty(nameof(Character.CharacterTransforms))]
     public virtual Character Character { get; set; }
 }

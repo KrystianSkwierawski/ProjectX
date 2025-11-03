@@ -7,5 +7,9 @@ public class CharacterExperienceConfiguration : IEntityTypeConfiguration<Charact
 {
     public void Configure(EntityTypeBuilder<CharacterExperience> builder)
     {
+        builder
+            .HasOne(x => x.Character)
+            .WithMany(x => x.CharacterExperiences)
+            .HasForeignKey(x => x.CharacterId);
     }
 }

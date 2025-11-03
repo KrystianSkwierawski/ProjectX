@@ -1,7 +1,7 @@
 ﻿namespace ProjectX.Domain.Enums;
 public enum ExperienceTypeEnum : byte
 {
-    None,
+    Unknown,
 
     Combat,
 
