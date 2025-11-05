@@ -1,6 +1,8 @@
+tasks:
 - validate accept/complete quest position
 - new question mark
-- skill tree
-- simple combat system
 - fix cast validations through targets
 
+features:
+- skill tree
+- simple combat system
