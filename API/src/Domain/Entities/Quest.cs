@@ -8,7 +8,7 @@ public class Quest
         CharacterQuests = new HashSet<CharacterQuest>();
     }
 
-    public int Id { get; set; }
+    public int Id { get; set; } // TODO: Enum + localization
 
     public int? PreviousQuestId { get; set; }
 
