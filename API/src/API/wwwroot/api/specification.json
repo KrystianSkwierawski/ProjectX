@@ -416,8 +416,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "$ref": "#/components/schemas/QuestEnum"
             },
             "x-position": 1
           }
@@ -756,8 +755,7 @@
             "format": "int32"
           },
           "questId": {
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/QuestEnum"
           },
           "status": {
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
@@ -767,6 +765,40 @@
             "format": "int32"
           }
         }
+      },
+      "QuestEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "Kill2Beans",
+          "Collect2Cans"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "Kill2Beans",
+          "Collect2Cans"
+        ],
+        "x-enumNames": [
+          "None",
+          "Kill2Beans",
+          "Collect2Cans"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
       },
       "CharacterQuestStatusEnum": {
         "type": "integer",
@@ -819,8 +851,7 @@
         "additionalProperties": false,
         "properties": {
           "questId": {
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/QuestEnum"
           }
         }
       },
@@ -856,8 +887,7 @@
         "additionalProperties": false,
         "properties": {
           "questId": {
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/QuestEnum"
           },
           "characterQuestId": {
             "type": "integer",
@@ -959,12 +989,10 @@
         "additionalProperties": false,
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/QuestEnum"
           },
           "previousQuestId": {
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/QuestEnum"
           },
           "type": {
             "$ref": "#/components/schemas/QuestTypeEnum"

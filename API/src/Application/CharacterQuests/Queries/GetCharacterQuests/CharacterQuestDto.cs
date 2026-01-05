@@ -5,7 +5,7 @@ public class CharacterQuestDto
 {
     public int Id { get; set; }
 
-    public int QuestId { get; set; }
+    public QuestEnum QuestId { get; set; }
 
     public CharacterQuestStatusEnum Status { get; set; }
 

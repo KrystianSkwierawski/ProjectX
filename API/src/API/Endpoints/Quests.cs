@@ -4,6 +4,7 @@ using ProjectX.API.Infrastructure;
 using ProjectX.Application.Quests.Queries.GetQuest;
 using ProjectX.Application.Quests.Queries.GetQuests;
 using ProjectX.Domain.Constants;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.API.Endpoints;
 
@@ -15,7 +16,7 @@ public class Quests : EndpointGroupBase
         groupBuilder.MapGet(GetQuests).RequireAuthorization(Policies.Client);
     }
 
-    private static async Task<Ok<QuestDto>> GetQuest(ISender sender, int id)
+    private static async Task<Ok<QuestDto>> GetQuest(ISender sender, QuestEnum id)
     {
         var result = await sender.Send(new GetQuestQuery(id));
 

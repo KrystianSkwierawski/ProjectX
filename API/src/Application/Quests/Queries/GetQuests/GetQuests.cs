@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.Quests.Queries.GetQuest;
+using ProjectX.Domain.Entities;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuests;
 public record GetQuestsQuery : IRequest<GetQuestsDto>;
@@ -17,25 +19,40 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
 
     public async Task<GetQuestsDto> Handle(GetQuestsQuery request, CancellationToken cancellationToken)
     {
-        var result = await _context.Quests
-            .Select(x => new QuestDto
+        var quest = await _context.Quests
+            .Where(x => x.Status == StatusEnum.Active)
+            .Select(x => new
             {
-                Id = x.Id,
-                PreviousQuestId = x.PreviousQuestId ?? 0,
-                Type = x.Type,
-                Title = x.Title,
-                Description = x.Description,
-                CompleteDescription = x.CompleteDescription,
-                StatusText = x.StatusText,
-                GameObjectName = x.GameObjectName,
-                Requirement = x.Requirement,
-                Reward = x.Reward
+                x.Id,
+                x.PreviousQuestId,
+                x.Type,
+                x.GameObjectName,
+                x.Requirement,
+                x.Reward   
             })
             .ToListAsync(cancellationToken);
 
         return new GetQuestsDto
         {
-            Quests = result
+            Quests = quest.Select(x =>
+            {
+                // TODO: translation
+                var parameters = x.Id.GetQuestParametersAttribute();
+
+                return new QuestDto
+                {
+                    Id = x.Id,
+                    PreviousQuestId = x.PreviousQuestId,
+                    Type = x.Type,
+                    Title = parameters.Title,
+                    Description = parameters.Description,
+                    CompleteDescription = parameters.CompleteDescription,
+                    StatusText = parameters.StatusText,
+                    GameObjectName = x.GameObjectName,
+                    Requirement = x.Requirement,
+                    Reward = x.Reward
+                };
+            }).ToList()
         };
     }
 }

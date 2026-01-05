@@ -5,7 +5,7 @@ public class CharacterQuest
 {
     public int Id { get; set; }
 
-    public int QuestId { get; set; }
+    public QuestEnum QuestId { get; set; }
 
     public int CharacterId { get; set; }
 

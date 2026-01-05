@@ -6,7 +6,7 @@ using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
-public record AcceptCharacterQuestCommand(int QuestId) : IRequest<CharacterQuestDto>;
+public record AcceptCharacterQuestCommand(QuestEnum QuestId) : IRequest<CharacterQuestDto>;
 
 public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacterQuestCommand, CharacterQuestDto>
 {

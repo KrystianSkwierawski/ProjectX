@@ -9,9 +9,9 @@ namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
-        public IDictionary<int, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<int, QuestNpc>();
+        public IDictionary<QuestEnum, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<QuestEnum, QuestNpc>();
 
-        public UnityEvent<int, CharacterQuestStatusEnum> AddedProgresEvent = new UnityEvent<int, CharacterQuestStatusEnum>();
+        public UnityEvent<QuestEnum, CharacterQuestStatusEnum> AddedProgresEvent = new UnityEvent<QuestEnum, CharacterQuestStatusEnum>();
 
         public IList<QuestDto> Quests { get; private set; }
 
@@ -31,7 +31,7 @@ namespace Assets.Scripts.Shared
             CharacterQuests = result.characterQuests;
         }
 
-        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(int questId)
+        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests", new AcceptCharacterQuestCommand
             {

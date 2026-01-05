@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Domain.Constants;
@@ -45,7 +46,7 @@ public class ApplicationDbContextInitialiser
         await _context.Database.EnsureCreatedAsync();
         Log.Debug("InitialiseAsync -> Ensured created database");
 
-        await CreateQuestsAsync();
+        await InsertOrUpdateQuestsAsync();
 
         await CreateRoleAsync(Roles.Server);
         await CreateRoleAsync(Roles.Client);
@@ -89,11 +90,11 @@ public class ApplicationDbContextInitialiser
                     {
                         Items =
                         [
-                            //new InventoryItem
-                            //{
-                            //    Type = CharacterInventoryTypeEnum.Can,
-                            //    Count = 5
-                            //}
+                            new InventoryItem
+                            {
+                                Type = CharacterInventoryTypeEnum.Can,
+                                Count = 1
+                            }
                         ]
                     }),
                     Count = 9
@@ -118,38 +119,78 @@ public class ApplicationDbContextInitialiser
         }
     }
 
-    private async Task CreateQuestsAsync()
+    private async Task InsertOrUpdateQuestsAsync()
     {
-        _context.Quests.AddRange([
-            new Quest
+        Log.Verbose("InsertOrUpdateQuestsAsync -> Start");
+
+        using var scope = _context.CreateTransactionScope();
+
+        var dbQuests = await _context.Quests
+            .Select(x => new Quest
             {
-                Type = QuestTypeEnum.Kill,
-                Title = "Kill 2 beans",
-                Description = "Bla bla bla kill 2 beans, ok?",
-                CompleteDescription = "ok, u killed 2 beans",
-                StatusText = "Killed {0}/{1} beans",
-                GameObjectName = "Bean(Clone)",
-                Requirement = 2,
-                Reward = 1000,
-                ModDate = DateTime.Now
-            },
-            new Quest
+                Id = x.Id
+            })
+            .ToListAsync();
+
+        Log.Debug("InsertOrUpdateQuestsAsync -> Db quests count: {0}", dbQuests.Count);
+
+        var enumQuests = Enum.GetValues(typeof(QuestEnum))
+            .OfType<QuestEnum>()
+            .Where(x => x != QuestEnum.None)
+            .ToList();
+
+        Log.Debug("InsertOrUpdateQuestsAsync -> Enum quests count: {0}", enumQuests.Count);
+
+        var update = enumQuests
+            .Where(x => dbQuests.Any(y => y.Id == x))
+            .ToDictionary(x => x, x => x.GetQuestParametersAttribute())
+            .Select(x => new Quest
             {
-                PreviousQuestId = 1,
-                Type = QuestTypeEnum.Collect,
-                Title = "Collect 2 cans",
-                Description = "Bla bla bla collect 2 cans, ok?",
-                CompleteDescription = "ok, u collected 2 cans",
-                StatusText = "Collected {0}/{1} cans",
-                GameObjectName = "Can",
-                Requirement = 2,
-                Reward = 1000,
+                Id = x.Key,
+                Name = x.Key.ToString(),
+                PreviousQuestId = x.Value.PreviousQuestId,
+                Type = x.Value.Type,
+                GameObjectName = x.Value.GameObjectName,
+                Requirement = x.Value.Requirement,
+                Reward = x.Value.Reward,
                 ModDate = DateTime.Now
-            }
-        ]);
+            })
+            .ToList();
+
+        Log.Debug("InsertOrUpdateQuestsAsync -> Update quests count: {0}", update.Count);
+
+        var insert = enumQuests
+            .Where(x => !dbQuests.Any(y => y.Id == x))
+            .ToDictionary(x => x, x => x.GetQuestParametersAttribute())
+            .Select(x => new Quest
+            {
+                Id = x.Key,
+                Name = x.Key.ToString(),
+                PreviousQuestId = x.Value.PreviousQuestId,
+                Type = x.Value.Type,
+                GameObjectName = x.Value.GameObjectName,
+                Requirement = x.Value.Requirement,
+                Reward = x.Value.Reward,
+                ModDate = DateTime.Now
+            })
+            .ToList();
+
+        Log.Debug("InsertOrUpdateQuestsAsync -> Insert quests count: {0}", insert.Count);
+
+        var delete = dbQuests
+            .Where(x => !update.Any(y => y.Id == x.Id))
+            .ToList();
+
+        Log.Debug("InsertOrUpdateQuestsAsync -> Delete quests count: {0}", delete.Count);
+
+        _context.Quests.UpdateRange(update);
+        _context.Quests.AddRange(insert);
+        _context.Quests.UpdateRange(delete);
 
         await _context.SaveChangesAsync();
 
-        Log.Debug("CreateQuestAsync -> Created quests");
+        scope.Complete();
+
+        Log.Verbose("InsertOrUpdateQuestsAsync -> Stop");
     }
 }

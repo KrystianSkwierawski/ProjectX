@@ -6,9 +6,9 @@ namespace Assets.Scripts.Models
     [Serializable]
     public class QuestDto
     {
-        public int id;
+        public QuestEnum id;
 
-        public int previousQuestId;
+        public QuestEnum previousQuestId;
 
         public QuestTypeEnum type;
 

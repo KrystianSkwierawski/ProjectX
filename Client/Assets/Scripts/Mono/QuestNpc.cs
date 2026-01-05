@@ -9,7 +9,7 @@ namespace Assets.Scripts.Mono
 {
     public class QuestNpc : MonoBehaviour
     {
-        public int[] Ids { get; private set; } = new int[] { 1, 2 };
+        public QuestEnum[] Quests { get; private set; } = new QuestEnum[] { QuestEnum.Kill2Beans, QuestEnum.Collect2Cans };
 
         public QuestDto Quest { get; set; }
 
@@ -31,7 +31,7 @@ namespace Assets.Scripts.Mono
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => Ids.Contains(x.questId))
+                .Where(x => Quests.Contains(x.questId))
                 .Where(x => x.status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
@@ -54,7 +54,7 @@ namespace Assets.Scripts.Mono
             var completedQuests = QuestManager.Instance.CharacterQuests
                 .Where(x => x.status == CharacterQuestStatusEnum.Completed);
 
-            var filteredIds = Ids.Where(x => !completedQuests.Any(cq => cq.questId == x));
+            var filteredIds = Quests.Where(x => !completedQuests.Any(cq => cq.questId == x));
 
             Quest = QuestManager.Instance.Quests
                 .Where(x => filteredIds.Contains(x.id))

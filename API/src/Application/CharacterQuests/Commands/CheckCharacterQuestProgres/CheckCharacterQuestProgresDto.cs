@@ -3,7 +3,7 @@
 namespace ProjectX.Application.CharacterQuests.Commands.CheckProgres;
 public class CheckCharacterQuestProgresDto
 {
-    public int QuestId { get; set; }
+    public QuestEnum QuestId { get; set; }
 
     public int CharacterQuestId { get; set; }
 

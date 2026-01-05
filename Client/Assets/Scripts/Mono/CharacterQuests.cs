@@ -13,7 +13,7 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterQuests : NetworkBehaviour
     {
-        private int _questId;
+        private QuestEnum _questId;
 
         [ServerRpc]
         private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
@@ -73,7 +73,7 @@ namespace Assets.Scripts.Mono
 
             UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
 
-            QuestManager.Instance.AddedProgresEvent.AddListener(async (int questId, CharacterQuestStatusEnum status) =>
+            QuestManager.Instance.AddedProgresEvent.AddListener(async (QuestEnum questId, CharacterQuestStatusEnum status) =>
             {
                 await UpdateQuestLog();
 
