@@ -6,6 +6,7 @@ using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Assets.Scripts.Network
 {
@@ -13,6 +14,7 @@ namespace Assets.Scripts.Network
     {
         public float Value { get; private set; } = 100;
 
+        public UnityEvent<GameObject> OnKillEvent = new UnityEvent<GameObject>();
 
         public async UniTask DealDamageAsync(float damage, string token, ulong clientId)
         {
@@ -90,7 +92,7 @@ namespace Assets.Scripts.Network
             }
             #endregion
 
-            gameObject.GetComponent<NetworkObject>().Despawn();
+            OnKillEvent.Invoke(gameObject);
         }
 
         [ClientRpc]
@@ -143,6 +145,12 @@ namespace Assets.Scripts.Network
 
                 QuestManager.Instance.AddedProgresEvent.Invoke(characterQuest.questId, characterQuest.status);
             }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            Value = 100;
+            base.OnNetworkDespawn();
         }
     }
 }
