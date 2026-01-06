@@ -86,6 +86,7 @@ namespace Assets.Scripts.Network
         [ServerRpc]
         public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId, string token)
         {
+            // TODO: ObjectPool
             var fireball = Instantiate(_fireballPrefab, position, Quaternion.LookRotation(direction));
             var netObj = fireball.GetComponent<NetworkObject>();
             netObj.SpawnWithOwnership(clientId);

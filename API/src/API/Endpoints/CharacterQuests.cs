@@ -13,10 +13,21 @@ public class CharacterQuests : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetCharacterQuests).RequireAuthorization(Policies.Client);
-        groupBuilder.MapPost(AcceptCharacterQuest).RequireAuthorization(Policies.Client);
-        groupBuilder.MapPost("Progres", AddCharacterQuestProgress).RequireAuthorization(Policies.Server);
-        groupBuilder.MapPost("CheckProgres", CheckCharacterQuestProgress).RequireAuthorization(Policies.Server);
+        groupBuilder
+            .MapGet(GetCharacterQuests)
+            .RequireAuthorization(Policies.Client);
+
+        groupBuilder
+            .MapPost(AcceptCharacterQuest)
+            .RequireAuthorization(Policies.Client);
+
+        groupBuilder
+            .MapPost("Progres", AddCharacterQuestProgress)
+            .RequireAuthorization(Policies.Server);
+
+        groupBuilder
+            .MapPost("CheckProgres", CheckCharacterQuestProgress)
+            .RequireAuthorization(Policies.Server);
     }
 
     private static async Task<Ok<GetCharacterQuestsDto>> GetCharacterQuests(ISender sender, [AsParameters] GetCharacterQuestsQuery query)

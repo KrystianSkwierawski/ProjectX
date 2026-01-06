@@ -30,5 +30,7 @@ public static class DependencyInjection
 
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
         });
+
+        builder.Services.AddMemoryCache();
     }
 }

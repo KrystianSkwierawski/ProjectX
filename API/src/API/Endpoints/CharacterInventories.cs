@@ -12,9 +12,17 @@ public class CharacterInventories : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetCharacterInventory).RequireAuthorization(Policies.Client);
-        groupBuilder.MapPost(AddCharacterInventoryItem).RequireAuthorization(Policies.Server);
-        groupBuilder.MapPut(UpdateCharacterInventory, "/").RequireAuthorization(Policies.Server);
+        groupBuilder
+            .MapGet(GetCharacterInventory)
+            .RequireAuthorization(Policies.Client);
+
+        groupBuilder
+            .MapPost(AddCharacterInventoryItem)
+            .RequireAuthorization(Policies.Server);
+
+        groupBuilder
+            .MapPut(UpdateCharacterInventory, "/")
+            .RequireAuthorization(Policies.Server);
     }
 
     private static async Task<Ok<CharacterInventoryDto>> GetCharacterInventory(ISender sender, [AsParameters] GetCharacterInventoryQuery query)

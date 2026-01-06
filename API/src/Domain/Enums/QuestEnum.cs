@@ -42,6 +42,6 @@ public static class QuestEnumExtensions
             .GetMember(value.ToString())
             .First();
 
-        return member.GetCustomAttribute<QuestParametersAttribute>() ?? new QuestParametersAttribute();
+        return member.GetCustomAttribute<QuestParametersAttribute>() ?? throw new ArgumentNullException(nameof(value));
     }
 }

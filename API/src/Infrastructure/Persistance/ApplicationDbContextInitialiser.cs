@@ -153,6 +153,7 @@ public class ApplicationDbContextInitialiser
                 GameObjectName = x.Value.GameObjectName,
                 Requirement = x.Value.Requirement,
                 Reward = x.Value.Reward,
+                Status = x.Value.Status,
                 ModDate = DateTime.Now
             })
             .ToList();
@@ -171,6 +172,7 @@ public class ApplicationDbContextInitialiser
                 GameObjectName = x.Value.GameObjectName,
                 Requirement = x.Value.Requirement,
                 Reward = x.Value.Reward,
+                Status = x.Value.Status,
                 ModDate = DateTime.Now
             })
             .ToList();
