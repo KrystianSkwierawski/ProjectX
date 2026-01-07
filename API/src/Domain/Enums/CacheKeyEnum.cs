@@ -11,16 +11,22 @@ public enum CacheKeyEnum
     Common,
 
     [CacheKeyParameters(
-      Format = "Quest_{0}_{1}",
-      ExpiryInSeconds = 3600
+        Format = "Quest_{0}_{1}",
+        ExpiryInSeconds = 3600
     )]
     Quest,
 
     [CacheKeyParameters(
-      Format = "Quests_{0}",
-      ExpiryInSeconds = 3600
+        Format = "Quests_{0}",
+        ExpiryInSeconds = 3600
     )]
     Quests,
+
+    [CacheKeyParameters(
+        Format = "Translate_{0}_{1}",
+        ExpiryInSeconds = 3600
+    )]
+    Translate,
 }
 
 public static class CacheKeyEnumExtensions

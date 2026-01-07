@@ -24,9 +24,9 @@ public class Quests : EndpointGroupBase
             .RequireAuthorization(Policies.Client);
     }
 
-    private static async Task<Ok<QuestDto>> GetQuest(IMemoryCache cache, ICurrentUserService currentUserService, ISender sender, QuestEnum id)
+    private static async Task<Ok<QuestDto>> GetQuest(IMemoryCache memoryCache, ICurrentUserService currentUserService, ISender sender, QuestEnum id)
     {
-        return await cache.GetOrCreateAsync(CacheKeyEnum.Quest, async (ICacheEntry entry) =>
+        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quest, async (ICacheEntry entry) =>
         {
             var result = await sender.Send(new GetQuestQuery(id));
 
@@ -34,9 +34,9 @@ public class Quests : EndpointGroupBase
         }, id, currentUserService.Language);
     }
 
-    private static async Task<Ok<GetQuestsDto>> GetQuests(IMemoryCache cache, ICurrentUserService currentUserService, ISender sender, [AsParameters] GetQuestsQuery query)
+    private static async Task<Ok<GetQuestsDto>> GetQuests(IMemoryCache memoryCache, ICurrentUserService currentUserService, ISender sender, [AsParameters] GetQuestsQuery query)
     {
-        return await cache.GetOrCreateAsync(CacheKeyEnum.Quests, async (ICacheEntry entry) =>
+        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quests, async (ICacheEntry entry) =>
         {
             var result = await sender.Send(query);
 

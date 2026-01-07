@@ -10,10 +10,14 @@ public record GetQuestsQuery : IRequest<GetQuestsDto>;
 public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly ITranslateService _translateService;
 
-    public GetQuestsQueryHandler(IApplicationDbContext context)
+    public GetQuestsQueryHandler(IApplicationDbContext context, ITranslateService translateService, ICurrentUserService currentUserService)
     {
         _context = context;
+        _translateService = translateService;
+        _currentUserService = currentUserService;
     }
 
     public async Task<GetQuestsDto> Handle(GetQuestsQuery request, CancellationToken cancellationToken)
@@ -31,6 +35,8 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
             })
             .ToListAsync(cancellationToken);
 
+        var language = _currentUserService.Language;
+
         return new GetQuestsDto
         {
             Quests = quest.Select(x =>
@@ -43,10 +49,10 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
                     Id = x.Id,
                     PreviousQuestId = x.PreviousQuestId,
                     Type = x.Type,
-                    Title = parameters.Title,
-                    Description = parameters.Description,
-                    CompleteDescription = parameters.CompleteDescription,
-                    StatusText = parameters.StatusText,
+                    Title = _translateService.GetByKey(parameters.TitleKey, language),
+                    Description = _translateService.GetByKey(parameters.Description, language),
+                    CompleteDescription = _translateService.GetByKey(parameters.CompleteDescription, language),
+                    StatusText = _translateService.GetByKey(parameters.StatusText, language),
                     GameObjectName = x.GameObjectName,
                     Requirement = x.Requirement,
                     Reward = x.Reward

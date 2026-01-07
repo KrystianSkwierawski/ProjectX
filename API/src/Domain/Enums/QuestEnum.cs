@@ -9,7 +9,7 @@ public enum QuestEnum : short
 
     [QuestParameters(
         Type = QuestTypeEnum.Kill,
-        Title = "Quest.Kill2Beans.Title",
+        TitleKey = "Quest.Kill2Beans.Title",
         Description = "Quest.Kill2Beans.Description",
         CompleteDescription = "Quest.Kill2Beans.CompleteDescription",
         StatusText = "Quest.Kill2Beans.StatusText",
@@ -22,7 +22,7 @@ public enum QuestEnum : short
     [QuestParameters(
         PreviousQuestId = Kill2Beans,
         Type = QuestTypeEnum.Collect,
-        Title = "Quest.Collect2Cans.Title",
+        TitleKey = "Quest.Collect2Cans.Title",
         Description = "Quest.Collect2Cans.Description",
         CompleteDescription = "Quest.Collect2Cans.CompleteDescription",
         StatusText = "Quest.Collect2Cans.StatusText",

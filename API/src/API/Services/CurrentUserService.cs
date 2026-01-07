@@ -37,8 +37,8 @@ public class CurrentUserService : ICurrentUserService
     }
 
     public LanguageEnum Language => _httpContextAccessor.HttpContext?.User == null
-        ? LanguageEnum.English
-        : (LanguageEnum)Enum.Parse(typeof(LanguageEnum), _httpContextAccessor.HttpContext.User.FindFirstValue(nameof(LanguageEnum))!);
+        ? LanguageEnum.en
+        : (LanguageEnum)Enum.Parse(typeof(LanguageEnum), _httpContextAccessor.HttpContext.User.FindFirstValue(nameof(LanguageEnum)) ?? LanguageEnum.en.ToString());
 
     public List<string>? Roles => _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role).Select(x => x.Value).ToList();
 }

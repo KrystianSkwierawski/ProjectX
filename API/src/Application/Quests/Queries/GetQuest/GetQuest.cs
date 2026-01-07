@@ -9,10 +9,14 @@ public record GetQuestQuery(QuestEnum QuestId) : IRequest<QuestDto>;
 public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly ITranslateService _translateService;
 
-    public GetQuestQueryHandler(IApplicationDbContext context)
+    public GetQuestQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService, ITranslateService translateService)
     {
         _context = context;
+        _currentUserService = currentUserService;
+        _translateService = translateService;
     }
 
     public async Task<QuestDto> Handle(GetQuestQuery request, CancellationToken cancellationToken)
@@ -31,6 +35,7 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
             .SingleAsync(cancellationToken);
 
         var parameters = quest.Id.GetQuestParametersAttribute();
+        var language = _currentUserService.Language;
 
         // TODO: translate service
         return new QuestDto
@@ -38,10 +43,10 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
             Id = quest.Id,
             PreviousQuestId = quest.PreviousQuestId,
             Type = quest.Type,
-            Title = parameters.Title,
-            Description = parameters.Description,
-            CompleteDescription = parameters.CompleteDescription,
-            StatusText = parameters.StatusText,
+            Title = _translateService.GetByKey(parameters.TitleKey, language),
+            Description = _translateService.GetByKey(parameters.Description, language),
+            CompleteDescription = _translateService.GetByKey(parameters.CompleteDescription, language),
+            StatusText = _translateService.GetByKey(parameters.StatusText, language),
             GameObjectName = quest.GameObjectName,
             Requirement = quest.Requirement,
             Reward = quest.Reward
