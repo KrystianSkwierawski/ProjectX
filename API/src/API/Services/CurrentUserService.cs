@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.API.Services;
 
@@ -34,6 +35,10 @@ public class CurrentUserService : ICurrentUserService
 
         return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
     }
+
+    public LanguageEnum Language => _httpContextAccessor.HttpContext?.User == null
+        ? LanguageEnum.English
+        : (LanguageEnum)Enum.Parse(typeof(LanguageEnum), _httpContextAccessor.HttpContext.User.FindFirstValue(nameof(LanguageEnum))!);
 
     public List<string>? Roles => _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role).Select(x => x.Value).ToList();
 }

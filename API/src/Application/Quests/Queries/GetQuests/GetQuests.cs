@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.Quests.Queries.GetQuest;
-using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuests;
@@ -36,9 +35,9 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
         {
             Quests = quest.Select(x =>
             {
-                // TODO: translation
                 var parameters = x.Id.GetQuestParametersAttribute();
 
+                // TODO: translate service
                 return new QuestDto
                 {
                     Id = x.Id,

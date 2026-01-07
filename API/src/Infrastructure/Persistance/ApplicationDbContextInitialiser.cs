@@ -51,10 +51,10 @@ public class ApplicationDbContextInitialiser
         await CreateRoleAsync(Roles.Server);
         await CreateRoleAsync(Roles.Client);
 
-        await CreateUserAsync("server1@localhost", "Server1!", Roles.Server);
-        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server);
-        await CreateUserAsync("user1@localhost", "User1!", Roles.Client);
-        await CreateUserAsync("user2@localhost", "User2!", Roles.Client);
+        await CreateUserAsync("server1@localhost", "Server1!", Roles.Server, LanguageEnum.English);
+        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server, LanguageEnum.Polish);
+        await CreateUserAsync("user1@localhost", "User1!", Roles.Client, LanguageEnum.English);
+        await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.Polish);
 
         Log.Information("InitialiseAsync -> Stop");
     }
@@ -68,11 +68,16 @@ public class ApplicationDbContextInitialiser
         }
     }
 
-    private async Task CreateUserAsync(string userName, string password, string role)
+    private async Task CreateUserAsync(string userName, string password, string role, LanguageEnum language)
     {
         if (_userManager.Users.All(u => u.UserName != userName))
         {
-            var user = new ApplicationUser { UserName = userName, Email = userName };
+            var user = new ApplicationUser 
+            { 
+                UserName = userName, 
+                Email = userName,
+                Language = language
+            };
 
             await _userManager.CreateAsync(user, password);
             await _userManager.AddToRolesAsync(user, [role]);

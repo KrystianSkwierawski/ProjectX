@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ProjectX.Domain.Entities;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Common;
 public class JwtHandler
@@ -37,6 +38,7 @@ public class JwtHandler
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new Claim(nameof(LanguageEnum), user.Language.ToString())
         };
 
         var roles = await _userManager.GetRolesAsync(user);

@@ -5,19 +5,19 @@ namespace ProjectX.Domain.Enums;
 public enum CacheKeyEnum
 {
     [CacheKeyParameters(
-        Format = "common",
+        Format = "Common",
         ExpiryInSeconds = 3600
     )]
     Common,
 
     [CacheKeyParameters(
-      Format = "quest_{0}",
+      Format = "Quest_{0}_{1}",
       ExpiryInSeconds = 3600
     )]
     Quest,
 
     [CacheKeyParameters(
-      Format = "quests",
+      Format = "Quests_{0}",
       ExpiryInSeconds = 3600
     )]
     Quests,
