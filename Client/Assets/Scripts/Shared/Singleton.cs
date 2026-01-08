@@ -1,5 +1,3 @@
-using System;
-
 namespace Assets.Scripts.Shared
 {
 	public abstract class Singleton<T> where T : Singleton<T>, new()

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.Extensions;

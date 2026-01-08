@@ -105,7 +105,7 @@ namespace Assets.Scripts.Network
             if (!_hit)
             {
                 _hit = true;
-                await _target.GetComponent<Health>().DealDamageAsync(50f, _clientToken, OwnerClientId);
+                _target.GetComponent<Health>().DealDamage(50f, _clientToken, OwnerClientId);
 
                 OnHitTargetClientRpc();
 

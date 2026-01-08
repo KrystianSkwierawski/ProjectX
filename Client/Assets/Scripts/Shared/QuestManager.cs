@@ -3,15 +3,12 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Cysharp.Threading.Tasks;
-using UnityEngine.Events;
 
 namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
         public IDictionary<QuestEnum, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<QuestEnum, QuestNpc>();
-
-        public UnityEvent<QuestEnum, CharacterQuestStatusEnum> AddedProgresEvent = new UnityEvent<QuestEnum, CharacterQuestStatusEnum>();
 
         public IList<QuestDto> Quests { get; private set; }
 

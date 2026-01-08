@@ -48,45 +48,70 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
-            if (!IsOwner)
+            if (IsOwner)
             {
-                return;
+                UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
+
+                UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
+                {
+                    UIManager.Instance.HideQuestCanvas();
+
+                    var questNpc = QuestManager.Instance.QuestNpcs[_questId];
+
+                    if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
+                    {
+                        CompleteQuest(questNpc);
+                    }
+                    else
+                    {
+                        await AddQuestAsync(questNpc);
+                    }
+
+                    await UpdateQuestLogAsync();
+                });
+
+
+                await UpdateQuestLogAsync();
             }
 
-            UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
+            if (IsServer)
             {
-                UIManager.Instance.HideQuestCanvas();
-
-                var questNpc = QuestManager.Instance.QuestNpcs[_questId];
-
-                if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
+                CombatManager.Instance.OnKillEvent.AddListener(async (KillEventModel killEvent) =>
                 {
-                    CompleteQuest(questNpc);
-                }
-                else
-                {
-                    await AddQuestAsync(questNpc);
-                }
+                    var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, killEvent.GameObject.name, 1, killEvent.ClientToken);
 
-                await UpdateQuestLog();
-            });
+                    if (progres.status != CharacterQuestStatusEnum.None)
+                    {
+                        UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, killEvent.ClientId);
+                    }
+                });
+            }
+        }
 
-            UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
-
-            QuestManager.Instance.AddedProgresEvent.AddListener(async (QuestEnum questId, CharacterQuestStatusEnum status) =>
+        [ClientRpc]
+        private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
+        {
+            if (NetworkManager.Singleton.LocalClientId == clientId)
             {
-                await UpdateQuestLog();
+                Debug.Log($"UpdateQuestLogClientRpc: {clientId}");
+
+                var characterQuest = QuestManager.Instance.CharacterQuests
+                    .Where(x => x.id == characterQuestId)
+                    .Single();
+
+                characterQuest.progress += progres;
+                characterQuest.status = status;
+
+                _ = UpdateQuestLogAsync();
 
                 if (status == CharacterQuestStatusEnum.Finished)
                 {
-                    var npc = QuestManager.Instance.QuestNpcs[questId];
+                    var npc = QuestManager.Instance.QuestNpcs[characterQuest.questId];
 
                     npc.HideExclamationMark();
                     npc.ShowQuestionMark();
                 }
-            });
-
-            await UpdateQuestLog();
+            }
         }
 
         private async UniTask AddQuestAsync(QuestNpc questNpc)
@@ -146,8 +171,8 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        // FIXME: refactor and optimization
-        private async UniTask UpdateQuestLog()
+        // TODO: refactor and optimization
+        private async UniTask UpdateQuestLogAsync()
         {
             await UniTask.WaitUntil(() => QuestManager.Instance.CharacterQuests != null);
 
