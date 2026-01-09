@@ -1,4 +1,5 @@
 using System;
+using Assets.Scripts.Network;
 using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
@@ -23,17 +24,24 @@ namespace Assets.Scripts.Mono
             _collider = GetComponent<Collider>();
 
             _pool = new ObjectPool<GameObject>(
-                createFunc: () => Instantiate(_enemyPrefab),
+                createFunc: () =>
+                {
+                    var result = Instantiate(_enemyPrefab);
+
+                    var instanceId = result.GetInstanceID();
+
+                    SubscriptionManager.Instance.Subscribe(instanceId, (ReleaseActionEvent e) =>
+                    {
+                        Debug.Log($"Releasing to pool. GameObjectName: {result.name}, InstanceId: {instanceId}");
+                        _pool.Release(result);
+                    });
+
+                    return result;
+                },
                 actionOnGet: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Spawn(),
                 actionOnRelease: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Despawn(false),
                 defaultCapacity: _beansCount
             );
-
-            CombatManager.Instance.OnKillEvent.AddListener((KillEventModel killEvent) =>
-            {
-                Debug.Log($"Releasing to pool. GameObjectName: {killEvent.GameObject.name}, InstanceId: {killEvent.GameObject.GetInstanceID()}");
-                _pool.Release(killEvent.GameObject);
-            });
         }
 
         private async void Update()

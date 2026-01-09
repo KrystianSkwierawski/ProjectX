@@ -21,8 +21,14 @@ namespace Assets.Scripts.Network
 
             if (IsServer)
             {
-                CombatManager.Instance.OnKillEvent.AddListener(async (KillEventModel killEvent) =>
+                SubscriptionManager.Instance.Subscribe(OwnerClientId, async (KillActionEvent killEvent) =>
                 {
+                    if (killEvent.ClientId != OwnerClientId)
+                    {
+                        Debug.LogWarning("ClientId mismatch");
+                        return;
+                    }
+
                     var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
                         characterId = 1,
@@ -33,7 +39,13 @@ namespace Assets.Scripts.Network
                     {
                         Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
 
-                        UpdateLevelClientRpc(experience.level, killEvent.ClientId);
+                        UpdateLevelClientRpc(experience.level, killEvent.ClientId, new ClientRpcParams
+                        {
+                            Send = new ClientRpcSendParams
+                            {
+                                TargetClientIds = new ulong[] { killEvent.ClientId }
+                            }
+                        });
                     }
                 });
             }
@@ -47,12 +59,16 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ulong clientId)
+        public void UpdateLevelClientRpc(int level, ulong clientId, ClientRpcParams rpcParams = default)
         {
             if (NetworkManager.Singleton.LocalClientId == clientId)
             {
                 UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
                 AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.3f);
+            }
+            else
+            {
+                Debug.LogWarning("ClientId mismatch");
             }
         }
     }

@@ -105,6 +105,7 @@ namespace Assets.Scripts.Network
             if (!_hit)
             {
                 _hit = true;
+                // subscribtion?
                 _target.GetComponent<Health>()?.DealDamage(50f, _clientToken, OwnerClientId);
 
                 OnHitTargetClientRpc();

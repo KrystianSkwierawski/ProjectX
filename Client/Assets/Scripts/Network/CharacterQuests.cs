@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEditorInternal.ReorderableList;
 
 namespace Assets.Scripts.Mono
 {
@@ -33,16 +34,26 @@ namespace Assets.Scripts.Mono
 
             if (result.leveledUp)
             {
-                UpdateLevelClientRpc(result.level, clientId);
+                UpdateLevelClientRpc(result.level, clientId, new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { clientId }
+                    }
+                });
             }
         }
 
         [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ulong clientId)
+        public void UpdateLevelClientRpc(int level, ulong clientId, ClientRpcParams rpcParams = default)
         {
             if (NetworkManager.Singleton.LocalClientId == clientId)
             {
                 UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
+            }
+            else 
+            {
+                Debug.LogWarning("ClientId mismatch");
             }
         }
 
@@ -76,29 +87,41 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                CombatManager.Instance.OnKillEvent.AddListener(async (KillEventModel killEvent) =>
+                SubscriptionManager.Instance.Subscribe(OwnerClientId, async (KillActionEvent e) =>
                 {
+                    if (e.ClientId != OwnerClientId)
+                    {
+                        Debug.LogWarning("ClientId mismatch");
+                        return;
+                    }
+
                     await UniTask.WhenAll
                     (
-                        CheckProgressAsync(killEvent.GameObject.name, 1, killEvent.ClientId, killEvent.ClientToken),
-                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, killEvent.ClientId, killEvent.ClientToken)
+                        CheckProgressAsync(e.GameObjectName, 1, e.ClientId, e.ClientToken),
+                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, e.ClientId, e.ClientToken)
                     );
                 });
             }
         }
 
-        private async UniTask CheckProgressAsync(string objectName, int progress, ulong clientId, string clientToken)
+        private async UniTask CheckProgressAsync(string gameObjectName, int progress, ulong clientId, string clientToken)
         {
-            var progres = await QuestManager.Instance.CheckProgressAsync(1, objectName, progress, clientToken);
+            var progres = await QuestManager.Instance.CheckProgressAsync(1, gameObjectName, progress, clientToken);
 
             if (progres.status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
+                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId, new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { clientId }
+                    }
+                });
             }
         }
 
         [ClientRpc]
-        private void UpdateQuestLogClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ulong clientId)
+        private void UpdateQuestLogClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ulong clientId, ClientRpcParams rpcParams = default)
         {
             if (NetworkManager.Singleton.LocalClientId == clientId)
             {
@@ -120,6 +143,10 @@ namespace Assets.Scripts.Mono
                     npc.HideExclamationMark();
                     npc.ShowQuestionMark();
                 }
+            }
+            else
+            {
+                Debug.LogWarning("ClientId mismatch");
             }
         }
 

@@ -7,6 +7,7 @@ namespace Assets.Scripts.Network
 {
     public class Health : NetworkBehaviour
     {
+        // FIXME: NetworkVariable
         public float Value { get; private set; } = 100;
 
         public void DealDamage(float damage, string token, ulong clientId)
@@ -20,11 +21,16 @@ namespace Assets.Scripts.Network
 
                 HideTargetCanvasClientRpc();
 
-                CombatManager.Instance.OnKillEvent.Invoke(new KillEventModel
+                SubscriptionManager.Instance.Invoke(new KillActionEvent
                 {
                     ClientId = clientId,
                     ClientToken = token,
-                    GameObject = gameObject
+                    GameObjectName = gameObject.name
+                });
+
+                SubscriptionManager.Instance.Invoke(new ReleaseActionEvent
+                {
+                    InstanceID = gameObject.GetInstanceID(),
                 });
 
                 return;

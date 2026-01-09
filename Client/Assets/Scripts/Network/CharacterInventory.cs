@@ -3,6 +3,7 @@ using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Assets.Scripts.Mono
@@ -23,8 +24,14 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                CombatManager.Instance.OnKillEvent.AddListener(async (KillEventModel killEvent) =>
+                SubscriptionManager.Instance.Subscribe(OwnerClientId, async (KillActionEvent e) =>
                 {
+                    if (e.ClientId != OwnerClientId)
+                    {
+                        Debug.LogWarning("ClientId mismatch");
+                        return;
+                    }
+
                     // TODO: drop chance by enemy and inventory modo
                     int random = UnityEngine.Random.Range(0, 99);
 
@@ -40,9 +47,15 @@ namespace Assets.Scripts.Mono
                         {
                             characterId = 1,
                             inventoryItem = item
-                        }, killEvent.ClientToken);
+                        }, e.ClientToken);
 
-                        UpdateInventoryClientRpc(item, killEvent.ClientId);
+                        UpdateInventoryClientRpc(item, e.ClientId, new ClientRpcParams
+                        {
+                            Send = new ClientRpcSendParams
+                            {
+                                TargetClientIds = new ulong[] { e.ClientId }
+                            }
+                        });
                     }
                 });
             }
@@ -74,11 +87,15 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void UpdateInventoryClientRpc(InventoryItem item, ulong clientId)
+        private void UpdateInventoryClientRpc(InventoryItem item, ulong clientId, ClientRpcParams rpcParams = default)
         {
             if (NetworkManager.Singleton.LocalClientId == clientId)
             {
                 UIManager.Instance.AddInventoryItem(item);
+            }
+            else
+            {
+                Debug.LogWarning("ClientId mismatch");
             }
         }
     }

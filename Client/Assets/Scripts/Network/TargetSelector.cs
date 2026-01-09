@@ -93,7 +93,13 @@ namespace Assets.Scripts.Network
             var spawnedFireball = fireball.GetComponent<Fireball>();
             spawnedFireball.PreCast(token);
 
-            NotifyClientRpc(netObj.NetworkObjectId, clientId);
+            NotifyClientRpc(netObj.NetworkObjectId, clientId, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { clientId }
+                }
+            });
         }
 
         [ServerRpc]
@@ -105,7 +111,7 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        void NotifyClientRpc(ulong objectId, ulong clientId)
+        void NotifyClientRpc(ulong objectId, ulong clientId, ClientRpcParams rpcParams = default)
         {
             if (NetworkManager.Singleton.LocalClientId == clientId)
             {
@@ -113,6 +119,10 @@ namespace Assets.Scripts.Network
                 _castTimer = 0f;
                 _objectId = objectId;
                 UIManager.Instance.ShowCastBar(0f);
+            }
+            else
+            {
+                Debug.LogWarning("ClientId mismatch");
             }
         }
 
