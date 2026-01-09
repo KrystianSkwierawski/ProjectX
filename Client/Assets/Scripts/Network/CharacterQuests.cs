@@ -78,18 +78,27 @@ namespace Assets.Scripts.Mono
             {
                 CombatManager.Instance.OnKillEvent.AddListener(async (KillEventModel killEvent) =>
                 {
-                    var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, killEvent.GameObject.name, 1, killEvent.ClientToken);
-
-                    if (progres.status != CharacterQuestStatusEnum.None)
-                    {
-                        UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, killEvent.ClientId);
-                    }
+                    await UniTask.WhenAll
+                    (
+                        CheckProgressAsync(killEvent.GameObject.name, 1, killEvent.ClientId, killEvent.ClientToken),
+                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, killEvent.ClientId, killEvent.ClientToken)
+                    );
                 });
             }
         }
 
+        private async UniTask CheckProgressAsync(string objectName, int progress, ulong clientId, string clientToken)
+        {
+            var progres = await QuestManager.Instance.CheckProgressAsync(1, objectName, progress, clientToken);
+
+            if (progres.status != CharacterQuestStatusEnum.None)
+            {
+                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
+            }
+        }
+
         [ClientRpc]
-        private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
+        private void UpdateQuestLogClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ulong clientId)
         {
             if (NetworkManager.Singleton.LocalClientId == clientId)
             {
@@ -99,7 +108,7 @@ namespace Assets.Scripts.Mono
                     .Where(x => x.id == characterQuestId)
                     .Single();
 
-                characterQuest.progress += progres;
+                characterQuest.progress += progress;
                 characterQuest.status = status;
 
                 _ = UpdateQuestLogAsync();

@@ -45,7 +45,7 @@ namespace Assets.Scripts.Shared
             }, clientToken);
         }
 
-        public async UniTask<CheckCharacterQuestProgresDto> CheckCharacterQuestProgresAsync(int characterId, string gameObjectName, int progres, string clientToken)
+        public async UniTask<CheckCharacterQuestProgresDto> CheckProgressAsync(int characterId, string gameObjectName, int progres, string clientToken)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgresDto>("CharacterQuests/CheckProgres", new CheckCharacterQuestProgresCommand
             {

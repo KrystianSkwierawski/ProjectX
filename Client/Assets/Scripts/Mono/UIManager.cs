@@ -81,7 +81,7 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        // FIXME: refactor and optimization!
+        // TODO: refactor and optimization!
         public void AddInventoryItem(InventoryItem item)
         {
             var slots = GameObject.FindGameObjectsWithTag("InventorySlot");
