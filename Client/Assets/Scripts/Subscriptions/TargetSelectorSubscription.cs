@@ -6,9 +6,9 @@ namespace Assets.Scripts.Subscriptions
 {
     public class TargetSelectorSubscription : AbstractSubscription<TargetSelectorSubscription, TargetSelectorSubscriptionsEvent>
     {
-        public override void Invoke(TargetSelectorSubscriptionsEvent e)
+        public override void Invoke(string key, TargetSelectorSubscriptionsEvent e)
         {
-            foreach (var subscription in Subscriptions.Where(x => x.Key.StartsWith($"{e.Key}_")))
+            foreach (var subscription in Subscriptions.Where(x => x.Key.StartsWith($"{key}_")))
             {
                 Debug.Log($"Invoke -> Type: TargetSelectorSubscriptionsEvent, Id: Key: {subscription.Key}");
 
@@ -17,10 +17,8 @@ namespace Assets.Scripts.Subscriptions
         }
     }
 
-    public class TargetSelectorSubscriptionsEvent : ISubscriptionEvent
+    public class TargetSelectorSubscriptionsEvent
     {
-        public string Key { get; set; }
-
         public bool Hide { get; set; }
 
         public float Value { get; set; }

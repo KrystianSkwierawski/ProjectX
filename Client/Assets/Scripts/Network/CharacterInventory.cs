@@ -46,7 +46,7 @@ namespace Assets.Scripts.Mono
                         {
                             Send = new ClientRpcSendParams
                             {
-                                TargetClientIds = new ulong[] { ulong.Parse(e.Key) }
+                                TargetClientIds = new ulong[] { OwnerClientId }
                             }
                         });
                     }

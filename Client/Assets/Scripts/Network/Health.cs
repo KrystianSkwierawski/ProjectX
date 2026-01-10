@@ -18,7 +18,6 @@ namespace Assets.Scripts.Network
 
                 var targetSelectorSubscriptionsEvent = new TargetSelectorSubscriptionsEvent
                 {
-                    Key = gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(),
                     Value = Network.Value
                 };
 
@@ -28,38 +27,26 @@ namespace Assets.Scripts.Network
 
                     targetSelectorSubscriptionsEvent.Hide = true;
 
-                    TargetSelectorSubscription.Instance.Invoke(new TargetSelectorSubscriptionsEvent
-                    {
-                        Key = gameObject.GetInstanceID().ToString(),
-                        Hide = true
-                    });
+                    ReleaseSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleaseSubscriptionEvent());
 
-                    ReleaseSubscription.Instance.Invoke(new ReleaseSubscriptionEvent
+                    QuestSubscription.Instance.Invoke(e.ClientId.ToString(), new QuestSubscriptionEvent
                     {
-                        Key = gameObject.GetInstanceID().ToString(),
-                    });
-
-                    QuestSubscription.Instance.Invoke(new QuestSubscriptionEvent
-                    {
-                        Key = e.ClientId.ToString(),
                         ClientToken = e.ClientToken,
                         GameObjectName = gameObject.name
                     });
 
-                    InventorySubscription.Instance.Invoke(new InventorySubscriptionEvent
+                    InventorySubscription.Instance.Invoke(e.ClientId.ToString(), new InventorySubscriptionEvent
                     {
-                        Key = e.ClientId.ToString(),
                         ClientToken = e.ClientToken,
                     });
 
-                    ExperienceSubscription.Instance.Invoke(new ExperienceSubscriptionEvent
+                    ExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new ExperienceSubscriptionEvent
                     {
-                        Key = e.ClientId.ToString(),
                         ClientToken = e.ClientToken,
                     });
                 }
 
-                TargetSelectorSubscription.Instance.Invoke(targetSelectorSubscriptionsEvent);
+                TargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
             });
         }
 

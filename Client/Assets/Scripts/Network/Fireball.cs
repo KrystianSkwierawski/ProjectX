@@ -107,11 +107,10 @@ namespace Assets.Scripts.Network
             {
                 _hit = true;
 
-                HealthSubscription.Instance.Invoke(new HealthSubscriptionEvent
+                HealthSubscription.Instance.Invoke(_target.gameObject.GetInstanceID().ToString(), new HealthSubscriptionEvent
                 {
-                    Key = _target.gameObject.GetInstanceID().ToString(),
+                    ClientId = OwnerClientId,
                     Value = 50f,
-                    ClientId = (int)OwnerClientId,
                     ClientToken = _clientToken
                 });
 

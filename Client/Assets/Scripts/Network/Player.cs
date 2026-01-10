@@ -37,7 +37,7 @@ namespace Assets.Scripts.Network
                         {
                             Send = new ClientRpcSendParams
                             {
-                                TargetClientIds = new ulong[] { ulong.Parse(e.Key) }
+                                TargetClientIds = new ulong[] { OwnerClientId }
                             }
                         });
                     }

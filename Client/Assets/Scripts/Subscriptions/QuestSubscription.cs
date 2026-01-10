@@ -4,10 +4,8 @@
     {
     }
 
-    public class QuestSubscriptionEvent : ISubscriptionEvent
+    public class QuestSubscriptionEvent
     {
-        public string Key { get; set; }
-
         public string ClientToken { get; set; }
 
         public string GameObjectName { get; set; }

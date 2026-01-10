@@ -6,7 +6,7 @@ namespace Assets.Scripts.Shared
 {
     public abstract class AbstractSubscription<T, J> : Singleton<T>
         where T : AbstractSubscription<T, J>, new()
-        where J : ISubscriptionEvent
+        where J : class
 
     {
         protected readonly IDictionary<string, UnityAction<J>> Subscriptions = new Dictionary<string, UnityAction<J>>();
@@ -35,19 +35,14 @@ namespace Assets.Scripts.Shared
             Subscriptions.Clear();
         }
 
-        public virtual void Invoke(J e)
+        public virtual void Invoke(string key, J e)
         {
-            Debug.Log($"Invoke -> Type: {typeof(J)}, Id: {e.Key}");
+            Debug.Log($"Invoke -> Type: {typeof(J)}, Key: {key}");
 
-            if (Subscriptions.TryGetValue(e.Key, out var action))
+            if (Subscriptions.TryGetValue(key, out var action))
             {
                 action.Invoke(e);
             }
         }
-    }
-
-    public interface ISubscriptionEvent
-    {
-        string Key { get; set; }
     }
 }

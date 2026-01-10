@@ -1,5 +1,4 @@
 using System;
-using Assets.Scripts.Network;
 using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;

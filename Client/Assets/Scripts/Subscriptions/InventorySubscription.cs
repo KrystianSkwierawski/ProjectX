@@ -4,10 +4,8 @@
     {
     }
 
-    public class InventorySubscriptionEvent : ISubscriptionEvent
+    public class InventorySubscriptionEvent
     {
-        public string Key { get; set; }
-
         public string ClientToken { get; set; }
     }
 }

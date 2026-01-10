@@ -83,8 +83,8 @@ namespace Assets.Scripts.Mono
                 {
                     await UniTask.WhenAll
                     (
-                        CheckProgressAsync(e.GameObjectName, 1, ulong.Parse(e.Key), e.ClientToken),
-                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, ulong.Parse(e.Key), e.ClientToken)
+                        CheckProgressAsync(e.GameObjectName, 1, OwnerClientId, e.ClientToken),
+                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, OwnerClientId, e.ClientToken)
                     );
                 });
             }

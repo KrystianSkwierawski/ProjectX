@@ -4,13 +4,11 @@
     {
     }
 
-    public class HealthSubscriptionEvent : ISubscriptionEvent
+    public class HealthSubscriptionEvent
     {
-        public string Key { get; set; }
+        public ulong ClientId { get; set; }
 
         public float Value { get; set; }
-
-        public int ClientId { get; set; }
 
         public string ClientToken { get; set; }
     }

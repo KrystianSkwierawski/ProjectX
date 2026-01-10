@@ -4,8 +4,7 @@
     {
     }
 
-    public class ReleaseSubscriptionEvent : ISubscriptionEvent
+    public class ReleaseSubscriptionEvent
     {
-        public string Key { get; set; }
     }
 }

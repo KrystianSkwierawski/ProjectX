@@ -4,10 +4,8 @@
     {
     }
 
-    public class ExperienceSubscriptionEvent : ISubscriptionEvent
+    public class ExperienceSubscriptionEvent
     {
-        public string Key { get; set; }
-
         public string ClientToken { get; set; }
     }
 }
