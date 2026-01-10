@@ -21,7 +21,7 @@ namespace Assets.Scripts.Network
 
             if (IsServer)
             {
-                ExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
+                AddExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
                     var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
@@ -63,10 +63,19 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                ExperienceSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                AddExperienceSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnNetworkDespawn();
+        }
+        public override void OnDestroy()
+        {
+            if (IsServer)
+            {
+                AddExperienceSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            }
+
+            base.OnDestroy();
         }
     }
 }

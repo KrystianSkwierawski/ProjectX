@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
 using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
-using ProjectX.Application.CharacterQuests.Commands.CheckProgres;
+using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
+using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgres;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Domain.Constants;
 
@@ -22,11 +23,11 @@ public class CharacterQuests : EndpointGroupBase
             .RequireAuthorization(Policies.Client);
 
         groupBuilder
-            .MapPost("Progres", AddCharacterQuestProgress)
+            .MapPost("Progress", AddCharacterQuestProgress)
             .RequireAuthorization(Policies.Server);
 
         groupBuilder
-            .MapPost("CheckProgres", CheckCharacterQuestProgress)
+            .MapPost("CheckProgress", CheckCharacterQuestProgress)
             .RequireAuthorization(Policies.Server);
     }
 
@@ -44,14 +45,14 @@ public class CharacterQuests : EndpointGroupBase
         return TypedResults.Created(string.Empty, result);
     }
 
-    private static async Task<Ok<AddCharacterQuestProgresDto>> AddCharacterQuestProgress(ISender sender, AddCharacterQuestProgresCommand command)
+    private static async Task<Ok<AddCharacterQuestProgressDto>> AddCharacterQuestProgress(ISender sender, AddCharacterQuestProgressCommand command)
     {
         var result = await sender.Send(command);
 
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Ok<CheckCharacterQuestProgresDto>> CheckCharacterQuestProgress(ISender sender, CheckCharacterQuestProgresCommand command)
+    private static async Task<Ok<CheckCharacterQuestProgressDto>> CheckCharacterQuestProgress(ISender sender, CheckCharacterQuestProgressCommand command)
     {
         var result = await sender.Send(command);
 

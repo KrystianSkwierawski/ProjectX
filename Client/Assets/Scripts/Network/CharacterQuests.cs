@@ -79,24 +79,17 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                QuestSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
-                {
-                    await UniTask.WhenAll
-                    (
-                        CheckProgressAsync(e.GameObjectName, 1, OwnerClientId, e.ClientToken),
-                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, OwnerClientId, e.ClientToken)
-                    );
-                });
+                CheckCharacterQuestSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) => await CheckProgressAsync(e.GameObjectName, e.Progress, OwnerClientId, e.ClientToken));
             }
         }
 
         private async UniTask CheckProgressAsync(string gameObjectName, int progress, ulong clientId, string clientToken)
         {
-            var progres = await QuestManager.Instance.CheckProgressAsync(1, gameObjectName, progress, clientToken);
+            var result = await QuestManager.Instance.CheckProgressAsync(1, gameObjectName, progress, clientToken);
 
-            if (progres.status != CharacterQuestStatusEnum.None)
+            if (result.status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, new ClientRpcParams
+                UpdateQuestLogClientRpc(result.characterQuestId, progress, result.status, new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
@@ -120,12 +113,14 @@ namespace Assets.Scripts.Mono
 
             _ = UpdateQuestLogAsync();
 
-            if (status == CharacterQuestStatusEnum.Finished)
+            if (status == CharacterQuestStatusEnum.Finished && QuestManager.Instance.QuestNpcs.TryGetValue(characterQuest.questId, out var npc))
             {
-                var npc = QuestManager.Instance.QuestNpcs[characterQuest.questId];
-
                 npc.HideExclamationMark();
                 npc.ShowQuestionMark();
+            }
+            else
+            {
+                Debug.LogWarning($"NPC for quest {characterQuest.questId} not found.");
             }
         }
 
@@ -189,7 +184,10 @@ namespace Assets.Scripts.Mono
         // TODO: refactor and optimization
         private async UniTask UpdateQuestLogAsync()
         {
-            await UniTask.WaitUntil(() => QuestManager.Instance.CharacterQuests != null);
+            await UniTask.WaitUntil(
+                () => QuestManager.Instance.CharacterQuests != null, 
+                cancellationToken: this.GetCancellationTokenOnDestroy()
+            );
 
             if (QuestManager.Instance.CharacterQuests.Any())
             {
@@ -214,10 +212,20 @@ namespace Assets.Scripts.Mono
         {
             if (IsServer)
             {
-                QuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                CheckCharacterQuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnNetworkDespawn();
+        }
+
+        public override void OnDestroy()
+        {
+            if (IsServer)
+            {
+                CheckCharacterQuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            }
+
+            base.OnDestroy();
         }
     }
 }

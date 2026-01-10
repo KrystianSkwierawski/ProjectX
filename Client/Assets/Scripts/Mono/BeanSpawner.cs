@@ -29,7 +29,7 @@ namespace Assets.Scripts.Mono
 
                     var instanceId = result.GetInstanceID().ToString();
 
-                    ReleaseSubscription.Instance.Subscribe(instanceId, (e) =>
+                    ReleasePoolSubscription.Instance.Subscribe(instanceId, (e) =>
                     {
                         Debug.Log($"Releasing to pool. GameObjectName: {result.name}, InstanceId: {instanceId}");
                         _pool.Release(result);

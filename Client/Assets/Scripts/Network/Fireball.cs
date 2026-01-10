@@ -107,7 +107,7 @@ namespace Assets.Scripts.Network
             {
                 _hit = true;
 
-                HealthSubscription.Instance.Invoke(_target.gameObject.GetInstanceID().ToString(), new HealthSubscriptionEvent
+                UpdateHealthSubscription.Instance.Invoke(_target.gameObject.GetInstanceID().ToString(), new UpdateHealthSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
                     Value = 50f,

@@ -1,10 +1,10 @@
 ﻿namespace Assets.Scripts.Shared
 {
-    public class HealthSubscription : AbstractSubscription<HealthSubscription, HealthSubscriptionEvent>
+    public class UpdateHealthSubscription : AbstractSubscription<UpdateHealthSubscription, UpdateHealthSubscriptionEvent>
     {
     }
 
-    public class HealthSubscriptionEvent
+    public class UpdateHealthSubscriptionEvent
     {
         public ulong ClientId { get; set; }
 

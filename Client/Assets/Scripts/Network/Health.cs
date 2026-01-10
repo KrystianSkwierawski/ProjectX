@@ -11,12 +11,12 @@ namespace Assets.Scripts.Network
 
         private void Start()
         {
-            HealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
+            UpdateHealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
             {
                 Network.Value -= e.Value;
                 Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
 
-                var targetSelectorSubscriptionsEvent = new TargetSelectorSubscriptionsEvent
+                var targetSelectorSubscriptionsEvent = new UpdateTargetSelectorSubscriptionsEvent
                 {
                     Value = Network.Value
                 };
@@ -27,26 +27,27 @@ namespace Assets.Scripts.Network
 
                     targetSelectorSubscriptionsEvent.Hide = true;
 
-                    ReleaseSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleaseSubscriptionEvent());
+                    ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
 
-                    QuestSubscription.Instance.Invoke(e.ClientId.ToString(), new QuestSubscriptionEvent
+                    CheckCharacterQuestSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
                     {
-                        ClientToken = e.ClientToken,
-                        GameObjectName = gameObject.name
-                    });
-
-                    InventorySubscription.Instance.Invoke(e.ClientId.ToString(), new InventorySubscriptionEvent
-                    {
+                        Progress = 1,
+                        GameObjectName = gameObject.name,
                         ClientToken = e.ClientToken,
                     });
 
-                    ExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new ExperienceSubscriptionEvent
+                    UpdateInventorySubscription.Instance.Invoke(e.ClientId.ToString(), new UpdateInventorySubscriptionEvent
+                    {
+                        ClientToken = e.ClientToken,
+                    });
+
+                    AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
                     {
                         ClientToken = e.ClientToken,
                     });
                 }
 
-                TargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
+                UpdateTargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
             });
         }
 
@@ -55,10 +56,20 @@ namespace Assets.Scripts.Network
             if (IsServer)
             {
                 Network.Value = 100;
-                HealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                UpdateHealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnNetworkDespawn();
+        }
+
+        public override void OnDestroy()
+        {
+            if (IsServer)
+            {
+                UpdateHealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            }
+
+            base.OnDestroy();
         }
     }
 }

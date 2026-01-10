@@ -3,10 +3,10 @@ using System;
 namespace Assets.Scripts.Models
 {
     [Serializable]
-    public class AddCharacterQuestProgresCommand
+    public class AddCharacterQuestProgressCommand
     {
         public int characterQuestId;
 
-        public int progres;
+        public int progress;
     }
 }

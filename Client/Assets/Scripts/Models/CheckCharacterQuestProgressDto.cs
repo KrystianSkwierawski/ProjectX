@@ -4,7 +4,7 @@ using Assets.Scripts.Enums;
 namespace Assets.Scripts.Models
 {
     [Serializable]
-    public class CheckCharacterQuestProgresDto
+    public class CheckCharacterQuestProgressDto
     {
         public QuestEnum questId;
 

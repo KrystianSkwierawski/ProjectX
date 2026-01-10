@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
@@ -20,11 +21,9 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
-            var token = this.GetCancellationTokenOnDestroy();
-
             await UniTask.WaitUntil(
                 () => QuestManager.Instance.Quests != null && QuestManager.Instance.CharacterQuests != null,
-                cancellationToken: token
+                cancellationToken: this.GetCancellationTokenOnDestroy()
             );
 
             _exclamationMark = gameObject.transform.Find("ExclamationMark").gameObject;
@@ -35,18 +34,21 @@ namespace Assets.Scripts.Mono
                 .Where(x => x.status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
-            if (CharacterQuest == null)
-            {
-                LoadNextQuest();
-            }
-            else if (CharacterQuest.status == CharacterQuestStatusEnum.Finished)
-            {
-                LoadFinishedQuest();
-            }
-
-            // TODO: load accepted?
+            SetStatus();
 
             QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
+        }
+
+        private void SetStatus()
+        {
+            Action action = CharacterQuest?.status switch
+            {
+                CharacterQuestStatusEnum.Accepted => LoadAccepted,
+                CharacterQuestStatusEnum.Finished => LoadFinishedQuest,
+                _ => LoadNextQuest,
+            };
+
+            action();
         }
 
         private void LoadNextQuest()
@@ -120,6 +122,16 @@ namespace Assets.Scripts.Mono
         public void MarkAsAccepted()
         {
             _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { UIManager.Instance.Material001 };
+        }
+
+        private void LoadAccepted()
+        {
+            _exclamationMark.SetActive(true);
+            MarkAsAccepted();
+
+            Quest = QuestManager.Instance.Quests
+                .Where(x => x.id == CharacterQuest.questId)
+                .First();
         }
     }
 }

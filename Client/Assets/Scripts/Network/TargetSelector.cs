@@ -75,7 +75,7 @@ namespace Assets.Scripts.Network
         [ServerRpc]
         private void SelectServerRpc(int networkObjectId)
         {
-            TargetSelectorSubscription.Instance.Subscribe($"{networkObjectId}_{OwnerClientId}", (e) =>
+            UpdateTargetSelectorSubscription.Instance.Subscribe($"{networkObjectId}_{OwnerClientId}", (e) =>
             {
                 UpdateTargetCanvasClientRpc(e.Value, e.Hide, new ClientRpcParams
                 {
@@ -90,7 +90,7 @@ namespace Assets.Scripts.Network
         [ServerRpc]
         private void UnselectServerRpc(int networkObjectId)
         {
-            TargetSelectorSubscription.Instance.Unsubscribe($"{networkObjectId}_{OwnerClientId}");
+            UpdateTargetSelectorSubscription.Instance.Unsubscribe($"{networkObjectId}_{OwnerClientId}");
         }
 
         [ClientRpc]

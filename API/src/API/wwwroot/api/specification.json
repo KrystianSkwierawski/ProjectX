@@ -240,18 +240,18 @@
         ]
       }
     },
-    "/api/CharacterQuests/Progres": {
+    "/api/CharacterQuests/Progress": {
       "post": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "PostApiCharacterQuestsProgres",
+        "operationId": "PostApiCharacterQuestsProgress",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddCharacterQuestProgresCommand"
+                "$ref": "#/components/schemas/AddCharacterQuestProgressCommand"
               }
             }
           },
@@ -264,7 +264,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AddCharacterQuestProgresDto"
+                  "$ref": "#/components/schemas/AddCharacterQuestProgressDto"
                 }
               }
             }
@@ -277,18 +277,18 @@
         ]
       }
     },
-    "/api/CharacterQuests/CheckProgres": {
+    "/api/CharacterQuests/CheckProgress": {
       "post": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "PostApiCharacterQuestsCheckProgres",
+        "operationId": "PostApiCharacterQuestsCheckProgress",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckCharacterQuestProgresCommand"
+                "$ref": "#/components/schemas/CheckCharacterQuestProgressCommand"
               }
             }
           },
@@ -301,7 +301,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CheckCharacterQuestProgresDto"
+                  "$ref": "#/components/schemas/CheckCharacterQuestProgressDto"
                 }
               }
             }
@@ -855,7 +855,7 @@
           }
         }
       },
-      "AddCharacterQuestProgresDto": {
+      "AddCharacterQuestProgressDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -868,7 +868,7 @@
           }
         }
       },
-      "AddCharacterQuestProgresCommand": {
+      "AddCharacterQuestProgressCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -882,7 +882,7 @@
           }
         }
       },
-      "CheckCharacterQuestProgresDto": {
+      "CheckCharacterQuestProgressDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -898,7 +898,7 @@
           }
         }
       },
-      "CheckCharacterQuestProgresCommand": {
+      "CheckCharacterQuestProgressCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -909,7 +909,7 @@
           "gameObjectName": {
             "type": "string"
           },
-          "progres": {
+          "progress": {
             "type": "integer",
             "format": "int32"
           }

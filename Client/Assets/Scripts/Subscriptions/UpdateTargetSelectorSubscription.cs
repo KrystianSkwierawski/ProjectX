@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Assets.Scripts.Subscriptions
 {
-    public class TargetSelectorSubscription : AbstractSubscription<TargetSelectorSubscription, TargetSelectorSubscriptionsEvent>
+    public class UpdateTargetSelectorSubscription : AbstractSubscription<UpdateTargetSelectorSubscription, UpdateTargetSelectorSubscriptionsEvent>
     {
-        public override void Invoke(string key, TargetSelectorSubscriptionsEvent e)
+        public override void Invoke(string key, UpdateTargetSelectorSubscriptionsEvent e)
         {
             foreach (var subscription in Subscriptions.Where(x => x.Key.StartsWith($"{key}_")))
             {
@@ -17,7 +17,7 @@ namespace Assets.Scripts.Subscriptions
         }
     }
 
-    public class TargetSelectorSubscriptionsEvent
+    public class UpdateTargetSelectorSubscriptionsEvent
     {
         public bool Hide { get; set; }
 

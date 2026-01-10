@@ -3,12 +3,12 @@ using System;
 namespace Assets.Scripts.Models
 {
     [Serializable]
-    public class CheckCharacterQuestProgresCommand
+    public class CheckCharacterQuestProgressCommand
     {
         public int characterId;
 
         public string gameObjectName;
 
-        public int progres;
+        public int progress;
     }
 }

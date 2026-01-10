@@ -13,7 +13,10 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
-            await UniTask.WaitUntil(() => !string.IsNullOrEmpty(TokenManager.Instance.Token));
+            await UniTask.WaitUntil(
+                () => !string.IsNullOrEmpty(TokenManager.Instance.Token), 
+                cancellationToken: this.GetCancellationTokenOnDestroy()
+            );
 
             if (IsOwner)
             {
@@ -23,18 +26,25 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                InventorySubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
+                UpdateInventorySubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
                     // TODO: drop chance by enemy and inventory modo
                     int random = UnityEngine.Random.Range(0, 99);
 
-                    if (random < 90)
+                    if (random < 50)
                     {
                         var item = new InventoryItem
                         {
                             type = CharacterInventoryTypeEnum.Can,
                             count = 1
                         };
+
+                        CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                        {
+                            Progress = item.count,
+                            GameObjectName = item.type.ToString(),
+                            ClientToken = e.ClientToken,
+                        });
 
                         await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
                         {
@@ -58,7 +68,6 @@ namespace Assets.Scripts.Mono
         {
             if (IsOwner && Keyboard.current.tabKey.wasPressedThisFrame)
             {
-                // TODO: wait?
                 ToggleInventory();
             }
         }
@@ -89,10 +98,20 @@ namespace Assets.Scripts.Mono
         {
             if (IsServer)
             {
-                InventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnNetworkDespawn();
+        }
+
+        public override void OnDestroy()
+        {
+            if (IsServer)
+            {
+                UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            }
+
+            base.OnDestroy();
         }
     }
 }
