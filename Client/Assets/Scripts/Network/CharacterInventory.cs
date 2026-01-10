@@ -3,7 +3,6 @@ using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
-using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Assets.Scripts.Mono
@@ -24,14 +23,8 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                SubscriptionManager.Instance.Subscribe(OwnerClientId, async (KillActionEvent e) =>
+                InventorySubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
-                    if (e.ClientId != OwnerClientId)
-                    {
-                        Debug.LogWarning("ClientId mismatch");
-                        return;
-                    }
-
                     // TODO: drop chance by enemy and inventory modo
                     int random = UnityEngine.Random.Range(0, 99);
 
@@ -49,11 +42,11 @@ namespace Assets.Scripts.Mono
                             inventoryItem = item
                         }, e.ClientToken);
 
-                        UpdateInventoryClientRpc(item, e.ClientId, new ClientRpcParams
+                        UpdateInventoryClientRpc(item, new ClientRpcParams
                         {
                             Send = new ClientRpcSendParams
                             {
-                                TargetClientIds = new ulong[] { e.ClientId }
+                                TargetClientIds = new ulong[] { ulong.Parse(e.Key) }
                             }
                         });
                     }
@@ -87,16 +80,19 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void UpdateInventoryClientRpc(InventoryItem item, ulong clientId, ClientRpcParams rpcParams = default)
+        private void UpdateInventoryClientRpc(InventoryItem item, ClientRpcParams rpcParams = default)
         {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
+            UIManager.Instance.AddInventoryItem(item);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer)
             {
-                UIManager.Instance.AddInventoryItem(item);
+                InventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
-            else
-            {
-                Debug.LogWarning("ClientId mismatch");
-            }
+
+            base.OnNetworkDespawn();
         }
     }
 }

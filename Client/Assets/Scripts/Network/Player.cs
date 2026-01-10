@@ -21,29 +21,23 @@ namespace Assets.Scripts.Network
 
             if (IsServer)
             {
-                SubscriptionManager.Instance.Subscribe(OwnerClientId, async (KillActionEvent killEvent) =>
+                ExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
-                    if (killEvent.ClientId != OwnerClientId)
-                    {
-                        Debug.LogWarning("ClientId mismatch");
-                        return;
-                    }
-
                     var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
                         characterId = 1,
                         type = ExperienceTypeEnum.Combat
-                    }, killEvent.ClientToken);
+                    }, e.ClientToken);
 
                     if (experience.leveledUp)
                     {
                         Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
 
-                        UpdateLevelClientRpc(experience.level, killEvent.ClientId, new ClientRpcParams
+                        UpdateLevelClientRpc(experience.level, new ClientRpcParams
                         {
                             Send = new ClientRpcSendParams
                             {
-                                TargetClientIds = new ulong[] { killEvent.ClientId }
+                                TargetClientIds = new ulong[] { ulong.Parse(e.Key) }
                             }
                         });
                     }
@@ -59,17 +53,20 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ulong clientId, ClientRpcParams rpcParams = default)
+        public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
+            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
+            AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.3f);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer)
             {
-                UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.3f);
+                ExperienceSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
-            else
-            {
-                Debug.LogWarning("ClientId mismatch");
-            }
+
+            base.OnNetworkDespawn();
         }
     }
 }

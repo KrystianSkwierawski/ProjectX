@@ -1,5 +1,5 @@
-using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,58 +7,70 @@ namespace Assets.Scripts.Network
 {
     public class Health : NetworkBehaviour
     {
-        // FIXME: NetworkVariable
-        public float Value { get; private set; } = 100;
+        public NetworkVariable<float> Network { get; private set; } = new NetworkVariable<float>(100, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        public void DealDamage(float damage, string token, ulong clientId)
+        private void Start()
         {
-            Value -= damage;
-            Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {Value}");
-
-            if (Value <= 0)
+            HealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
             {
-                Debug.Log("Object killed");
+                Network.Value -= e.Value;
+                Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
 
-                HideTargetCanvasClientRpc();
-
-                SubscriptionManager.Instance.Invoke(new KillActionEvent
+                var targetSelectorSubscriptionsEvent = new TargetSelectorSubscriptionsEvent
                 {
-                    ClientId = clientId,
-                    ClientToken = token,
-                    GameObjectName = gameObject.name
-                });
+                    Key = gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(),
+                    Value = Network.Value
+                };
 
-                SubscriptionManager.Instance.Invoke(new ReleaseActionEvent
+                if (Network.Value <= 0)
                 {
-                    InstanceID = gameObject.GetInstanceID(),
-                });
+                    Debug.Log("Object killed");
 
-                return;
-            }
+                    targetSelectorSubscriptionsEvent.Hide = true;
 
-            UpdateTargetCanvasClientRpc(Value);
+                    TargetSelectorSubscription.Instance.Invoke(new TargetSelectorSubscriptionsEvent
+                    {
+                        Key = gameObject.GetInstanceID().ToString(),
+                        Hide = true
+                    });
 
-            return;
-        }
+                    ReleaseSubscription.Instance.Invoke(new ReleaseSubscriptionEvent
+                    {
+                        Key = gameObject.GetInstanceID().ToString(),
+                    });
 
-        [ClientRpc]
-        private void HideTargetCanvasClientRpc()
-        {
-            UIManager.Instance.Target.SetActive(false);
-        }
+                    QuestSubscription.Instance.Invoke(new QuestSubscriptionEvent
+                    {
+                        Key = e.ClientId.ToString(),
+                        ClientToken = e.ClientToken,
+                        GameObjectName = gameObject.name
+                    });
 
-        [ClientRpc]
-        private void UpdateTargetCanvasClientRpc(float value)
-        {
-            Debug.Log("Updating target UI");
+                    InventorySubscription.Instance.Invoke(new InventorySubscriptionEvent
+                    {
+                        Key = e.ClientId.ToString(),
+                        ClientToken = e.ClientToken,
+                    });
 
-            Value = value;
-            UIManager.Instance.TargetHealthPointsText.text = Value.ToString();
+                    ExperienceSubscription.Instance.Invoke(new ExperienceSubscriptionEvent
+                    {
+                        Key = e.ClientId.ToString(),
+                        ClientToken = e.ClientToken,
+                    });
+                }
+
+                TargetSelectorSubscription.Instance.Invoke(targetSelectorSubscriptionsEvent);
+            });
         }
 
         public override void OnNetworkDespawn()
         {
-            Value = 100;
+            if (IsServer)
+            {
+                Network.Value = 100;
+                HealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            }
+
             base.OnNetworkDespawn();
         }
     }

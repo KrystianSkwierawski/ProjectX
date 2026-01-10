@@ -28,9 +28,9 @@ namespace Assets.Scripts.Mono
                 {
                     var result = Instantiate(_enemyPrefab);
 
-                    var instanceId = result.GetInstanceID();
+                    var instanceId = result.GetInstanceID().ToString();
 
-                    SubscriptionManager.Instance.Subscribe(instanceId, (ReleaseActionEvent e) =>
+                    ReleaseSubscription.Instance.Subscribe(instanceId, (e) =>
                     {
                         Debug.Log($"Releasing to pool. GameObjectName: {result.name}, InstanceId: {instanceId}");
                         _pool.Release(result);

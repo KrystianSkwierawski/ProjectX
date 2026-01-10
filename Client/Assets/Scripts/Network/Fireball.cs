@@ -1,6 +1,7 @@
 using System;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Mono;
+using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -105,8 +106,14 @@ namespace Assets.Scripts.Network
             if (!_hit)
             {
                 _hit = true;
-                // subscribtion?
-                _target.GetComponent<Health>()?.DealDamage(50f, _clientToken, OwnerClientId);
+
+                HealthSubscription.Instance.Invoke(new HealthSubscriptionEvent
+                {
+                    Key = _target.gameObject.GetInstanceID().ToString(),
+                    Value = 50f,
+                    ClientId = (int)OwnerClientId,
+                    ClientToken = _clientToken
+                });
 
                 OnHitTargetClientRpc();
 

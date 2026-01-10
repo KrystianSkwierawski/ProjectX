@@ -8,7 +8,6 @@ using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEditorInternal.ReorderableList;
 
 namespace Assets.Scripts.Mono
 {
@@ -34,7 +33,7 @@ namespace Assets.Scripts.Mono
 
             if (result.leveledUp)
             {
-                UpdateLevelClientRpc(result.level, clientId, new ClientRpcParams
+                UpdateLevelClientRpc(result.level, new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
@@ -45,16 +44,9 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ulong clientId, ClientRpcParams rpcParams = default)
+        public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
-            {
-                UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
-            }
-            else 
-            {
-                Debug.LogWarning("ClientId mismatch");
-            }
+            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
         }
 
         private async void Start()
@@ -87,18 +79,12 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                SubscriptionManager.Instance.Subscribe(OwnerClientId, async (KillActionEvent e) =>
+                QuestSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
-                    if (e.ClientId != OwnerClientId)
-                    {
-                        Debug.LogWarning("ClientId mismatch");
-                        return;
-                    }
-
                     await UniTask.WhenAll
                     (
-                        CheckProgressAsync(e.GameObjectName, 1, e.ClientId, e.ClientToken),
-                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, e.ClientId, e.ClientToken)
+                        CheckProgressAsync(e.GameObjectName, 1, ulong.Parse(e.Key), e.ClientToken),
+                        CheckProgressAsync(nameof(CharacterInventoryTypeEnum.Can), 1, ulong.Parse(e.Key), e.ClientToken)
                     );
                 });
             }
@@ -110,7 +96,7 @@ namespace Assets.Scripts.Mono
 
             if (progres.status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId, new ClientRpcParams
+                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
@@ -121,32 +107,25 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void UpdateQuestLogClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ulong clientId, ClientRpcParams rpcParams = default)
+        private void UpdateQuestLogClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ClientRpcParams rpcParams = default)
         {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
+            Debug.Log($"UpdateQuestLogClientRpc: {characterQuestId}");
+
+            var characterQuest = QuestManager.Instance.CharacterQuests
+                .Where(x => x.id == characterQuestId)
+                .Single();
+
+            characterQuest.progress += progress;
+            characterQuest.status = status;
+
+            _ = UpdateQuestLogAsync();
+
+            if (status == CharacterQuestStatusEnum.Finished)
             {
-                Debug.Log($"UpdateQuestLogClientRpc: {clientId}");
+                var npc = QuestManager.Instance.QuestNpcs[characterQuest.questId];
 
-                var characterQuest = QuestManager.Instance.CharacterQuests
-                    .Where(x => x.id == characterQuestId)
-                    .Single();
-
-                characterQuest.progress += progress;
-                characterQuest.status = status;
-
-                _ = UpdateQuestLogAsync();
-
-                if (status == CharacterQuestStatusEnum.Finished)
-                {
-                    var npc = QuestManager.Instance.QuestNpcs[characterQuest.questId];
-
-                    npc.HideExclamationMark();
-                    npc.ShowQuestionMark();
-                }
-            }
-            else
-            {
-                Debug.LogWarning("ClientId mismatch");
+                npc.HideExclamationMark();
+                npc.ShowQuestionMark();
             }
         }
 
@@ -229,6 +208,16 @@ namespace Assets.Scripts.Mono
 
                 UIManager.Instance.SetQuestLog(sb.ToString());
             }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer)
+            {
+                QuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            }
+
+            base.OnNetworkDespawn();
         }
     }
 }
