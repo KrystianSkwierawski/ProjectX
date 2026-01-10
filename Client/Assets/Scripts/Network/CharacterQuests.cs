@@ -4,6 +4,7 @@ using System.Text;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -59,20 +60,21 @@ namespace Assets.Scripts.Mono
                 {
                     UIManager.Instance.HideQuestCanvas();
 
-                    var questNpc = QuestManager.Instance.QuestNpcs[_questId];
+                    var characterQuest = QuestManager.Instance.CharacterQuests
+                        .Where(x => x.questId == _questId)
+                        .FirstOrDefault();
 
-                    if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
+                    if (characterQuest?.status == CharacterQuestStatusEnum.Finished)
                     {
-                        CompleteQuest(questNpc);
+                        CompleteQuest(characterQuest);
                     }
                     else
                     {
-                        await AddQuestAsync(questNpc);
+                        await AcceptQuestAsync();
                     }
 
                     await UpdateQuestLogAsync();
                 });
-
 
                 await UpdateQuestLogAsync();
             }
@@ -113,43 +115,33 @@ namespace Assets.Scripts.Mono
 
             _ = UpdateQuestLogAsync();
 
-            if (status == CharacterQuestStatusEnum.Finished && QuestManager.Instance.QuestNpcs.TryGetValue(characterQuest.questId, out var npc))
+            if (status == CharacterQuestStatusEnum.Finished)
             {
-                npc.HideExclamationMark();
-                npc.ShowQuestionMark();
-            }
-            else
-            {
-                Debug.LogWarning($"NPC for quest {characterQuest.questId} not found.");
+                FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.questId.ToString(), new FinishCharacterQuestSubscriptionEvent());
             }
         }
 
-        private async UniTask AddQuestAsync(QuestNpc questNpc)
+        private async UniTask AcceptQuestAsync()
         {
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
-
-            questNpc.MarkAsAccepted();
 
             var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
-            questNpc.CharacterQuest = characterQuest;
+            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questId.ToString(), new AddQuestSubscriptionEvent
+            {
+                CharacterQuest = characterQuest
+            });
         }
 
-        private void CompleteQuest(QuestNpc questNpc)
+        private void CompleteQuest(CharacterQuestDto characterQuest)
         {
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
-            questNpc.HideQuestionMark();
-
-            var characterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => x.id == questNpc.CharacterQuest.id)
-                .Single();
-
             characterQuest.status = CharacterQuestStatusEnum.Completed;
 
-            questNpc.CheckNextQuest();
+            CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
             CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
         }

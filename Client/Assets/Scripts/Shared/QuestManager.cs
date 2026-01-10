@@ -1,15 +1,12 @@
 using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
-using Assets.Scripts.Mono;
 using Cysharp.Threading.Tasks;
 
 namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
-        public IDictionary<QuestEnum, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<QuestEnum, QuestNpc>();
-
         public IList<QuestDto> Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
