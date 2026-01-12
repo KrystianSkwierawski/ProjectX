@@ -138,34 +138,6 @@
             "JWT": []
           }
         ]
-      },
-      "put": {
-        "tags": [
-          "CharacterInventories"
-        ],
-        "operationId": "UpdateCharacterInventory",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCharacterInventoryCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
       }
     },
     "/api/CharacterQuests": {
@@ -718,19 +690,6 @@
           },
           "inventoryItem": {
             "$ref": "#/components/schemas/InventoryItem"
-          }
-        }
-      },
-      "UpdateCharacterInventoryCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "inventory": {
-            "$ref": "#/components/schemas/InventoryDto"
           }
         }
       },

@@ -11,44 +11,48 @@ namespace Assets.Scripts.Network
 
         private void Start()
         {
-            UpdateHealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
+            if (IsServer)
             {
-                Network.Value -= e.Value;
-                Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
-
-                var targetSelectorSubscriptionsEvent = new UpdateTargetSelectorSubscriptionsEvent
+                UpdateHealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
                 {
-                    Value = Network.Value
-                };
+                    Network.Value -= e.Value;
+                    Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
 
-                if (Network.Value <= 0)
-                {
-                    Debug.Log("Object killed");
-
-                    targetSelectorSubscriptionsEvent.Hide = true;
-
-                    ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
-
-                    CheckCharacterQuestSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                    var targetSelectorSubscriptionsEvent = new UpdateTargetSelectorSubscriptionsEvent
                     {
-                        Progress = 1,
-                        GameObjectName = gameObject.name,
-                        ClientToken = e.ClientToken,
-                    });
+                        Value = Network.Value
+                    };
 
-                    UpdateInventorySubscription.Instance.Invoke(e.ClientId.ToString(), new UpdateInventorySubscriptionEvent
+                    if (Network.Value <= 0)
                     {
-                        ClientToken = e.ClientToken,
-                    });
+                        Debug.Log("Object killed");
 
-                    AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
-                    {
-                        ClientToken = e.ClientToken,
-                    });
-                }
+                        targetSelectorSubscriptionsEvent.Hide = true;
 
-                UpdateTargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
-            });
+                        ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
+
+                        CheckCharacterQuestSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                        {
+                            Progress = 1,
+                            GameObjectName = gameObject.name,
+                            ClientToken = e.ClientToken,
+                        });
+
+                        UpdateInventorySubscription.Instance.Invoke(e.ClientId.ToString(), new UpdateInventorySubscriptionEvent
+                        {
+                            ClientToken = e.ClientToken,
+                            GameObjectName = gameObject.name
+                        });
+
+                        AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
+                        {
+                            ClientToken = e.ClientToken,
+                        });
+                    }
+
+                    UpdateTargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
+                });
+            }
         }
 
         public override void OnNetworkDespawn()

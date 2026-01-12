@@ -35,7 +35,23 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
 
         ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
 
-        inventory.Items.Add(request.inventoryItem);
+        var slot = inventory.Items
+            .Where(x => x.Type == request.inventoryItem.Type)
+            .FirstOrDefault();
+
+        if (slot == null && inventory.Items.Count >= entity.Count)
+        {
+            throw new Exception($"Inventory full for Id: {entity.Id}");
+        }
+
+        if (slot != null)
+        {
+            slot.Count += request.inventoryItem.Count;
+        }
+        else
+        {
+            inventory.Items.Add(request.inventoryItem);
+        }
 
         entity.Inventory = JsonSerializer.Serialize(inventory);
 

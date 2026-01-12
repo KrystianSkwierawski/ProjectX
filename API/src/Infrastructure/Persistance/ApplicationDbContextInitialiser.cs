@@ -98,7 +98,7 @@ public class ApplicationDbContextInitialiser
                             new InventoryItem
                             {
                                 Type = CharacterInventoryTypeEnum.Can,
-                                Count = 1
+                                Count = 2
                             }
                         ]
                     }),

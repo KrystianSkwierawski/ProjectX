@@ -51,23 +51,14 @@ namespace Assets.Scripts.Mono
                     {
                         CharacterQuest = e.CharacterQuest;
                         MarkAsAccepted();
-
-                        FinishCharacterQuestSubscription.Instance.Subscribe(key, (e) =>
-                        {
-                            HideExclamationMark();
-                            ShowQuestionMark();
-                        });
                     });
                 }
 
-                if (characterQuest?.status == CharacterQuestStatusEnum.Accepted)
+                FinishCharacterQuestSubscription.Instance.Subscribe(key, (e) =>
                 {
-                    FinishCharacterQuestSubscription.Instance.Subscribe(key, (e) =>
-                    {
-                        HideExclamationMark();
-                        ShowQuestionMark();
-                    });
-                }
+                    HideExclamationMark();
+                    ShowQuestionMark();
+                });
 
                 CompleteQuestSubscription.Instance.Subscribe(key, (e) =>
                 {

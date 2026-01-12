@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.CharacterInventories.Commands.AddCharacterInventoryItem;
-using ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Domain.Constants;
 
@@ -20,9 +19,9 @@ public class CharacterInventories : EndpointGroupBase
             .MapPost(AddCharacterInventoryItem)
             .RequireAuthorization(Policies.Server);
 
-        groupBuilder
-            .MapPut(UpdateCharacterInventory, "/")
-            .RequireAuthorization(Policies.Server);
+        //groupBuilder
+        //    .MapPut(UpdateCharacterInventory, "/")
+        //    .RequireAuthorization(Policies.Server);
     }
 
     private static async Task<Ok<CharacterInventoryDto>> GetCharacterInventory(ISender sender, [AsParameters] GetCharacterInventoryQuery query)
@@ -39,10 +38,10 @@ public class CharacterInventories : EndpointGroupBase
         return TypedResults.NoContent();
     }
 
-    private static async Task<NoContent> UpdateCharacterInventory(ISender sender, UpdateCharacterInventoryCommand command)
-    {
-        await sender.Send(command);
+    //private static async Task<NoContent> UpdateCharacterInventory(ISender sender, UpdateCharacterInventoryCommand command)
+    //{
+    //    await sender.Send(command);
 
-        return TypedResults.NoContent();
-    }
+    //    return TypedResults.NoContent();
+    //}
 }
