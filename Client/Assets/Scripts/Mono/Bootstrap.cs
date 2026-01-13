@@ -63,6 +63,8 @@ namespace Assets.Scripts.Mono
 
             await TokenManager.Instance.LoginAsync("server1@localhost", "Server1!");
 
+            await QuestManager.Instance.LoadQuestsAsync();
+
             NetworkManager.Singleton.StartServer();
 
             Debug.Log("Server started");

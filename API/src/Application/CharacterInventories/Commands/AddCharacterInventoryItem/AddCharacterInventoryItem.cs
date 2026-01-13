@@ -47,10 +47,13 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
         if (slot != null)
         {
             slot.Count += request.inventoryItem.Count;
+            Log.Debug("Updated item for inventory Id: {0}, Type: {1}, New Count: {2}", entity.Id, request.inventoryItem.Type, slot.Count);
+
         }
         else
         {
             inventory.Items.Add(request.inventoryItem);
+            Log.Debug("Created new item for inventory Id: {0}, Type: {1}, Count: {2}", entity.Id, request.inventoryItem.Type, request.inventoryItem.Count);
         }
 
         entity.Inventory = JsonSerializer.Serialize(inventory);

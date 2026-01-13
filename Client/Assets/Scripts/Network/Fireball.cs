@@ -101,6 +101,7 @@ namespace Assets.Scripts.Network
             return Vector3.Distance(transform.position, _targetTransform.position) < 0.5f;
         }
 
+        // FIXME: disconnect error
         private async UniTask OnHitTargetAsync()
         {
             if (!_hit)

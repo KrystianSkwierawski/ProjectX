@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,34 +14,39 @@ namespace Assets.Scripts.Shared
 
         public virtual void Subscribe(string key, UnityAction<J> action)
         {
-            Debug.Log($"Subscribe -> Type: {typeof(J)}, Key: {key}");
+            if (!Subscriptions.ContainsKey(key))
+            {
+                Debug.Log($"Subscribe -> Type: {typeof(J)}, Key: {key}");
 
-            Subscriptions.Add(key, action);
+                Subscriptions.Add(key, action);
+            }
         }
 
         public virtual void Unsubscribe(string key)
         {
-            Debug.Log($"Unsubscribe -> Type: {typeof(J)}, Key: {key}");
-
             if (Subscriptions.ContainsKey(key))
             {
+                Debug.Log($"Unsubscribe -> Type: {typeof(J)}, Key: {key}");
+
                 Subscriptions.Remove(key);
             }
         }
 
         public virtual void UnsubscribeAll()
         {
-            Debug.Log($"UnsubscribeAll -> Type: {typeof(J)}");
+            if (Subscriptions.Any())
+            {
+                Debug.Log($"UnsubscribeAll -> Type: {typeof(J)}");
 
-            Subscriptions.Clear();
+                Subscriptions.Clear();
+            }
         }
 
         public virtual void Invoke(string key, J e)
         {
-            Debug.Log($"Invoke -> Type: {typeof(J)}, Key: {key}");
-
             if (Subscriptions.TryGetValue(key, out var action))
             {
+                Debug.Log($"Invoke -> Type: {typeof(J)}, Key: {key}");
                 action.Invoke(e);
             }
         }

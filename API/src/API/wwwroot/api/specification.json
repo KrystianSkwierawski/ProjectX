@@ -861,14 +861,14 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "characterId": {
+          "questId": {
+            "$ref": "#/components/schemas/QuestEnum"
+          },
+          "progress": {
             "type": "integer",
             "format": "int32"
           },
-          "gameObjectName": {
-            "type": "string"
-          },
-          "progress": {
+          "characterId": {
             "type": "integer",
             "format": "int32"
           }

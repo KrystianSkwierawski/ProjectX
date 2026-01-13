@@ -33,7 +33,7 @@ namespace Assets.Scripts.Shared
             });
         }
 
-        public async UniTask<AddCharacterQuestProgressDto> AddCharacterQuestProgresAsync(int characterQuestId, int progress, string clientToken)
+        public async UniTask<AddCharacterQuestProgressDto> AddCharacterQuestProgresAsync(int progress, int characterQuestId, string clientToken)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<AddCharacterQuestProgressDto>("CharacterQuests/Progress", new AddCharacterQuestProgressCommand
             {
@@ -42,13 +42,13 @@ namespace Assets.Scripts.Shared
             }, clientToken);
         }
 
-        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(int characterId, string gameObjectName, int progress, string clientToken)
+        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(QuestEnum questId, int progress, int characterId, string clientToken)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgressDto>("CharacterQuests/CheckProgress", new CheckCharacterQuestProgressCommand
             {
-                characterId = characterId,
-                gameObjectName = gameObjectName,
+                questId = questId,
                 progress = progress,
+                characterId = characterId,
             }, clientToken);
         }
     }

@@ -50,56 +50,53 @@ namespace Assets.Scripts.Mono
             {
                 UpdateInventorySubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
-                    bool update = false;
-
                     if (_drops.TryGetValue(e.GameObjectName, out var drops))
                     {
                         foreach (var drop in drops)
                         {
-                            int trials = Mathf.Max(0, drop.Max - drop.Min);
-
-                            int successes = Enumerable.Range(0, trials).Count(_ => Random.Range(0, 100) < drop.Chance);
-
-                            int count = drop.Min + successes;
-
-                            Debug.Log($"Drop calculated. Type: {drop.Type}, Min: {drop.Min}, Max: {drop.Max}, Trials: {trials}, Successes: {successes}, TotalCount: {count}");
-
-                            if (count > 0)
-                            {
-                                var item = new InventoryItem
-                                {
-                                    type = drop.Type,
-                                    count = count
-                                };
-
-                                CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
-                                {
-                                    Progress = item.count,
-                                    GameObjectName = item.type.ToString(),
-                                    ClientToken = e.ClientToken,
-                                });
-
-                                // FIXME: reduce multiple calls
-                                await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
-                                {
-                                    characterId = 1,
-                                    inventoryItem = item
-                                }, e.ClientToken);
-
-                                update = true;
-                            }
+                            await ProcessDropAsync(e, drop);
                         }
                     }
+                });
+            }
+        }
 
-                    if (update)
+        private async UniTask ProcessDropAsync(UpdateInventorySubscriptionEvent e, DropItem drop)
+        {
+            int trials = Mathf.Max(0, drop.Max - drop.Min);
+
+            int successes = Enumerable.Range(0, trials).Count(_ => Random.Range(0, 100) < drop.Chance);
+
+            int count = drop.Min + successes;
+
+            Debug.Log($"Drop calculated. Type: {drop.Type}, Min: {drop.Min}, Max: {drop.Max}, Trials: {trials}, Successes: {successes}, TotalCount: {count}");
+
+            if (count > 0)
+            {
+                var item = new InventoryItem
+                {
+                    type = drop.Type,
+                    count = count
+                };
+
+                CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                {
+                    Progress = item.count,
+                    GameObjectName = item.type.ToString(),
+                    ClientToken = e.ClientToken,
+                });
+
+                await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
+                {
+                    characterId = 1,
+                    inventoryItem = item
+                }, e.ClientToken);
+
+                UpdateInventoryItemClientRpc(new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
                     {
-                        UpdateInventoryItemClientRpc(new ClientRpcParams
-                        {
-                            Send = new ClientRpcSendParams
-                            {
-                                TargetClientIds = new ulong[] { OwnerClientId }
-                            }
-                        });
+                        TargetClientIds = new ulong[] { OwnerClientId }
                     }
                 });
             }

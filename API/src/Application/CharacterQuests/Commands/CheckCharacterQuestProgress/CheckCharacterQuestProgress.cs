@@ -4,7 +4,7 @@ using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgres;
-public record CheckCharacterQuestProgressCommand(int CharacterId, string GameObjectName, int Progress) : IRequest<CheckCharacterQuestProgressDto>;
+public record CheckCharacterQuestProgressCommand(QuestEnum QuestId, int Progress, int CharacterId) : IRequest<CheckCharacterQuestProgressDto>;
 
 public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCharacterQuestProgressCommand, CheckCharacterQuestProgressDto>
 {
@@ -25,10 +25,10 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
 
         var characterQuest = _context.CharacterQuests
             .Include(x => x.Quest)
+            .Where(x => x.QuestId == request.QuestId)
             .Where(x => x.Character.ApplicationUserId == userId)
             //.Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Status == CharacterQuestStatusEnum.Accepted)
-            .Where(x => x.Quest.GameObjectName == request.GameObjectName)
             .FirstOrDefault();
 
         if (characterQuest == null)

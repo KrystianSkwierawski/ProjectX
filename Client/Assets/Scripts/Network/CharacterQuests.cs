@@ -87,7 +87,18 @@ namespace Assets.Scripts.Mono
 
         private async UniTask CheckProgressAsync(string gameObjectName, int progress, ulong clientId, string clientToken)
         {
-            var result = await QuestManager.Instance.CheckProgressAsync(1, gameObjectName, progress, clientToken);
+            // TODO: multiple quests with same gameObjectName
+            var quest = QuestManager.Instance.Quests
+                .Where(x => x.gameObjectName == gameObjectName)
+                .FirstOrDefault();
+
+            if (quest == null)
+            {
+                Debug.Log($"Quest not found. GameObjectName: {gameObjectName}");
+                return;
+            }
+
+            var result = await QuestManager.Instance.CheckProgressAsync(quest.id, progress, 1, clientToken);
 
             if (result.status != CharacterQuestStatusEnum.None)
             {
@@ -177,7 +188,7 @@ namespace Assets.Scripts.Mono
         private async UniTask UpdateQuestLogAsync()
         {
             await UniTask.WaitUntil(
-                () => QuestManager.Instance.CharacterQuests != null, 
+                () => QuestManager.Instance.CharacterQuests != null,
                 cancellationToken: this.GetCancellationTokenOnDestroy()
             );
 

@@ -166,8 +166,6 @@ namespace Assets.Scripts.Mono
 
         private IEnumerable<InventorySlot> InstantiateInventorySlots(int count)
         {
-            Debug.LogError($"InstantiateInventorySlots called with count: {count}");
-
             for (int i = 0; i < count; i++)
             {
                 var slot = Instantiate(InventorySlotPrefab);
