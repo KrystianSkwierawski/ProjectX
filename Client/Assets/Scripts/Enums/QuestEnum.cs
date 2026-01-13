@@ -6,6 +6,8 @@
 
         Kill2Beans,
 
-        Collect2Cans
+        Collect2Cans,
+
+        Collect2Fishses
     }
 }

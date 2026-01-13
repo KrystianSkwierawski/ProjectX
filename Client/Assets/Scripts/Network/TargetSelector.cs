@@ -1,6 +1,7 @@
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
+using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,11 +24,13 @@ namespace Assets.Scripts.Network
         private float _interruptDuration = 0.2f;
         private float _interruptTimer = 0f;
         private Color _originalBarColor;
+        private StarterAssetsInputs _input;
 
         private void Start()
         {
             if (IsOwner)
             {
+                _input = GetComponent<StarterAssetsInputs>();
                 UIManager.Instance.HideCastBar();
             }
         }
@@ -152,12 +155,13 @@ namespace Assets.Scripts.Network
             _isCasting = true;
             _castTimer = 0f;
             _objectId = objectId;
-            UIManager.Instance.ShowCastBar(0f);
+            UIManager.Instance.ShowCastBar(_castTimer);
         }
 
         private void HandleCastingInput()
         {
             if (SelectedTargetTransform != null && !_isCasting && !_isInterrupted &&
+                _input.Move == Vector2.zero && !_input.Jump &&
                 Keyboard.current.digit1Key.wasPressedThisFrame &&
                 CheckMaxDistance() && CheckLineOfSight() && CheckAngle())
             {
@@ -200,11 +204,7 @@ namespace Assets.Scripts.Network
                 return;
             }
 
-            if (Keyboard.current.wKey.isPressed ||
-                Keyboard.current.aKey.isPressed ||
-                Keyboard.current.sKey.isPressed ||
-                Keyboard.current.dKey.isPressed ||
-                Keyboard.current.spaceKey.isPressed)
+            if (_input.Move != Vector2.zero || _input.Jump)
             {
                 InterruptCast();
                 return;

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
@@ -25,6 +24,19 @@ namespace Assets.Scripts.Mono
                         Chance = 50,
                         Min = 0,
                         Max = 2
+                    }
+                }
+            },
+             {
+                nameof(CharacterInventoryTypeEnum.Fish),
+                new List<DropItem>
+                {
+                    new DropItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Fish,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 1
                     }
                 }
             }

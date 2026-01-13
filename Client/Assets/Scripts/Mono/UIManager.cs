@@ -13,6 +13,8 @@ namespace Assets.Scripts.Mono
     public class UIManager : MonoSingleton<UIManager>
     {
         public Texture CanTexture;
+        public Texture FishTexture;
+
         public GameObject InventorySlotPrefab;
 
         [NonSerialized] public GameObject ProgressBarCanvas;
@@ -93,9 +95,11 @@ namespace Assets.Scripts.Mono
 
                 slot.Image.color = Color.white;
 
+                // TODO: dict?
                 slot.Image.texture = item.type switch
                 {
                     CharacterInventoryTypeEnum.Can => CanTexture,
+                    CharacterInventoryTypeEnum.Fish => FishTexture,
                     _ => null,
                 };
             }

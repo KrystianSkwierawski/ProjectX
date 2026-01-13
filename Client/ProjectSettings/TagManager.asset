@@ -9,6 +9,7 @@ TagManager:
   - Target
   - QuestNpc
   - InventorySlot
+  - Bait
   layers:
   - Default
   - TransparentFX

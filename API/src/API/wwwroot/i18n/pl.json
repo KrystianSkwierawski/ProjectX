@@ -14,6 +14,12 @@
             "Description": "Bla bla bla collect 2 cans, ok?",
             "CompleteDescription": "ok, u collected 2 cans",
             "StatusText": "Collected {0}/{1} cans"
+        },
+        "Collect2Fishses": {
+            "Title": "Collect 2 fishes",
+            "Description": "Bla bla bla collect 2 fishes, ok?",
+            "CompleteDescription": "ok, u collected 2 fishes",
+            "StatusText": "Collected {0}/{1} fishes"
         }
     }
 }

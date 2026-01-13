@@ -72,7 +72,7 @@ namespace Assets.Scripts.Network
             }
 
             _visualEffect.enabled = false;
-            AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 1f);
+            AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 0.5f);
         }
 
         private async void Update()

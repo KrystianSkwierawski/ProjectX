@@ -62,7 +62,7 @@ namespace Assets.Scripts.Mono
         {
             if (AudioClips.TryGetValue(type, out var audioClip))
             {
-                Debug.Log($"AudioManager -> PlayOneShot. Type: {type}, Volume: {volume}, Name: {audioClip.name}");
+                Debug.Log($"AudioManager -> PlayOneShot. Type: {type}, Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
 
                 audioSource.PlayOneShot(audioClip, volume);
             }

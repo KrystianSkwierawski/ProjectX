@@ -11,7 +11,8 @@ namespace Assets.Scripts.Mono
 {
     public class QuestNpc : MonoBehaviour
     {
-        public QuestEnum[] QuestsIds { get; private set; } = new QuestEnum[] { QuestEnum.Kill2Beans, QuestEnum.Collect2Cans };
+        // TODO: private
+        public QuestEnum[] QuestsIds;
 
         public QuestDto Quest { get; set; }
 
