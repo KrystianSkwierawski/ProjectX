@@ -27,15 +27,6 @@ namespace Assets.Scripts.Shared
             return await SendWebRequestAsync<T>(request, clientToken, memberName);
         }
 
-        public static async UniTask<T> ExecutePutAsync<T>(string endpoint, object obj, string clientToken = null, [CallerMemberName] string memberName = "")
-        {
-            var data = JsonUtility.ToJson(obj);
-
-            using var request = UnityWebRequest.Put($"{_baseUrl}/{endpoint}", data);
-
-            return await SendWebRequestAsync<T>(request, clientToken, memberName);
-        }
-
         private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, string memberName)
         {
             request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");

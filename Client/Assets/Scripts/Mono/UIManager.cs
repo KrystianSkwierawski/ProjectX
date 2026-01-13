@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
@@ -41,6 +42,8 @@ namespace Assets.Scripts.Mono
         [NonSerialized] public Material Material001;
         [NonSerialized] public Material Material002;
 
+        private InventorySlot[] _inventorySlots;
+
         public void Init()
         {
             ProgressBarCanvas = GameObject.Find("ProgressBarCanvas");
@@ -70,33 +73,21 @@ namespace Assets.Scripts.Mono
             Material002 = Resources.Load<Material>("Material.002");
         }
 
-        public void InitInventory(int count)
+        public void UpdateInventory(CharacterInventoryDto value)
         {
-            Debug.Log($"InitInventory -> count: {count}");
+            _inventorySlots ??= InstantiateInventorySlots(value.count).ToArray();
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < _inventorySlots.Length; i++)
             {
-                var slot = Instantiate(InventorySlotPrefab);
-                slot.transform.SetParent(Inventory.transform);
-            }
-        }
+                var slot = _inventorySlots[i];
+                var item = value.inventory.items.ElementAtOrDefault(i);
 
-        // FIXME: refactor and optimization!
-        public void AddInventoryItem(InventoryItem item)
-        {
-            var slots = GameObject.FindGameObjectsWithTag("InventorySlot");
-
-            var slot = slots
-                .Select(x => new
+                if (item == null)
                 {
-                    Image = x.transform.Find("Background").GetComponent<RawImage>(),
-                    Text = x.transform.Find("Text").GetComponent<TextMeshProUGUI>()
-                })
-                .Where(x => x.Image.texture == null)
-                .FirstOrDefault();
+                    slot.Text.gameObject.SetActive(false);
+                    continue;
+                }
 
-            if (slot != null)
-            {
                 slot.Text.gameObject.SetActive(true);
                 slot.Text.text = item.count.ToString();
 
@@ -108,8 +99,6 @@ namespace Assets.Scripts.Mono
                     _ => null,
                 };
             }
-
-            // TODO: out of slots
         }
 
         public void SetTarget(string name, string health)
@@ -173,6 +162,31 @@ namespace Assets.Scripts.Mono
             PlayerNameText.text = name;
             PlayerHealthPointsText.text = health;
             PlayerLevelText.text = $"Level: {level}";
+        }
+
+        private IEnumerable<InventorySlot> InstantiateInventorySlots(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var slot = Instantiate(InventorySlotPrefab);
+                slot.transform.SetParent(Inventory.transform);
+
+                yield return new InventorySlot
+                {
+                    GameObject = slot,
+                    Image = slot.transform.Find("Background").GetComponent<RawImage>(),
+                    Text = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                };
+            }
+        }
+
+        private class InventorySlot
+        {
+            public GameObject GameObject { get; set; }
+
+            public RawImage Image { get; set; }
+
+            public TextMeshProUGUI Text { get; set; }
         }
     }
 }

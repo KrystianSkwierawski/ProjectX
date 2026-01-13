@@ -1,7 +1,7 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
-public class AddCharacterQuestProgresDto
+public class AddCharacterQuestProgressDto
 {
     public CharacterQuestStatusEnum Status { get; set; }
 
@@ -9,6 +9,6 @@ public class AddCharacterQuestProgresDto
 
     public override string ToString()
     {
-        return $"{nameof(AddCharacterQuestProgresDto)} {{ Status = {Status}, Reward = {Reward} }}";
+        return $"{nameof(AddCharacterQuestProgressDto)} {{ Status = {Status}, Reward = {Reward} }}";
     }
 }

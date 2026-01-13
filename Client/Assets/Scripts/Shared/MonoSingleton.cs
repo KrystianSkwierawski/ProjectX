@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Shared
 {
-    public abstract class MonoSingleton<T> : MonoBehaviour where T : class
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
     {
         public static T Instance { get; private set; }
 
@@ -17,5 +17,13 @@ namespace Assets.Scripts.Shared
             Instance = this as T;
             DontDestroyOnLoad(gameObject);
         }
+		
+		private void OnDestroy()
+		{
+			if (Instance == this)
+			{
+				Instance = null;
+			}
+		}
     }
 }

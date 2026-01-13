@@ -1,13 +1,14 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
+namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
 
-public record AddCharacterQuestProgresCommand(int CharacterQuestId, int Progres) : IRequest<AddCharacterQuestProgresDto>;
+public record AddCharacterQuestProgressCommand(int CharacterQuestId, int Progres) : IRequest<AddCharacterQuestProgressDto>;
 
-public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharacterQuestProgresCommand, AddCharacterQuestProgresDto>
+public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharacterQuestProgressCommand, AddCharacterQuestProgressDto>
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterQuestProgresCommandHandler>();
 
@@ -20,7 +21,7 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
         _currentUserService = currentUserService;
     }
 
-    public async Task<AddCharacterQuestProgresDto> Handle(AddCharacterQuestProgresCommand request, CancellationToken cancellationToken)
+    public async Task<AddCharacterQuestProgressDto> Handle(AddCharacterQuestProgressCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
 
@@ -44,7 +45,7 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new AddCharacterQuestProgresDto
+        return new AddCharacterQuestProgressDto
         {
             Status = characterQuest.Status,
             Reward = characterQuest.Status == CharacterQuestStatusEnum.Completed ? characterQuest.Quest.Reward : 0

@@ -1,14 +1,18 @@
 using System;
+using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Pool;
 
-namespace Assets.Scripts.Mono 
+namespace Assets.Scripts.Mono
 {
     public class BeanSpawner : MonoBehaviour
     {
         [SerializeField] private GameObject _enemyPrefab;
         [SerializeField] private int _beansCount = 2;
+
+        private ObjectPool<GameObject> _pool;
 
         private bool _isSpawning;
         private Collider _collider;
@@ -17,6 +21,26 @@ namespace Assets.Scripts.Mono
         private void Start()
         {
             _collider = GetComponent<Collider>();
+
+            _pool = new ObjectPool<GameObject>(
+                createFunc: () =>
+                {
+                    var result = Instantiate(_enemyPrefab);
+
+                    var instanceId = result.GetInstanceID().ToString();
+
+                    ReleasePoolSubscription.Instance.Subscribe(instanceId, (e) =>
+                    {
+                        Debug.Log($"Releasing to pool. GameObjectName: {result.name}, InstanceId: {instanceId}");
+                        _pool.Release(result);
+                    });
+
+                    return result;
+                },
+                actionOnGet: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Spawn(),
+                actionOnRelease: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Despawn(false),
+                defaultCapacity: _beansCount
+            );
         }
 
         private async void Update()
@@ -26,12 +50,13 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            var beans = GameObject.FindGameObjectsWithTag("Target");
+            var init = _pool.CountAll == 0;
+            var inactive = _pool.CountInactive;
 
-            if (beans.Length < _beansCount)
+            if (init || inactive > 0)
             {
                 _isSpawning = true;
-                await RespawnAsync(_beansCount - beans.Length);
+                await RespawnAsync(init ? _beansCount : inactive);
             }
         }
 
@@ -47,11 +72,11 @@ namespace Assets.Scripts.Mono
 
             for (int i = 1; i <= count; i++)
             {
+                var bean = _pool.Get();
+
                 var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), -3.5f, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
 
-                var instance = Instantiate(_enemyPrefab, position, new Quaternion(0f, 0f, 0f, 0f));
-                var obj = instance.GetComponent<NetworkObject>();
-                obj.Spawn();
+                bean.transform.SetPositionAndRotation(position, new Quaternion(0f, 0f, 0f, 0f));
             }
 
             _isSpawning = false;

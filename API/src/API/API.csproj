@@ -10,6 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Content Remove="wwwroot\i18n\en.json" />
+      <Content Remove="wwwroot\i18n\pl.json" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="FluentValidation.AspNetCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <PrivateAssets>all</PrivateAssets>
@@ -36,6 +41,12 @@
 
     <ItemGroup>
       <Folder Include="wwwroot\api\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="wwwroot\i18n\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
     
     <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' And '$(SkipNSwag)' != 'True' ">

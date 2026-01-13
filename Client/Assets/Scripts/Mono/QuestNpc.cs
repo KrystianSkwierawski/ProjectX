@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -9,7 +11,7 @@ namespace Assets.Scripts.Mono
 {
     public class QuestNpc : MonoBehaviour
     {
-        public int[] Ids { get; private set; } = new int[] { 1, 2 };
+        public QuestEnum[] QuestsIds { get; private set; } = new QuestEnum[] { QuestEnum.Kill2Beans, QuestEnum.Collect2Cans };
 
         public QuestDto Quest { get; set; }
 
@@ -20,33 +22,62 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
-            var token = this.GetCancellationTokenOnDestroy();
-
             await UniTask.WaitUntil(
                 () => QuestManager.Instance.Quests != null && QuestManager.Instance.CharacterQuests != null,
-                cancellationToken: token
+                cancellationToken: this.GetCancellationTokenOnDestroy()
             );
 
             _exclamationMark = gameObject.transform.Find("ExclamationMark").gameObject;
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => Ids.Contains(x.questId))
+                .Where(x => QuestsIds.Contains(x.questId))
                 .Where(x => x.status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
-            if (CharacterQuest == null)
-            {
-                LoadNextQuest();
-            }
-            else if (CharacterQuest.status == CharacterQuestStatusEnum.Finished)
-            {
-                LoadFinishedQuest();
-            }
+            SetStatus();
 
-            // TODO: load accepted?
+            foreach (var questId in QuestsIds)
+            {
+                var characterQuest = QuestManager.Instance.CharacterQuests
+                    .Where(x => x.questId == questId)
+                    .SingleOrDefault();
 
-            QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
+                var key = questId.ToString();
+
+                if (characterQuest == null)
+                {
+                    AcceptQuestSubscription.Instance.Subscribe(key, (e) =>
+                    {
+                        CharacterQuest = e.CharacterQuest;
+                        MarkAsAccepted();
+                    });
+                }
+
+                FinishCharacterQuestSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    HideExclamationMark();
+                    ShowQuestionMark();
+                });
+
+                CompleteQuestSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    HideQuestionMark();
+                    CheckNextQuest();
+                });
+            }
+        }
+
+        private void SetStatus()
+        {
+            Action action = CharacterQuest?.status switch
+            {
+                CharacterQuestStatusEnum.Accepted => LoadAccepted,
+                CharacterQuestStatusEnum.Finished => LoadFinishedQuest,
+                _ => LoadNextQuest,
+            };
+
+            action();
         }
 
         private void LoadNextQuest()
@@ -54,7 +85,7 @@ namespace Assets.Scripts.Mono
             var completedQuests = QuestManager.Instance.CharacterQuests
                 .Where(x => x.status == CharacterQuestStatusEnum.Completed);
 
-            var filteredIds = Ids.Where(x => !completedQuests.Any(cq => cq.questId == x));
+            var filteredIds = QuestsIds.Where(x => !completedQuests.Any(cq => cq.questId == x));
 
             Quest = QuestManager.Instance.Quests
                 .Where(x => filteredIds.Contains(x.id))
@@ -91,9 +122,6 @@ namespace Assets.Scripts.Mono
             {
                 ShowExclamationMark();
             }
-
-            QuestManager.Instance.QuestNpcs.Remove(Quest.previousQuestId);
-            QuestManager.Instance.QuestNpcs.Add(Quest.id, this);
         }
 
         public void ShowQuestionMark()
@@ -120,6 +148,16 @@ namespace Assets.Scripts.Mono
         public void MarkAsAccepted()
         {
             _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { UIManager.Instance.Material001 };
+        }
+
+        private void LoadAccepted()
+        {
+            _exclamationMark.SetActive(true);
+            MarkAsAccepted();
+
+            Quest = QuestManager.Instance.Quests
+                .Where(x => x.id == CharacterQuest.questId)
+                .First();
         }
     }
 }

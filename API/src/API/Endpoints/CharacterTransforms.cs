@@ -11,8 +11,13 @@ public class CharacterTransforms : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetCharacterTransform).RequireAuthorization(Policies.Client);
-        groupBuilder.MapPost(SaveTransformTransform).RequireAuthorization(Policies.Server);
+        groupBuilder
+            .MapGet(GetCharacterTransform)
+            .RequireAuthorization(Policies.Client);
+
+        groupBuilder
+            .MapPost(SaveTransformTransform)
+            .RequireAuthorization(Policies.Server);
     }
 
     private static async Task<Ok<CharacterTransformDto>> GetCharacterTransform(ISender sender, [AsParameters] GetCharacterTransformQuery query)

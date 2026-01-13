@@ -1,5 +1,6 @@
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -53,7 +54,10 @@ namespace Assets.Scripts.Network
                 {
                     if (_currentlySelectedRenderer != null)
                     {
+                        UnselectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
+
                         _currentlySelectedRenderer.material.color = _originalSelectedColor;
+                        SelectedTargetTransform = null;
                         UIManager.Instance.Target.SetActive(false);
                     }
 
@@ -62,9 +66,41 @@ namespace Assets.Scripts.Network
                     _originalSelectedColor = newRenderer.material.color;
                     newRenderer.material.color = Color.green;
                     SelectedTargetTransform = hit.transform;
-
-                    UIManager.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Value.ToString());
+                    UIManager.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Network.Value.ToString());
+                    SelectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
                 }
+            }
+        }
+
+        [ServerRpc]
+        private void SelectServerRpc(int networkObjectId)
+        {
+            UpdateTargetSelectorSubscription.Instance.Subscribe($"{networkObjectId}_{OwnerClientId}", (e) =>
+            {
+                UpdateTargetCanvasClientRpc(e.Value, e.Hide, new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+            });
+        }
+
+        [ServerRpc]
+        private void UnselectServerRpc(int networkObjectId)
+        {
+            UpdateTargetSelectorSubscription.Instance.Unsubscribe($"{networkObjectId}_{OwnerClientId}");
+        }
+
+        [ClientRpc]
+        private void UpdateTargetCanvasClientRpc(float value, bool hide, ClientRpcParams rpcParams = default)
+        {
+            UIManager.Instance.TargetHealthPointsText.text = value.ToString();
+
+            if (hide)
+            {
+                UIManager.Instance.Target.SetActive(false);
             }
         }
 
@@ -86,13 +122,20 @@ namespace Assets.Scripts.Network
         [ServerRpc]
         public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId, string token)
         {
+            // TODO: ObjectPool
             var fireball = Instantiate(_fireballPrefab, position, Quaternion.LookRotation(direction));
             var netObj = fireball.GetComponent<NetworkObject>();
             netObj.SpawnWithOwnership(clientId);
             var spawnedFireball = fireball.GetComponent<Fireball>();
             spawnedFireball.PreCast(token);
 
-            NotifyClientRpc(netObj.NetworkObjectId, clientId);
+            NotifyClientRpc(netObj.NetworkObjectId, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { clientId }
+                }
+            });
         }
 
         [ServerRpc]
@@ -104,15 +147,12 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        void NotifyClientRpc(ulong objectId, ulong clientId)
+        void NotifyClientRpc(ulong objectId, ClientRpcParams rpcParams = default)
         {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
-            {
-                _isCasting = true;
-                _castTimer = 0f;
-                _objectId = objectId;
-                UIManager.Instance.ShowCastBar(0f);
-            }
+            _isCasting = true;
+            _castTimer = 0f;
+            _objectId = objectId;
+            UIManager.Instance.ShowCastBar(0f);
         }
 
         private void HandleCastingInput()

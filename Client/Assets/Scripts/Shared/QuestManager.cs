@@ -1,18 +1,12 @@
 using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
-using Assets.Scripts.Mono;
 using Cysharp.Threading.Tasks;
-using UnityEngine.Events;
 
 namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
-        public IDictionary<int, QuestNpc> QuestNpcs { get; private set; } = new Dictionary<int, QuestNpc>();
-
-        public UnityEvent<int, CharacterQuestStatusEnum> AddedProgresEvent = new UnityEvent<int, CharacterQuestStatusEnum>();
-
         public IList<QuestDto> Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
@@ -31,7 +25,7 @@ namespace Assets.Scripts.Shared
             CharacterQuests = result.characterQuests;
         }
 
-        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(int questId)
+        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests", new AcceptCharacterQuestCommand
             {
@@ -39,22 +33,22 @@ namespace Assets.Scripts.Shared
             });
         }
 
-        public async UniTask<AddCharacterQuestProgresDto> AddCharacterQuestProgresAsync(int characterQuestId, int progres, string clientToken)
+        public async UniTask<AddCharacterQuestProgressDto> AddCharacterQuestProgresAsync(int progress, int characterQuestId, string clientToken)
         {
-            return await UnityWebRequestHelper.ExecutePostAsync<AddCharacterQuestProgresDto>("CharacterQuests/Progres", new AddCharacterQuestProgresCommand
+            return await UnityWebRequestHelper.ExecutePostAsync<AddCharacterQuestProgressDto>("CharacterQuests/Progress", new AddCharacterQuestProgressCommand
             {
                 characterQuestId = characterQuestId,
-                progres = progres,
+                progress = progress,
             }, clientToken);
         }
 
-        public async UniTask<CheckCharacterQuestProgresDto> CheckCharacterQuestProgresAsync(int characterId, string gameObjectName, int progres, string clientToken)
+        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(QuestEnum questId, int progress, int characterId, string clientToken)
         {
-            return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgresDto>("CharacterQuests/CheckProgres", new CheckCharacterQuestProgresCommand
+            return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgressDto>("CharacterQuests/CheckProgress", new CheckCharacterQuestProgressCommand
             {
+                questId = questId,
+                progress = progress,
                 characterId = characterId,
-                gameObjectName = gameObjectName,
-                progres = progres,
             }, clientToken);
         }
     }

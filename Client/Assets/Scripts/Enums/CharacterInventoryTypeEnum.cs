@@ -1,9 +1,9 @@
 namespace Assets.Scripts.Enums
 {
-public enum CharacterInventoryTypeEnum
-{
-    None,
+    public enum CharacterInventoryTypeEnum
+    {
+        None,
 
-    Can
-}
+        Can
+    }
 }

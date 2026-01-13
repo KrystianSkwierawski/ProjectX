@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Assets.Scripts.Models
 {
@@ -16,6 +15,6 @@ namespace Assets.Scripts.Models
     [Serializable]
     public class InventoryDto
     {
-        public IList<InventoryItem> Items { get; set; } = new List<InventoryItem>();
+        public InventoryItem[] items = new InventoryItem[] {}; 
     }
 }

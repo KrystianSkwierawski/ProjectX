@@ -1,9 +1,5 @@
-using System.Linq;
-using Assets.Scripts.Enums;
-using Assets.Scripts.Models;
-using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
-using Cysharp.Threading.Tasks;
+using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,138 +7,73 @@ namespace Assets.Scripts.Network
 {
     public class Health : NetworkBehaviour
     {
-        public float Value { get; private set; } = 100;
+        public NetworkVariable<float> Network { get; private set; } = new NetworkVariable<float>(100, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-
-        public async UniTask DealDamageAsync(float damage, string token, ulong clientId)
+        private void Start()
         {
-            Value -= damage;
-            Debug.Log($"Object damaged. Damage: {damage}, CurrentValue: {Value}");
-
-            if (Value <= 0)
+            if (IsServer)
             {
-                Debug.Log("Object killed");
-
-                HideTargetCanvasClientRpc();
-
-                // FIXME: OnKillAction
-                await HandleKillAsync(token, clientId);
-
-                return;
-            }
-
-            UpdateTargetCanvasClientRpc(Value);
-
-            return;
-        }
-
-        // FIXME: refactor and optimization!
-        private async UniTask HandleKillAsync(string clientToken, ulong clientId)
-        {
-            #region TODO: character quest OnKillAction
-            var progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, gameObject.name, 1, clientToken);
-
-            if (progres.status != CharacterQuestStatusEnum.None)
-            {
-                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
-            }
-
-            // TODO: drop chance by enemy
-            int random = UnityEngine.Random.Range(0, 99);
-
-            if (random < 90)
-            {
-                var item = new InventoryItem
+                UpdateHealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
                 {
-                    type = CharacterInventoryTypeEnum.Can,
-                    count = 1
-                };
+                    Network.Value -= e.Value;
+                    Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
 
-                await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
-                {
-                    characterId = 1,
-                    inventoryItem = item
-                }, clientToken);
+                    var targetSelectorSubscriptionsEvent = new UpdateTargetSelectorSubscriptionsEvent
+                    {
+                        Value = Network.Value
+                    };
 
-                progres = await QuestManager.Instance.CheckCharacterQuestProgresAsync(1, nameof(CharacterInventoryTypeEnum.Can), 1, clientToken);
+                    if (Network.Value <= 0)
+                    {
+                        Debug.Log("Object killed");
 
-                UpdateInventoryClientRpc(item, clientId);
-            }
+                        targetSelectorSubscriptionsEvent.Hide = true;
 
-            if (progres.status != CharacterQuestStatusEnum.None)
-            {
-                UpdateQuestLogClientRpc(progres.characterQuestId, 1, progres.status, clientId);
-            }
-            #endregion
+                        ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
 
-            #region TODO: experience OnKillAction
-            var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
-            {
-                characterId = 1,
-                type = ExperienceTypeEnum.Combat
-            }, clientToken);
+                        CheckCharacterQuestSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                        {
+                            Progress = 1,
+                            GameObjectName = gameObject.name,
+                            ClientToken = e.ClientToken,
+                        });
 
-            if (experience.leveledUp)
-            {
-                Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
+                        UpdateInventorySubscription.Instance.Invoke(e.ClientId.ToString(), new UpdateInventorySubscriptionEvent
+                        {
+                            ClientToken = e.ClientToken,
+                            GameObjectName = gameObject.name
+                        });
 
-                UpdateLevelClientRpc(experience.level, clientId);
-            }
-            #endregion
+                        AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
+                        {
+                            ClientToken = e.ClientToken,
+                        });
+                    }
 
-            gameObject.GetComponent<NetworkObject>().Despawn();
-        }
-
-        [ClientRpc]
-        private void UpdateInventoryClientRpc(InventoryItem item, ulong clientId)
-        {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
-            {
-                UIManager.Instance.AddInventoryItem(item);
+                    UpdateTargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
+                });
             }
         }
 
-        [ClientRpc]
-        private void HideTargetCanvasClientRpc()
+        public override void OnNetworkDespawn()
         {
-            UIManager.Instance.Target.SetActive(false);
-        }
-
-        [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ulong clientId)
-        {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
+            if (IsServer)
             {
-                UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.4f);
+                Network.Value = 100;
+                UpdateHealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
+
+            base.OnNetworkDespawn();
         }
 
-        [ClientRpc]
-        private void UpdateTargetCanvasClientRpc(float value)
+        public override void OnDestroy()
         {
-            Debug.Log("Updating target UI");
-
-            Value = value;
-            UIManager.Instance.TargetHealthPointsText.text = Value.ToString();
-        }
-
-        [ClientRpc]
-        private void UpdateQuestLogClientRpc(int characterQuestId, int progres, CharacterQuestStatusEnum status, ulong clientId)
-        {
-            if (NetworkManager.Singleton.LocalClientId == clientId)
+            if (IsServer)
             {
-                Debug.Log($"UpdateQuestLogClientRpc: {clientId}");
-
-                var characterQuest = QuestManager.Instance.CharacterQuests
-                    .Where(x => x.id == characterQuestId)
-                    .Single();
-
-                characterQuest.progress += progres;
-                characterQuest.status = status;
-
-                QuestManager.Instance.AddedProgresEvent.Invoke(characterQuest.questId, characterQuest.status);
+                UpdateHealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
+
+            base.OnDestroy();
         }
     }
 }

@@ -1,19 +1,19 @@
 namespace Assets.Scripts.Enums
 {
-public enum QuestTypeEnum : byte
-{
-    Indefinite,
+    public enum QuestTypeEnum : byte
+    {
+        Indefinite,
 
-    Kill,
+        Kill,
 
-    Epxlore,
+        Epxlore,
 
-    Find,
+        Find,
 
-    Gather,
+        Gather,
 
-    Drop,
+        Drop,
 
-    Collect
-}
+        Collect
+    }
 }

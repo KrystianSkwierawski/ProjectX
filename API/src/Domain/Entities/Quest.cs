@@ -8,25 +8,21 @@ public class Quest
         CharacterQuests = new HashSet<CharacterQuest>();
     }
 
-    public int Id { get; set; }
+    public QuestEnum Id { get; set; }
 
-    public int? PreviousQuestId { get; set; }
+    public string Name { get; set; }
+
+    public QuestEnum PreviousQuestId { get; set; }
 
     public QuestTypeEnum Type { get; set; }
-
-    public required string Title { get; set; }
-
-    public required string Description { get; set; }
-
-    public required string CompleteDescription { get; set; }
-
-    public required string StatusText { get; set; }
 
     public string GameObjectName { get; set; }
 
     public int Requirement { get; set; }
 
     public int Reward { get; set; }
+
+    public StatusEnum Status { get; set; }
 
     public DateTime ModDate { get; set; }
 

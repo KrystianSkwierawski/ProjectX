@@ -8,24 +8,8 @@ public class QuestConfiguration : IEntityTypeConfiguration<Quest>
     public void Configure(EntityTypeBuilder<Quest> builder)
     {
         builder
-            .Property(x => x.Title)
-            .HasMaxLength(255)
-            .IsRequired();
-
-        builder
-            .Property(x => x.Description)
-            .HasMaxLength(255)
-            .IsRequired();
-
-        builder
-            .Property(x => x.CompleteDescription)
-            .HasMaxLength(255)
-            .IsRequired();
-
-        builder
-            .Property(x => x.StatusText)
-            .HasMaxLength(255)
-            .IsRequired();
+            .Property(x => x.Id)
+            .ValueGeneratedNever();
 
         builder
             .Property(x => x.GameObjectName)

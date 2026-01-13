@@ -45,8 +45,8 @@ namespace Assets.Scripts.Mono
             await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
             Debug.Log("EnvironmentScene Loaded");
 
-            await SceneManager.LoadSceneAsync("NpcScene", LoadSceneMode.Additive);
-            Debug.Log("NpcScene Loaded");
+            await SceneManager.LoadSceneAsync("NPCScene", LoadSceneMode.Additive);
+            Debug.Log("NPCScene Loaded");
 
             NetworkManager.Singleton.StartClient();
 
@@ -62,6 +62,8 @@ namespace Assets.Scripts.Mono
             Debug.Log("ServerScene Loaded");
 
             await TokenManager.Instance.LoginAsync("server1@localhost", "Server1!");
+
+            await QuestManager.Instance.LoadQuestsAsync();
 
             NetworkManager.Singleton.StartServer();
 

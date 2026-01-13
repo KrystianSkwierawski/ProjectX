@@ -1,6 +1,7 @@
 using System;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Mono;
+using Assets.Scripts.Shared;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -100,12 +101,19 @@ namespace Assets.Scripts.Network
             return Vector3.Distance(transform.position, _targetTransform.position) < 0.5f;
         }
 
+        // FIXME: disconnect error
         private async UniTask OnHitTargetAsync()
         {
             if (!_hit)
             {
                 _hit = true;
-                await _target.GetComponent<Health>().DealDamageAsync(50f, _clientToken, OwnerClientId);
+
+                UpdateHealthSubscription.Instance.Invoke(_target.gameObject.GetInstanceID().ToString(), new UpdateHealthSubscriptionEvent
+                {
+                    ClientId = OwnerClientId,
+                    Value = 50f,
+                    ClientToken = _clientToken
+                });
 
                 OnHitTargetClientRpc();
 

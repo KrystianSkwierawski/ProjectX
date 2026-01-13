@@ -3,43 +3,43 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.CharacterQuests.Commands.CheckProgres;
-public record CheckCharacterQuestProgresCommand(int CharacterId, string GameObjectName, int Progres) : IRequest<CheckCharacterQuestProgresDto>;
+namespace ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgres;
+public record CheckCharacterQuestProgressCommand(QuestEnum QuestId, int Progress, int CharacterId) : IRequest<CheckCharacterQuestProgressDto>;
 
-public class CheckCharacterQuestProgresCommandHandler : IRequestHandler<CheckCharacterQuestProgresCommand, CheckCharacterQuestProgresDto>
+public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCharacterQuestProgressCommand, CheckCharacterQuestProgressDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<CheckCharacterQuestProgresCommandHandler>();
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<CheckCharacterQuestProgressCommandHandler>();
 
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
-    public CheckCharacterQuestProgresCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public CheckCharacterQuestProgressCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
     }
 
-    public async Task<CheckCharacterQuestProgresDto> Handle(CheckCharacterQuestProgresCommand request, CancellationToken cancellationToken)
+    public async Task<CheckCharacterQuestProgressDto> Handle(CheckCharacterQuestProgressCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
 
         var characterQuest = _context.CharacterQuests
             .Include(x => x.Quest)
+            .Where(x => x.QuestId == request.QuestId)
             .Where(x => x.Character.ApplicationUserId == userId)
             //.Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Status == CharacterQuestStatusEnum.Accepted)
-            .Where(x => x.Quest.GameObjectName == request.GameObjectName)
             .FirstOrDefault();
 
         if (characterQuest == null)
         {
             Log.Debug("Not found any active quests");
-            return new CheckCharacterQuestProgresDto();
+            return new CheckCharacterQuestProgressDto();
         }
 
         Log.Debug("Found character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 
-        characterQuest.Progress += request.Progres;
+        characterQuest.Progress += request.Progress;
         characterQuest.ModDate = DateTime.Now;
 
         if (characterQuest.Progress >= characterQuest.Quest.Requirement)
@@ -51,7 +51,7 @@ public class CheckCharacterQuestProgresCommandHandler : IRequestHandler<CheckCha
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new CheckCharacterQuestProgresDto
+        return new CheckCharacterQuestProgressDto
         {
             QuestId = characterQuest.QuestId,
             CharacterQuestId = characterQuest.Id,

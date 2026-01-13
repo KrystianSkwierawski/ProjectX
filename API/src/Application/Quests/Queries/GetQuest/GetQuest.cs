@@ -1,35 +1,55 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuest;
-public record GetQuestQuery(int QuestId) : IRequest<QuestDto>;
+public record GetQuestQuery(QuestEnum QuestId) : IRequest<QuestDto>;
 
 public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly ITranslateService _translateService;
 
-    public GetQuestQueryHandler(IApplicationDbContext context)
+    public GetQuestQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService, ITranslateService translateService)
     {
         _context = context;
+        _currentUserService = currentUserService;
+        _translateService = translateService;
     }
 
     public async Task<QuestDto> Handle(GetQuestQuery request, CancellationToken cancellationToken)
     {
-        return await _context.Quests
+        var quest = await _context.Quests
             .Where(x => x.Id == request.QuestId)
-            .Select(x => new QuestDto
+            .Select(x => new
             {
-                Id = x.Id,
-                Type = x.Type,
-                Title = x.Title,
-                Description = x.Description,
-                CompleteDescription = x.CompleteDescription,
-                StatusText = x.StatusText,
-                GameObjectName = x.GameObjectName,
-                Requirement = x.Requirement,
-                Reward = x.Reward
+                x.Id,
+                x.PreviousQuestId,
+                x.Type,
+                x.GameObjectName,
+                x.Requirement,
+                x.Reward
             })
             .SingleAsync(cancellationToken);
+
+        var parameters = quest.Id.GetQuestParametersAttribute();
+        var language = _currentUserService.Language;
+
+        // TODO: translate service
+        return new QuestDto
+        {
+            Id = quest.Id,
+            PreviousQuestId = quest.PreviousQuestId,
+            Type = quest.Type,
+            Title = _translateService.GetByKey(parameters.TitleKey, language),
+            Description = _translateService.GetByKey(parameters.Description, language),
+            CompleteDescription = _translateService.GetByKey(parameters.CompleteDescription, language),
+            StatusText = _translateService.GetByKey(parameters.StatusText, language),
+            GameObjectName = quest.GameObjectName,
+            Requirement = quest.Requirement,
+            Reward = quest.Reward
+        };
     }
 }

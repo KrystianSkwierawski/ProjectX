@@ -8,7 +8,7 @@ namespace Assets.Scripts.Models
     {
         public int id;
 
-        public int questId;
+        public QuestEnum questId;
 
         public CharacterQuestStatusEnum status;
 

@@ -10,7 +10,9 @@ public class Characters : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetCharacter, "{id}").RequireAuthorization(Policies.Client);
+        groupBuilder
+            .MapGet(GetCharacter, "{id}")
+            .RequireAuthorization(Policies.Client);
     }
 
     private static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, int id)

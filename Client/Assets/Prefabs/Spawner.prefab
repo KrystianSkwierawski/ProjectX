@@ -100,8 +100,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 397de46d9f9e4174a9c42de18deab7ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EnemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
-  BeansCount: 2
+  _enemyPrefab: {fileID: 7630075145136831269, guid: 7b1bf780ca32ff94bb98d7570c4eeeee, type: 3}
+  _beansCount: 2
 --- !u!65 &1294064713967650092
 BoxCollider:
   m_ObjectHideFlags: 0

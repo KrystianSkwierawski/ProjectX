@@ -3,6 +3,8 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProjectX.Application.Common.Behaviours;
+using ProjectX.Application.Common.Interfaces;
+using ProjectX.Application.Translate;
 
 namespace ProjectX.Application;
 
@@ -20,5 +22,7 @@ public static class DependencyInjection
             cfg.AddOpenBehavior(typeof(ValidationBehaviour<,>));
             cfg.AddOpenBehavior(typeof(LoggingBehaviour<,>));
         });
+
+        builder.Services.AddScoped<ITranslateService, TranslateService>();
     }
 }

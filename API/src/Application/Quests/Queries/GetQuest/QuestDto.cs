@@ -3,9 +3,9 @@
 namespace ProjectX.Application.Quests.Queries.GetQuest;
 public class QuestDto
 {
-    public int Id { get; set; }
+    public QuestEnum Id { get; set; }
 
-    public int PreviousQuestId { get; set; }
+    public QuestEnum PreviousQuestId { get; set; }
 
     public QuestTypeEnum Type { get; set; }
 
