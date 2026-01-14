@@ -10,8 +10,6 @@ namespace Assets.Scripts.Network
 {
     public class Player : NetworkBehaviour
     {
-        [SerializeField] private UIManager _uiManager;
-
         private async void Start()
         {
             if (IsOwner)

@@ -218,7 +218,15 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
+      propertyPath: _questsIds.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
       propertyPath: 'QuestsIds.Array.data[0]'
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
+      propertyPath: '_questsIds.Array.data[0]'
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5764718006840274695, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
@@ -589,11 +597,23 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
+      propertyPath: _questsIds.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
       propertyPath: 'QuestsIds.Array.data[0]'
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
       propertyPath: 'QuestsIds.Array.data[1]'
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
+      propertyPath: '_questsIds.Array.data[0]'
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018244554630332831, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}
+      propertyPath: '_questsIds.Array.data[1]'
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5764718006840274695, guid: 3a901b1eba3902e4da5103f879a7a881, type: 3}

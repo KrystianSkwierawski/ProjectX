@@ -12,9 +12,7 @@ namespace Assets.Scripts.Mono
 {
     public class UIManager : MonoSingleton<UIManager>
     {
-        public IDictionary<CharacterInventoryTypeEnum, Texture> Textures = new Dictionary<CharacterInventoryTypeEnum, Texture>();
-
-        public GameObject InventorySlotPrefab;
+        public readonly IDictionary<CharacterInventoryTypeEnum, Texture> Textures = new Dictionary<CharacterInventoryTypeEnum, Texture>();
 
         public Material Material001 { get; private set; }
         public Material Material002 { get; private set; }
@@ -28,6 +26,7 @@ namespace Assets.Scripts.Mono
         public GameObject Quest { get; private set; }
         public GameObject QuestLog { get; private set; }
         public GameObject Target { get; private set; }
+        [SerializeField] private GameObject _inventorySlotPrefab;
 
         public TextMeshProUGUI QuestAcceptButtonText { get; private set; }
         public TextMeshProUGUI TargetNameText { get; private set; }
@@ -195,7 +194,7 @@ namespace Assets.Scripts.Mono
         {
             for (int i = 0; i < count; i++)
             {
-                var slot = Instantiate(InventorySlotPrefab);
+                var slot = Instantiate(_inventorySlotPrefab);
                 slot.transform.SetParent(Inventory.transform);
 
                 yield return new InventorySlot

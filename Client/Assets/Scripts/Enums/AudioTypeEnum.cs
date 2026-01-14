@@ -14,7 +14,7 @@ namespace Assets.Scripts.Enums
         QuestAccepted,
         QuestCompleted,
         FishCast,
-        FishCasting,
+        FishReelIn,
         FishingBobber,
 
         #endregion
