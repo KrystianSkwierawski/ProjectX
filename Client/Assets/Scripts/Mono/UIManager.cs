@@ -12,67 +12,80 @@ namespace Assets.Scripts.Mono
 {
     public class UIManager : MonoSingleton<UIManager>
     {
-        public Texture CanTexture;
-        public Texture FishTexture;
+        public IDictionary<CharacterInventoryTypeEnum, Texture> Textures = new Dictionary<CharacterInventoryTypeEnum, Texture>();
 
         public GameObject InventorySlotPrefab;
 
-        [NonSerialized] public GameObject ProgressBarCanvas;
-        [NonSerialized] public GameObject TargetCanvas;
-        [NonSerialized] public GameObject QuestCanvas;
-        [NonSerialized] public GameObject PlayerCanvas;
-        [NonSerialized] public GameObject InventoryCanvas;
+        public Material Material001 { get; private set; }
+        public Material Material002 { get; private set; }
 
-        [NonSerialized] public Image CastProgressBar;
-        [NonSerialized] public GameObject Target;
-        [NonSerialized] public TextMeshProUGUI TargetNameText;
-        [NonSerialized] public TextMeshProUGUI TargetHealthPointsText;
-        [NonSerialized] public Button QuestAcceptButton;
-        [NonSerialized] public TextMeshProUGUI QuestAcceptButtonText;
-        [NonSerialized] public Button QuestCancelButton;
+        public GameObject ProgressBarCanvas { get; private set; }
+        public GameObject TargetCanvas { get; private set; }
+        public GameObject QuestCanvas { get; private set; }
+        public GameObject PlayerCanvas { get; private set; }
+        public GameObject InventoryCanvas { get; private set; }
+        public GameObject Inventory { get; private set; }
+        public GameObject Quest { get; private set; }
+        public GameObject QuestLog { get; private set; }
+        public GameObject Target { get; private set; }
 
-        [NonSerialized] public GameObject Quest;
-        [NonSerialized] public TextMeshProUGUI QuestTitleText;
-        [NonSerialized] public TextMeshProUGUI QuestDescriptionText;
-        [NonSerialized] public GameObject QuestLog;
-        [NonSerialized] public TextMeshProUGUI QuestLogText;
-        [NonSerialized] public TextMeshProUGUI PlayerLevelText;
-        [NonSerialized] public TextMeshProUGUI PlayerNameText;
-        [NonSerialized] public TextMeshProUGUI PlayerHealthPointsText;
-        [NonSerialized] public GameObject Inventory;
+        public TextMeshProUGUI QuestAcceptButtonText { get; private set; }
+        public TextMeshProUGUI TargetNameText { get; private set; }
+        public TextMeshProUGUI TargetHealthPointsText { get; private set; }
+        public TextMeshProUGUI QuestTitleText { get; private set; }
+        public TextMeshProUGUI QuestDescriptionText { get; private set; }
+        public TextMeshProUGUI QuestLogText { get; private set; }
+        public TextMeshProUGUI PlayerLevelText { get; private set; }
+        public TextMeshProUGUI PlayerNameText { get; private set; }
+        public TextMeshProUGUI PlayerHealthPointsText { get; private set; }
 
-        [NonSerialized] public Material Material001;
-        [NonSerialized] public Material Material002;
+        public Button QuestAcceptButton { get; private set; }
+        public Button QuestCancelButton { get; private set; }
+
+        public Image CastProgressBar { get; private set; }
+
 
         private InventorySlot[] _inventorySlots;
 
         public void Init()
+        {
+            InitGameObjects();
+            InitMaterials();
+            InitTextures();
+        }
+
+        private void InitGameObjects()
         {
             ProgressBarCanvas = GameObject.Find("ProgressBarCanvas");
             TargetCanvas = GameObject.Find("TargetCanvas");
             QuestCanvas = GameObject.Find("QuestCanvas");
             PlayerCanvas = GameObject.Find("PlayerCanvas");
             InventoryCanvas = GameObject.Find("InventoryCanvas");
-
-            CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
+            Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+            Quest = QuestCanvas.transform.Find("Quest").gameObject;
+            QuestLog = QuestCanvas.transform.Find("Log").gameObject;
             Target = TargetCanvas.transform.Find("Target").gameObject;
+
+            QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
             TargetNameText = TargetCanvas.transform.Find("Target/Name").GetComponent<TextMeshProUGUI>();
             TargetHealthPointsText = TargetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>();
-            QuestAcceptButton = QuestCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>();
-            QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
-            QuestCancelButton = QuestCanvas.transform.Find("Quest/CancelButton").GetComponent<Button>();
-            Quest = QuestCanvas.transform.Find("Quest").gameObject;
             QuestTitleText = QuestCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>();
             QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description").GetComponent<TextMeshProUGUI>();
-            QuestLog = QuestCanvas.transform.Find("Log").gameObject;
             QuestLogText = QuestCanvas.transform.Find("Log/Text").GetComponent<TextMeshProUGUI>();
             PlayerLevelText = PlayerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>();
             PlayerNameText = PlayerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>();
             PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
-            Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
 
-            Material001 = Resources.Load<Material>("Material.001");
-            Material002 = Resources.Load<Material>("Material.002");
+            QuestAcceptButton = QuestCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>();
+            QuestCancelButton = QuestCanvas.transform.Find("Quest/CancelButton").GetComponent<Button>();
+
+            CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
+        }
+
+        private void InitMaterials()
+        {
+            Material001 = Resources.Load<Material>("Materials/Material.001");
+            Material002 = Resources.Load<Material>("Materials/Material.002");
         }
 
         public void UpdateInventory(CharacterInventoryDto value)
@@ -90,18 +103,28 @@ namespace Assets.Scripts.Mono
                     continue;
                 }
 
-                slot.Text.gameObject.SetActive(true);
-                slot.Text.text = item.count.ToString();
-
-                slot.Image.color = Color.white;
-
-                // TODO: dict?
-                slot.Image.texture = item.type switch
+                if (Textures.TryGetValue(item.type, out var texture))
                 {
-                    CharacterInventoryTypeEnum.Can => CanTexture,
-                    CharacterInventoryTypeEnum.Fish => FishTexture,
-                    _ => null,
-                };
+                    slot.Text.gameObject.SetActive(true);
+                    slot.Text.text = item.count.ToString();
+                    slot.Image.color = Color.white;
+                    slot.Image.texture = texture;
+                }
+            }
+        }
+
+        private void InitTextures()
+        {
+            foreach (var type in Enum.GetValues(typeof(CharacterInventoryTypeEnum)).Cast<CharacterInventoryTypeEnum>())
+            {
+                var texture = Resources.Load<Texture>($"Textures/{type}");
+
+                if (texture != null)
+                {
+                    Debug.Log($"UIManager -> Add texture. Type: {type}");
+
+                    Textures.Add(type, texture);
+                }
             }
         }
 
