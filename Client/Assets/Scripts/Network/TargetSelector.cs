@@ -127,12 +127,12 @@ namespace Assets.Scripts.Network
         {
             // TODO: ObjectPool
             var fireball = Instantiate(_fireballPrefab, position, Quaternion.LookRotation(direction));
-            var netObj = fireball.GetComponent<NetworkObject>();
-            netObj.SpawnWithOwnership(clientId);
+            var networkObject = fireball.GetComponent<NetworkObject>();
+            networkObject.SpawnWithOwnership(clientId);
             var spawnedFireball = fireball.GetComponent<Fireball>();
             spawnedFireball.PreCast(token);
 
-            NotifyClientRpc(netObj.NetworkObjectId, new ClientRpcParams
+            NotifyClientRpc(networkObject.NetworkObjectId, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {

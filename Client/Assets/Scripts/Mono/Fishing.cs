@@ -8,29 +8,14 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
-using static UnityEngine.Rendering.DebugUI;
 
 public class Fishing : NetworkBehaviour
 {
     [SerializeField] private GameObject _baitPrefab;
 
-    private GameObject _fishingRod;
-    private GameObject[] _waters;
-    private bool _isCasting = false;
-    private float _castTime = 30f;
-    private float _castTimer = 0f;
-    private Vector3 _spawnPos;
-
-    private bool _isInterrupted = false;
-    private float _interruptDuration = 0.2f;
-    private float _interruptTimer = 0f;
-
-    private Color _originalBarColor;
-    private StarterAssetsInputs _input;
-
+    [Header("Casting")]
     [SerializeField] private float _maxDistance = 4f;
     [SerializeField] private float _baitSurfaceOffset = 0f;
-
     [SerializeField] private float _preferredCastDistance = 8f;
     [SerializeField] private float _minCastDistance = 4f;
     [SerializeField] private float _maxCastDistance = 16f;
@@ -38,6 +23,26 @@ public class Fishing : NetworkBehaviour
     [SerializeField] private float _maxCastAngleDegrees = 35f;
     [SerializeField] private float _verticalRaycastHeight = 5f;
     [SerializeField] private float _verticalRaycastDepth = 10f;
+
+    [Header("Line Renderer")]
+    [SerializeField] private LineRenderer _line;
+    [SerializeField] private Transform _tip;
+    [SerializeField] private float _lineWidth = 0.01f;
+    [SerializeField] private float _sagAmount = 0.05f;
+    [SerializeField] private int _lineSegments = 20;
+
+    private GameObject _fishingRod;
+    private GameObject[] _waters;
+    private bool _isCasting = false;
+    private float _castTime = 30f;
+    private float _castTimer = 0f;
+
+    private bool _isInterrupted = false;
+    private float _interruptDuration = 0.2f;
+    private float _interruptTimer = 0f;
+
+    private Color _originalBarColor;
+    private StarterAssetsInputs _input;
 
     private float _reelInTimer = 0f;
 
@@ -54,14 +59,14 @@ public class Fishing : NetworkBehaviour
     private void Awake()
     {
         _fishingRod = transform.Find("FishingRod").gameObject;
+        _line = _fishingRod.GetComponent<LineRenderer>();
+        _tip = _fishingRod.transform.Find("Tip");
     }
 
     public override void OnNetworkSpawn()
     {
         SetFishingRodActive(_active.Value);
-
         _active.OnValueChanged += OnRodActiveChanged;
-
         base.OnNetworkSpawn();
     }
 
@@ -104,8 +109,25 @@ public class Fishing : NetworkBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        if (IsOwner && _isCasting && _bait != null)
+        {
+            var _rotTipPosition = _tip.position;
+            var _baitPosition = _bait.transform.position;
+
+            DrawSagLine(_rotTipPosition, _baitPosition, _sagAmount, _lineSegments);
+        }
+    }
+
     private void CheckReelIn()
     {
+        if (!_isCasting)
+        {
+            _reelInTimer = 0f;
+            return;
+        }
+
         _reelInTimer += Time.deltaTime;
 
         if (_reelInTimer >= 5f)
@@ -151,7 +173,7 @@ public class Fishing : NetworkBehaviour
                 return;
             }
 
-            SpawnBaitServerRpc(OwnerClientId, spawnPos);
+            SpawnBaitServerRpc(spawnPos);
 
             _originalBarColor = UIManager.Instance.CastProgressBar.color;
             _isCasting = true;
@@ -165,20 +187,36 @@ public class Fishing : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void SpawnBaitServerRpc(ulong clientId, Vector3 spawnPos)
+    private void SpawnBaitServerRpc(Vector3 spawnPos)
     {
         _bait = _pool.Get();
         _bait.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
-        _bait.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+        var networkObject = _bait.GetComponent<NetworkObject>();
+        networkObject.SpawnWithOwnership(OwnerClientId);
 
         _active.Value = true;
+
+        NotifyBaitSpawnedClientRpc((NetworkObjectReference)networkObject, new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { OwnerClientId }
+            }
+        });
     }
 
     [ServerRpc]
     private void DespawnServerRpc()
     {
-        _pool.Release(_bait);
+        NotifyBaitDespawnedClientRpc(new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { OwnerClientId }
+            }
+        });
 
+        _pool.Release(_bait);
         _active.Value = false;
     }
 
@@ -403,6 +441,20 @@ public class Fishing : NetworkBehaviour
     private void OnRodActiveChanged(bool prev, bool next)
     {
         SetFishingRodActive(next);
+
+        if (!IsOwner)
+        {
+            return;
+        }
+
+        if (next)
+        {
+            ToggleLine(true);
+
+            return;
+        }
+
+        ToggleLine(false);
     }
 
     private bool IsPointInsideBoundsHorizontalXZ(Vector3 point, Bounds bounds)
@@ -415,4 +467,68 @@ public class Fishing : NetworkBehaviour
     {
         _active.OnValueChanged -= OnRodActiveChanged;
     }
+
+    [ClientRpc]
+    private void NotifyBaitSpawnedClientRpc(NetworkObjectReference networkObjectRef, ClientRpcParams rpcParams = default)
+    {
+        if (networkObjectRef.TryGet(out var networkObject))
+        {
+            _bait = networkObject.gameObject;
+            ToggleLine(true);
+        }
+    }
+
+    [ClientRpc]
+    private void NotifyBaitDespawnedClientRpc(ClientRpcParams rpcParams = default)
+    {
+        ToggleLine(false);
+    }
+
+    private void DrawSagLine(Vector3 rodTipPosition, Vector3 baitPosition, float sag, int segments)
+    {
+        segments = Mathf.Max(2, segments);
+
+        if (_line.positionCount != segments + 1)
+        {
+            _line.positionCount = segments + 1;
+        }
+
+        float dist = Vector3.Distance(rodTipPosition, baitPosition);
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float t = i / (float)segments;
+            Vector3 p = Vector3.Lerp(rodTipPosition, baitPosition, t);
+
+            float parabola = 1f - Mathf.Pow(2f * t - 1f, 2f);
+            p += Vector3.down * (sag * dist * parabola);
+
+            _line.SetPosition(i, p);
+        }
+    }
+
+    private void ToggleLine(bool enable)
+    {
+        if (enable)
+        {
+            _line.widthMultiplier = _lineWidth;
+
+            if (_tip != null)
+            {
+                var tipPosition = _tip.position;
+
+                _line.positionCount = _lineSegments + 1;
+
+                for (int i = 0; i <= _lineSegments; i++)
+                {
+                    _line.SetPosition(i, tipPosition);
+                }
+            }
+
+            return;
+        }
+
+        _line.positionCount = 0;
+    }
 }
+
