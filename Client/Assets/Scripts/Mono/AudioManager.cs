@@ -67,5 +67,13 @@ namespace Assets.Scripts.Mono
                 audioSource.PlayOneShot(audioClip, volume);
             }
         }
+
+        public void TryStop()
+        {
+            if (_mainAudioSource.isPlaying)
+            {
+                _mainAudioSource.Stop();
+            }
+        }
     }
 }

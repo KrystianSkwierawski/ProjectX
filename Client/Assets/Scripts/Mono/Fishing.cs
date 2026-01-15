@@ -111,12 +111,9 @@ public class Fishing : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (IsOwner && _isCasting && _bait != null)
+        if (_bait != null)
         {
-            var _rotTipPosition = _tip.position;
-            var _baitPosition = _bait.transform.position;
-
-            DrawSagLine(_rotTipPosition, _baitPosition, _sagAmount, _lineSegments);
+            DrawSagLine();
         }
     }
 
@@ -169,7 +166,7 @@ public class Fishing : NetworkBehaviour
             if (!TryFindSpawnPointInWater(transform.position, ClampAimAngle(_maxCastAngleDegrees), water, waterCollider, out var spawnPos))
             {
                 AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
-                Debug.Log("Not found valid spawn deeper into water");
+                Debug.Log("Not found spawn point in water");
                 return;
             }
 
@@ -192,29 +189,18 @@ public class Fishing : NetworkBehaviour
         _bait = _pool.Get();
         _bait.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
         var networkObject = _bait.GetComponent<NetworkObject>();
+        _bait.transform.SetParent(_fishingRod.transform);
         networkObject.SpawnWithOwnership(OwnerClientId);
 
         _active.Value = true;
 
-        NotifyBaitSpawnedClientRpc((NetworkObjectReference)networkObject, new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new ulong[] { OwnerClientId }
-            }
-        });
+        NotifyBaitSpawnedClientRpc((NetworkObjectReference)networkObject);
     }
 
     [ServerRpc]
     private void DespawnServerRpc()
     {
-        NotifyBaitDespawnedClientRpc(new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new ulong[] { OwnerClientId }
-            }
-        });
+        NotifyBaitDespawnedClientRpc();
 
         _pool.Release(_bait);
         _active.Value = false;
@@ -469,7 +455,7 @@ public class Fishing : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void NotifyBaitSpawnedClientRpc(NetworkObjectReference networkObjectRef, ClientRpcParams rpcParams = default)
+    private void NotifyBaitSpawnedClientRpc(NetworkObjectReference networkObjectRef)
     {
         if (networkObjectRef.TryGet(out var networkObject))
         {
@@ -479,13 +465,18 @@ public class Fishing : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void NotifyBaitDespawnedClientRpc(ClientRpcParams rpcParams = default)
+    private void NotifyBaitDespawnedClientRpc()
     {
         ToggleLine(false);
+        _bait = null;
     }
 
-    private void DrawSagLine(Vector3 rodTipPosition, Vector3 baitPosition, float sag, int segments)
+    private void DrawSagLine()
     {
+        var tipPosition = _tip.position;
+        var baitPosition = _bait.transform.position;
+        var segments = _lineSegments;
+
         segments = Mathf.Max(2, segments);
 
         if (_line.positionCount != segments + 1)
@@ -493,15 +484,15 @@ public class Fishing : NetworkBehaviour
             _line.positionCount = segments + 1;
         }
 
-        float dist = Vector3.Distance(rodTipPosition, baitPosition);
+        float dist = Vector3.Distance(tipPosition, baitPosition);
 
         for (int i = 0; i <= segments; i++)
         {
             float t = i / (float)segments;
-            Vector3 p = Vector3.Lerp(rodTipPosition, baitPosition, t);
+            Vector3 p = Vector3.Lerp(tipPosition, baitPosition, t);
 
             float parabola = 1f - Mathf.Pow(2f * t - 1f, 2f);
-            p += Vector3.down * (sag * dist * parabola);
+            p += Vector3.down * (_sagAmount * dist * parabola);
 
             _line.SetPosition(i, p);
         }
@@ -513,16 +504,13 @@ public class Fishing : NetworkBehaviour
         {
             _line.widthMultiplier = _lineWidth;
 
-            if (_tip != null)
+            var tipPosition = _tip.position;
+
+            _line.positionCount = _lineSegments + 1;
+
+            for (int i = 0; i <= _lineSegments; i++)
             {
-                var tipPosition = _tip.position;
-
-                _line.positionCount = _lineSegments + 1;
-
-                for (int i = 0; i <= _lineSegments; i++)
-                {
-                    _line.SetPosition(i, tipPosition);
-                }
+                _line.SetPosition(i, tipPosition);
             }
 
             return;
