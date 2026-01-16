@@ -11,7 +11,8 @@ namespace Assets.Scripts.Mono
 {
     public class QuestNpc : MonoBehaviour
     {
-        public QuestEnum[] QuestsIds { get; private set; } = new QuestEnum[] { QuestEnum.Kill2Beans, QuestEnum.Collect2Cans };
+        [SerializeField]
+        private QuestEnum[] _questsIds;
 
         public QuestDto Quest { get; set; }
 
@@ -31,13 +32,13 @@ namespace Assets.Scripts.Mono
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => QuestsIds.Contains(x.questId))
+                .Where(x => _questsIds.Contains(x.questId))
                 .Where(x => x.status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
             SetStatus();
 
-            foreach (var questId in QuestsIds)
+            foreach (var questId in _questsIds)
             {
                 var characterQuest = QuestManager.Instance.CharacterQuests
                     .Where(x => x.questId == questId)
@@ -85,13 +86,16 @@ namespace Assets.Scripts.Mono
             var completedQuests = QuestManager.Instance.CharacterQuests
                 .Where(x => x.status == CharacterQuestStatusEnum.Completed);
 
-            var filteredIds = QuestsIds.Where(x => !completedQuests.Any(cq => cq.questId == x));
+            var filteredIds = _questsIds.Where(x => !completedQuests.Any(cq => cq.questId == x));
 
             Quest = QuestManager.Instance.Quests
                 .Where(x => filteredIds.Contains(x.id))
-                .First();
+                .FirstOrDefault();
 
-            ShowExclamationMark();
+            if (Quest != null)
+            {
+                ShowExclamationMark();
+            }
         }
 
         private void LoadFinishedQuest()

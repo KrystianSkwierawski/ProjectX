@@ -108,9 +108,9 @@ public class ApplicationDbContextInitialiser
                 [
                     new CharacterTransform
                     {
-                        PositionX = 1,
-                        PositionY = 0,
-                        PositionZ = 0,
+                        PositionX = 3.562874f,
+                        PositionY = 1.41359f,
+                        PositionZ = 4.244279f,
                         ModDate = DateTime.Now
                     }
                 ]

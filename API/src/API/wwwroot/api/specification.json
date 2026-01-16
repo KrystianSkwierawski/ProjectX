@@ -657,27 +657,33 @@
         "description": "",
         "x-enum-names": [
           "None",
-          "Can"
+          "Can",
+          "Fish"
         ],
         "x-enum-varnames": [
           "None",
-          "Can"
+          "Can",
+          "Fish"
         ],
         "x-enumNames": [
           "None",
-          "Can"
+          "Can",
+          "Fish"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null
         ],
         "x-enumDescriptions": [
           null,
+          null,
           null
         ],
         "enum": [
           0,
-          1
+          1,
+          2
         ]
       },
       "AddCharacterInventoryItemCommand": {
@@ -731,19 +737,23 @@
         "x-enum-names": [
           "None",
           "Kill2Beans",
-          "Collect2Cans"
+          "Collect2Cans",
+          "Collect2Fishses"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
-          "Collect2Cans"
+          "Collect2Cans",
+          "Collect2Fishses"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
-          "Collect2Cans"
+          "Collect2Cans",
+          "Collect2Fishses"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null
@@ -751,12 +761,14 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3
         ]
       },
       "CharacterQuestStatusEnum": {

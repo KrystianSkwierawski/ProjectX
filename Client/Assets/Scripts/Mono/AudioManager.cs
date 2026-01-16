@@ -42,7 +42,7 @@ namespace Assets.Scripts.Mono
 
             foreach (var type in Enum.GetValues(typeof(AudioTypeEnum)).Cast<AudioTypeEnum>())
             {
-                var audioClip = Resources.Load<AudioClip>($"Audio/{type}");
+                var audioClip = Resources.Load<AudioClip>($"Audios/{type}");
 
                 if (audioClip != null)
                 {
@@ -62,9 +62,17 @@ namespace Assets.Scripts.Mono
         {
             if (AudioClips.TryGetValue(type, out var audioClip))
             {
-                Debug.Log($"AudioManager -> PlayOneShot. Type: {type}, Volume: {volume}, Name: {audioClip.name}");
+                Debug.Log($"AudioManager -> PlayOneShot. Type: {type}, Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
 
                 audioSource.PlayOneShot(audioClip, volume);
+            }
+        }
+
+        public void TryStop()
+        {
+            if (_mainAudioSource.isPlaying)
+            {
+                _mainAudioSource.Stop();
             }
         }
     }

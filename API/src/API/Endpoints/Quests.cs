@@ -21,7 +21,7 @@ public class Quests : EndpointGroupBase
 
         groupBuilder
             .MapGet(GetQuests)
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(Policies.ServerOrClient);
     }
 
     private static async Task<Ok<QuestDto>> GetQuest(IMemoryCache memoryCache, ICurrentUserService currentUserService, ISender sender, QuestEnum id)

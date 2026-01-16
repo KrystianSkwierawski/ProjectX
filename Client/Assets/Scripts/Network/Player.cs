@@ -10,8 +10,6 @@ namespace Assets.Scripts.Network
 {
     public class Player : NetworkBehaviour
     {
-        [SerializeField] private UIManager _uiManager;
-
         private async void Start()
         {
             if (IsOwner)
@@ -56,7 +54,7 @@ namespace Assets.Scripts.Network
         public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
             UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.3f);
+            AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
         }
 
         public override void OnNetworkDespawn()

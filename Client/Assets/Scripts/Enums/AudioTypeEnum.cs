@@ -1,26 +1,29 @@
 namespace Assets.Scripts.Enums
 {
-public enum AudioTypeEnum : byte
-{
-    #region sfx
+    public enum AudioTypeEnum : byte
+    {
+        #region sfx
 
-    CastingFailed,
-    FireballCast,
-    FireballImpact,
-    FireballPrecast,
-    InventoryOpen,
-    InventoryClose,
-    LevelUp,
-    QuestAccepted,
-    QuestCompleted,
+        CastingFailed,
+        FireballCast,
+        FireballImpact,
+        FireballPrecast,
+        InventoryOpen,
+        InventoryClose,
+        LevelUp,
+        QuestAccepted,
+        QuestCompleted,
+        FishCast,
+        FishReelIn,
+        FishingBobber,
 
-    #endregion
+        #endregion
 
-    #region music
+        #region music
 
-    BacgroundMusic,
-    BacgroundMusic2,
+        BacgroundMusic,
+        BacgroundMusic2,
 
-    #endregion
-}
+        #endregion
+    }
 }

@@ -3,5 +3,7 @@ public enum CharacterInventoryTypeEnum
 {
     None,
 
-    Can
+    Can,
+
+    Fish,
 }

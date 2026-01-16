@@ -4,6 +4,8 @@ namespace Assets.Scripts.Enums
     {
         None,
 
-        Can
+        Can,
+
+        Fish,
     }
 }
