@@ -15,6 +15,8 @@ namespace Assets.Scripts.Mono
 
         private readonly AudioTypeEnum[] _musicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
 
+        [SerializeField] private bool _musicPlayer;
+
         private void Update()
         {
             if (_mainAudioSource == null || _mainAudioSource.isPlaying)
@@ -22,7 +24,10 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            PlayRandomMusic();
+            if (_musicPlayer)
+            {
+                PlayRandomMusic();
+            }
         }
 
         private void PlayRandomMusic()

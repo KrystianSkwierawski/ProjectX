@@ -4,6 +4,7 @@ using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using StarterAssets;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,7 +43,6 @@ namespace Assets.Scripts.Mono
         public Button QuestCancelButton { get; private set; }
 
         public Image CastProgressBar { get; private set; }
-
 
         private InventorySlot[] _inventorySlots;
 

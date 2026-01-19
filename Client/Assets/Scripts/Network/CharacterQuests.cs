@@ -6,6 +6,7 @@ using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Cysharp.Threading.Tasks;
+using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,12 +15,14 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterQuests : NetworkBehaviour
     {
-        private QuestEnum _questId;
+        private QuestNpc _questNpc;
+        private float _npcMaxDistance = 5f;
+        private StarterAssetsInputs _input;
 
         [ServerRpc]
         private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
         {
-            // TODO: validate transform.location
+            // TODO: validation
             _ = CompleteQuestAsync(characterQuestId, token, clientId);
         }
 
@@ -54,6 +57,8 @@ namespace Assets.Scripts.Mono
         {
             if (IsOwner)
             {
+                _input = GetComponent<StarterAssetsInputs>();
+
                 UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
 
                 UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
@@ -61,7 +66,7 @@ namespace Assets.Scripts.Mono
                     UIManager.Instance.HideQuestCanvas();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
-                        .Where(x => x.questId == _questId)
+                        .Where(x => x.questId == _questNpc.Quest.id)
                         .FirstOrDefault();
 
                     if (characterQuest?.status == CharacterQuestStatusEnum.Finished)
@@ -136,11 +141,12 @@ namespace Assets.Scripts.Mono
         {
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
 
-            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questId);
+            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questNpc.Quest.id);
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
-            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questId.ToString(), new AddQuestSubscriptionEvent
+            // TODO: server rpc + validation
+            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.id.ToString(), new AddQuestSubscriptionEvent
             {
                 CharacterQuest = characterQuest
             });
@@ -164,24 +170,46 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
+            if (_questNpc != null && _input.Move != Vector2.zero && Vector3.Distance(_questNpc.transform.position, transform.position) >= _npcMaxDistance)
+            {
+                _questNpc = null;
+                UIManager.Instance.Quest.SetActive(false);
+
+                return;
+            }
+
+            if (CheckQuestNpcClicked())
+            {
+                UIManager.Instance.ShowQuest(_questNpc);
+            }
+        }
+
+        private bool CheckQuestNpcClicked()
+        {
             var mouse = Mouse.current;
 
-            if (mouse.leftButton.wasPressedThisFrame)
+            if (!mouse.rightButton.wasPressedThisFrame)
             {
-                Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
-
-                if (Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "QuestNpc")
-                {
-                    var questNpc = hit.transform.GetComponent<QuestNpc>();
-
-                    if (questNpc?.Quest != null)
-                    {
-                        _questId = questNpc.Quest.id;
-
-                        UIManager.Instance.ShowQuest(questNpc);
-                    }
-                }
+                return false;
             }
+
+            Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+            if (!Physics.Raycast(ray, out RaycastHit hit) || hit.transform.tag != "QuestNpc")
+            {
+                return false;
+            }
+
+            var dist = Vector3.Distance(hit.transform.position, transform.position);
+
+            if (dist > _npcMaxDistance)
+            {
+                return false;
+            }
+
+            _questNpc = hit.transform.GetComponent<QuestNpc>();
+
+            return true;
         }
 
         // TODO: refactor and optimization
