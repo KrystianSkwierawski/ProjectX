@@ -91,7 +91,7 @@ public class Fishing : NetworkBehaviour
     private void AddItemServerRpc(string clientToken)
     {
         // TODO: validation
-        UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+        CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
         {
             ClientToken = clientToken,
             GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)

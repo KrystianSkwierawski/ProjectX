@@ -12,13 +12,15 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterInventory : NetworkBehaviour
     {
-        private readonly IDictionary<string, IList<DropItem>> _drops = new Dictionary<string, IList<DropItem>>
+        private InventoryItem[] _currentLoot;
+
+        private readonly IDictionary<string, IList<LootItem>> _loot = new Dictionary<string, IList<LootItem>>
         {
             {
                 "Bean(Clone)",
-                new List<DropItem>
+                new List<LootItem>
                 {
-                    new DropItem
+                    new LootItem
                     {
                         Type = CharacterInventoryTypeEnum.Can,
                         Chance = 50,
@@ -27,19 +29,54 @@ namespace Assets.Scripts.Mono
                     }
                 }
             },
-             {
+            {
                 nameof(CharacterInventoryTypeEnum.Fish),
-                new List<DropItem>
+                new List<LootItem>
                 {
-                    new DropItem
+                    new LootItem
                     {
                         Type = CharacterInventoryTypeEnum.Fish,
                         Chance = 90,
                         Min = 1,
                         Max = 1
+                    },
+                     new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Can,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 99
+                    },
+                      new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Can,
+                        Chance = 90,
+                        Min = 5,
+                        Max = 99
+                    },
+                       new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Fish,
+                        Chance = 90,
+                        Min = 6,
+                        Max = 99
+                    },
+                        new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Can,
+                        Chance = 90,
+                        Min = 7,
+                        Max = 99
+                    },
+                         new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Fish,
+                        Chance = 90,
+                        Min = 8,
+                        Max = 99
                     }
                 }
-            }
+            },
         };
 
         public CharacterInventoryDto Inventory { get; set; }
@@ -60,57 +97,44 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
-                UpdateInventorySubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
+                CheckLootSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    if (_drops.TryGetValue(e.GameObjectName, out var drops))
+                    if (_loot.TryGetValue(e.GameObjectName, out var drops))
                     {
-                        foreach (var drop in drops)
+                        _currentLoot = ProcessLoot(e, drops).ToArray();
+
+                        ShowLootClientRpc(_currentLoot, new ClientRpcParams
                         {
-                            await ProcessDropAsync(e, drop);
-                        }
+                            Send = new ClientRpcSendParams
+                            {
+                                TargetClientIds = new ulong[] { OwnerClientId }
+                            }
+                        });
                     }
                 });
             }
         }
 
-        private async UniTask ProcessDropAsync(UpdateInventorySubscriptionEvent e, DropItem drop)
+        private IEnumerable<InventoryItem> ProcessLoot(UpdateInventorySubscriptionEvent e, IList<LootItem> drops)
         {
-            int trials = Mathf.Max(0, drop.Max - drop.Min);
-
-            int successes = Enumerable.Range(0, trials).Count(_ => Random.Range(0, 100) < drop.Chance);
-
-            int count = drop.Min + successes;
-
-            Debug.Log($"Drop calculated. Type: {drop.Type}, Min: {drop.Min}, Max: {drop.Max}, Trials: {trials}, Successes: {successes}, TotalCount: {count}");
-
-            if (count > 0)
+            foreach (var drop in drops)
             {
-                var item = new InventoryItem
-                {
-                    type = drop.Type,
-                    count = count
-                };
+                int trials = Mathf.Max(0, drop.Max - drop.Min);
 
-                CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
-                {
-                    Progress = item.count,
-                    GameObjectName = item.type.ToString(),
-                    ClientToken = e.ClientToken,
-                });
+                int successes = Enumerable.Range(0, trials).Count(_ => Random.Range(0, 100) < drop.Chance);
 
-                await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
-                {
-                    characterId = 1,
-                    inventoryItem = item
-                }, e.ClientToken);
+                int count = drop.Min + successes;
 
-                UpdateInventoryItemClientRpc(new ClientRpcParams
+                Debug.Log($"Drop calculated. Type: {drop.Type}, Min: {drop.Min}, Max: {drop.Max}, Trials: {trials}, Successes: {successes}, TotalCount: {count}");
+
+                if (count > 0)
                 {
-                    Send = new ClientRpcSendParams
+                    yield return new InventoryItem
                     {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                        type = drop.Type,
+                        count = count
+                    };
+                }
             }
         }
 
@@ -139,6 +163,12 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
+        private void ShowLootClientRpc(InventoryItem[] items, ClientRpcParams rpcParams = default)
+        {
+            UIManager.Instance.ShowLoot(items);
+        }
+
+        [ClientRpc]
         private void UpdateInventoryItemClientRpc(ClientRpcParams rpcParams = default)
         {
             _ = UpdateCharacterInventoryAsync();
@@ -154,7 +184,7 @@ namespace Assets.Scripts.Mono
         {
             if (IsServer)
             {
-                UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                CheckLootSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnNetworkDespawn();
@@ -164,13 +194,13 @@ namespace Assets.Scripts.Mono
         {
             if (IsServer)
             {
-                UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                CheckLootSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnDestroy();
         }
 
-        private class DropItem
+        private class LootItem
         {
             public CharacterInventoryTypeEnum Type { get; set; }
 

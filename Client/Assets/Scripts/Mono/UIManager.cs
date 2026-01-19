@@ -4,7 +4,6 @@ using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
-using StarterAssets;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +26,9 @@ namespace Assets.Scripts.Mono
         public GameObject Quest { get; private set; }
         public GameObject QuestLog { get; private set; }
         public GameObject Target { get; private set; }
+        public GameObject Loot { get; private set; }
+        public GameObject LootContent { get; private set; }
+
         [SerializeField] private GameObject _inventorySlotPrefab;
 
         public TextMeshProUGUI QuestAcceptButtonText { get; private set; }
@@ -64,6 +66,8 @@ namespace Assets.Scripts.Mono
             Quest = QuestCanvas.transform.Find("Quest").gameObject;
             QuestLog = QuestCanvas.transform.Find("Log").gameObject;
             Target = TargetCanvas.transform.Find("Target").gameObject;
+            Loot = InventoryCanvas.transform.Find("Loot").gameObject;
+            LootContent = Loot.transform.Find("Viewport/Content").gameObject;
 
             QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
             TargetNameText = TargetCanvas.transform.Find("Target/Name").GetComponent<TextMeshProUGUI>();
@@ -203,6 +207,36 @@ namespace Assets.Scripts.Mono
                     Image = slot.transform.Find("Background").GetComponent<RawImage>(),
                     Text = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
                 };
+            }
+        }
+
+        public void ShowLoot(InventoryItem[] items)
+        {
+            Loot.SetActive(true);
+
+            foreach (var item in items)
+            {
+                var slot = Instantiate(_inventorySlotPrefab);
+                slot.transform.SetParent(LootContent.transform);
+
+                var image = slot.transform.Find("Background").GetComponent<RawImage>();
+                var text = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+
+                if (Textures.TryGetValue(item.type, out var texture))
+                {
+                    text.gameObject.SetActive(true);
+                    text.text = item.count.ToString();
+                    image.color = Color.white;
+                    image.texture = texture;
+                }
+
+                slot.GetComponent<Button>().onClick.AddListener(() =>
+                {
+                    // TODO: invoke add inventory
+                    // TODO: pool
+                    // TODO: hide
+                    Destroy(slot);
+                });
             }
         }
 
