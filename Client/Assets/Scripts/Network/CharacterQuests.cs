@@ -77,11 +77,14 @@ namespace Assets.Scripts.Mono
                     {
                         await AcceptQuestAsync();
                     }
-
-                    await UpdateQuestLogAsync();
                 });
 
-                await UpdateQuestLogAsync();
+                await UniTask.WaitUntil(
+                    () => QuestManager.Instance.CharacterQuests != null,
+                    cancellationToken: this.GetCancellationTokenOnDestroy()
+                );
+
+                UIManager.Instance.InitQuestLog();
             }
 
             if (IsServer)
@@ -107,7 +110,7 @@ namespace Assets.Scripts.Mono
 
             if (result.status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestLogClientRpc(result.characterQuestId, progress, result.status, new ClientRpcParams
+                UpdateQuestClientRpc(result.characterQuestId, progress, result.status, new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
@@ -118,7 +121,7 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void UpdateQuestLogClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ClientRpcParams rpcParams = default)
+        private void UpdateQuestClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ClientRpcParams rpcParams = default)
         {
             Debug.Log($"UpdateQuestLogClientRpc: {characterQuestId}");
 
@@ -129,7 +132,7 @@ namespace Assets.Scripts.Mono
             characterQuest.progress += progress;
             characterQuest.status = status;
 
-            _ = UpdateQuestLogAsync();
+            UIManager.Instance.UpdateQuestProgress(characterQuest);
 
             if (status == CharacterQuestStatusEnum.Finished)
             {
@@ -145,6 +148,8 @@ namespace Assets.Scripts.Mono
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
+            UIManager.Instance.AcceptQuest(characterQuest);
+
             // TODO: server rpc + validation
             AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.id.ToString(), new AddQuestSubscriptionEvent
             {
@@ -157,6 +162,8 @@ namespace Assets.Scripts.Mono
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
+
+            UIManager.Instance.CompleteQuest(characterQuest);
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
@@ -210,30 +217,6 @@ namespace Assets.Scripts.Mono
             _questNpc = hit.transform.GetComponent<QuestNpc>();
 
             return true;
-        }
-
-        // TODO: refactor and optimization
-        private async UniTask UpdateQuestLogAsync()
-        {
-            await UniTask.WaitUntil(
-                () => QuestManager.Instance.CharacterQuests != null,
-                cancellationToken: this.GetCancellationTokenOnDestroy()
-            );
-
-            if (QuestManager.Instance.CharacterQuests.Any())
-            {
-                var logs = QuestManager.Instance.CharacterQuests.Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished)
-                    .Select(x =>
-                    {
-                        var quest = QuestManager.Instance.Quests
-                           .Where(y => y.id == x.questId)
-                           .Single();
-
-                        return string.Format(quest.statusText, Math.Min(x.progress, quest.requirement), quest.requirement);
-                    });
-
-                UIManager.Instance.SetQuestLog(logs);
-            }
         }
 
         public override void OnNetworkDespawn()

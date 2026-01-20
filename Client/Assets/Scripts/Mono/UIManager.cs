@@ -5,7 +5,9 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 namespace Assets.Scripts.Mono
@@ -49,11 +51,33 @@ namespace Assets.Scripts.Mono
 
         private InventorySlot[] _inventorySlots;
 
+        private ObjectPool<QuestLogObject> _questLogPool;
+        private readonly IDictionary<QuestEnum, QuestLogObject> _questLogObjects = new Dictionary<QuestEnum, QuestLogObject>();
+
         public void Init()
         {
             InitGameObjects();
             InitMaterials();
             InitTextures();
+
+            _questLogPool = new ObjectPool<QuestLogObject>(
+                createFunc: () =>
+                {
+                    var obj = Instantiate(_textPrefab, QuestLogContent.transform);
+
+                    return new QuestLogObject
+                    {
+                        GameObject = obj,
+                        Mesh = obj.GetComponent<TextMeshProUGUI>()
+                    };
+                },
+                actionOnGet: (QuestLogObject questLogObject) => questLogObject.GameObject.SetActive(true),
+                actionOnRelease: (QuestLogObject questLogObject) =>
+                {
+                    questLogObject.GameObject.SetActive(false);
+                    questLogObject.Mesh.text = string.Empty;
+                }
+            );
         }
 
         private void InitGameObjects()
@@ -103,14 +127,14 @@ namespace Assets.Scripts.Mono
 
                 if (item == null)
                 {
-                    slot.Text.gameObject.SetActive(false);
+                    slot.Mesh.gameObject.SetActive(false);
                     continue;
                 }
 
                 if (Textures.TryGetValue(item.type, out var texture))
                 {
-                    slot.Text.gameObject.SetActive(true);
-                    slot.Text.text = item.count.ToString();
+                    slot.Mesh.gameObject.SetActive(true);
+                    slot.Mesh.text = item.count.ToString();
                     slot.Image.color = Color.white;
                     slot.Image.texture = texture;
                 }
@@ -182,14 +206,48 @@ namespace Assets.Scripts.Mono
             Quest.SetActive(false);
         }
 
-        public void SetQuestLog(IEnumerable<string> logs)
+        public void InitQuestLog()
         {
-            foreach (string log in logs)
+            var characterQuests = QuestManager.Instance.CharacterQuests
+                .Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished);
+
+            foreach (var characterQuest in characterQuests)
             {
-                // TODO: pool
-                var text = Instantiate(_textPrefab);
-                text.transform.SetParent(QuestLogContent.transform);
-                text.GetComponent<TextMeshProUGUI>().text = log;
+                AcceptQuest(characterQuest);
+            }
+        }
+
+        public void AcceptQuest(CharacterQuestDto characterQuest)
+        {
+            var quest = QuestManager.Instance.Quests
+                .Where(y => y.id == characterQuest.questId)
+                .Single();
+
+            var questLogObject = _questLogPool.Get();
+
+            questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
+
+            _questLogObjects.Add(quest.id, questLogObject);
+        }
+
+        public void UpdateQuestProgress(CharacterQuestDto characterQuest)
+        {
+            if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
+            {
+                var quest = QuestManager.Instance.Quests
+                    .Where(y => y.id == characterQuest.questId)
+                    .Single();
+
+                questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
+            }
+        }
+
+        public void CompleteQuest(CharacterQuestDto characterQuest)
+        {
+            if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
+            {
+                _questLogPool.Release(questLogObject);
+                _questLogObjects.Remove(characterQuest.questId);
             }
         }
 
@@ -211,7 +269,7 @@ namespace Assets.Scripts.Mono
                 {
                     GameObject = slot,
                     Image = slot.transform.Find("Background").GetComponent<RawImage>(),
-                    Text = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                    Mesh = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
                 };
             }
         }
@@ -252,7 +310,14 @@ namespace Assets.Scripts.Mono
 
             public RawImage Image { get; set; }
 
-            public TextMeshProUGUI Text { get; set; }
+            public TextMeshProUGUI Mesh { get; set; }
+        }
+
+        private class QuestLogObject
+        {
+            public GameObject GameObject { get; set; }
+
+            public TextMeshProUGUI Mesh { get; set; }
         }
     }
 }

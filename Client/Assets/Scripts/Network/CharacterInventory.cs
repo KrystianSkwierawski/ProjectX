@@ -40,41 +40,6 @@ namespace Assets.Scripts.Mono
                         Min = 1,
                         Max = 1
                     },
-                     new LootItem
-                    {
-                        Type = CharacterInventoryTypeEnum.Can,
-                        Chance = 90,
-                        Min = 1,
-                        Max = 99
-                    },
-                      new LootItem
-                    {
-                        Type = CharacterInventoryTypeEnum.Can,
-                        Chance = 90,
-                        Min = 5,
-                        Max = 99
-                    },
-                       new LootItem
-                    {
-                        Type = CharacterInventoryTypeEnum.Fish,
-                        Chance = 90,
-                        Min = 6,
-                        Max = 99
-                    },
-                        new LootItem
-                    {
-                        Type = CharacterInventoryTypeEnum.Can,
-                        Chance = 90,
-                        Min = 7,
-                        Max = 99
-                    },
-                         new LootItem
-                    {
-                        Type = CharacterInventoryTypeEnum.Fish,
-                        Chance = 90,
-                        Min = 8,
-                        Max = 99
-                    }
                 }
             },
         };
