@@ -57,6 +57,11 @@ namespace Assets.Scripts.Mono
         {
             if (IsOwner)
             {
+                await UniTask.WaitUntil(
+                    () => QuestManager.Instance.CharacterQuests != null,
+                    cancellationToken: this.GetCancellationTokenOnDestroy()
+                );
+
                 _input = GetComponent<StarterAssetsInputs>();
 
                 UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
@@ -78,13 +83,6 @@ namespace Assets.Scripts.Mono
                         await AcceptQuestAsync();
                     }
                 });
-
-                await UniTask.WaitUntil(
-                    () => QuestManager.Instance.CharacterQuests != null,
-                    cancellationToken: this.GetCancellationTokenOnDestroy()
-                );
-
-                UIManager.Instance.InitQuestLog();
             }
 
             if (IsServer)

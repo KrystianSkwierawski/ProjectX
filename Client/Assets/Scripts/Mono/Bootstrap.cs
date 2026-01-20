@@ -28,8 +28,6 @@ namespace Assets.Scripts.Mono
             await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
             Debug.Log("AudioScene Loaded");
 
-            UIManager.Instance.Init();
-
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
             {
                 await TokenManager.Instance.LoginAsync("user1@localhost", "User1!");
@@ -41,6 +39,8 @@ namespace Assets.Scripts.Mono
 
             await QuestManager.Instance.LoadQuestsAsync();
             await QuestManager.Instance.LoadCharacterQuestsAsync();
+
+            UIManager.Instance.Init();
 
 #if UNITY_EDITOR
             await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);

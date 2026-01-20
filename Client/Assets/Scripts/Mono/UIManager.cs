@@ -5,7 +5,6 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.UI;
@@ -59,25 +58,7 @@ namespace Assets.Scripts.Mono
             InitGameObjects();
             InitMaterials();
             InitTextures();
-
-            _questLogPool = new ObjectPool<QuestLogObject>(
-                createFunc: () =>
-                {
-                    var obj = Instantiate(_textPrefab, QuestLogContent.transform);
-
-                    return new QuestLogObject
-                    {
-                        GameObject = obj,
-                        Mesh = obj.GetComponent<TextMeshProUGUI>()
-                    };
-                },
-                actionOnGet: (QuestLogObject questLogObject) => questLogObject.GameObject.SetActive(true),
-                actionOnRelease: (QuestLogObject questLogObject) =>
-                {
-                    questLogObject.GameObject.SetActive(false);
-                    questLogObject.Mesh.text = string.Empty;
-                }
-            );
+            InitQuestLog();
         }
 
         private void InitGameObjects()
@@ -206,12 +187,29 @@ namespace Assets.Scripts.Mono
             Quest.SetActive(false);
         }
 
-        public void InitQuestLog()
+        private void InitQuestLog()
         {
-            var characterQuests = QuestManager.Instance.CharacterQuests
-                .Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished);
+            _questLogPool = new ObjectPool<QuestLogObject>(
+                createFunc: () =>
+                {
+                    var obj = Instantiate(_textPrefab, QuestLogContent.transform);
 
-            foreach (var characterQuest in characterQuests)
+                    return new QuestLogObject
+                    {
+                        GameObject = obj,
+                        Mesh = obj.GetComponent<TextMeshProUGUI>()
+                    };
+                },
+                actionOnGet: (QuestLogObject questLogObject) => questLogObject.GameObject.SetActive(true),
+                actionOnRelease: (QuestLogObject questLogObject) =>
+                {
+                    questLogObject.GameObject.SetActive(false);
+                    questLogObject.Mesh.text = string.Empty;
+                }
+            );
+
+            foreach (var characterQuest in QuestManager.Instance.CharacterQuests
+                .Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
             {
                 AcceptQuest(characterQuest);
             }
@@ -219,6 +217,11 @@ namespace Assets.Scripts.Mono
 
         public void AcceptQuest(CharacterQuestDto characterQuest)
         {
+            if (!QuestLog.activeSelf)
+            {
+                QuestLog.SetActive(true);
+            }
+
             var quest = QuestManager.Instance.Quests
                 .Where(y => y.id == characterQuest.questId)
                 .Single();
