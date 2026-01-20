@@ -42,8 +42,10 @@ namespace Assets.Scripts.Mono
             await QuestManager.Instance.LoadQuestsAsync();
             await QuestManager.Instance.LoadCharacterQuestsAsync();
 
-            await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
-            Debug.Log("EnvironmentScene Loaded");
+#if UNITY_EDITOR
+            await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);
+            Debug.Log("TestScene Loaded");
+#endif
 
             await SceneManager.LoadSceneAsync("NPCScene", LoadSceneMode.Additive);
             Debug.Log("NPCScene Loaded");
