@@ -222,20 +222,17 @@ namespace Assets.Scripts.Mono
 
             if (QuestManager.Instance.CharacterQuests.Any())
             {
-                var sb = new StringBuilder();
+                var logs = QuestManager.Instance.CharacterQuests.Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished)
+                    .Select(x =>
+                    {
+                        var quest = QuestManager.Instance.Quests
+                           .Where(y => y.id == x.questId)
+                           .Single();
 
-                foreach (var characterQuest in QuestManager.Instance.CharacterQuests.Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
-                {
-                    var quest = QuestManager.Instance.Quests
-                        .Where(x => x.id == characterQuest.questId)
-                        .Single();
+                        return string.Format(quest.statusText, Math.Min(x.progress, quest.requirement), quest.requirement);
+                    });
 
-                    var log = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
-
-                    sb.AppendLine(log);
-                }
-
-                UIManager.Instance.SetQuestLog(sb.ToString());
+                UIManager.Instance.SetQuestLog(logs);
             }
         }
 

@@ -25,18 +25,19 @@ namespace Assets.Scripts.Mono
         public GameObject Inventory { get; private set; }
         public GameObject Quest { get; private set; }
         public GameObject QuestLog { get; private set; }
+        public GameObject QuestLogContent { get; private set; }
         public GameObject Target { get; private set; }
         public GameObject Loot { get; private set; }
         public GameObject LootContent { get; private set; }
 
         [SerializeField] private GameObject _inventorySlotPrefab;
+        [SerializeField] private GameObject _textPrefab;
 
         public TextMeshProUGUI QuestAcceptButtonText { get; private set; }
         public TextMeshProUGUI TargetNameText { get; private set; }
         public TextMeshProUGUI TargetHealthPointsText { get; private set; }
         public TextMeshProUGUI QuestTitleText { get; private set; }
         public TextMeshProUGUI QuestDescriptionText { get; private set; }
-        public TextMeshProUGUI QuestLogText { get; private set; }
         public TextMeshProUGUI PlayerLevelText { get; private set; }
         public TextMeshProUGUI PlayerNameText { get; private set; }
         public TextMeshProUGUI PlayerHealthPointsText { get; private set; }
@@ -65,6 +66,7 @@ namespace Assets.Scripts.Mono
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
             Quest = QuestCanvas.transform.Find("Quest").gameObject;
             QuestLog = QuestCanvas.transform.Find("Log").gameObject;
+            QuestLogContent = QuestLog.transform.Find("Viewport/Content").gameObject;
             Target = TargetCanvas.transform.Find("Target").gameObject;
             Loot = InventoryCanvas.transform.Find("Loot").gameObject;
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
@@ -74,7 +76,6 @@ namespace Assets.Scripts.Mono
             TargetHealthPointsText = TargetCanvas.transform.Find("Target/HealthPoints").GetComponent<TextMeshProUGUI>();
             QuestTitleText = QuestCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>();
             QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description").GetComponent<TextMeshProUGUI>();
-            QuestLogText = QuestCanvas.transform.Find("Log/Text").GetComponent<TextMeshProUGUI>();
             PlayerLevelText = PlayerCanvas.transform.Find("Player/Level").GetComponent<TextMeshProUGUI>();
             PlayerNameText = PlayerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>();
             PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
@@ -181,10 +182,15 @@ namespace Assets.Scripts.Mono
             Quest.SetActive(false);
         }
 
-        public void SetQuestLog(string text)
+        public void SetQuestLog(IEnumerable<string> logs)
         {
-            QuestLog.SetActive(true);
-            QuestLogText.text = text;
+            foreach (string log in logs)
+            {
+                // TODO: pool
+                var text = Instantiate(_textPrefab);
+                text.transform.SetParent(QuestLogContent.transform);
+                text.GetComponent<TextMeshProUGUI>().text = log;
+            }
         }
 
         public void SetPlayer(string name, string health, string level)

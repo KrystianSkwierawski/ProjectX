@@ -63,7 +63,7 @@ public static class DependencyInjection
 
         }).AddJwtBearer(options =>
         {
-            options.TokenValidationParameters = tokenValidationParameters; // add from di?
+            options.TokenValidationParameters = tokenValidationParameters; // TODO: add from di?
         });
 
         builder.Services
