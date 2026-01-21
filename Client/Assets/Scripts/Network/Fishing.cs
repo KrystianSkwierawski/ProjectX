@@ -2,6 +2,7 @@ using System;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
+using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
@@ -173,10 +174,10 @@ public class Fishing : NetworkBehaviour
 
             SpawnBaitServerRpc(spawnPos);
 
-            _originalBarColor = UIManager.Instance.CastProgressBar.color;
+            _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             _isCasting = true;
             _castTimer = _castTime;
-            UIManager.Instance.ShowCastBar(_castTimer / _castTime);
+            PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
 
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishCast, 0.5f);
             await UniTask.Delay(TimeSpan.FromSeconds(1.091565));
@@ -222,7 +223,7 @@ public class Fishing : NetworkBehaviour
 
         _castTimer -= Time.deltaTime;
         var normalized = _castTime > 0f ? (_castTimer / _castTime) : 0f;
-        UIManager.Instance.ShowCastBar(Mathf.Clamp01(normalized));
+        PlayerUI.Instance.ShowCastBar(Mathf.Clamp01(normalized));
 
         if (_castTimer <= 0f)
         {
@@ -235,7 +236,7 @@ public class Fishing : NetworkBehaviour
         _isCasting = false;
         _castTimer = 0f;
 
-        UIManager.Instance.HideCastBar();
+        PlayerUI.Instance.HideCastBar();
         AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishingBobber, 1f);
 
         DespawnServerRpc();
@@ -247,7 +248,7 @@ public class Fishing : NetworkBehaviour
         _isInterrupted = true;
         _interruptTimer = 0f;
 
-        UIManager.Instance.FailCastBar();
+        PlayerUI.Instance.FailCastBar();
         AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
         DespawnServerRpc();
@@ -266,8 +267,8 @@ public class Fishing : NetworkBehaviour
         {
             _isInterrupted = false;
             _interruptTimer = 0f;
-            UIManager.Instance.HideCastBar();
-            UIManager.Instance.CastProgressBar.color = _originalBarColor;
+            PlayerUI.Instance.HideCastBar();
+            PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
         }
     }
 

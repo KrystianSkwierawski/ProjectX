@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace Assets.Scripts.Mono
         private readonly IDictionary<string, IList<LootItem>> _loot = new Dictionary<string, IList<LootItem>>
         {
             {
-                "Bean(Clone)",
+               "Bean(Clone)",
                 new List<LootItem>
                 {
                     new LootItem
@@ -48,13 +49,6 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
-            var cancellationToken = this.GetCancellationTokenOnDestroy();
-
-            await UniTask.WaitUntil(
-                () => !string.IsNullOrEmpty(TokenManager.Instance.Token),
-                cancellationToken: cancellationToken
-            );
-
             if (IsOwner)
             {
                 await UpdateCharacterInventoryAsync();
@@ -68,13 +62,16 @@ namespace Assets.Scripts.Mono
                     {
                         _currentLoot = ProcessLoot(e, drops).ToArray();
 
-                        ShowLootClientRpc(_currentLoot, new ClientRpcParams
+                        if (_currentLoot.Any())
                         {
-                            Send = new ClientRpcSendParams
+                            ShowLootClientRpc(_currentLoot, new ClientRpcParams
                             {
-                                TargetClientIds = new ulong[] { OwnerClientId }
-                            }
-                        });
+                                Send = new ClientRpcSendParams
+                                {
+                                    TargetClientIds = new ulong[] { OwnerClientId }
+                                }
+                            });
+                        }
                     }
                 });
             }
@@ -113,36 +110,30 @@ namespace Assets.Scripts.Mono
 
         private static void ToggleInventory()
         {
-            if (UIManager.Instance.Inventory.activeSelf)
+            if (InventoryUI.Instance.Inventory.activeSelf)
             {
                 AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
 
-                UIManager.Instance.Inventory.SetActive(false);
+                InventoryUI.Instance.Inventory.SetActive(false);
 
                 return;
             }
 
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
 
-            UIManager.Instance.Inventory.SetActive(true);
+            InventoryUI.Instance.Inventory.SetActive(true);
         }
 
         [ClientRpc]
         private void ShowLootClientRpc(InventoryItem[] items, ClientRpcParams rpcParams = default)
         {
-            UIManager.Instance.ShowLoot(items);
-        }
-
-        [ClientRpc]
-        private void UpdateInventoryItemClientRpc(ClientRpcParams rpcParams = default)
-        {
-            _ = UpdateCharacterInventoryAsync();
+            InventoryUI.Instance.ShowLoot(items);
         }
 
         private async UniTask UpdateCharacterInventoryAsync()
         {
             Inventory = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
-            UIManager.Instance.UpdateInventory(Inventory);
+            InventoryUI.Instance.UpdateInventory(Inventory);
         }
 
         public override void OnNetworkDespawn()

@@ -5,6 +5,7 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
+using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
@@ -50,25 +51,20 @@ namespace Assets.Scripts.Mono
         [ClientRpc]
         public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
-            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
+            PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
         }
 
         private async void Start()
         {
             if (IsOwner)
             {
-                await UniTask.WaitUntil(
-                    () => QuestManager.Instance.CharacterQuests != null,
-                    cancellationToken: this.GetCancellationTokenOnDestroy()
-                );
-
                 _input = GetComponent<StarterAssetsInputs>();
 
-                UIManager.Instance.QuestCancelButton.onClick.AddListener(() => UIManager.Instance.HideQuestCanvas());
+                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.HideQuestCanvas());
 
-                UIManager.Instance.QuestAcceptButton.onClick.AddListener(async () =>
+                QuestUI.Instance.QuestAcceptButton.onClick.AddListener(async () =>
                 {
-                    UIManager.Instance.HideQuestCanvas();
+                    QuestUI.Instance.HideQuestCanvas();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
                         .Where(x => x.questId == _questNpc.Quest.id)
@@ -130,7 +126,7 @@ namespace Assets.Scripts.Mono
             characterQuest.progress += progress;
             characterQuest.status = status;
 
-            UIManager.Instance.UpdateQuestProgress(characterQuest);
+            QuestUI.Instance.UpdateQuestProgress(characterQuest);
 
             if (status == CharacterQuestStatusEnum.Finished)
             {
@@ -146,7 +142,7 @@ namespace Assets.Scripts.Mono
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
-            UIManager.Instance.AcceptQuest(characterQuest);
+            QuestUI.Instance.AcceptQuest(characterQuest);
 
             // TODO: server rpc + validation
             AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.id.ToString(), new AddQuestSubscriptionEvent
@@ -161,7 +157,7 @@ namespace Assets.Scripts.Mono
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
 
-            UIManager.Instance.CompleteQuest(characterQuest);
+            QuestUI.Instance.CompleteQuest(characterQuest);
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
@@ -178,14 +174,14 @@ namespace Assets.Scripts.Mono
             if (_questNpc != null && _input.Move != Vector2.zero && Vector3.Distance(_questNpc.transform.position, transform.position) >= _npcMaxDistance)
             {
                 _questNpc = null;
-                UIManager.Instance.Quest.SetActive(false);
+                QuestUI.Instance.Quest.SetActive(false);
 
                 return;
             }
 
             if (CheckQuestNpcClicked())
             {
-                UIManager.Instance.ShowQuest(_questNpc);
+                QuestUI.Instance.ShowQuest(_questNpc);
             }
         }
 

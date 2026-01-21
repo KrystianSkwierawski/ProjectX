@@ -17,17 +17,9 @@ namespace Assets.Scripts.Mono
 #endif
         }
 
+        // TODO: task.whenall?
         private static async UniTask StartClient()
         {
-            await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
-            Debug.Log("MainScene Loaded");
-
-            await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
-            Debug.Log("UIScene Loaded");
-
-            await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
-            Debug.Log("AudioScene Loaded");
-
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
             {
                 await TokenManager.Instance.LoginAsync("user1@localhost", "User1!");
@@ -40,7 +32,14 @@ namespace Assets.Scripts.Mono
             await QuestManager.Instance.LoadQuestsAsync();
             await QuestManager.Instance.LoadCharacterQuestsAsync();
 
-            UIManager.Instance.Init();
+            await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
+            Debug.Log("MainScene Loaded");
+
+            await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
+            Debug.Log("UIScene Loaded");
+
+            await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
+            Debug.Log("AudioScene Loaded");
 
 #if UNITY_EDITOR
             await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);
@@ -57,15 +56,15 @@ namespace Assets.Scripts.Mono
 
         private static async UniTask StartServer()
         {
+            await TokenManager.Instance.LoginAsync("server1@localhost", "Server1!");
+
+            await QuestManager.Instance.LoadQuestsAsync();
+
             await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
             Debug.Log("MainScene Loaded");
 
             await SceneManager.LoadSceneAsync("ServerScene", LoadSceneMode.Additive);
             Debug.Log("ServerScene Loaded");
-
-            await TokenManager.Instance.LoginAsync("server1@localhost", "Server1!");
-
-            await QuestManager.Instance.LoadQuestsAsync();
 
             NetworkManager.Singleton.StartServer();
 

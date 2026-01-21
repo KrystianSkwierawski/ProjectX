@@ -4,6 +4,7 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
+using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -23,11 +24,6 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
-            await UniTask.WaitUntil(
-                () => QuestManager.Instance.Quests != null && QuestManager.Instance.CharacterQuests != null,
-                cancellationToken: this.GetCancellationTokenOnDestroy()
-            );
-
             _exclamationMark = gameObject.transform.Find("ExclamationMark").gameObject;
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
@@ -140,7 +136,7 @@ namespace Assets.Scripts.Mono
 
         public void ShowExclamationMark()
         {
-            _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { UIManager.Instance.Material001, UIManager.Instance.Material002 };
+            _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { QuestUI.Instance.Material001, QuestUI.Instance.Material002 };
             _exclamationMark.SetActive(true);
         }
 
@@ -151,7 +147,7 @@ namespace Assets.Scripts.Mono
 
         public void MarkAsAccepted()
         {
-            _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { UIManager.Instance.Material001 };
+            _exclamationMark.GetComponent<MeshRenderer>().materials = new Material[] { QuestUI.Instance.Material001 };
         }
 
         private void LoadAccepted()
