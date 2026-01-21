@@ -53,6 +53,8 @@ namespace Assets.Scripts.Mono
         private ObjectPool<QuestLogObject> _questLogPool;
         private readonly IDictionary<QuestEnum, QuestLogObject> _questLogObjects = new Dictionary<QuestEnum, QuestLogObject>();
 
+        private static readonly Color _greenColor = new Color(0.0039215686f, 0.7333333333f, 0.0078431373f, 1f);
+
         public void Init()
         {
             InitGameObjects();
@@ -205,6 +207,7 @@ namespace Assets.Scripts.Mono
                 {
                     questLogObject.GameObject.SetActive(false);
                     questLogObject.Mesh.text = string.Empty;
+                    questLogObject.Mesh.color = Color.white;
                 }
             );
 
@@ -230,6 +233,11 @@ namespace Assets.Scripts.Mono
 
             questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
 
+            if (characterQuest.status == CharacterQuestStatusEnum.Finished)
+            {
+                questLogObject.Mesh.color = _greenColor;
+            }
+
             _questLogObjects.Add(quest.id, questLogObject);
         }
 
@@ -242,6 +250,11 @@ namespace Assets.Scripts.Mono
                     .Single();
 
                 questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
+
+                if (characterQuest.status == CharacterQuestStatusEnum.Finished)
+                {
+                    questLogObject.Mesh.color = _greenColor;
+                }
             }
         }
 
