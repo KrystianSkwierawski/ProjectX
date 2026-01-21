@@ -2,6 +2,7 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
+using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -47,13 +48,13 @@ namespace Assets.Scripts.Network
         {
             var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1");
 
-            UIManager.Instance.SetPlayer(result.name, result.health.ToString(), result.level.ToString());
+            PlayerUI.Instance.SetPlayer(result.name, result.health.ToString(), result.level.ToString());
         }
 
         [ClientRpc]
         public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
-            UIManager.Instance.PlayerLevelText.text = $"Level: {level}";
+            PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
         }
 

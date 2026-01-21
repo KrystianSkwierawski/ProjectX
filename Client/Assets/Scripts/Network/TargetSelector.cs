@@ -1,6 +1,6 @@
-using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
+using Assets.Scripts.UI;
 using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
@@ -31,7 +31,7 @@ namespace Assets.Scripts.Network
             if (IsOwner)
             {
                 _input = GetComponent<StarterAssetsInputs>();
-                UIManager.Instance.HideCastBar();
+                PlayerUI.Instance.HideCastBar();
             }
         }
 
@@ -61,15 +61,15 @@ namespace Assets.Scripts.Network
 
                         _currentlySelectedRenderer.material.color = _originalSelectedColor;
                         SelectedTargetTransform = null;
-                        UIManager.Instance.Target.SetActive(false);
+                        TargetUI.Instance.Target.SetActive(false);
                     }
 
                     var newRenderer = hit.transform.GetComponent<Renderer>();
                     _currentlySelectedRenderer = newRenderer;
                     _originalSelectedColor = newRenderer.material.color;
-                    newRenderer.material.color = Color.green;
+                    newRenderer.material.color = ColorUI.Green;
                     SelectedTargetTransform = hit.transform;
-                    UIManager.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Network.Value.ToString());
+                    TargetUI.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Network.Value.ToString());
                     SelectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
                 }
             }
@@ -99,17 +99,17 @@ namespace Assets.Scripts.Network
         [ClientRpc]
         private void UpdateTargetCanvasClientRpc(float value, bool hide, ClientRpcParams rpcParams = default)
         {
-            UIManager.Instance.TargetHealthPointsText.text = value.ToString();
+            TargetUI.Instance.TargetHealthPointsText.text = value.ToString();
 
             if (hide)
             {
-                UIManager.Instance.Target.SetActive(false);
+                TargetUI.Instance.Target.SetActive(false);
             }
         }
 
         private void StartCast()
         {
-            _originalBarColor = UIManager.Instance.CastProgressBar.color;
+            _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             SetFireball();
         }
 
@@ -155,7 +155,7 @@ namespace Assets.Scripts.Network
             _isCasting = true;
             _castTimer = 0f;
             _objectId = objectId;
-            UIManager.Instance.ShowCastBar(_castTimer);
+            PlayerUI.Instance.ShowCastBar(_castTimer);
         }
 
         private void HandleCastingInput()
@@ -182,11 +182,11 @@ namespace Assets.Scripts.Network
             {
                 _isInterrupted = false;
                 _interruptTimer = 0f;
-                UIManager.Instance.HideCastBar();
+                PlayerUI.Instance.HideCastBar();
 
-                if (UIManager.Instance.CastProgressBar != null)
+                if (PlayerUI.Instance.CastProgressBar != null)
                 {
-                    UIManager.Instance.CastProgressBar.color = _originalBarColor;
+                    PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
                 }
             }
         }
@@ -211,7 +211,7 @@ namespace Assets.Scripts.Network
             }
 
             _castTimer += Time.deltaTime;
-            UIManager.Instance.ShowCastBar(_castTimer / _castTime);
+            PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
 
             if (_castTimer >= _castTime)
             {
@@ -226,7 +226,7 @@ namespace Assets.Scripts.Network
         {
             _isCasting = false;
             _castTimer = 0f;
-            UIManager.Instance.HideCastBar();
+            PlayerUI.Instance.HideCastBar();
         }
 
         private void InterruptCast()
@@ -236,7 +236,7 @@ namespace Assets.Scripts.Network
             _interruptTimer = 0f;
             FailedServerRpc(_objectId, NetworkManager.Singleton.LocalClientId);
 
-            UIManager.Instance.FailCastBar();
+            PlayerUI.Instance.FailCastBar();
         }
 
         [ServerRpc]

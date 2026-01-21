@@ -2,6 +2,7 @@ using System;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
+using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
@@ -25,12 +26,12 @@ public class Fishing : NetworkBehaviour
     [SerializeField] private float _verticalRaycastDepth = 10f;
 
     [Header("Line Renderer")]
-    [SerializeField] private LineRenderer _line;
-    [SerializeField] private Transform _tip;
     [SerializeField] private float _lineWidth = 0.01f;
     [SerializeField] private float _sagAmount = 0.05f;
     [SerializeField] private int _lineSegments = 20;
 
+    private LineRenderer _line;
+    private Transform _tip;
     private GameObject _fishingRod;
     private GameObject[] _waters;
     private bool _isCasting = false;
@@ -90,7 +91,8 @@ public class Fishing : NetworkBehaviour
     [ServerRpc]
     private void AddItemServerRpc(string clientToken)
     {
-        UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+        // TODO: validation
+        CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
         {
             ClientToken = clientToken,
             GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)
@@ -156,7 +158,7 @@ public class Fishing : NetworkBehaviour
     {
         if (!_isCasting && !_isInterrupted && _input.Move == Vector2.zero && !_input.Jump && Keyboard.current.fKey.wasPressedThisFrame)
         {
-            if (!TryGetNearestWater(out var water, out var waterCollider, _maxDistance))
+            if (!TryGetNearestWater(out var water, out var waterCollider))
             {
                 Debug.Log("Not near water");
                 AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
@@ -172,10 +174,10 @@ public class Fishing : NetworkBehaviour
 
             SpawnBaitServerRpc(spawnPos);
 
-            _originalBarColor = UIManager.Instance.CastProgressBar.color;
+            _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             _isCasting = true;
             _castTimer = _castTime;
-            UIManager.Instance.ShowCastBar(_castTimer / _castTime);
+            PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
 
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishCast, 0.5f);
             await UniTask.Delay(TimeSpan.FromSeconds(1.091565));
@@ -186,10 +188,10 @@ public class Fishing : NetworkBehaviour
     [ServerRpc]
     private void SpawnBaitServerRpc(Vector3 spawnPos)
     {
+        // TODO: validation
         _bait = _pool.Get();
         _bait.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
         var networkObject = _bait.GetComponent<NetworkObject>();
-        _bait.transform.SetParent(_fishingRod.transform);
         networkObject.SpawnWithOwnership(OwnerClientId);
 
         _active.Value = true;
@@ -208,22 +210,24 @@ public class Fishing : NetworkBehaviour
 
     private void CheckCasting()
     {
-        if (_isCasting)
+        if (!_isCasting)
         {
-            if (_input.Move != Vector2.zero || _input.Jump)
-            {
-                InterruptCast();
-                return;
-            }
+            return;
+        }
 
-            _castTimer -= Time.deltaTime;
-            var normalized = _castTime > 0f ? (_castTimer / _castTime) : 0f;
-            UIManager.Instance.ShowCastBar(Mathf.Clamp01(normalized));
+        if (_input.Move != Vector2.zero || _input.Jump)
+        {
+            InterruptCast();
+            return;
+        }
 
-            if (_castTimer <= 0f)
-            {
-                StopCasting();
-            }
+        _castTimer -= Time.deltaTime;
+        var normalized = _castTime > 0f ? (_castTimer / _castTime) : 0f;
+        PlayerUI.Instance.ShowCastBar(Mathf.Clamp01(normalized));
+
+        if (_castTimer <= 0f)
+        {
+            StopCasting();
         }
     }
 
@@ -232,7 +236,7 @@ public class Fishing : NetworkBehaviour
         _isCasting = false;
         _castTimer = 0f;
 
-        UIManager.Instance.HideCastBar();
+        PlayerUI.Instance.HideCastBar();
         AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishingBobber, 1f);
 
         DespawnServerRpc();
@@ -244,7 +248,7 @@ public class Fishing : NetworkBehaviour
         _isInterrupted = true;
         _interruptTimer = 0f;
 
-        UIManager.Instance.FailCastBar();
+        PlayerUI.Instance.FailCastBar();
         AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
         DespawnServerRpc();
@@ -252,21 +256,23 @@ public class Fishing : NetworkBehaviour
 
     private void CheckInterrupt()
     {
-        if (_isInterrupted)
+        if (!_isInterrupted)
         {
-            _interruptTimer += Time.deltaTime;
+            return;
+        }
 
-            if (_interruptTimer >= _interruptDuration)
-            {
-                _isInterrupted = false;
-                _interruptTimer = 0f;
-                UIManager.Instance.HideCastBar();
-                UIManager.Instance.CastProgressBar.color = _originalBarColor;
-            }
+        _interruptTimer += Time.deltaTime;
+
+        if (_interruptTimer >= _interruptDuration)
+        {
+            _isInterrupted = false;
+            _interruptTimer = 0f;
+            PlayerUI.Instance.HideCastBar();
+            PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
         }
     }
 
-    private bool TryGetNearestWater(out GameObject nearest, out Collider nearestCollider, float maxDistance)
+    private bool TryGetNearestWater(out GameObject nearest, out Collider nearestCollider)
     {
         nearest = null;
         nearestCollider = null;
@@ -275,16 +281,11 @@ public class Fishing : NetworkBehaviour
 
         foreach (var water in _waters)
         {
-            if (water == null)
-            {
-                continue;
-            }
-
             var col = water.GetComponent<Collider>();
             Vector3 closestPoint = (col != null) ? col.ClosestPoint(transform.position) : water.transform.position;
             float dist = Vector3.Distance(closestPoint, transform.position);
 
-            if (dist > maxDistance)
+            if (dist > _maxDistance)
             {
                 continue;
             }
@@ -302,7 +303,7 @@ public class Fishing : NetworkBehaviour
             nearestCollider = col;
         }
 
-        return nearest != null;
+        return nearest != null && nearestCollider != null;
     }
 
     private Vector3 ClampAimAngle(float maxDegrees)
@@ -342,12 +343,6 @@ public class Fishing : NetworkBehaviour
     private bool TryFindSpawnPointInWater(Vector3 origin, Vector3 aimDir, GameObject waterObject, Collider waterCollider, out Vector3 spawn)
     {
         spawn = Vector3.zero;
-
-        if (waterCollider == null || waterObject == null)
-        {
-            Debug.Log("TryFindSpawnPointInWater: missing waterCollider or waterObject");
-            return false;
-        }
 
         float start = Mathf.Clamp(_preferredCastDistance, _minCastDistance, _maxCastDistance);
         var bounds = waterCollider.bounds;
@@ -428,19 +423,10 @@ public class Fishing : NetworkBehaviour
     {
         SetFishingRodActive(next);
 
-        if (!IsOwner)
+        if (IsOwner)
         {
-            return;
+            ToggleLine(next);
         }
-
-        if (next)
-        {
-            ToggleLine(true);
-
-            return;
-        }
-
-        ToggleLine(false);
     }
 
     private bool IsPointInsideBoundsHorizontalXZ(Vector3 point, Bounds bounds)

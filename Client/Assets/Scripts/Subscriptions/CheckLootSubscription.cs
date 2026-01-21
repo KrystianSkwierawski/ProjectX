@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts.Shared
 {
-    public class UpdateInventorySubscription : AbstractSubscription<UpdateInventorySubscription, UpdateInventorySubscriptionEvent>
+    public class CheckLootSubscription : AbstractSubscription<CheckLootSubscription, UpdateInventorySubscriptionEvent>
     {
     }
 
