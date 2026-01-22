@@ -160,6 +160,13 @@ namespace Assets.Scripts.Mono
                 .Where(x => x.type == item.type)
                 .First();
 
+            CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+            {
+                Progress = item.count,
+                GameObjectName = item.type.ToString(),
+                ClientToken = clientToken,
+            });
+
             await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
             {
                 characterId = 1,
