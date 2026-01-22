@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
@@ -13,13 +14,13 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterInventory : NetworkBehaviour
     {
-        private InventoryItem[] _currentLoot;
+        private IList<InventoryItem> _currentLoot = new List<InventoryItem>();
 
-        private readonly IDictionary<string, IList<LootItem>> _loot = new Dictionary<string, IList<LootItem>>
+        private readonly IDictionary<string, LootItem[]> _loot = new Dictionary<string, LootItem[]>
         {
             {
                "Bean(Clone)",
-                new List<LootItem>
+                new LootItem[]
                 {
                     new LootItem
                     {
@@ -32,7 +33,7 @@ namespace Assets.Scripts.Mono
             },
             {
                 nameof(CharacterInventoryTypeEnum.Fish),
-                new List<LootItem>
+                new LootItem[]
                 {
                     new LootItem
                     {
@@ -52,6 +53,12 @@ namespace Assets.Scripts.Mono
             if (IsOwner)
             {
                 await UpdateCharacterInventoryAsync();
+
+                AddInventoryItemSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+                {
+                    AddItemServerRpc(e.Item, e.ClientToken);
+                    AudioManager.Instance.PlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+                });
             }
 
             if (IsServer)
@@ -60,11 +67,11 @@ namespace Assets.Scripts.Mono
                 {
                     if (_loot.TryGetValue(e.GameObjectName, out var drops))
                     {
-                        _currentLoot = ProcessLoot(e, drops).ToArray();
+                        ProcessLoot(e, drops);
 
                         if (_currentLoot.Any())
                         {
-                            ShowLootClientRpc(_currentLoot, new ClientRpcParams
+                            ShowLootClientRpc(_currentLoot.ToArray(), new ClientRpcParams
                             {
                                 Send = new ClientRpcSendParams
                                 {
@@ -77,7 +84,7 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        private IEnumerable<InventoryItem> ProcessLoot(UpdateInventorySubscriptionEvent e, IList<LootItem> drops)
+        private void ProcessLoot(UpdateInventorySubscriptionEvent e, LootItem[] drops)
         {
             foreach (var drop in drops)
             {
@@ -91,11 +98,22 @@ namespace Assets.Scripts.Mono
 
                 if (count > 0)
                 {
-                    yield return new InventoryItem
+                    var loot = _currentLoot
+                        .Where(x => x.type == drop.Type)
+                        .FirstOrDefault();
+
+                    if (loot == null)
                     {
-                        type = drop.Type,
-                        count = count
-                    };
+                        _currentLoot.Add(new InventoryItem
+                        {
+                            type = drop.Type,
+                            count = count,
+                        });
+
+                        continue;
+                    }
+
+                    loot.count += count;
                 }
             }
         }
@@ -127,7 +145,42 @@ namespace Assets.Scripts.Mono
         [ClientRpc]
         private void ShowLootClientRpc(InventoryItem[] items, ClientRpcParams rpcParams = default)
         {
-            InventoryUI.Instance.ShowLoot(items);
+            InventoryUI.Instance.UpdateLoot(items, OwnerClientId, TokenManager.Instance.Token);
+        }
+
+        [ServerRpc]
+        private void AddItemServerRpc(InventoryItem item, string clientToken)
+        {
+            _ = AddItemAsync(item, clientToken);
+        }
+
+        private async UniTask AddItemAsync(InventoryItem item, string clientToken)
+        {
+            var serverItem = _currentLoot
+                .Where(x => x.type == item.type)
+                .First();
+
+            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
+            {
+                characterId = 1,
+                inventoryItem = serverItem
+            }, clientToken);
+
+            _currentLoot.Remove(serverItem);
+
+            UpdateInventoryItemClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+
+        [ClientRpc]
+        private void UpdateInventoryItemClientRpc(ClientRpcParams rpcParams = default)
+        {
+            _ = UpdateCharacterInventoryAsync();
         }
 
         private async UniTask UpdateCharacterInventoryAsync()

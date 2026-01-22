@@ -20,6 +20,7 @@ namespace Assets.Scripts.Mono
         // TODO: task.whenall?
         private static async UniTask StartClient()
         {
+    
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
             {
                 await TokenManager.Instance.LoginAsync("user1@localhost", "User1!");

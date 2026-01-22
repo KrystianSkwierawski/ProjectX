@@ -16,6 +16,7 @@ namespace Assets.Scripts.Enums
         FishCast,
         FishReelIn,
         FishingBobber,
+        AddItem,
 
         #endregion
 
