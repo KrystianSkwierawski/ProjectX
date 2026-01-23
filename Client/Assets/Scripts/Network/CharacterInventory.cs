@@ -84,7 +84,7 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        private void ProcessLoot(UpdateInventorySubscriptionEvent e, LootItem[] drops)
+        private void ProcessLoot(CheckLootSubscriptionEvent e, LootItem[] drops)
         {
             foreach (var drop in drops)
             {
@@ -175,7 +175,7 @@ namespace Assets.Scripts.Mono
 
             _currentLoot.Remove(serverItem);
 
-            UpdateInventoryItemClientRpc(new ClientRpcParams
+            UpdateInventoryItemClientRpc(item, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
@@ -185,9 +185,28 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void UpdateInventoryItemClientRpc(ClientRpcParams rpcParams = default)
+        private void UpdateInventoryItemClientRpc(InventoryItem item, ClientRpcParams rpcParams = default)
         {
-            _ = UpdateCharacterInventoryAsync();
+            var slot = Inventory.inventory.items
+                .Where(x => x.type == item.type)
+                .FirstOrDefault();
+
+            if (slot == null && Inventory.inventory.items.Count() >= Inventory.count)
+            {
+                // TODO: out of slots
+                return;
+            }
+
+            if (slot != null)
+            {
+                slot.count += item.count;
+            }
+            else
+            {
+                Inventory.inventory.items.Add(item);
+            }
+
+            InventoryUI.Instance.UpdateInventory(Inventory);
         }
 
         private async UniTask UpdateCharacterInventoryAsync()
@@ -198,9 +217,16 @@ namespace Assets.Scripts.Mono
 
         public override void OnNetworkDespawn()
         {
+            var key = OwnerClientId.ToString();
+
+            if (IsOwner)
+            {
+                AddInventoryItemSubscription.Instance.Unsubscribe(key);
+            }
+
             if (IsServer)
             {
-                CheckLootSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                CheckLootSubscription.Instance.Unsubscribe(key);
             }
 
             base.OnNetworkDespawn();
@@ -208,9 +234,16 @@ namespace Assets.Scripts.Mono
 
         public override void OnDestroy()
         {
+            var key = OwnerClientId.ToString();
+
+            if (IsOwner)
+            {
+                AddInventoryItemSubscription.Instance.Unsubscribe(key);
+            }
+
             if (IsServer)
             {
-                CheckLootSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                CheckLootSubscription.Instance.Unsubscribe(key);
             }
 
             base.OnDestroy();

@@ -1,10 +1,10 @@
 ﻿namespace Assets.Scripts.Shared
 {
-    public class CheckLootSubscription : AbstractSubscription<CheckLootSubscription, UpdateInventorySubscriptionEvent>
+    public class CheckLootSubscription : AbstractSubscription<CheckLootSubscription, CheckLootSubscriptionEvent>
     {
     }
 
-    public class UpdateInventorySubscriptionEvent
+    public class CheckLootSubscriptionEvent
     {
         public string ClientToken { get; set; }
 
