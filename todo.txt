@@ -1,9 +1,4 @@
 tasks:
-- object pooling
 - validate accept/complete quest position
 - new question mark
 - fix cast validations through targets
-
-features:
-- skill tree
-- simple combat system
