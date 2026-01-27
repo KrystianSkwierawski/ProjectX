@@ -151,7 +151,7 @@ namespace Assets.Scripts.Mono
         [ServerRpc]
         private void AddItemServerRpc(InventoryItem item, string clientToken)
         {
-            _ = AddItemAsync(item, clientToken);
+            AddItemAsync(item, clientToken).Forget();
         }
 
         private async UniTask AddItemAsync(InventoryItem item, string clientToken)

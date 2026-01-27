@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -45,13 +46,14 @@ namespace Assets.Scripts.Network
         [ServerRpc]
         private void SaveTransformServerRpc(string clientToken)
         {
-            _ = UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterTransforms", new CharacterTransformDto
+            UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterTransforms", new CharacterTransformDto
             {
                 positionX = transform.position.x,
                 positionY = transform.position.y,
                 positionZ = transform.position.z,
                 rotationY = transform.rotation.y,
-            }, clientToken);
+            }, clientToken)
+            .Forget();
         }
     }
 }

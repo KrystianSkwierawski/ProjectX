@@ -24,7 +24,7 @@ namespace Assets.Scripts.Mono
         private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
         {
             // TODO: validation
-            _ = CompleteQuestAsync(characterQuestId, token, clientId);
+            CompleteQuestAsync(characterQuestId, token, clientId).Forget();
         }
 
         private async UniTask CompleteQuestAsync(int characterQuestId, string clientToken, ulong clientId)

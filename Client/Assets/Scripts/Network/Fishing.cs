@@ -46,6 +46,10 @@ public class Fishing : NetworkBehaviour
     private StarterAssetsInputs _input;
 
     private float _reelInTimer = 0f;
+    private float _reelInTime = 10f;
+
+    private float _fishBrokeOffTimer = 0f;
+    private float _fishBrokeOffTime = 3f;
 
     private GameObject _bait;
     private ObjectPool<GameObject> _pool;
@@ -56,6 +60,13 @@ public class Fishing : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
+
+    private readonly NetworkVariable<bool> _canFishOut =
+       new NetworkVariable<bool>(
+           false,
+           NetworkVariableReadPermission.Owner,
+           NetworkVariableWritePermission.Server
+       );
 
     private void Awake()
     {
@@ -89,8 +100,10 @@ public class Fishing : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void AddItemServerRpc(string clientToken)
+    private void CheckLootServerRpc(string clientToken)
     {
+        _canFishOut.Value = false;
+
         // TODO: validation
         CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
         {
@@ -109,6 +122,12 @@ public class Fishing : NetworkBehaviour
             await CheckInputAsync();
             CheckCasting();
         }
+
+        if (IsServer)
+        {
+            CheckCanFishOut();
+            CheckFishBrokeOff();
+        }
     }
 
     private void LateUpdate()
@@ -117,6 +136,118 @@ public class Fishing : NetworkBehaviour
         {
             DrawSagLine();
         }
+    }
+
+    private void CheckCanFishOut()
+    {
+        if (_canFishOut.Value || !_active.Value)
+        {
+            return;
+        }
+
+        float perSecondProb = 0.10f;
+        float chance = 1f - Mathf.Pow(1f - perSecondProb, Time.deltaTime);
+
+        if (UnityEngine.Random.value < chance)
+        {
+            Debug.Log($"Can fish out. OwnerClientId: {OwnerClientId}");
+
+            _fishBrokeOffTime = UnityEngine.Random.Range(2f, 5f);
+            _canFishOut.Value = true;
+
+            SimulateBaitBiteAsync().Forget();
+
+            NotifyCanFishOutClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+    }
+
+    private void CheckFishBrokeOff()
+    {
+        if (!_canFishOut.Value)
+        {
+            _fishBrokeOffTimer = 0f;
+            return;
+        }
+
+        _fishBrokeOffTimer += Time.deltaTime;
+
+        if (_fishBrokeOffTimer >= _fishBrokeOffTime)
+        {
+            _fishBrokeOffTimer = 0;
+            _canFishOut.Value = false;
+            NotifyFishBrokeOffClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void NotifyCanFishOutClientRpc(ClientRpcParams rpcParams = default)
+    {
+        AudioManager.Instance.PlayOneShot(AudioTypeEnum.CanFishOut); // TODO: bait as a audio source
+    }
+
+    [ClientRpc]
+    private void NotifyFishBrokeOffClientRpc(ClientRpcParams rpcParams = default)
+    {
+        // TODO: audio?
+        StopCasting();
+    }
+
+    private async UniTask SimulateBaitBiteAsync()
+    {
+        var baitTransform = _bait.transform;
+        var startPos = baitTransform.position;
+
+        float downAmount = UnityEngine.Random.Range(0.03f, 0.12f);
+        Vector3 downPos = startPos + Vector3.down * downAmount;
+
+        // Smooth sink duration (longer => smoother)
+        float sinkDuration = UnityEngine.Random.Range(0.5f, 0.9f);
+        float elapsed = 0f;
+        while (elapsed < sinkDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / sinkDuration);
+            float smooth = Mathf.SmoothStep(0f, 1f, t);
+            baitTransform.position = Vector3.Lerp(startPos, downPos, smooth);
+            await UniTask.Yield();
+        }
+
+        // short pause at the bottom so movement is noticeable
+        await UniTask.Delay(TimeSpan.FromSeconds(UnityEngine.Random.Range(0.05f, 0.15f)));
+
+        // Smooth return to start position
+        float returnDuration = UnityEngine.Random.Range(0.35f, 0.55f);
+        elapsed = 0f;
+        Vector3 fromPos = baitTransform.position;
+        while (elapsed < returnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / returnDuration);
+            float smooth = Mathf.SmoothStep(0f, 1f, t);
+            baitTransform.position = Vector3.Lerp(fromPos, startPos, smooth);
+            await UniTask.Yield();
+        }
+
+        // small, quick bob at the end to make the return feel natural
+        float bobTime = UnityEngine.Random.Range(0.18f, 0.35f);
+        float bobElapsed = 0f;
+        float bobFreq = UnityEngine.Random.Range(6.0f, 9.0f); // quick, small bounce
+        float bobAmp = Mathf.Clamp(downAmount * 0.06f, 0.002f, 0.008f);
+        while (bobElapsed < bobTime)
+        {
+            bobElapsed += Time.deltaTime;
+            float bob = Mathf.Sin(bobElapsed * bobFreq) * bobAmp;
+            baitTransform.position = startPos + Vector3.up * bob;
+            await UniTask.Yield();
+        }
+
+        baitTransform.position = startPos;
     }
 
     private void CheckReelIn()
@@ -129,9 +260,10 @@ public class Fishing : NetworkBehaviour
 
         _reelInTimer += Time.deltaTime;
 
-        if (_reelInTimer >= 5f)
+        if (_reelInTimer >= _reelInTime)
         {
             _reelInTimer = 0;
+            _reelInTime = UnityEngine.Random.Range(5, 15);
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f);
         }
     }
@@ -140,7 +272,7 @@ public class Fishing : NetworkBehaviour
     {
         var mouse = Mouse.current;
 
-        if (_isCasting && mouse.rightButton.wasPressedThisFrame)
+        if (_canFishOut.Value && _isCasting && mouse.rightButton.wasPressedThisFrame)
         {
             Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
 
@@ -149,7 +281,7 @@ public class Fishing : NetworkBehaviour
                 && hit.transform.gameObject.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
             {
                 StopCasting();
-                AddItemServerRpc(TokenManager.Instance.Token);
+                CheckLootServerRpc(TokenManager.Instance.Token);
             }
         }
     }
@@ -206,6 +338,7 @@ public class Fishing : NetworkBehaviour
 
         _pool.Release(_bait);
         _active.Value = false;
+        _canFishOut.Value = false;
     }
 
     private void CheckCasting()
@@ -505,4 +638,3 @@ public class Fishing : NetworkBehaviour
         _line.positionCount = 0;
     }
 }
-
