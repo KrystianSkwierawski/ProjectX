@@ -62,7 +62,7 @@ namespace Assets.Scripts.UI
         {
             if (CastProgressBar != null)
             {
-                CastProgressBar.color = ColorUI.Red;
+                CastProgressBar.color = ColorUI.RedA;
                 CastProgressBar.fillAmount = 1f;
                 ProgressBarCanvas.SetActive(true);
             }
