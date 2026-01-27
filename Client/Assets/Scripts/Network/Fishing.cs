@@ -181,7 +181,14 @@ public class Fishing : NetworkBehaviour
         {
             _fishBrokeOffTimer = 0;
             _canFishOut.Value = false;
-            NotifyFishBrokeOffClientRpc();
+
+            NotifyFishBrokeOffClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
         }
     }
 
