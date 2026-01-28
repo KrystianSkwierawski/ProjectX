@@ -35,7 +35,7 @@ namespace Assets.Scripts.Network
         [ClientRpc]
         private void PreCastClientRpc()
         {
-            AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.FireballPrecast, 0.7f);
+            AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.FireballPrecast, 0.7f);
         }
 
         public void Cast(NetworkObject target)
@@ -53,7 +53,7 @@ namespace Assets.Scripts.Network
                 _audioSource.Stop();
             }
 
-            AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.FireballCast, 0.7f);
+            AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.FireballCast, 0.7f);
         }
 
         public void Failed()
@@ -72,7 +72,7 @@ namespace Assets.Scripts.Network
             }
 
             _visualEffect.enabled = false;
-            AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 0.1f);
+            AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 0.1f);
         }
 
         private async void Update()
@@ -132,7 +132,7 @@ namespace Assets.Scripts.Network
         private void OnHitTargetClientRpc()
         {
             _visualEffect.enabled = false;
-            AudioManager.Instance.PlayOneShot(_audioSource, AudioTypeEnum.FireballImpact, 1f);
+            AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.FireballImpact, 1f);
         }
     }
 }

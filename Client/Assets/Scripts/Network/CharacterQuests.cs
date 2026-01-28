@@ -136,7 +136,7 @@ namespace Assets.Scripts.Mono
 
         private async UniTask AcceptQuestAsync()
         {
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
 
             var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questNpc.Quest.id);
 
@@ -153,7 +153,7 @@ namespace Assets.Scripts.Mono
 
         private void CompleteQuest(CharacterQuestDto characterQuest)
         {
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
 

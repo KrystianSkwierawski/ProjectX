@@ -31,6 +31,12 @@ namespace Assets.Scripts.UI
 
         #endregion
 
+        #region Texture
+
+        public Texture2D CursorPointer { get; private set; }
+
+        #endregion
+
         public void Start()
         {
             PlayerCanvas = GameObject.Find("PlayerCanvas");
@@ -39,6 +45,7 @@ namespace Assets.Scripts.UI
             PlayerNameText = PlayerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>();
             PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
             CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
+            CursorPointer = Resources.Load<Texture2D>($"Textures/CursorPointer");
         }
 
         public void ShowCastBar(float progress)

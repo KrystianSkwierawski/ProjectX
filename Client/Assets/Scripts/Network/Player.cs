@@ -55,7 +55,7 @@ namespace Assets.Scripts.Network
         public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
             PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
         }
 
         public override void OnNetworkDespawn()

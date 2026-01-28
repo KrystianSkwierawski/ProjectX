@@ -61,12 +61,12 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        public void PlayOneShot(AudioTypeEnum type, float volume = 1f)
+        public void TryPlayOneShot(AudioTypeEnum type, float volume = 1f)
         {
-            PlayOneShot(_mainAudioSource, type);
+            TryPlayOneShot(_mainAudioSource, type);
         }
 
-        public void PlayOneShot(AudioSource audioSource, AudioTypeEnum type, float volume = 1f)
+        public void TryPlayOneShot(AudioSource audioSource, AudioTypeEnum type, float volume = 1f)
         {
             if (AudioClips.TryGetValue(type, out var audioClip))
             {

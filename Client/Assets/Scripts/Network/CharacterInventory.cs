@@ -57,7 +57,7 @@ namespace Assets.Scripts.Mono
                 AddInventoryItemSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
                     AddItemServerRpc(e.Item, e.ClientToken);
-                    AudioManager.Instance.PlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
                 });
             }
 
@@ -130,14 +130,14 @@ namespace Assets.Scripts.Mono
         {
             if (InventoryUI.Instance.Inventory.activeSelf)
             {
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
 
                 InventoryUI.Instance.Inventory.SetActive(false);
 
                 return;
             }
 
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
 
             InventoryUI.Instance.Inventory.SetActive(true);
         }

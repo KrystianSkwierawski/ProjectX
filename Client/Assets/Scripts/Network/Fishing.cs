@@ -191,13 +191,12 @@ public class Fishing : NetworkBehaviour
     [ClientRpc]
     private void NotifyCanFishOutClientRpc(ClientRpcParams rpcParams = default)
     {
-        AudioManager.Instance.PlayOneShot(AudioTypeEnum.CanFishOut); // TODO: bait as a audio source
+        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishReelIn);
     }
 
     [ClientRpc]
     private void NotifyFishBrokeOffClientRpc(ClientRpcParams rpcParams = default)
     {
-        AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f); // TODO: bait as a audio source
         StopCasting();
     }
 
@@ -278,13 +277,13 @@ public class Fishing : NetworkBehaviour
             if (!TryGetNearestWater(out var water, out var waterCollider))
             {
                 Debug.Log("Not near water");
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
                 return;
             }
 
             if (!TryFindSpawnPointInWater(transform.position, ClampAimAngle(_maxCastAngleDegrees), water, waterCollider, out var spawnPos))
             {
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
                 Debug.Log("Not found spawn point in water");
                 return;
             }
@@ -296,7 +295,7 @@ public class Fishing : NetworkBehaviour
             _castTimer = _castTime;
             PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
 
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishCast, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishCast, 0.5f);
         }
     }
 
@@ -353,7 +352,7 @@ public class Fishing : NetworkBehaviour
         _castTimer = 0f;
 
         PlayerUI.Instance.HideCastBar();
-        AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishingBobber, 1f);
+        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishingBobber, 1f);
 
         DespawnServerRpc();
     }
@@ -365,7 +364,7 @@ public class Fishing : NetworkBehaviour
         _interruptTimer = 0f;
 
         PlayerUI.Instance.FailCastBar();
-        AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
         DespawnServerRpc();
     }
