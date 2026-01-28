@@ -45,9 +45,6 @@ public class Fishing : NetworkBehaviour
     private Color _originalBarColor;
     private StarterAssetsInputs _input;
 
-    private float _reelInTimer = 0f;
-    private float _reelInTime = 10f;
-
     private float _fishBrokeOffTimer = 0f;
     private float _fishBrokeOffTime = 3f;
 
@@ -112,14 +109,13 @@ public class Fishing : NetworkBehaviour
         });
     }
 
-    private async void Update()
+    private void Update()
     {
         if (IsOwner)
         {
-            CheckReelIn();
             CheckFishOut();
             CheckInterrupt();
-            await CheckInputAsync();
+            CheckInput();
             CheckCasting();
         }
 
@@ -201,7 +197,7 @@ public class Fishing : NetworkBehaviour
     [ClientRpc]
     private void NotifyFishBrokeOffClientRpc(ClientRpcParams rpcParams = default)
     {
-        // TODO: audio?
+        AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f); // TODO: bait as a audio source
         StopCasting();
     }
 
@@ -257,24 +253,6 @@ public class Fishing : NetworkBehaviour
         baitTransform.position = startPos;
     }
 
-    private void CheckReelIn()
-    {
-        if (!_isCasting)
-        {
-            _reelInTimer = 0f;
-            return;
-        }
-
-        _reelInTimer += Time.deltaTime;
-
-        if (_reelInTimer >= _reelInTime)
-        {
-            _reelInTimer = 0;
-            _reelInTime = UnityEngine.Random.Range(5, 15);
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f);
-        }
-    }
-
     private void CheckFishOut()
     {
         var mouse = Mouse.current;
@@ -293,7 +271,7 @@ public class Fishing : NetworkBehaviour
         }
     }
 
-    private async UniTask CheckInputAsync()
+    private void CheckInput()
     {
         if (!_isCasting && !_isInterrupted && _input.Move == Vector2.zero && !_input.Jump && Keyboard.current.fKey.wasPressedThisFrame)
         {
@@ -319,8 +297,6 @@ public class Fishing : NetworkBehaviour
             PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
 
             AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishCast, 0.5f);
-            await UniTask.Delay(TimeSpan.FromSeconds(1.091565));
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f);
         }
     }
 
