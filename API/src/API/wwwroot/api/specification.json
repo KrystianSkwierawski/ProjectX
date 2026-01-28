@@ -738,19 +738,19 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Collect2Fishses"
+          "Catch2Fishses"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Collect2Fishses"
+          "Catch2Fishses"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Collect2Fishses"
+          "Catch2Fishses"
         ],
         "x-enum-descriptions": [
           null,

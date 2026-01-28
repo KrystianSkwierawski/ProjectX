@@ -35,15 +35,15 @@ public enum QuestEnum : short
     [QuestParameters(
         PreviousQuestId = Kill2Beans,
         Type = QuestTypeEnum.Collect,
-        TitleKey = "Quest.Collect2Fishses.Title",
-        Description = "Quest.Collect2Fishses.Description",
-        CompleteDescription = "Quest.Collect2Fishses.CompleteDescription",
-        StatusText = "Quest.Collect2Fishses.StatusText",
+        TitleKey = "Quest.Catch2Fishses.Title",
+        Description = "Quest.Catch2Fishses.Description",
+        CompleteDescription = "Quest.Catch2Fishses.CompleteDescription",
+        StatusText = "Quest.Catch2Fishses.StatusText",
         GameObjectName = "Fish",
         Requirement = 2,
         Reward = 1000
     )]
-    Collect2Fishses
+    Catch2Fishses
 }
 
 public static class QuestEnumExtensions

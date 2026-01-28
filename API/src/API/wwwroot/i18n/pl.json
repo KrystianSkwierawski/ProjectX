@@ -4,22 +4,22 @@
     },
     "Quest": {
         "Kill2Beans": {
-            "Title": "Kill 2 beans",
-            "Description": "Bla bla bla kill 2 beans, ok?",
-            "CompleteDescription": "ok, u killed 2 beans",
-            "StatusText": "Killed {0}/{1} beans"
+            "Title": "Zabij 2 fasole",
+            "Description": "Bla bla bla zabij 2 fasole, ok?",
+            "CompleteDescription": "ok, zabiłeś 2 fasole",
+            "StatusText": "Zabito {0}/{1} fasole"
         },
         "Collect2Cans": {
-            "Title": "Collect 2 cans",
-            "Description": "Bla bla bla collect 2 cans, ok?",
-            "CompleteDescription": "ok, u collected 2 cans",
-            "StatusText": "Collected {0}/{1} cans"
+            "Title": "Zbierz 2 puszki",
+            "Description": "Bla bla bla zbierz 2 puszki, ok?",
+            "CompleteDescription": "ok, zebrałeś 2 puszki",
+            "StatusText": "Zebrano {0}/{1} cans"
         },
-        "Collect2Fishses": {
-            "Title": "Collect 2 fishes",
-            "Description": "Bla bla bla collect 2 fishes, ok?",
-            "CompleteDescription": "ok, u collected 2 fishes",
-            "StatusText": "Collected {0}/{1} fishes"
+        "Catch2Fishses": {
+            "Title": "Złów 2 ryby",
+            "Description": "Bla bla bla collect 2 ryby, ok?",
+            "CompleteDescription": "ok, złowiłeś 2 ryby",
+            "StatusText": "Złowiłeś {0}/{1} ryby"
         }
     }
 }
