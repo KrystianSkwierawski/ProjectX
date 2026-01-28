@@ -50,28 +50,37 @@ namespace Assets.Scripts.Network
         {
             var mouse = Mouse.current;
 
+            var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+            var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Target";
+
+            if (!hover)
+            {
+                CursorUI.Instance.ShowDefault(this);
+
+                return;
+            }
+
+            CursorUI.Instance.ShowPointer(this);
+
             if (mouse.leftButton.wasPressedThisFrame)
             {
-                Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
-                if (Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Target")
+                if (_currentlySelectedRenderer != null)
                 {
-                    if (_currentlySelectedRenderer != null)
-                    {
-                        UnselectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
+                    UnselectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
 
-                        _currentlySelectedRenderer.material.color = _originalSelectedColor;
-                        SelectedTargetTransform = null;
-                        TargetUI.Instance.Target.SetActive(false);
-                    }
-
-                    var newRenderer = hit.transform.GetComponent<Renderer>();
-                    _currentlySelectedRenderer = newRenderer;
-                    _originalSelectedColor = newRenderer.material.color;
-                    newRenderer.material.color = ColorUI.Green;
-                    SelectedTargetTransform = hit.transform;
-                    TargetUI.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Network.Value.ToString());
-                    SelectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
+                    _currentlySelectedRenderer.material.color = _originalSelectedColor;
+                    SelectedTargetTransform = null;
+                    TargetUI.Instance.Target.SetActive(false);
                 }
+
+                var newRenderer = hit.transform.GetComponent<Renderer>();
+                _currentlySelectedRenderer = newRenderer;
+                _originalSelectedColor = newRenderer.material.color;
+                newRenderer.material.color = ColorUI.Green;
+                SelectedTargetTransform = hit.transform;
+                TargetUI.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Network.Value.ToString());
+                SelectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
             }
         }
 

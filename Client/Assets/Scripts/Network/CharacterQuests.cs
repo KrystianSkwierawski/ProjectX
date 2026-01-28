@@ -189,28 +189,34 @@ namespace Assets.Scripts.Mono
         {
             var mouse = Mouse.current;
 
-            if (!mouse.rightButton.wasPressedThisFrame)
+            var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+            var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "QuestNpc";
+
+            if (!hover)
             {
+                CursorUI.Instance.ShowDefault(this);
+
                 return false;
             }
 
-            Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+            CursorUI.Instance.ShowPointer(this);
 
-            if (!Physics.Raycast(ray, out RaycastHit hit) || hit.transform.tag != "QuestNpc")
+            if (mouse.rightButton.wasPressedThisFrame)
             {
-                return false;
+                var dist = Vector3.Distance(hit.transform.position, transform.position);
+
+                if (dist > _npcMaxDistance)
+                {
+                    return false;
+                }
+
+                _questNpc = hit.transform.GetComponent<QuestNpc>();
+
+                return true;
             }
 
-            var dist = Vector3.Distance(hit.transform.position, transform.position);
-
-            if (dist > _npcMaxDistance)
-            {
-                return false;
-            }
-
-            _questNpc = hit.transform.GetComponent<QuestNpc>();
-
-            return true;
+            return false;
         }
 
         public override void OnNetworkDespawn()

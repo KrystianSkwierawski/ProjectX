@@ -256,17 +256,30 @@ public class Fishing : NetworkBehaviour
     {
         var mouse = Mouse.current;
 
-        if (_canFishOut.Value && _isCasting && mouse.rightButton.wasPressedThisFrame)
+        if (!_canFishOut.Value || !_isCasting)
         {
-            Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+            CursorUI.Instance.ShowDefault(this);
 
-            if (Physics.Raycast(ray, out RaycastHit hit)
-                && hit.transform.tag == "Bait"
-                && hit.transform.gameObject.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
-            {
-                StopCasting();
-                CheckLootServerRpc(TokenManager.Instance.Token);
-            }
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+        var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Bait" && hit.transform.gameObject.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId;
+
+        if (!hover)
+        {
+            CursorUI.Instance.ShowDefault(this);
+
+            return;
+        }
+
+        CursorUI.Instance.ShowPointer(this);
+
+        if (mouse.rightButton.wasPressedThisFrame)
+        {
+            StopCasting();
+            CheckLootServerRpc(TokenManager.Instance.Token);
         }
     }
 
