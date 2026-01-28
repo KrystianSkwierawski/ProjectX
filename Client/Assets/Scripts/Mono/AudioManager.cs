@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Shared;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.Scripts.Mono
 {
     public class AudioManager : MonoSingleton<AudioManager>
     {
+        public readonly IDictionary<AudioTypeEnum, AudioClip> AudioClips = new Dictionary<AudioTypeEnum, AudioClip>();
+
         private AudioSource _mainAudioSource;
 
-        public readonly IDictionary<AudioTypeEnum, AudioClip> AudioClips = new Dictionary<AudioTypeEnum, AudioClip>();
+        private readonly IList<AudioClip> _currentClips = new List<AudioClip>();
 
         private readonly AudioTypeEnum[] _musicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
 
@@ -67,18 +70,30 @@ namespace Assets.Scripts.Mono
         {
             if (AudioClips.TryGetValue(type, out var audioClip))
             {
-                Debug.Log($"AudioManager -> PlayOneShot. Type: {type}, Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
+                var playing = _currentClips
+                   .Where(x => x == audioClip)
+                   .Any();
 
-                audioSource.PlayOneShot(audioClip, volume);
+                if (playing)
+                {
+                    return;
+                }
+
+                PlayOneShotAsync(audioSource, audioClip, volume).Forget();
             }
         }
 
-        public void TryStop()
+        private async UniTaskVoid PlayOneShotAsync(AudioSource audioSource, AudioClip audioClip, float volume)
         {
-            if (_mainAudioSource.isPlaying)
-            {
-                _mainAudioSource.Stop();
-            }
+            Debug.Log($"AudioManager -> PlayOneShot. Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
+
+            _currentClips.Add(audioClip);
+
+            audioSource.PlayOneShot(audioClip, volume);
+
+            await UniTask.Delay(TimeSpan.FromSeconds(audioClip.length));
+
+            _currentClips.Remove(audioClip);
         }
     }
 }
