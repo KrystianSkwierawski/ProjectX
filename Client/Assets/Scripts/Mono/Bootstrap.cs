@@ -20,7 +20,6 @@ namespace Assets.Scripts.Mono
         // TODO: task.whenall?
         private static async UniTask StartClient()
         {
-    
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
             {
                 await UserManager.Instance.LoginAsync("user1@localhost", "User1!");
@@ -42,13 +41,8 @@ namespace Assets.Scripts.Mono
             await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
             Debug.Log("AudioScene Loaded");
 
-#if UNITY_EDITOR
             await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);
             Debug.Log("TestScene Loaded");
-#endif
-
-            await SceneManager.LoadSceneAsync("NPCScene", LoadSceneMode.Additive);
-            Debug.Log("NPCScene Loaded");
 
             NetworkManager.Singleton.StartClient();
 
