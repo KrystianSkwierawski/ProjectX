@@ -7,27 +7,27 @@ namespace Assets.Scripts.UI
     public class CursorUI : MonoSingleton<CursorUI>
     {
         private Texture2D _cursorPointer;
-        private string _invoker;
+        private string _caller;
 
         public void Start()
         {
             _cursorPointer = Resources.Load<Texture2D>($"Textures/CursorPointer");
         }
 
-        public void ShowPointer([CallerFilePath] string invoker = "")
+        public void ShowPointer([CallerFilePath] string caller = "")
         {
-            if (_invoker == null)
+            if (_caller == null)
             {
-                _invoker = invoker;
+                _caller = caller;
                 Cursor.SetCursor(_cursorPointer, Vector2.zero, CursorMode.Auto);
             }
         }
 
-        public void ShowDefault([CallerFilePath] string invoker = "")
+        public void ShowDefault([CallerFilePath] string caller = "")
         {
-            if (_invoker == invoker)
+            if (_caller == caller)
             {
-                _invoker = null;
+                _caller = null;
                 Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
             }
         }
