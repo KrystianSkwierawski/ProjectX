@@ -23,11 +23,11 @@ namespace Assets.Scripts.Mono
     
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
             {
-                await TokenManager.Instance.LoginAsync("user1@localhost", "User1!");
+                await UserManager.Instance.LoginAsync("user1@localhost", "User1!");
             }
             else
             {
-                await TokenManager.Instance.LoginAsync("user2@localhost", "User2!");
+                await UserManager.Instance.LoginAsync("user2@localhost", "User2!");
             }
 
             await QuestManager.Instance.LoadQuestsAsync();
@@ -57,7 +57,7 @@ namespace Assets.Scripts.Mono
 
         private static async UniTask StartServer()
         {
-            await TokenManager.Instance.LoginAsync("server1@localhost", "Server1!");
+            await UserManager.Instance.LoginAsync("server1@localhost", "Server1!");
 
             await QuestManager.Instance.LoadQuestsAsync();
 

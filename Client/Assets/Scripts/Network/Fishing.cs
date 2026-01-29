@@ -279,7 +279,7 @@ public class Fishing : NetworkBehaviour
         if (mouse.rightButton.wasPressedThisFrame)
         {
             StopCasting();
-            CheckLootServerRpc(TokenManager.Instance.Token);
+            CheckLootServerRpc(UserManager.Instance.Token);
         }
     }
 

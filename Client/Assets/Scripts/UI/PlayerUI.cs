@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Shared;
+﻿using Assets.Scripts.Models;
+using Assets.Scripts.Shared;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -68,11 +69,11 @@ namespace Assets.Scripts.UI
             }
         }
 
-        public void SetPlayer(string name, string health, string level)
+        public void SetPlayer(CharacterDto character)
         {
-            PlayerNameText.text = name;
-            PlayerHealthPointsText.text = health;
-            PlayerLevelText.text = $"Level: {level}";
+            PlayerNameText.text = character.name;
+            PlayerHealthPointsText.text = character.health.ToString();
+            PlayerLevelText.text = $"Level: {character.level}";
         }
     }
 }

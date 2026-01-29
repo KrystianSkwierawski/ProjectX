@@ -145,7 +145,7 @@ namespace Assets.Scripts.Mono
         [ClientRpc]
         private void ShowLootClientRpc(InventoryItem[] items, ClientRpcParams rpcParams = default)
         {
-            InventoryUI.Instance.UpdateLoot(items, OwnerClientId, TokenManager.Instance.Token);
+            InventoryUI.Instance.UpdateLoot(items, OwnerClientId, UserManager.Instance.Token);
         }
 
         [ServerRpc]

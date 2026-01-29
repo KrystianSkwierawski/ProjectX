@@ -161,7 +161,7 @@ namespace Assets.Scripts.Mono
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
-            CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
+            CompleteQuestServerRpc(characterQuest.id, UserManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
         }
 
         private void Update()

@@ -35,7 +35,8 @@ public class LoginApplicationUserCommandHandler : IRequestHandler<LoginApplicati
 
             return new LoginApplicationUserDto
             {
-                Token = token
+                Token = token,
+                Language = user.Language
             };
         }
 

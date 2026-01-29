@@ -38,7 +38,7 @@ public class TranslateService : ITranslateService
 
                 if (result == null)
                 {
-                    Log.Warning("Not found translate. Key: {0}, Value: {1}, Language: {2}\", key, result, language");
+                    Log.Warning("Not found translate. Key: {0}, Value: {1}, Language: {2}", key, result, language);
 
                     return string.Empty;
                 }

@@ -36,7 +36,7 @@ namespace Assets.Scripts.Network
         {
             if (_period > _saveInterval)
             {
-                SaveTransformServerRpc(TokenManager.Instance.Token);
+                SaveTransformServerRpc(UserManager.Instance.Token);
                 _period = 0;
             }
 

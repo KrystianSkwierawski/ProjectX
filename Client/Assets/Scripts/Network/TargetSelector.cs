@@ -128,7 +128,7 @@ namespace Assets.Scripts.Network
             var targetPos = SelectedTargetTransform.position;
             var direction = (targetPos - spawnPos).normalized;
 
-            SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, TokenManager.Instance.Token);
+            SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, UserManager.Instance.Token);
         }
 
         [ServerRpc]
