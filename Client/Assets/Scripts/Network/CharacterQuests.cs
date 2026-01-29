@@ -195,12 +195,12 @@ namespace Assets.Scripts.Mono
 
             if (!hover)
             {
-                CursorUI.Instance.ShowDefault(this);
+                CursorUI.Instance.ShowDefault();
 
                 return false;
             }
 
-            CursorUI.Instance.ShowPointer(this);
+            CursorUI.Instance.ShowPointer();
 
             if (mouse.rightButton.wasPressedThisFrame)
             {

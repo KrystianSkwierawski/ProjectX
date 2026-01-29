@@ -56,12 +56,12 @@ namespace Assets.Scripts.Network
 
             if (!hover)
             {
-                CursorUI.Instance.ShowDefault(this);
+                CursorUI.Instance.ShowDefault();
 
                 return;
             }
 
-            CursorUI.Instance.ShowPointer(this);
+            CursorUI.Instance.ShowPointer();
 
             if (mouse.leftButton.wasPressedThisFrame)
             {

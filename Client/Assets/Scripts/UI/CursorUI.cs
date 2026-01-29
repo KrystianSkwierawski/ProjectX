@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Shared;
+﻿using System.Runtime.CompilerServices;
+using Assets.Scripts.Shared;
 using UnityEngine;
 
 namespace Assets.Scripts.UI
@@ -6,14 +7,14 @@ namespace Assets.Scripts.UI
     public class CursorUI : MonoSingleton<CursorUI>
     {
         private Texture2D _cursorPointer;
-        private object _invoker;
+        private string _invoker;
 
         public void Start()
         {
             _cursorPointer = Resources.Load<Texture2D>($"Textures/CursorPointer");
         }
 
-        public void ShowPointer(object invoker)
+        public void ShowPointer([CallerFilePath] string invoker = "")
         {
             if (_invoker == null)
             {
@@ -22,7 +23,7 @@ namespace Assets.Scripts.UI
             }
         }
 
-        public void ShowDefault(object invoker)
+        public void ShowDefault([CallerFilePath] string invoker = "")
         {
             if (_invoker == invoker)
             {

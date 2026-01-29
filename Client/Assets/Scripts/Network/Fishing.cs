@@ -258,7 +258,7 @@ public class Fishing : NetworkBehaviour
 
         if (!_canFishOut.Value || !_isCasting)
         {
-            CursorUI.Instance.ShowDefault(this);
+            CursorUI.Instance.ShowDefault();
 
             return;
         }
@@ -269,12 +269,12 @@ public class Fishing : NetworkBehaviour
 
         if (!hover)
         {
-            CursorUI.Instance.ShowDefault(this);
+            CursorUI.Instance.ShowDefault();
 
             return;
         }
 
-        CursorUI.Instance.ShowPointer(this);
+        CursorUI.Instance.ShowPointer();
 
         if (mouse.rightButton.wasPressedThisFrame)
         {
