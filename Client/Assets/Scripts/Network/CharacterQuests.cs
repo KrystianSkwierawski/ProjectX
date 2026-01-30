@@ -153,6 +153,10 @@ namespace Assets.Scripts.Mono
 
         private void CompleteQuest(CharacterQuestDto characterQuest)
         {
+            var quest = QuestManager.Instance.Quests
+                .Where(x => x.id == characterQuest.questId)
+                .Single();
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
@@ -160,6 +164,18 @@ namespace Assets.Scripts.Mono
             QuestUI.Instance.CompleteQuest(characterQuest);
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
+
+            if (quest.type == QuestTypeEnum.Collect)
+            {
+                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
+                {
+                    Item = new InventoryItem
+                    {
+                        type = Enum.Parse<CharacterInventoryTypeEnum>(quest.gameObjectName),
+                        count = quest.requirement
+                    }
+                });
+            }
 
             CompleteQuestServerRpc(characterQuest.id, UserManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
         }

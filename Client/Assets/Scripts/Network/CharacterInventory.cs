@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
@@ -50,20 +51,42 @@ namespace Assets.Scripts.Mono
 
         private async void Start()
         {
+            var key = OwnerClientId.ToString();
+
             if (IsOwner)
             {
                 await UpdateCharacterInventoryAsync();
 
-                AddInventoryItemSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+                AddInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
                     AddItemServerRpc(e.Item, e.ClientToken);
+                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+                });
+
+                RemoveInventoryItemSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    var item = Inventory.inventory.items
+                       .Where(x => x.type == e.Item.type)
+                       .Where(x => x.count >= e.Item.count)
+                       .First();
+
+                    if (item.count == e.Item.count)
+                    {
+                        Inventory.inventory.items.Remove(item);
+                    }
+                    else
+                    {
+                        item.count -= e.Item.count;
+                    }
+
+                    InventoryUI.Instance.UpdateInventory(Inventory);
                     AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
                 });
             }
 
             if (IsServer)
             {
-                CheckLootSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+                CheckLootSubscription.Instance.Subscribe(key, (e) =>
                 {
                     if (_loot.TryGetValue(e.GameObjectName, out var drops))
                     {
@@ -90,7 +113,7 @@ namespace Assets.Scripts.Mono
             {
                 int trials = Mathf.Max(0, drop.Max - drop.Min);
 
-                int successes = Enumerable.Range(0, trials).Count(_ => Random.Range(0, 100) < drop.Chance);
+                int successes = Enumerable.Range(0, trials).Count(_ => UnityEngine.Random.Range(0, 100) < drop.Chance);
 
                 int count = drop.Min + successes;
 
@@ -175,7 +198,7 @@ namespace Assets.Scripts.Mono
 
             _currentLoot.Remove(serverItem);
 
-            UpdateInventoryItemClientRpc(item, new ClientRpcParams
+            AddInventoryItemClientRpc(item, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
@@ -185,13 +208,13 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void UpdateInventoryItemClientRpc(InventoryItem item, ClientRpcParams rpcParams = default)
+        private void AddInventoryItemClientRpc(InventoryItem item, ClientRpcParams rpcParams = default)
         {
             var slot = Inventory.inventory.items
                 .Where(x => x.type == item.type)
                 .FirstOrDefault();
 
-            if (slot == null && Inventory.inventory.items.Count() >= Inventory.count)
+            if (slot == null && Inventory.inventory.items.Count >= Inventory.count)
             {
                 // TODO: out of slots
                 return;
@@ -222,6 +245,7 @@ namespace Assets.Scripts.Mono
             if (IsOwner)
             {
                 AddInventoryItemSubscription.Instance.Unsubscribe(key);
+                RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
             }
 
             if (IsServer)
@@ -239,6 +263,7 @@ namespace Assets.Scripts.Mono
             if (IsOwner)
             {
                 AddInventoryItemSubscription.Instance.Unsubscribe(key);
+                RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
             }
 
             if (IsServer)

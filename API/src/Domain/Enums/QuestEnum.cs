@@ -26,7 +26,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2CansDescription,
         CompleteDescription = TranslateKeyEnum.Collect2CansCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2CansStatusText,
-        GameObjectName = "Can",
+        GameObjectName = nameof(CharacterInventoryTypeEnum.Can),
         Requirement = 2,
         Reward = 1000
     )]
@@ -39,7 +39,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Catch2FishsesDescription,
         CompleteDescription = TranslateKeyEnum.Catch2FishsesCompleteDescription,
         StatusText = TranslateKeyEnum.Catch2FishsesStatusText,
-        GameObjectName = "Fish",
+        GameObjectName = nameof(CharacterInventoryTypeEnum.Fish),
         Requirement = 2,
         Reward = 1000
     )]

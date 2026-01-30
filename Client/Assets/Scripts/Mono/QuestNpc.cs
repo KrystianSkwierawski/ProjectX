@@ -29,7 +29,6 @@ namespace Assets.Scripts.Mono
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
                 .Where(x => _questsIds.Contains(x.questId))
-                .Where(x => x.status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
             SetStatus();

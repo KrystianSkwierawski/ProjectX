@@ -84,6 +84,10 @@ namespace Assets.Scripts.UI
                 if (item == null)
                 {
                     slot.Mesh.gameObject.SetActive(false);
+                    slot.Mesh.text = "0";
+                    slot.Image.color = ColorUI.Black;
+                    slot.Image.texture = null;
+
                     continue;
                 }
 
