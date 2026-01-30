@@ -28,6 +28,8 @@ namespace Assets.Scripts.UI
 
         public GameObject Inventory { get; private set; }
 
+        public GameObject InventoryContent { get; private set; }
+
         public GameObject Loot { get; private set; }
 
         public GameObject LootContent { get; private set; }
@@ -42,6 +44,7 @@ namespace Assets.Scripts.UI
         {
             InventoryCanvas = GameObject.Find("InventoryCanvas");
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+            InventoryContent = Inventory.transform.Find("Viewport/Content").gameObject;
             Loot = InventoryCanvas.transform.Find("Loot").gameObject;
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
             InitTextures();
@@ -157,8 +160,7 @@ namespace Assets.Scripts.UI
         {
             for (int i = 0; i < count; i++)
             {
-                var slot = Instantiate(_inventorySlotPrefab);
-                slot.transform.SetParent(Inventory.transform);
+                var slot = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
 
                 yield return new InventorySlot
                 {
