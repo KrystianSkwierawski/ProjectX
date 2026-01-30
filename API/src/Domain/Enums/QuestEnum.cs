@@ -9,10 +9,10 @@ public enum QuestEnum : short
 
     [QuestParameters(
         Type = QuestTypeEnum.Kill,
-        TitleKey = "Quest.Kill2Beans.Title",
-        Description = "Quest.Kill2Beans.Description",
-        CompleteDescription = "Quest.Kill2Beans.CompleteDescription",
-        StatusText = "Quest.Kill2Beans.StatusText",
+        TitleKey = TranslateKeyEnum.Kill2BeansTitle,
+        Description = TranslateKeyEnum.Kill2BeansDescription,
+        CompleteDescription = TranslateKeyEnum.Kill2BeansCompleteDescription,
+        StatusText = TranslateKeyEnum.Kill2BeansStatusText,
         GameObjectName = "Bean(Clone)",
         Requirement = 2,
         Reward = 1000
@@ -22,10 +22,10 @@ public enum QuestEnum : short
     [QuestParameters(
         PreviousQuestId = Kill2Beans,
         Type = QuestTypeEnum.Collect,
-        TitleKey = "Quest.Collect2Cans.Title",
-        Description = "Quest.Collect2Cans.Description",
-        CompleteDescription = "Quest.Collect2Cans.CompleteDescription",
-        StatusText = "Quest.Collect2Cans.StatusText",
+        TitleKey = TranslateKeyEnum.Collect2CansTitle,
+        Description = TranslateKeyEnum.Collect2CansDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2CansCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2CansStatusText,
         GameObjectName = "Can",
         Requirement = 2,
         Reward = 1000
@@ -35,10 +35,10 @@ public enum QuestEnum : short
     [QuestParameters(
         PreviousQuestId = Kill2Beans,
         Type = QuestTypeEnum.Collect,
-        TitleKey = "Quest.Catch2Fishses.Title",
-        Description = "Quest.Catch2Fishses.Description",
-        CompleteDescription = "Quest.Catch2Fishses.CompleteDescription",
-        StatusText = "Quest.Catch2Fishses.StatusText",
+        TitleKey = TranslateKeyEnum.Catch2FishsesTitle,
+        Description = TranslateKeyEnum.Catch2FishsesDescription,
+        CompleteDescription = TranslateKeyEnum.Catch2FishsesCompleteDescription,
+        StatusText = TranslateKeyEnum.Catch2FishsesStatusText,
         GameObjectName = "Fish",
         Requirement = 2,
         Reward = 1000

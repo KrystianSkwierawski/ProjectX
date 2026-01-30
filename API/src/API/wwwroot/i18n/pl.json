@@ -1,25 +1,18 @@
 {
-    "Const": {
+    "Empty": "",
 
-    },
-    "Quest": {
-        "Kill2Beans": {
-            "Title": "Zabij 2 fasole",
-            "Description": "Bla bla bla zabij 2 fasole, ok?",
-            "CompleteDescription": "ok, zabiłeś 2 fasole",
-            "StatusText": "Zabito {0}/{1} fasole"
-        },
-        "Collect2Cans": {
-            "Title": "Zbierz 2 puszki",
-            "Description": "Bla bla bla zbierz 2 puszki, ok?",
-            "CompleteDescription": "ok, zebrałeś 2 puszki",
-            "StatusText": "Zebrano {0}/{1} cans"
-        },
-        "Catch2Fishses": {
-            "Title": "Złów 2 ryby",
-            "Description": "Bla bla bla collect 2 ryby, ok?",
-            "CompleteDescription": "ok, złowiłeś 2 ryby",
-            "StatusText": "Złowiłeś {0}/{1} ryby"
-        }
-    }
+    "Kill2BeansTitle": "Zabij 2 fasole",
+    "Kill2BeansDescription": "Bla bla bla zabij 2 fasole, ok?",
+    "Kill2BeansCompleteDescription": "ok, zabiłeś 2 fasole",
+    "Kill2BeansStatusText": "Zabito {0}/{1} fasole",
+
+    "Collect2CansTitle": "Zbierz 2 puszki",
+    "Collect2CansDescription": "Bla bla bla zbierz 2 puszki, ok?",
+    "Collect2CansCompleteDescription": "ok, zebrałeś 2 puszki",
+    "Collect2CansStatusText": "Zebrano {0}/{1} cans",
+
+    "Catch2FishsesTitle": "Złów 2 ryby",
+    "Catch2FishsesDescription": "Bla bla bla collect 2 ryby, ok?",
+    "Catch2FishsesCompleteDescription": "ok, złowiłeś 2 ryby",
+    "Catch2FishsesStatusText": "Złowiłeś {0}/{1} ryby"
 }

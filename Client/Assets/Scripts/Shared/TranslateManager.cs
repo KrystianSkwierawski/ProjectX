@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Assets.Scripts.Enums;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace Assets.Scripts.Shared
 {
     public class TranslateManager : Singleton<TranslateManager>
     {
-        private IDictionary<string, string> _cache = new Dictionary<string, string>();
+        private IDictionary<TranslateKeyEnum, string> _cache = new Dictionary<TranslateKeyEnum, string>();
 
         private JObject _object;
 
@@ -19,7 +20,7 @@ namespace Assets.Scripts.Shared
             _object = JObject.Parse(json);
         }
 
-        public string GetByKey(string key)
+        public string GetByKey(TranslateKeyEnum key)
         {
             if (_cache.TryGetValue(key, out var result))
             {
@@ -28,16 +29,18 @@ namespace Assets.Scripts.Shared
 
             var language = UserManager.Instance.Language;
 
-            var token = _object.SelectToken(key);
+            var keyString = key.ToString();
+
+            var token = _object.SelectToken(keyString);
 
             if (token == null)
             {
-                Debug.LogWarning($"Not found translate. Key: {key}, Value: {token}, Language: {language}");
+                Debug.LogWarning($"Not found translate. Key: {keyString}, Value: {token}, Language: {language}");
 
                 return string.Empty;
             }
 
-            Debug.Log($"Found translate. Key: {key}, Value: {token}, Language: {language}");
+            Debug.Log($"Found translate. Key: {keyString}, Value: {token}, Language: {language}");
 
             result = token.ToString();
 

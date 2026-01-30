@@ -1,6 +1,7 @@
 {
-    "Const": {
-        "Accept": "Accept",
-        "Cancel": "Cancel"
-    }
+
+    "Empty": "",
+
+    "Accept": "Accept",
+    "Cancel": "Cancel"
 }
