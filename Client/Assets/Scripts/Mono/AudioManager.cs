@@ -14,8 +14,6 @@ namespace Assets.Scripts.Mono
 
         private AudioSource _mainAudioSource;
 
-        private readonly IList<AudioClip> _currentClips = new List<AudioClip>();
-
         private readonly AudioTypeEnum[] _musicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
 
         [SerializeField] private bool _musicPlayer;
@@ -70,30 +68,10 @@ namespace Assets.Scripts.Mono
         {
             if (AudioClips.TryGetValue(type, out var audioClip))
             {
-                var playing = _currentClips
-                   .Where(x => x == audioClip)
-                   .Any();
+                Debug.Log($"AudioManager -> PlayOneShot. Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
 
-                if (playing)
-                {
-                    return;
-                }
-
-                PlayOneShotAsync(audioSource, audioClip, volume).Forget();
+                audioSource.PlayOneShot(audioClip, volume);
             }
-        }
-
-        private async UniTaskVoid PlayOneShotAsync(AudioSource audioSource, AudioClip audioClip, float volume)
-        {
-            Debug.Log($"AudioManager -> PlayOneShot. Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
-
-            _currentClips.Add(audioClip);
-
-            audioSource.PlayOneShot(audioClip, volume);
-
-            await UniTask.Delay(TimeSpan.FromSeconds(audioClip.length));
-
-            _currentClips.Remove(audioClip);
         }
     }
 }

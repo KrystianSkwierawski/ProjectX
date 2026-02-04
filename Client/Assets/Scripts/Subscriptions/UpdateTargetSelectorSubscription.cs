@@ -19,7 +19,7 @@ namespace Assets.Scripts.Subscriptions
 
     public class UpdateTargetSelectorSubscriptionsEvent
     {
-        public bool Hide { get; set; }
+        public bool Killed { get; set; }
 
         public float Value { get; set; }
     }

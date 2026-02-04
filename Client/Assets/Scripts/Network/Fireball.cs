@@ -1,8 +1,6 @@
-using System;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
-using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -16,9 +14,10 @@ namespace Assets.Scripts.Network
         private string _clientToken;
         private AudioSource _audioSource;
         private VisualEffect _visualEffect;
-        private NetworkObject _target;
+        private GameObject _target;
+        private GameObject _caster;
+        private bool _isCasting;
         private bool _hit;
-        private Transform _targetTransform;
 
         private void Awake()
         {
@@ -26,23 +25,29 @@ namespace Assets.Scripts.Network
             _visualEffect = GetComponent<VisualEffect>();
         }
 
-        public void PreCast(string token)
+        public void StartCasting(GameObject target, GameObject caster, string token)
         {
+            _caster = caster;
+            _target = target;
+            _isCasting = true;
             _clientToken = token;
-            PreCastClientRpc();
+            _hit = false;
+            Debug.Log("StartCasting");
+            StartCastingClientRpc();
         }
 
         [ClientRpc]
-        private void PreCastClientRpc()
+        private void StartCastingClientRpc()
         {
+            Debug.Log("StartCastingClientRpc");
             AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.FireballPrecast, 0.7f);
+            _visualEffect.enabled = true;
         }
 
-        public void Cast(NetworkObject target)
+        public void Cast()
         {
             CastClientRpc();
-            _target = target;
-            _targetTransform = target.transform;
+            _isCasting = false;
         }
 
         [ClientRpc]
@@ -59,8 +64,6 @@ namespace Assets.Scripts.Network
         public void Failed()
         {
             FailedClientRpc();
-
-            Destroy(gameObject, 1.236463f);
         }
 
         [ClientRpc]
@@ -75,10 +78,21 @@ namespace Assets.Scripts.Network
             AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 0.1f);
         }
 
-        private async void Update()
+        private void Update()
         {
             if (!IsServer || _target == null)
             {
+                return;
+            }
+
+            if (_isCasting)
+            {
+                var spawnPos = _caster.transform.position + Vector3.up * 1.0f;
+                var targetPos = _target.transform.position;
+                var direction = (targetPos - spawnPos).normalized;
+
+                gameObject.transform.SetPositionAndRotation(spawnPos, Quaternion.LookRotation(direction));
+
                 return;
             }
 
@@ -86,29 +100,29 @@ namespace Assets.Scripts.Network
 
             if (IsCloseToTarget())
             {
-                await OnHitTargetAsync();
+                OnHitTarget();
             }
         }
 
         private void MoveTowardsTarget()
         {
-            Vector3 direction = (_targetTransform.position - transform.position).normalized;
+            Vector3 direction = (_target.transform.position - transform.position).normalized;
             transform.position += direction * _speed * Time.deltaTime;
         }
 
         private bool IsCloseToTarget()
         {
-            return Vector3.Distance(transform.position, _targetTransform.position) < 0.5f;
+            return Vector3.Distance(transform.position, _target.transform.position) < 0.5f;
         }
 
         // FIXME: disconnect error
-        private async UniTask OnHitTargetAsync()
+        private void OnHitTarget()
         {
             if (!_hit)
             {
                 _hit = true;
 
-                UpdateHealthSubscription.Instance.Invoke(_target.gameObject.GetInstanceID().ToString(), new UpdateHealthSubscriptionEvent
+                UpdateHealthSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new UpdateHealthSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
                     Value = 50f,
@@ -116,16 +130,7 @@ namespace Assets.Scripts.Network
                 });
 
                 OnHitTargetClientRpc();
-
-                await DespawnAfterImpactAsync();
             }
-        }
-
-        private async UniTask DespawnAfterImpactAsync()
-        {
-            await UniTask.Delay(TimeSpan.FromSeconds(2.444512f));
-
-            GetComponent<NetworkObject>()?.Despawn();
         }
 
         [ClientRpc]
