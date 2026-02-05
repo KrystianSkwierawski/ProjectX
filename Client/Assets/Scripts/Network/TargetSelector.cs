@@ -23,6 +23,7 @@ namespace Assets.Scripts.Network
         private GameObject _selectedTarget;
         private ObjectPool<GameObject> _fireballPool;
         private GameObject _currentFireball;
+        private bool _onlyView;
 
         private void Start()
         {
@@ -56,6 +57,7 @@ namespace Assets.Scripts.Network
             if (IsOwner)
             {
                 HandleSelectionInput();
+                CheckCasting();
                 UpdateCasting();
             }
         }
@@ -75,10 +77,19 @@ namespace Assets.Scripts.Network
                 return;
             }
 
+            if (!IsValidTarget(hit.transform))
+            {
+                CursorUI.Instance.ShowDefault();
+
+                return;
+            }
+
             CursorUI.Instance.ShowPointer();
 
-            if (mouse.rightButton.wasPressedThisFrame)
+            if (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame)
             {
+                _onlyView = mouse.leftButton.wasPressedThisFrame || (!_onlyView && mouse.rightButton.wasPressedThisFrame && hit.transform.gameObject == _selectedTarget);
+
                 if (_currentlySelectedRenderer != null)
                 {
                     UnselectServerRpc();
@@ -142,11 +153,11 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        private void UpdateTargetCanvasClientRpc(float value, bool hide, ClientRpcParams rpcParams = default)
+        private void UpdateTargetCanvasClientRpc(float value, bool killed, ClientRpcParams rpcParams = default)
         {
             TargetUI.Instance.TargetHealthPointsText.text = value.ToString();
 
-            if (hide)
+            if (killed)
             {
                 _selectedTarget = null;
                 StopCasting();
@@ -199,20 +210,23 @@ namespace Assets.Scripts.Network
             DespawnFireball();
         }
 
-        private void UpdateCasting()
+        private void CheckCasting()
         {
-            if (_selectedTarget == null)
+            if (_isCasting || _selectedTarget == null || _onlyView)
             {
                 return;
             }
 
-            if (!_isCasting)
+            if (IsValidTarget(_selectedTarget.transform))
             {
-                if (CheckMaxDistance() && CheckLineOfSight() && CheckAngle())
-                {
-                    StartCasting();
-                }
+                StartCasting();
+            }
+        }
 
+        private void UpdateCasting()
+        {
+            if (!_isCasting || _selectedTarget == null || _onlyView)
+            {
                 return;
             }
 
@@ -243,9 +257,9 @@ namespace Assets.Scripts.Network
             }
         }
 
-        private bool CheckMaxDistance()
+        private bool CheckMaxDistance(Transform selectedTransform)
         {
-            float distance = Vector3.Distance(transform.position, _selectedTarget.transform.position);
+            float distance = Vector3.Distance(transform.position, selectedTransform.position);
             var result = distance <= _maxCastDistance;
 
             Debug.Log($"CheckMaxDistance -> IsValid: {result}, Distance: {distance}, MaxCastDistance: {_maxCastDistance}");
@@ -253,22 +267,22 @@ namespace Assets.Scripts.Network
             return result;
         }
 
-        private bool CheckLineOfSight()
+        private bool CheckLineOfSight(Transform selectedTransform)
         {
             var origin = transform.position + Vector3.up * 1.0f;
-            var direction = (_selectedTarget.transform.position - origin).normalized;
-            var distance = Vector3.Distance(origin, _selectedTarget.transform.position);
+            var direction = (selectedTransform.position - origin).normalized;
+            var distance = Vector3.Distance(origin, selectedTransform.position);
 
-            var result = Physics.Raycast(origin, direction, out RaycastHit hit, distance) && hit.transform == _selectedTarget.transform;
+            var result = Physics.Raycast(origin, direction, out RaycastHit hit, distance) && hit.transform == selectedTransform;
 
             Debug.Log($"CheckLineOfSight -> IsValid: {result}");
 
             return result;
         }
 
-        private bool CheckAngle()
+        private bool CheckAngle(Transform selectedTransform)
         {
-            var toTarget = (_selectedTarget.transform.position - transform.position).normalized;
+            var toTarget = (selectedTransform.position - transform.position).normalized;
             var playerForward = transform.forward;
             var angle = Vector3.Angle(playerForward, toTarget);
             var result = angle < 90f;
@@ -276,6 +290,13 @@ namespace Assets.Scripts.Network
             Debug.Log($"CheckAngle -> IsValid: {result}, Angle: {angle}");
 
             return result;
+        }
+
+        private bool IsValidTarget(Transform selectedTransform)
+        {
+            return CheckMaxDistance(selectedTransform) &&
+                CheckLineOfSight(selectedTransform) &&
+                CheckAngle(selectedTransform);
         }
     }
 }
