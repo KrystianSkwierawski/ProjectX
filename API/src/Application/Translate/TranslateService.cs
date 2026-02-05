@@ -18,7 +18,7 @@ public class TranslateService : ITranslateService
         _currentUserService = currentUserService;
     }
 
-    public string GetByKey(string key, LanguageEnum? language = null)
+    public string GetByKey(TranslateKeyEnum key, LanguageEnum? language = null)
     {
         language ??= _currentUserService.Language;
 
@@ -34,16 +34,18 @@ public class TranslateService : ITranslateService
 
                 var obj = JObject.Parse(json);
 
-                var result = obj.SelectToken(key);
+                var keyString = key.ToString();
+
+                var result = obj.SelectToken(keyString);
 
                 if (result == null)
                 {
-                    Log.Warning("Not found translate. Key: {0}, Value: {1}, Language: {2}\", key, result, language");
+                    Log.Warning("Not found translate. Key: {0}, Value: {1}, Language: {2}", keyString, result, language);
 
                     return string.Empty;
                 }
 
-                Log.Debug("Found translate. Key: {0}, Value: {1}, Language: {2}", key, result, language);
+                Log.Debug("Found translate. Key: {0}, Value: {1}, Language: {2}", keyString, result, language);
 
                 return result.ToString();
             }

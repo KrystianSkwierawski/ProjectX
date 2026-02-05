@@ -1,5 +1,7 @@
-﻿using MediatR;
+﻿using System.Text.Json;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -45,44 +47,28 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     {
         var result = new AddCharacterExperienceDto();
 
-        int? amount = null;
+        int amount = 50;
 
         var userId = _currentUserService.GetId();
 
-        var now = DateTime.Now;
-
         if (request.Type == ExperienceTypeEnum.Questing)
         {
-            var characterQuest = await _context.CharacterQuests
-                .Include(x => x.Quest)
-                .Where(x => x.Id == request.CharacterQuestId)
-                //.Where(x => x.CharacterId == request.CharacterId)
-                .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
-                .Where(x => x.Character.ApplicationUserId == userId)
-                .SingleAsync(cancellationToken);
-
-            characterQuest.EndDate = now;
-            characterQuest.ModDate = now;
-            characterQuest.Status = CharacterQuestStatusEnum.Completed;
-
-            amount = characterQuest.Quest.Reward;
-
-            Log.Debug("Completed character quest. CharacterQuestId: {0}, UserId: {1}", characterQuest.Id, userId);
+            amount = await CompleteQuestAsync(request, userId, cancellationToken);
         }
 
         var character = await _context.Characters
-            .Include(x => x.CharacterExperiences)
-            //.Where(x => x.Id == request.CharacterId)
-            .Where(x => x.ApplicationUserId == userId)
-            .FirstAsync(cancellationToken);
+                .Include(x => x.CharacterExperiences)
+                //.Where(x => x.Id == request.CharacterId)
+                .Where(x => x.ApplicationUserId == userId)
+                .FirstAsync(cancellationToken);
 
         Log.Debug("Found character. CharacterId {0}, UserId: {1}", character.Id, userId);
 
         character.CharacterExperiences.Add(new CharacterExperience
         {
-            Amount = amount ?? 50,
+            Amount = amount,
             Type = request.Type,
-            ModDate = now
+            ModDate = DateTime.Now
         });
 
         result.Experience = character.CharacterExperiences
@@ -110,5 +96,63 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
         result.SkillPoints = character.SkillPoints;
 
         return result;
+    }
+
+    private async Task<int> CompleteQuestAsync(AddCharacterExperienceCommand request, string userId, CancellationToken cancellationToken)
+    {
+        var characterQuest = await _context.CharacterQuests
+                        .Include(x => x.Quest)
+                        .Where(x => x.Id == request.CharacterQuestId)
+                        //.Where(x => x.CharacterId == request.CharacterId)
+                        .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
+                        .Where(x => x.Character.ApplicationUserId == userId)
+                        .SingleAsync(cancellationToken);
+
+        var now = DateTime.Now;
+
+        characterQuest.EndDate = now;
+        characterQuest.ModDate = now;
+        characterQuest.Status = CharacterQuestStatusEnum.Completed;
+
+        Log.Debug("Completed character quest. CharacterQuestId: {0}, UserId: {1}", characterQuest.Id, userId);
+
+        if (characterQuest.Quest.Type == QuestTypeEnum.Collect)
+        {
+            await CollectItemsAsync(userId, characterQuest, cancellationToken);
+        }
+
+        return characterQuest.Quest.Reward;
+    }
+
+    private async Task CollectItemsAsync(string userId, CharacterQuest characterQuest, CancellationToken cancellationToken)
+    {
+        var itemType = Enum.Parse<CharacterInventoryTypeEnum>(characterQuest.Quest.GameObjectName);
+
+        var characterInventory = await _context.CharacterInventories
+            //.Where(x => x.CharacterId == request.CharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
+            .SingleAsync(cancellationToken);
+
+        var inventory = JsonSerializer.Deserialize<InventoryDto>(characterInventory.Inventory);
+
+        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
+
+        var item = inventory.Items
+            .Where(x => x.Type == itemType)
+            .Where(x => x.Count >= characterQuest.Quest.Requirement)
+            .First();
+
+        if (item.Count == characterQuest.Quest.Requirement)
+        {
+            inventory.Items.Remove(item);
+        }
+        else
+        {
+            item.Count -= characterQuest.Quest.Requirement;
+        }
+
+        characterInventory.Inventory = JsonSerializer.Serialize(inventory);
+
+        Log.Debug("Collected items. DharacterInventoryId: {0}, UserId: {1}", characterInventory.Id, userId);
     }
 }

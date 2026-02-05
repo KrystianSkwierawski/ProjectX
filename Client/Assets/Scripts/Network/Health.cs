@@ -13,7 +13,9 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                UpdateHealthSubscription.Instance.Subscribe(gameObject.GetInstanceID().ToString(), (e) =>
+                var gameObjectKey = gameObject.GetInstanceID().ToString();
+
+                UpdateHealthSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
                     Network.Value -= e.Value;
                     Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
@@ -27,9 +29,9 @@ namespace Assets.Scripts.Network
                     {
                         Debug.Log("Object killed");
 
-                        targetSelectorSubscriptionsEvent.Hide = true;
+                        targetSelectorSubscriptionsEvent.Killed = true;
 
-                        ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
+                        ReleasePoolSubscription.Instance.Invoke(gameObjectKey, new ReleasePoolSubscriptionEvent());
 
                         CheckCharacterQuestSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
                         {
@@ -38,7 +40,7 @@ namespace Assets.Scripts.Network
                             ClientToken = e.ClientToken,
                         });
 
-                        CheckLootSubscription.Instance.Invoke(e.ClientId.ToString(), new UpdateInventorySubscriptionEvent
+                        CheckLootSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckLootSubscriptionEvent
                         {
                             ClientToken = e.ClientToken,
                             GameObjectName = gameObject.name
@@ -50,7 +52,7 @@ namespace Assets.Scripts.Network
                         });
                     }
 
-                    UpdateTargetSelectorSubscription.Instance.Invoke(gameObject.GetComponent<NetworkObject>().NetworkObjectId.ToString(), targetSelectorSubscriptionsEvent);
+                    UpdateTargetSelectorSubscription.Instance.Invoke(gameObjectKey, targetSelectorSubscriptionsEvent);
                 });
             }
         }
@@ -60,7 +62,6 @@ namespace Assets.Scripts.Network
             if (IsServer)
             {
                 Network.Value = 100;
-                UpdateHealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnNetworkDespawn();
@@ -70,7 +71,7 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                UpdateHealthSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                UpdateHealthSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
             }
 
             base.OnDestroy();

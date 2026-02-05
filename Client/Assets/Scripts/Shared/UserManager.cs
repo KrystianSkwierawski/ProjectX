@@ -1,12 +1,15 @@
+using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.Scripts.Shared
 {
-    public class TokenManager : Singleton<TokenManager>
+    public class UserManager : Singleton<UserManager>
     {
         public string Token { get; private set; }
+
+        public LanguageEnum Language { get; private set; }
 
         public async UniTask LoginAsync(string userName, string password)
         {
@@ -17,8 +20,9 @@ namespace Assets.Scripts.Shared
             });
 
             Token = result.token;
+            Language = result.language;
 
-            Debug.Log($"Login -> UserName: {userName}, Token: {Token}");
+            Debug.Log($"Login -> UserName: {userName}, Token: {Token}, Language: {Language}");
         }
     }
 }

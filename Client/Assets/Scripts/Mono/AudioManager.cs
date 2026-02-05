@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Shared;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.Scripts.Mono
 {
     public class AudioManager : MonoSingleton<AudioManager>
     {
-        private AudioSource _mainAudioSource;
-
         public readonly IDictionary<AudioTypeEnum, AudioClip> AudioClips = new Dictionary<AudioTypeEnum, AudioClip>();
+
+        private AudioSource _mainAudioSource;
 
         private readonly AudioTypeEnum[] _musicTypes = new AudioTypeEnum[] { AudioTypeEnum.BacgroundMusic, AudioTypeEnum.BacgroundMusic2 };
 
@@ -58,26 +59,18 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        public void PlayOneShot(AudioTypeEnum type, float volume = 1f)
+        public void TryPlayOneShot(AudioTypeEnum type, float volume = 1f)
         {
-            PlayOneShot(_mainAudioSource, type);
+            TryPlayOneShot(_mainAudioSource, type);
         }
 
-        public void PlayOneShot(AudioSource audioSource, AudioTypeEnum type, float volume = 1f)
+        public void TryPlayOneShot(AudioSource audioSource, AudioTypeEnum type, float volume = 1f)
         {
             if (AudioClips.TryGetValue(type, out var audioClip))
             {
-                Debug.Log($"AudioManager -> PlayOneShot. Type: {type}, Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
+                Debug.Log($"AudioManager -> PlayOneShot. Volume: {volume}, Name: {audioClip.name}, Length: {audioClip.length}");
 
                 audioSource.PlayOneShot(audioClip, volume);
-            }
-        }
-
-        public void TryStop()
-        {
-            if (_mainAudioSource.isPlaying)
-            {
-                _mainAudioSource.Stop();
             }
         }
     }

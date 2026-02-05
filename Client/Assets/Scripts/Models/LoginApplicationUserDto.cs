@@ -1,4 +1,5 @@
 using System;
+using Assets.Scripts.Enums;
 
 namespace Assets.Scripts.Models
 {
@@ -6,5 +7,7 @@ namespace Assets.Scripts.Models
     public class LoginApplicationUserDto
     {
         public string token;
+
+        public LanguageEnum language;
     }
 }

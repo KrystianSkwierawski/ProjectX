@@ -1,9 +1,5 @@
 tasks:
-- object pooling
-- validate accept/complete quest position
+- questo bottons localization
+- validate accept/complete quest position (server)
 - new question mark
 - fix cast validations through targets
-
-features:
-- skill tree
-- simple combat system

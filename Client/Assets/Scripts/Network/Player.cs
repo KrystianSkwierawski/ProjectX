@@ -11,6 +11,8 @@ namespace Assets.Scripts.Network
 {
     public class Player : NetworkBehaviour
     {
+        private CharacterDto _character;
+
         private async void Start()
         {
             if (IsOwner)
@@ -46,16 +48,16 @@ namespace Assets.Scripts.Network
 
         private async UniTask GetCharacterAsync()
         {
-            var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1");
+            _character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1");
 
-            PlayerUI.Instance.SetPlayer(result.name, result.health.ToString(), result.level.ToString());
+            PlayerUI.Instance.SetPlayer(_character);
         }
 
         [ClientRpc]
         public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
         {
             PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
         }
 
         public override void OnNetworkDespawn()

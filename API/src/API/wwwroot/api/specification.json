@@ -446,8 +446,39 @@
         "properties": {
           "token": {
             "type": "string"
+          },
+          "language": {
+            "$ref": "#/components/schemas/LanguageEnum"
           }
         }
+      },
+      "LanguageEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "pl",
+          "en"
+        ],
+        "x-enum-varnames": [
+          "pl",
+          "en"
+        ],
+        "x-enumNames": [
+          "pl",
+          "en"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1
+        ]
       },
       "LoginApplicationUserCommand": {
         "type": "object",
@@ -738,19 +769,19 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Collect2Fishses"
+          "Catch2Fishses"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Collect2Fishses"
+          "Catch2Fishses"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Collect2Fishses"
+          "Catch2Fishses"
         ],
         "x-enum-descriptions": [
           null,

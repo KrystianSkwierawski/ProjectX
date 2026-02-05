@@ -45,7 +45,8 @@ public class Fishing : NetworkBehaviour
     private Color _originalBarColor;
     private StarterAssetsInputs _input;
 
-    private float _reelInTimer = 0f;
+    private float _fishBrokeOffTimer = 0f;
+    private float _fishBrokeOffTime = 3f;
 
     private GameObject _bait;
     private ObjectPool<GameObject> _pool;
@@ -56,6 +57,13 @@ public class Fishing : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
+
+    private readonly NetworkVariable<bool> _canFishOut =
+       new NetworkVariable<bool>(
+           false,
+           NetworkVariableReadPermission.Owner,
+           NetworkVariableWritePermission.Server
+       );
 
     private void Awake()
     {
@@ -89,25 +97,32 @@ public class Fishing : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void AddItemServerRpc(string clientToken)
+    private void CheckLootServerRpc(string clientToken)
     {
+        _canFishOut.Value = false;
+
         // TODO: validation
-        CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+        CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
         {
             ClientToken = clientToken,
             GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)
         });
     }
 
-    private async void Update()
+    private void Update()
     {
         if (IsOwner)
         {
-            CheckReelIn();
             CheckFishOut();
             CheckInterrupt();
-            await CheckInputAsync();
+            CheckInput();
             CheckCasting();
+        }
+
+        if (IsServer)
+        {
+            CheckCanFishOut();
+            CheckFishBrokeOff();
         }
     }
 
@@ -119,55 +134,169 @@ public class Fishing : NetworkBehaviour
         }
     }
 
-    private void CheckReelIn()
+    private void CheckCanFishOut()
     {
-        if (!_isCasting)
+        if (_canFishOut.Value || !_active.Value)
         {
-            _reelInTimer = 0f;
             return;
         }
 
-        _reelInTimer += Time.deltaTime;
+        float perSecondProb = 0.10f;
+        float chance = 1f - Mathf.Pow(1f - perSecondProb, Time.deltaTime);
 
-        if (_reelInTimer >= 5f)
+        if (UnityEngine.Random.value < chance)
         {
-            _reelInTimer = 0;
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f);
+            Debug.Log($"Can fish out. OwnerClientId: {OwnerClientId}");
+
+            _fishBrokeOffTime = UnityEngine.Random.Range(2f, 5f);
+            _canFishOut.Value = true;
+
+            SimulateBaitBiteAsync().Forget();
+
+            NotifyCanFishOutClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
         }
+    }
+
+    private void CheckFishBrokeOff()
+    {
+        if (!_canFishOut.Value)
+        {
+            _fishBrokeOffTimer = 0f;
+            return;
+        }
+
+        _fishBrokeOffTimer += Time.deltaTime;
+
+        if (_fishBrokeOffTimer >= _fishBrokeOffTime)
+        {
+            _fishBrokeOffTimer = 0;
+            _canFishOut.Value = false;
+
+            NotifyFishBrokeOffClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+    }
+
+    [ClientRpc]
+    private void NotifyCanFishOutClientRpc(ClientRpcParams rpcParams = default)
+    {
+        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishReelIn);
+    }
+
+    [ClientRpc]
+    private void NotifyFishBrokeOffClientRpc(ClientRpcParams rpcParams = default)
+    {
+        StopCasting();
+    }
+
+    private async UniTask SimulateBaitBiteAsync()
+    {
+        var baitTransform = _bait.transform;
+        var startPos = baitTransform.position;
+
+        float downAmount = UnityEngine.Random.Range(0.03f, 0.12f);
+        Vector3 downPos = startPos + Vector3.down * downAmount;
+
+        // Smooth sink duration (longer => smoother)
+        float sinkDuration = UnityEngine.Random.Range(0.5f, 0.9f);
+        float elapsed = 0f;
+        while (elapsed < sinkDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / sinkDuration);
+            float smooth = Mathf.SmoothStep(0f, 1f, t);
+            baitTransform.position = Vector3.Lerp(startPos, downPos, smooth);
+            await UniTask.Yield();
+        }
+
+        // short pause at the bottom so movement is noticeable
+        await UniTask.Delay(TimeSpan.FromSeconds(UnityEngine.Random.Range(0.05f, 0.15f)));
+
+        // Smooth return to start position
+        float returnDuration = UnityEngine.Random.Range(0.35f, 0.55f);
+        elapsed = 0f;
+        Vector3 fromPos = baitTransform.position;
+        while (elapsed < returnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / returnDuration);
+            float smooth = Mathf.SmoothStep(0f, 1f, t);
+            baitTransform.position = Vector3.Lerp(fromPos, startPos, smooth);
+            await UniTask.Yield();
+        }
+
+        // small, quick bob at the end to make the return feel natural
+        float bobTime = UnityEngine.Random.Range(0.18f, 0.35f);
+        float bobElapsed = 0f;
+        float bobFreq = UnityEngine.Random.Range(6.0f, 9.0f); // quick, small bounce
+        float bobAmp = Mathf.Clamp(downAmount * 0.06f, 0.002f, 0.008f);
+        while (bobElapsed < bobTime)
+        {
+            bobElapsed += Time.deltaTime;
+            float bob = Mathf.Sin(bobElapsed * bobFreq) * bobAmp;
+            baitTransform.position = startPos + Vector3.up * bob;
+            await UniTask.Yield();
+        }
+
+        baitTransform.position = startPos;
     }
 
     private void CheckFishOut()
     {
         var mouse = Mouse.current;
 
-        if (_isCasting && mouse.rightButton.wasPressedThisFrame)
+        if (!_canFishOut.Value || !_isCasting)
         {
-            Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+            CursorUI.Instance.ShowDefault();
 
-            if (Physics.Raycast(ray, out RaycastHit hit)
-                && hit.transform.tag == "Bait"
-                && hit.transform.gameObject.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
-            {
-                StopCasting();
-                AddItemServerRpc(TokenManager.Instance.Token);
-            }
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+        var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Bait" && hit.transform.gameObject.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId;
+
+        if (!hover)
+        {
+            CursorUI.Instance.ShowDefault();
+
+            return;
+        }
+
+        CursorUI.Instance.ShowPointer();
+
+        if (mouse.rightButton.wasPressedThisFrame)
+        {
+            StopCasting();
+            CheckLootServerRpc(UserManager.Instance.Token);
         }
     }
 
-    private async UniTask CheckInputAsync()
+    private void CheckInput()
     {
         if (!_isCasting && !_isInterrupted && _input.Move == Vector2.zero && !_input.Jump && Keyboard.current.fKey.wasPressedThisFrame)
         {
             if (!TryGetNearestWater(out var water, out var waterCollider))
             {
                 Debug.Log("Not near water");
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
                 return;
             }
 
             if (!TryFindSpawnPointInWater(transform.position, ClampAimAngle(_maxCastAngleDegrees), water, waterCollider, out var spawnPos))
             {
-                AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
                 Debug.Log("Not found spawn point in water");
                 return;
             }
@@ -179,9 +308,7 @@ public class Fishing : NetworkBehaviour
             _castTimer = _castTime;
             PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
 
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishCast, 0.5f);
-            await UniTask.Delay(TimeSpan.FromSeconds(1.091565));
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishReelIn, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishCast, 0.5f);
         }
     }
 
@@ -206,6 +333,7 @@ public class Fishing : NetworkBehaviour
 
         _pool.Release(_bait);
         _active.Value = false;
+        _canFishOut.Value = false;
     }
 
     private void CheckCasting()
@@ -237,7 +365,7 @@ public class Fishing : NetworkBehaviour
         _castTimer = 0f;
 
         PlayerUI.Instance.HideCastBar();
-        AudioManager.Instance.PlayOneShot(AudioTypeEnum.FishingBobber, 1f);
+        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishingBobber, 1f);
 
         DespawnServerRpc();
     }
@@ -249,7 +377,7 @@ public class Fishing : NetworkBehaviour
         _interruptTimer = 0f;
 
         PlayerUI.Instance.FailCastBar();
-        AudioManager.Instance.PlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
         DespawnServerRpc();
     }
@@ -505,4 +633,3 @@ public class Fishing : NetworkBehaviour
         _line.positionCount = 0;
     }
 }
-

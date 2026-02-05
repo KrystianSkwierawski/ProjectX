@@ -4,8 +4,10 @@ using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 namespace Assets.Scripts.UI
@@ -26,21 +28,51 @@ namespace Assets.Scripts.UI
 
         public GameObject Inventory { get; private set; }
 
+        public GameObject InventoryContent { get; private set; }
+
         public GameObject Loot { get; private set; }
 
         public GameObject LootContent { get; private set; }
 
         #endregion
 
+        private ObjectPool<LootPoolObject> _lootObjectPool;
+        private readonly IDictionary<CharacterInventoryTypeEnum, LootPoolObject> _lootPoolObjects = new Dictionary<CharacterInventoryTypeEnum, LootPoolObject>();
         private InventorySlot[] _inventorySlots;
 
         public void Start()
         {
             InventoryCanvas = GameObject.Find("InventoryCanvas");
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+            InventoryContent = Inventory.transform.Find("Viewport/Content").gameObject;
             Loot = InventoryCanvas.transform.Find("Loot").gameObject;
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
             InitTextures();
+
+            _lootObjectPool = new ObjectPool<LootPoolObject>(
+               createFunc: () =>
+               {
+                   var obj = Instantiate(_inventorySlotPrefab, LootContent.transform);
+
+                   var mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+
+                   mesh.gameObject.SetActive(true);
+
+                   return new LootPoolObject
+                   {
+                       GameObject = obj,
+                       Image = obj.transform.Find("Background").GetComponent<RawImage>(),
+                       Mesh = mesh,
+                       Button = obj.GetComponent<Button>()
+                   };
+               },
+               actionOnGet: (LootPoolObject obj) => obj.GameObject.SetActive(true),
+               actionOnRelease: (LootPoolObject obj) =>
+               {
+                   obj.Button.onClick.RemoveAllListeners();
+                   obj.GameObject.SetActive(false);
+               }
+            );
         }
 
         public void UpdateInventory(CharacterInventoryDto value)
@@ -55,46 +87,57 @@ namespace Assets.Scripts.UI
                 if (item == null)
                 {
                     slot.Mesh.gameObject.SetActive(false);
+                    slot.Mesh.text = "0";
+                    slot.Image.color = ColorUI.Black;
+                    slot.Image.texture = null;
+
                     continue;
                 }
 
-                if (Textures.TryGetValue(item.type, out var texture))
-                {
-                    slot.Mesh.gameObject.SetActive(true);
-                    slot.Mesh.text = item.count.ToString();
-                    slot.Image.color = ColorUI.White;
-                    slot.Image.texture = texture;
-                }
+                slot.Mesh.gameObject.SetActive(true);
+                slot.Mesh.text = item.count.ToString();
+                slot.Image.color = ColorUI.White;
+                slot.Image.texture = Textures[item.type];
             }
         }
 
-        public void ShowLoot(InventoryItem[] items)
+        public void UpdateLoot(InventoryItem[] items, ulong clientId, string clientToken)
         {
             Loot.SetActive(true);
 
             foreach (var item in items)
             {
-                var slot = Instantiate(_inventorySlotPrefab);
-                slot.transform.SetParent(LootContent.transform);
-
-                var image = slot.transform.Find("Background").GetComponent<RawImage>();
-                var text = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>();
-
-                if (Textures.TryGetValue(item.type, out var texture))
+                if (_lootPoolObjects.TryGetValue(item.type, out var slot))
                 {
-                    text.gameObject.SetActive(true);
-                    text.text = item.count.ToString();
-                    image.color = ColorUI.White;
-                    image.texture = texture;
+                    slot.Mesh.text = item.count.ToString();
+
+                    continue;
                 }
 
-                slot.GetComponent<Button>().onClick.AddListener(() =>
+                slot = _lootObjectPool.Get();
+
+                slot.Mesh.text = item.count.ToString();
+                slot.Image.color = ColorUI.White;
+                slot.Image.texture = Textures[item.type];
+
+                slot.Button.onClick.AddListener(() =>
                 {
-                    // TODO: invoke add inventory
-                    // TODO: pool
-                    // TODO: hide
-                    Destroy(slot);
+                    AddInventoryItemSubscription.Instance.Invoke(clientId.ToString(), new AddInventoryItemSubscriptionEvent
+                    {
+                        Item = item,
+                        ClientToken = clientToken
+                    });
+
+                    _lootObjectPool.Release(slot);
+                    _lootPoolObjects.Remove(item.type);
+
+                    if (_lootPoolObjects.Count == 0)
+                    {
+                        Loot.SetActive(false);
+                    }
                 });
+
+                _lootPoolObjects.Add(item.type, slot);
             }
         }
 
@@ -117,8 +160,7 @@ namespace Assets.Scripts.UI
         {
             for (int i = 0; i < count; i++)
             {
-                var slot = Instantiate(_inventorySlotPrefab);
-                slot.transform.SetParent(Inventory.transform);
+                var slot = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
 
                 yield return new InventorySlot
                 {
@@ -136,6 +178,17 @@ namespace Assets.Scripts.UI
             public RawImage Image { get; set; }
 
             public TextMeshProUGUI Mesh { get; set; }
+        }
+
+        private class LootPoolObject
+        {
+            public GameObject GameObject { get; set; }
+
+            public RawImage Image { get; set; }
+
+            public TextMeshProUGUI Mesh { get; set; }
+
+            public Button Button { get; set; }
         }
     }
 }

@@ -58,8 +58,8 @@ namespace Assets.Scripts.UI
 
         #endregion
 
-        private ObjectPool<QuestLogObject> _questLogPool;
-        private readonly IDictionary<QuestEnum, QuestLogObject> _questLogObjects = new Dictionary<QuestEnum, QuestLogObject>();
+        private ObjectPool<QuestLogPoolObject> _questLogObjectPool;
+        private readonly IDictionary<QuestEnum, QuestLogPoolObject> _questLogObjects = new Dictionary<QuestEnum, QuestLogPoolObject>();
 
         public void Start()
         {
@@ -75,23 +75,23 @@ namespace Assets.Scripts.UI
             Material001 = Resources.Load<Material>("Materials/Material.001");
             Material002 = Resources.Load<Material>("Materials/Material.002");
 
-            _questLogPool = new ObjectPool<QuestLogObject>(
+            _questLogObjectPool = new ObjectPool<QuestLogPoolObject>(
                 createFunc: () =>
                 {
                     var obj = Instantiate(_textPrefab, QuestLogContent.transform);
 
-                    return new QuestLogObject
+                    return new QuestLogPoolObject
                     {
                         GameObject = obj,
                         Mesh = obj.GetComponent<TextMeshProUGUI>()
                     };
                 },
-                actionOnGet: (QuestLogObject questLogObject) => questLogObject.GameObject.SetActive(true),
-                actionOnRelease: (QuestLogObject questLogObject) =>
+                actionOnGet: (QuestLogPoolObject obj) => obj.GameObject.SetActive(true),
+                actionOnRelease: (QuestLogPoolObject obj) =>
                 {
-                    questLogObject.GameObject.SetActive(false);
-                    questLogObject.Mesh.text = string.Empty;
-                    questLogObject.Mesh.color = ColorUI.White;
+                    obj.GameObject.SetActive(false);
+                    obj.Mesh.text = string.Empty;
+                    obj.Mesh.color = ColorUI.White;
                 }
             );
 
@@ -129,7 +129,7 @@ namespace Assets.Scripts.UI
                 .Where(y => y.id == characterQuest.questId)
                 .Single();
 
-            var questLogObject = _questLogPool.Get();
+            var questLogObject = _questLogObjectPool.Get();
 
             questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
 
@@ -162,13 +162,13 @@ namespace Assets.Scripts.UI
         {
             if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
             {
-                _questLogPool.Release(questLogObject);
+                _questLogObjectPool.Release(questLogObject);
                 _questLogObjects.Remove(characterQuest.questId);
             }
         }
 
 
-        private class QuestLogObject
+        private class QuestLogPoolObject
         {
             public GameObject GameObject { get; set; }
 

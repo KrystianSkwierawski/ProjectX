@@ -1,10 +1,10 @@
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Assets.Scripts.UI;
-using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Pool;
 
 namespace Assets.Scripts.Network
 {
@@ -13,25 +13,42 @@ namespace Assets.Scripts.Network
         [SerializeField] private float _maxCastDistance = 10.0f;
         [SerializeField] private GameObject _fireballPrefab;
 
-        private Transform SelectedTargetTransform;
         private static Renderer _currentlySelectedRenderer = null;
         private static Color _originalSelectedColor;
         private bool _isCasting = false;
         private float _castTime = 1.5f;
         private float _castTimer = 0f;
-        private ulong _objectId = 0;
-        private bool _isInterrupted = false;
-        private float _interruptDuration = 0.2f;
-        private float _interruptTimer = 0f;
+
         private Color _originalBarColor;
-        private StarterAssetsInputs _input;
+        private GameObject _selectedTarget;
+        private ObjectPool<GameObject> _fireballPool;
+        private GameObject _currentFireball;
+        private bool _onlyView;
 
         private void Start()
         {
             if (IsOwner)
             {
-                _input = GetComponent<StarterAssetsInputs>();
                 PlayerUI.Instance.HideCastBar();
+            }
+
+            if (IsServer)
+            {
+                _fireballPool = new ObjectPool<GameObject>(
+                    createFunc: () => Instantiate(_fireballPrefab),
+                    actionOnGet: (GameObject gameObject) =>
+                    {
+                        var spawnPos = transform.position + Vector3.up * 1.0f;
+                        var targetPos = _selectedTarget.transform.position;
+                        var direction = (targetPos - spawnPos).normalized;
+
+                        gameObject.transform.SetPositionAndRotation(spawnPos, Quaternion.LookRotation(direction));
+
+                        var networkObject = gameObject.GetComponent<NetworkObject>();
+                        networkObject.SpawnWithOwnership(OwnerClientId);
+                    },
+                    actionOnRelease: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Despawn(false)
+                );
             }
         }
 
@@ -40,8 +57,7 @@ namespace Assets.Scripts.Network
             if (IsOwner)
             {
                 HandleSelectionInput();
-                UpdateInterrupt();
-                HandleCastingInput();
+                CheckCasting();
                 UpdateCasting();
             }
         }
@@ -50,163 +66,167 @@ namespace Assets.Scripts.Network
         {
             var mouse = Mouse.current;
 
-            if (mouse.leftButton.wasPressedThisFrame)
+            var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+            var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Target";
+
+            if (!hover)
             {
-                Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
-                if (Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Target")
+                CursorUI.Instance.ShowDefault();
+
+                return;
+            }
+
+            if (!IsValidTarget(hit.transform))
+            {
+                CursorUI.Instance.ShowDefault();
+
+                return;
+            }
+
+            CursorUI.Instance.ShowPointer();
+
+            if (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame)
+            {
+                _onlyView = mouse.leftButton.wasPressedThisFrame || (!_onlyView && mouse.rightButton.wasPressedThisFrame && hit.transform.gameObject == _selectedTarget);
+
+                if (_currentlySelectedRenderer != null)
                 {
-                    if (_currentlySelectedRenderer != null)
-                    {
-                        UnselectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
+                    UnselectServerRpc();
+                    StopCasting();
 
-                        _currentlySelectedRenderer.material.color = _originalSelectedColor;
-                        SelectedTargetTransform = null;
-                        TargetUI.Instance.Target.SetActive(false);
-                    }
-
-                    var newRenderer = hit.transform.GetComponent<Renderer>();
-                    _currentlySelectedRenderer = newRenderer;
-                    _originalSelectedColor = newRenderer.material.color;
-                    newRenderer.material.color = ColorUI.Green;
-                    SelectedTargetTransform = hit.transform;
-                    TargetUI.Instance.SetTarget("Bean", SelectedTargetTransform.GetComponent<Health>().Network.Value.ToString());
-                    SelectServerRpc((int)SelectedTargetTransform.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
+                    _currentlySelectedRenderer.material.color = _originalSelectedColor;
+                    _selectedTarget = null;
+                    TargetUI.Instance.Target.SetActive(false);
                 }
+
+                var newRenderer = hit.transform.GetComponent<Renderer>();
+                _currentlySelectedRenderer = newRenderer;
+                _originalSelectedColor = newRenderer.material.color;
+                newRenderer.material.color = ColorUI.Green;
+                _selectedTarget = hit.transform.gameObject;
+                TargetUI.Instance.SetTarget("Bean", _selectedTarget.GetComponent<Health>().Network.Value.ToString());
+                SelectServerRpc((NetworkObjectReference)_selectedTarget.GetComponent<NetworkObject>());
             }
         }
 
         [ServerRpc]
-        private void SelectServerRpc(int networkObjectId)
+        private void SelectServerRpc(NetworkObjectReference selectedTargetObjectRef)
         {
-            UpdateTargetSelectorSubscription.Instance.Subscribe($"{networkObjectId}_{OwnerClientId}", (e) =>
+            if (_selectedTarget != null)
             {
-                UpdateTargetCanvasClientRpc(e.Value, e.Hide, new ClientRpcParams
+                UpdateTargetSelectorSubscription.Instance.Unsubscribe($"{_selectedTarget.GetInstanceID()}_{OwnerClientId}");
+            }
+
+            if (selectedTargetObjectRef.TryGet(out var selectedTargetTransformObject))
+            {
+                _selectedTarget = selectedTargetTransformObject.gameObject;
+
+                UpdateTargetSelectorSubscription.Instance.Subscribe($"{_selectedTarget.GetInstanceID()}_{OwnerClientId}", (e) =>
                 {
-                    Send = new ClientRpcSendParams
+                    UpdateTargetCanvasClientRpc(e.Value, e.Killed, new ClientRpcParams
                     {
-                        TargetClientIds = new ulong[] { OwnerClientId }
+                        Send = new ClientRpcSendParams
+                        {
+                            TargetClientIds = new ulong[] { OwnerClientId }
+                        }
+                    });
+
+                    if (e.Killed)
+                    {
+                        UnselectTarget();
                     }
                 });
-            });
+            }
         }
 
         [ServerRpc]
-        private void UnselectServerRpc(int networkObjectId)
+        private void UnselectServerRpc()
         {
-            UpdateTargetSelectorSubscription.Instance.Unsubscribe($"{networkObjectId}_{OwnerClientId}");
+            UnselectTarget();
+        }
+
+        private void UnselectTarget()
+        {
+            DespawnFireball();
+            _selectedTarget = null;
         }
 
         [ClientRpc]
-        private void UpdateTargetCanvasClientRpc(float value, bool hide, ClientRpcParams rpcParams = default)
+        private void UpdateTargetCanvasClientRpc(float value, bool killed, ClientRpcParams rpcParams = default)
         {
             TargetUI.Instance.TargetHealthPointsText.text = value.ToString();
 
-            if (hide)
+            if (killed)
             {
+                _selectedTarget = null;
+                StopCasting();
                 TargetUI.Instance.Target.SetActive(false);
             }
         }
 
-        private void StartCast()
+        private void StartCasting()
         {
             _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
-            SetFireball();
-        }
-
-        private void SetFireball()
-        {
-            var spawnPos = transform.position + Vector3.up * 1.0f;
-            var targetPos = SelectedTargetTransform.position;
-            var direction = (targetPos - spawnPos).normalized;
-
-            SpawnProjectileServerRpc(spawnPos, direction, NetworkManager.Singleton.LocalClientId, TokenManager.Instance.Token);
+            SpawnProjectileServerRpc(UserManager.Instance.Token);
         }
 
         [ServerRpc]
-        public void SpawnProjectileServerRpc(Vector3 position, Vector3 direction, ulong clientId, string token)
+        public void SpawnProjectileServerRpc(string token)
         {
-            // TODO: ObjectPool
-            var fireball = Instantiate(_fireballPrefab, position, Quaternion.LookRotation(direction));
-            var networkObject = fireball.GetComponent<NetworkObject>();
-            networkObject.SpawnWithOwnership(clientId);
-            var spawnedFireball = fireball.GetComponent<Fireball>();
-            spawnedFireball.PreCast(token);
+            _currentFireball = _fireballPool.Get();
 
-            NotifyClientRpc(networkObject.NetworkObjectId, new ClientRpcParams
+            _currentFireball.GetComponent<Fireball>().StartCasting(_selectedTarget, gameObject, token);
+
+            NotifyFireballSpawnedClientRpc(new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
-                    TargetClientIds = new ulong[] { clientId }
+                    TargetClientIds = new ulong[] { OwnerClientId }
                 }
             });
         }
 
         [ServerRpc]
-        public void CastServerRpc(ulong objectId, ulong clientId, ulong selectedTargetTransformObjectId)
+        public void CastServerRpc()
         {
-            var fireball = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId].GetComponent<Fireball>();
-            var selectedTargetTransform = NetworkManager.Singleton.SpawnManager.SpawnedObjects[selectedTargetTransformObjectId];
-            fireball.Cast(selectedTargetTransform);
-        }
-
-        [ClientRpc]
-        void NotifyClientRpc(ulong objectId, ClientRpcParams rpcParams = default)
-        {
-            _isCasting = true;
-            _castTimer = 0f;
-            _objectId = objectId;
-            PlayerUI.Instance.ShowCastBar(_castTimer);
-        }
-
-        private void HandleCastingInput()
-        {
-            if (SelectedTargetTransform != null && !_isCasting && !_isInterrupted &&
-                _input.Move == Vector2.zero && !_input.Jump &&
-                Keyboard.current.digit1Key.wasPressedThisFrame &&
-                CheckMaxDistance() && CheckLineOfSight() && CheckAngle())
+            if (_currentFireball != null)
             {
-                StartCast();
+                _currentFireball.GetComponent<Fireball>().Cast();
             }
         }
 
-        private void UpdateInterrupt()
+        [ClientRpc]
+        void NotifyFireballSpawnedClientRpc(ClientRpcParams rpcParams = default)
         {
-            if (!_isInterrupted)
+            _isCasting = true;
+            _castTimer = 0f;
+            PlayerUI.Instance.ShowCastBar(_castTimer);
+        }
+
+        [ServerRpc]
+        private void DespawnFireballServerRpc()
+        {
+            DespawnFireball();
+        }
+
+        private void CheckCasting()
+        {
+            if (_isCasting || _selectedTarget == null || _onlyView)
             {
                 return;
             }
 
-            _interruptTimer += Time.deltaTime;
-
-            if (_interruptTimer >= _interruptDuration)
+            if (IsValidTarget(_selectedTarget.transform))
             {
-                _isInterrupted = false;
-                _interruptTimer = 0f;
-                PlayerUI.Instance.HideCastBar();
-
-                if (PlayerUI.Instance.CastProgressBar != null)
-                {
-                    PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
-                }
+                StartCasting();
             }
         }
 
         private void UpdateCasting()
         {
-            if (!_isCasting)
-                return;
-
-            if (SelectedTargetTransform == null)
+            if (!_isCasting || _selectedTarget == null || _onlyView)
             {
-                StopCasting();
-                DespawnFireballServerRpc(_objectId);
-
-                return;
-            }
-
-            if (_input.Move != Vector2.zero || _input.Jump)
-            {
-                InterruptCast();
                 return;
             }
 
@@ -217,8 +237,7 @@ namespace Assets.Scripts.Network
             {
                 StopCasting();
 
-                var selectedTargetTransformObjectId = SelectedTargetTransform.GetComponent<NetworkObject>().NetworkObjectId;
-                CastServerRpc(_objectId, NetworkManager.Singleton.LocalClientId, selectedTargetTransformObjectId);
+                CastServerRpc();
             }
         }
 
@@ -229,35 +248,18 @@ namespace Assets.Scripts.Network
             PlayerUI.Instance.HideCastBar();
         }
 
-        private void InterruptCast()
+        private void DespawnFireball()
         {
-            _isCasting = false;
-            _isInterrupted = true;
-            _interruptTimer = 0f;
-            FailedServerRpc(_objectId, NetworkManager.Singleton.LocalClientId);
-
-            PlayerUI.Instance.FailCastBar();
+            if (_currentFireball != null)
+            {
+                _fireballPool.Release(_currentFireball);
+                _currentFireball = null;
+            }
         }
 
-        [ServerRpc]
-        private void FailedServerRpc(ulong objectId, ulong clientId)
+        private bool CheckMaxDistance(Transform selectedTransform)
         {
-            var obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
-            var fireball = obj.GetComponent<Fireball>();
-
-            fireball.Failed();
-        }
-
-        [ServerRpc]
-        private void DespawnFireballServerRpc(ulong objectId)
-        {
-            var obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[objectId];
-            obj.Despawn();
-        }
-
-        private bool CheckMaxDistance()
-        {
-            float distance = Vector3.Distance(transform.position, SelectedTargetTransform.position);
+            float distance = Vector3.Distance(transform.position, selectedTransform.position);
             var result = distance <= _maxCastDistance;
 
             Debug.Log($"CheckMaxDistance -> IsValid: {result}, Distance: {distance}, MaxCastDistance: {_maxCastDistance}");
@@ -265,22 +267,22 @@ namespace Assets.Scripts.Network
             return result;
         }
 
-        private bool CheckLineOfSight()
+        private bool CheckLineOfSight(Transform selectedTransform)
         {
             var origin = transform.position + Vector3.up * 1.0f;
-            var direction = (SelectedTargetTransform.position - origin).normalized;
-            var distance = Vector3.Distance(origin, SelectedTargetTransform.position);
+            var direction = (selectedTransform.position - origin).normalized;
+            var distance = Vector3.Distance(origin, selectedTransform.position);
 
-            var result = Physics.Raycast(origin, direction, out RaycastHit hit, distance) && hit.transform == SelectedTargetTransform;
+            var result = Physics.Raycast(origin, direction, out RaycastHit hit, distance) && hit.transform == selectedTransform;
 
             Debug.Log($"CheckLineOfSight -> IsValid: {result}");
 
             return result;
         }
 
-        private bool CheckAngle()
+        private bool CheckAngle(Transform selectedTransform)
         {
-            var toTarget = (SelectedTargetTransform.position - transform.position).normalized;
+            var toTarget = (selectedTransform.position - transform.position).normalized;
             var playerForward = transform.forward;
             var angle = Vector3.Angle(playerForward, toTarget);
             var result = angle < 90f;
@@ -288,6 +290,13 @@ namespace Assets.Scripts.Network
             Debug.Log($"CheckAngle -> IsValid: {result}, Angle: {angle}");
 
             return result;
+        }
+
+        private bool IsValidTarget(Transform selectedTransform)
+        {
+            return CheckMaxDistance(selectedTransform) &&
+                CheckLineOfSight(selectedTransform) &&
+                CheckAngle(selectedTransform);
         }
     }
 }

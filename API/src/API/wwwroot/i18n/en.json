@@ -1,25 +1,18 @@
 {
-    "Const": {
+    "Empty": "",
 
-    },
-    "Quest": {
-        "Kill2Beans": {
-            "Title": "Kill 2 beans",
-            "Description": "Bla bla bla kill 2 beans, ok?",
-            "CompleteDescription": "ok, u killed 2 beans",
-            "StatusText": "Killed {0}/{1} beans"
-        },
-        "Collect2Cans": {
-            "Title": "Collect 2 cans",
-            "Description": "Bla bla bla collect 2 cans, ok?",
-            "CompleteDescription": "ok, u collected 2 cans",
-            "StatusText": "Collected {0}/{1} cans"
-        },
-        "Collect2Fishses": {
-            "Title": "Collect 2 fishes",
-            "Description": "Bla bla bla collect 2 fishes, ok?",
-            "CompleteDescription": "ok, u collected 2 fishes",
-            "StatusText": "Collected {0}/{1} fishes"
-        }
-    }
+    "Kill2BeansTitle": "Kill 2 beans",
+    "Kill2BeansDescription": "Bla bla bla kill 2 beans, ok?",
+    "Kill2BeansCompleteDescription": "ok, u killed 2 beans",
+    "Kill2BeansStatusText": "Killed {0}/{1} beans",
+
+    "Collect2CansTitle": "Collect 2 cans",
+    "Collect2CansDescription": "Bla bla bla collect 2 cans, ok?",
+    "Collect2CansCompleteDescription": "ok, u collected 2 cans",
+    "Collect2CansStatusText": "Collected {0}/{1} cans",
+
+    "Catch2FishsesTitle": "Catch 2 fishes",
+    "Catch2FishsesDescription": "Bla bla bla catch 2 fishes, ok?",
+    "Catch2FishsesCompleteDescription": "ok, u catched 2 fishes",
+    "Catch2FishsesStatusText": "Catched {0}/{1} fishes"
 }

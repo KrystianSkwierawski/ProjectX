@@ -24,7 +24,7 @@ namespace Assets.Scripts.Mono
         private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
         {
             // TODO: validation
-            _ = CompleteQuestAsync(characterQuestId, token, clientId);
+            CompleteQuestAsync(characterQuestId, token, clientId).Forget();
         }
 
         private async UniTask CompleteQuestAsync(int characterQuestId, string clientToken, ulong clientId)
@@ -136,7 +136,7 @@ namespace Assets.Scripts.Mono
 
         private async UniTask AcceptQuestAsync()
         {
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
 
             var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questNpc.Quest.id);
 
@@ -153,7 +153,11 @@ namespace Assets.Scripts.Mono
 
         private void CompleteQuest(CharacterQuestDto characterQuest)
         {
-            AudioManager.Instance.PlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
+            var quest = QuestManager.Instance.Quests
+                .Where(x => x.id == characterQuest.questId)
+                .Single();
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
 
@@ -161,7 +165,19 @@ namespace Assets.Scripts.Mono
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
-            CompleteQuestServerRpc(characterQuest.id, TokenManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
+            if (quest.type == QuestTypeEnum.Collect)
+            {
+                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
+                {
+                    Item = new InventoryItem
+                    {
+                        type = Enum.Parse<CharacterInventoryTypeEnum>(quest.gameObjectName),
+                        count = quest.requirement
+                    }
+                });
+            }
+
+            CompleteQuestServerRpc(characterQuest.id, UserManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
         }
 
         private void Update()
@@ -189,28 +205,34 @@ namespace Assets.Scripts.Mono
         {
             var mouse = Mouse.current;
 
-            if (!mouse.rightButton.wasPressedThisFrame)
+            var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+
+            var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "QuestNpc";
+
+            if (!hover)
             {
+                CursorUI.Instance.ShowDefault();
+
                 return false;
             }
 
-            Ray ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
+            CursorUI.Instance.ShowPointer();
 
-            if (!Physics.Raycast(ray, out RaycastHit hit) || hit.transform.tag != "QuestNpc")
+            if (mouse.rightButton.wasPressedThisFrame)
             {
-                return false;
+                var dist = Vector3.Distance(hit.transform.position, transform.position);
+
+                if (dist > _npcMaxDistance)
+                {
+                    return false;
+                }
+
+                _questNpc = hit.transform.GetComponent<QuestNpc>();
+
+                return true;
             }
 
-            var dist = Vector3.Distance(hit.transform.position, transform.position);
-
-            if (dist > _npcMaxDistance)
-            {
-                return false;
-            }
-
-            _questNpc = hit.transform.GetComponent<QuestNpc>();
-
-            return true;
+            return false;
         }
 
         public override void OnNetworkDespawn()

@@ -8,6 +8,6 @@
 
         Collect2Cans,
 
-        Collect2Fishses
+        Catch2Fishses
     }
 }

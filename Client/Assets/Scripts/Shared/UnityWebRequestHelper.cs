@@ -29,7 +29,7 @@ namespace Assets.Scripts.Shared
 
         private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, string memberName)
         {
-            request.SetRequestHeader("Authorization", $"Bearer {TokenManager.Instance.Token}");
+            request.SetRequestHeader("Authorization", $"Bearer {UserManager.Instance.Token}");
 
             if (clientToken != null)
             {

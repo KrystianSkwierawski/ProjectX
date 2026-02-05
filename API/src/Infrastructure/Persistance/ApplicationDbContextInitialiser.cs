@@ -102,7 +102,7 @@ public class ApplicationDbContextInitialiser
                             }
                         ]
                     }),
-                    Count = 9
+                    Count = 15
                 },
                 CharacterTransforms =
                 [

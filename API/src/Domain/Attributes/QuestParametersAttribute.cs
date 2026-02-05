@@ -9,13 +9,13 @@ public class QuestParametersAttribute : Attribute
 
     public QuestTypeEnum Type { get; set; }
 
-    public required string TitleKey { get; set; }
+    public required TranslateKeyEnum TitleKey { get; set; }
 
-    public required string Description { get; set; }
+    public required TranslateKeyEnum Description { get; set; }
 
-    public required string CompleteDescription { get; set; }
+    public required TranslateKeyEnum CompleteDescription { get; set; }
 
-    public required string StatusText { get; set; }
+    public required TranslateKeyEnum StatusText { get; set; }
 
     public required string GameObjectName { get; set; }
 
