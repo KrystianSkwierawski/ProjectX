@@ -56,9 +56,18 @@ namespace Assets.Scripts.Network
         {
             if (IsOwner)
             {
+                CheckCurrentTarget();
                 HandleSelectionInput();
                 CheckCasting();
                 UpdateCasting();
+            }
+        }
+
+        private void CheckCurrentTarget()
+        {
+            if (_isCasting && _selectedTarget != null && !IsValidTarget(_selectedTarget.transform))
+            {
+                HandleUnselect();
             }
         }
 
@@ -92,12 +101,7 @@ namespace Assets.Scripts.Network
 
                 if (_currentlySelectedRenderer != null)
                 {
-                    UnselectServerRpc();
-                    StopCasting();
-
-                    _currentlySelectedRenderer.material.color = _originalSelectedColor;
-                    _selectedTarget = null;
-                    TargetUI.Instance.Target.SetActive(false);
+                    HandleUnselect();
                 }
 
                 var newRenderer = hit.transform.GetComponent<Renderer>();
@@ -108,6 +112,16 @@ namespace Assets.Scripts.Network
                 TargetUI.Instance.SetTarget("Bean", _selectedTarget.GetComponent<Health>().Network.Value.ToString());
                 SelectServerRpc((NetworkObjectReference)_selectedTarget.GetComponent<NetworkObject>());
             }
+        }
+
+        private void HandleUnselect()
+        {
+            UnselectServerRpc();
+            StopCasting();
+
+            _currentlySelectedRenderer.material.color = _originalSelectedColor;
+            _selectedTarget = null;
+            TargetUI.Instance.Target.SetActive(false);
         }
 
         [ServerRpc]
