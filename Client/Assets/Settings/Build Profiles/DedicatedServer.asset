@@ -32,6 +32,8 @@ MonoBehaviour:
     m_path: Assets/Scenes/UIScene.unity
   - m_enabled: 1
     m_path: Assets/Scenes/AudioScene.unity
+  - m_enabled: 1
+    m_path: Assets/Scenes/EnvoriomentScene.unity
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
     m_Settings:

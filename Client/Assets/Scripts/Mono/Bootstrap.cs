@@ -41,8 +41,8 @@ namespace Assets.Scripts.Mono
             await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
             Debug.Log("AudioScene Loaded");
 
-            await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);
-            Debug.Log("TestScene Loaded");
+            await SceneManager.LoadSceneAsync("EnvoriomentScene", LoadSceneMode.Additive);
+            Debug.Log("EnvoriomentScene Loaded");
 
             NetworkManager.Singleton.StartClient();
 

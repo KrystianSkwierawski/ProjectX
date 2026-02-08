@@ -11,6 +11,7 @@ namespace Assets.Scripts.Mono
     {
         [SerializeField] private GameObject _enemyPrefab;
         [SerializeField] private int _beansCount = 2;
+        [SerializeField] private float _y = -11.32981f;
 
         private ObjectPool<GameObject> _pool;
 
@@ -74,7 +75,7 @@ namespace Assets.Scripts.Mono
             {
                 var bean = _pool.Get();
 
-                var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), -3.5f, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
+                var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), _y, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
 
                 bean.transform.SetPositionAndRotation(position, new Quaternion(0f, 0f, 0f, 0f));
             }
