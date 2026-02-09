@@ -108,6 +108,8 @@ namespace StarterAssets
 
         private bool _hasAnimator;
 
+        private Vector3? _lastMousePos = null;
+
         private bool IsCurrentDeviceMouse
         {
             get
@@ -183,17 +185,24 @@ namespace StarterAssets
             }
         }
 
+
         private void HandleCusor()
         {
-            if (_input.Rotate)
+            if (_input.Rotate && Cursor.lockState == CursorLockMode.None)
             {
-                UnityEngine.Cursor.visible = false;
-                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-                return;
+                _lastMousePos = Mouse.current.position.ReadValue();
+
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
             }
 
-            UnityEngine.Cursor.visible = true;
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            if (!_input.Rotate && Cursor.lockState == CursorLockMode.Locked)
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+
+                Mouse.current.WarpCursorPosition(_lastMousePos.Value);
+            }
         }
 
         private void LateUpdate()
