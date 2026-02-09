@@ -216,17 +216,17 @@ namespace Assets.Scripts.Mono
                 return false;
             }
 
+            if (Vector3.Distance(hit.transform.position, transform.position) > _npcMaxDistance)
+            {
+                CursorUI.Instance.ShowDefault();
+
+                return false;
+            }
+
             CursorUI.Instance.ShowPointer();
 
             if (mouse.rightButton.wasPressedThisFrame)
             {
-                var dist = Vector3.Distance(hit.transform.position, transform.position);
-
-                if (dist > _npcMaxDistance)
-                {
-                    return false;
-                }
-
                 _questNpc = hit.transform.GetComponent<QuestNpc>();
 
                 return true;

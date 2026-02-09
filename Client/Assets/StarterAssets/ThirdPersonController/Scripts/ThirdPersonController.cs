@@ -190,7 +190,10 @@ namespace StarterAssets
         {
             if (_input.Rotate && Cursor.lockState == CursorLockMode.None)
             {
-                _lastMousePos = Mouse.current.position.ReadValue();
+                if (_lastMousePos == null)
+                {
+                    _lastMousePos = Mouse.current.position.ReadValue();
+                }
 
                 Cursor.visible = false;
                 Cursor.lockState = CursorLockMode.Locked;
@@ -201,7 +204,11 @@ namespace StarterAssets
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
 
-                Mouse.current.WarpCursorPosition(_lastMousePos.Value);
+                if (_lastMousePos.HasValue)
+                {
+                    Mouse.current.WarpCursorPosition(_lastMousePos.Value);
+                    _lastMousePos = null;
+                }
             }
         }
 
