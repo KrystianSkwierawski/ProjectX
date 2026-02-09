@@ -104,6 +104,15 @@ namespace StarterAssets
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemachineVirtualCamera;
 
+        [Header("Camera Zoom")]
+        [SerializeField] private float _minZoom = 0f;
+        [SerializeField] private float _maxZoom = 8f;
+        [SerializeField] private float _zoomSpeed = 0.1f;
+
+        private Cinemachine3rdPersonFollow _thirdPersonFollow;
+        private float _currentZoom;
+        private GameObject _geometry;
+
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
@@ -152,6 +161,10 @@ namespace StarterAssets
                 var audioSource = GetComponent<AudioSource>();
                 audioSource.enabled = true;
                 AudioManager.Instance.Init(audioSource);
+
+                _thirdPersonFollow = _cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+                _currentZoom = _thirdPersonFollow.CameraDistance;
+                _geometry = transform.Find("Geometry").gameObject;
             }
         }
 
@@ -182,9 +195,9 @@ namespace StarterAssets
                 GroundedCheck();
                 Move();
                 HandleCusor();
+                HandleZoom();
             }
         }
-
 
         private void HandleCusor()
         {
@@ -208,6 +221,26 @@ namespace StarterAssets
                 {
                     Mouse.current.WarpCursorPosition(_lastMousePos.Value);
                     _lastMousePos = null;
+                }
+            }
+        }
+
+        private void HandleZoom()
+        {
+            float scroll = Mouse.current.scroll.ReadValue().y;
+
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                _currentZoom -= scroll * _zoomSpeed * Time.deltaTime * 100f;
+                _currentZoom = Mathf.Clamp(_currentZoom, _minZoom, _maxZoom);
+
+                var distance = Mathf.Lerp(_thirdPersonFollow.CameraDistance, _currentZoom, Time.deltaTime * 10f);
+
+                if (distance > 0)
+                {
+                    _thirdPersonFollow.CameraDistance = distance;
+
+                    _geometry.SetActive(distance > 0.5f);
                 }
             }
         }
