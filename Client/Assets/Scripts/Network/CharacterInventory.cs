@@ -185,8 +185,8 @@ namespace Assets.Scripts.Mono
 
             CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
             {
-                Progress = item.count,
-                GameObjectName = item.type.ToString(),
+                Progress = serverItem.count,
+                GameObjectName = serverItem.type.ToString(),
                 ClientToken = clientToken,
             });
 
