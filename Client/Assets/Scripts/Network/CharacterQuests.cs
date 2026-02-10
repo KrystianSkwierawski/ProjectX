@@ -187,7 +187,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (_questNpc != null && _input.Move != Vector2.zero && Vector3.Distance(_questNpc.transform.position, transform.position) >= _npcMaxDistance)
+            if (_questNpc != null && _input.Move != Vector2.zero && Vector3.Distance(_questNpc.transform.position, transform.position) > _npcMaxDistance)
             {
                 _questNpc = null;
                 QuestUI.Instance.Quest.SetActive(false);
@@ -195,13 +195,10 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (CheckQuestNpcClicked())
-            {
-                QuestUI.Instance.ShowQuest(_questNpc);
-            }
+            CheckQuestNpcClicked();
         }
 
-        private bool CheckQuestNpcClicked()
+        private void CheckQuestNpcClicked()
         {
             var mouse = Mouse.current;
 
@@ -213,26 +210,38 @@ namespace Assets.Scripts.Mono
             {
                 CursorUI.Instance.ShowDefault();
 
-                return false;
+                return;
             }
 
             if (Vector3.Distance(hit.transform.position, transform.position) > _npcMaxDistance)
             {
                 CursorUI.Instance.ShowDefault();
 
-                return false;
+                return;
+            }
+
+            _questNpc = hit.transform.GetComponent<QuestNpc>();
+
+            if (_questNpc.Quest == null)
+            {
+                CursorUI.Instance.ShowDefault();
+
+                return;
+            }
+
+            if (_questNpc.CharacterQuest?.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Completed)
+            {
+                CursorUI.Instance.ShowDefault();
+
+                return;
             }
 
             CursorUI.Instance.ShowPointer();
 
             if (mouse.rightButton.wasPressedThisFrame)
             {
-                _questNpc = hit.transform.GetComponent<QuestNpc>();
-
-                return true;
+                QuestUI.Instance.ShowQuest(_questNpc);
             }
-
-            return false;
         }
 
         public override void OnNetworkDespawn()

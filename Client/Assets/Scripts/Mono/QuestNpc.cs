@@ -5,7 +5,6 @@ using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Assets.Scripts.UI;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.Scripts.Mono
@@ -29,6 +28,7 @@ namespace Assets.Scripts.Mono
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
                 .Where(x => _questsIds.Contains(x.questId))
+                .Where(x => x.status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
             SetStatus();
