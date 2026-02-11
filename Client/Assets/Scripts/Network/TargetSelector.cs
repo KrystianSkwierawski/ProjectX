@@ -122,7 +122,7 @@ namespace Assets.Scripts.Network
             }
         }
 
-        private void HandleUnselect()
+        public void HandleUnselect()
         {
             StopCasting();
             _thirdPersonController.UnlockCamera();
@@ -163,7 +163,7 @@ namespace Assets.Scripts.Network
         }
 
         [ServerRpc]
-        private void UnselectServerRpc()
+        public void UnselectServerRpc()
         {
             UnselectTarget();
         }

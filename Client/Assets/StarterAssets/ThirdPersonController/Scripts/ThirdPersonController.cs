@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Mono;
+using Assets.Scripts.Network;
 using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
@@ -103,6 +104,7 @@ namespace StarterAssets
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemachineVirtualCamera;
+        private TargetSelector _targetSelector;
 
         [Header("Camera Zoom")]
         [SerializeField] private float _minZoom = 0f;
@@ -120,7 +122,7 @@ namespace StarterAssets
         private Vector3? _lastMousePos = null;
 
         private Transform _lockTarget = null;
-        [SerializeField] private float _lockLerpSpeed = 8f;
+        [SerializeField] private float _lockLerpSpeed = 6f;
 
         private bool IsCurrentDeviceMouse
         {
@@ -168,6 +170,7 @@ namespace StarterAssets
                 _thirdPersonFollow = _cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
                 _currentZoom = _thirdPersonFollow.CameraDistance;
                 _geometry = transform.Find("Geometry").gameObject;
+                _targetSelector = GetComponent<TargetSelector>();   
             }
         }
 
@@ -276,18 +279,34 @@ namespace StarterAssets
         }
 
         private void CameraRotation()
-        {
+        {          
             if (_lockTarget != null)
             {
+                if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold)
+                {
+                    _targetSelector.HandleUnselect();
+                    _targetSelector.UnselectServerRpc();
+
+                    UnlockCamera();
+
+                    return;
+                }
+
                 Vector3 origin = CinemachineCameraTarget.transform.position;
                 Vector3 dir = (_lockTarget.position - origin).normalized;
+
                 if (dir.sqrMagnitude > 0.0001f)
                 {
                     Quaternion desired = Quaternion.LookRotation(dir);
                     // clamp pitch
                     Vector3 e = desired.eulerAngles;
                     float pitch = e.x;
-                    if (pitch > 180f) pitch -= 360f;
+
+                    if (pitch > 180f)
+                    {
+                        pitch -= 360f;
+                    }
+
                     pitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
                     desired = Quaternion.Euler(pitch + CameraAngleOverride, e.y, 0f);
 
@@ -297,7 +316,12 @@ namespace StarterAssets
                     Vector3 cur = CinemachineCameraTarget.transform.rotation.eulerAngles;
                     _cinemachineTargetYaw = cur.y;
                     float curPitch = cur.x;
-                    if (curPitch > 180f) curPitch -= 360f;
+
+                    if (curPitch > 180f)
+                    {
+                        curPitch -= 360f;
+                    }
+
                     _cinemachineTargetPitch = curPitch - CameraAngleOverride;
                 }
 
