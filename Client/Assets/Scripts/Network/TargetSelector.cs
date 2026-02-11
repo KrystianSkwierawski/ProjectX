@@ -5,6 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
+using StarterAssets;
 
 namespace Assets.Scripts.Network
 {
@@ -25,11 +26,14 @@ namespace Assets.Scripts.Network
         private GameObject _currentFireball;
         private bool _onlyView;
 
+        private ThirdPersonController _thirdPersonController;
+
         private void Start()
         {
             if (IsOwner)
             {
                 PlayerUI.Instance.HideCastBar();
+                _thirdPersonController = GetComponent<ThirdPersonController>();
             }
 
             if (IsServer)
@@ -68,6 +72,7 @@ namespace Assets.Scripts.Network
             if (_isCasting && _selectedTarget != null && !IsValidTarget(_selectedTarget.transform))
             {
                 HandleUnselect();
+                UnselectServerRpc();
             }
         }
 
@@ -102,6 +107,7 @@ namespace Assets.Scripts.Network
                 if (_currentlySelectedRenderer != null)
                 {
                     HandleUnselect();
+                    UnselectServerRpc();
                 }
 
                 var newRenderer = hit.transform.GetComponent<Renderer>();
@@ -109,6 +115,8 @@ namespace Assets.Scripts.Network
                 _originalSelectedColor = newRenderer.material.color;
                 newRenderer.material.color = ColorUI.Green;
                 _selectedTarget = hit.transform.gameObject;
+                _thirdPersonController.LockCameraToTarget(_selectedTarget.transform);
+
                 TargetUI.Instance.SetTarget("Bean", _selectedTarget.GetComponent<Health>().Network.Value.ToString());
                 SelectServerRpc((NetworkObjectReference)_selectedTarget.GetComponent<NetworkObject>());
             }
@@ -116,8 +124,8 @@ namespace Assets.Scripts.Network
 
         private void HandleUnselect()
         {
-            UnselectServerRpc();
             StopCasting();
+            _thirdPersonController.UnlockCamera();
 
             _currentlySelectedRenderer.material.color = _originalSelectedColor;
             _selectedTarget = null;
@@ -173,9 +181,7 @@ namespace Assets.Scripts.Network
 
             if (killed)
             {
-                _selectedTarget = null;
-                StopCasting();
-                TargetUI.Instance.Target.SetActive(false);
+                HandleUnselect();
             }
         }
 

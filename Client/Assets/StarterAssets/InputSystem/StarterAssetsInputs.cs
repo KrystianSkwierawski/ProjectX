@@ -21,8 +21,13 @@ namespace StarterAssets
 		public bool CursorLocked = true;
 		public bool CursorInputForLook = true;
 
+        public void Start()
+        {
+			SprintInput(true);
+        }
+
 #if ENABLE_INPUT_SYSTEM
-		public void OnMove(InputValue value)
+        public void OnMove(InputValue value)
 		{
 			MoveInput(value.Get<Vector2>());
 		}
@@ -42,7 +47,7 @@ namespace StarterAssets
 
 		public void OnSprint(InputValue value)
 		{
-			SprintInput(value.isPressed);
+			//SprintInput(value.isPressed);
 		}
 #endif
 
