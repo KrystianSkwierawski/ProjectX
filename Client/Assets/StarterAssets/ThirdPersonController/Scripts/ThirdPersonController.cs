@@ -66,13 +66,13 @@ namespace StarterAssets
         public GameObject CinemachineCameraTarget;
 
         [Tooltip("How far in degrees can you move the camera up")]
-        public float TopClamp = 70.0f;
+        public float TopClamp = 80.0f;
 
         [Tooltip("How far in degrees can you move the camera down")]
         public float BottomClamp = -30.0f;
 
         [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-        public float CameraAngleOverride = 0.0f;
+        public float CameraAngleOverride = 10f;
 
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
@@ -298,6 +298,7 @@ namespace StarterAssets
                 if (dir.sqrMagnitude > 0.0001f)
                 {
                     Quaternion desired = Quaternion.LookRotation(dir);
+
                     // clamp pitch
                     Vector3 e = desired.eulerAngles;
                     float pitch = e.x;

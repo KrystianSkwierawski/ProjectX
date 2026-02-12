@@ -69,7 +69,7 @@ namespace Assets.Scripts.Network
 
         private void CheckCurrentTarget()
         {
-            if (_isCasting && _selectedTarget != null && !IsValidTarget(_selectedTarget.transform))
+            if (_selectedTarget != null && !IsValidTarget(_selectedTarget.transform))
             {
                 HandleUnselect();
                 UnselectServerRpc();
@@ -115,7 +115,11 @@ namespace Assets.Scripts.Network
                 _originalSelectedColor = newRenderer.material.color;
                 newRenderer.material.color = ColorUI.Green;
                 _selectedTarget = hit.transform.gameObject;
-                _thirdPersonController.LockCameraToTarget(_selectedTarget.transform);
+
+                if (!_onlyView)
+                {
+                    _thirdPersonController.LockCameraToTarget(_selectedTarget.transform);
+                }
 
                 TargetUI.Instance.SetTarget("Bean", _selectedTarget.GetComponent<Health>().Network.Value.ToString());
                 SelectServerRpc((NetworkObjectReference)_selectedTarget.GetComponent<NetworkObject>());
