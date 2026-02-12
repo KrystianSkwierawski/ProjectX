@@ -69,7 +69,7 @@ namespace Assets.Scripts.Network
 
         private void CheckCurrentTarget()
         {
-            if (_selectedTarget != null && !IsValidTarget(_selectedTarget.transform))
+            if (_isCasting && _selectedTarget != null && !IsValidTarget(_selectedTarget.transform))
             {
                 HandleUnselect();
                 UnselectServerRpc();
@@ -236,7 +236,14 @@ namespace Assets.Scripts.Network
 
         private void CheckCasting()
         {
-            if (_isCasting || _selectedTarget == null || _onlyView)
+            if (_selectedTarget == null)
+            {
+                StopCasting();
+
+                return;
+            }
+
+            if (_isCasting || _onlyView)
             {
                 return;
             }
