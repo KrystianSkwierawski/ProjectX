@@ -6,5 +6,6 @@
 
         Accept,
         Cancel,
+        Complete,
     }
 }

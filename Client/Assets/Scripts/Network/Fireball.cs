@@ -139,5 +139,14 @@ namespace Assets.Scripts.Network
             _visualEffect.enabled = false;
             AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.FireballImpact, 1f);
         }
+
+        public override void OnNetworkDespawn()
+        {
+            _target = null;
+            _isCasting = false;
+            _caster = null;
+
+            base.OnNetworkDespawn();
+        }
     }
 }

@@ -104,13 +104,19 @@ namespace Assets.Scripts.UI
 
         public void ShowQuest(QuestNpc questNpc)
         {
-            if (questNpc.CharacterQuest == null || questNpc.CharacterQuest.status == CharacterQuestStatusEnum.Finished)
+            Quest.SetActive(true);
+            QuestTitleText.text = questNpc.Quest.title;
+
+            if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
             {
-                Quest.SetActive(true);
-                QuestTitleText.text = questNpc.Quest.title;
-                QuestDescriptionText.text = questNpc.CharacterQuest == null ? questNpc.Quest.description : questNpc.Quest.completeDescription;
-                QuestAcceptButtonText.text = questNpc.CharacterQuest == null ? "Accept" : "Complete";
+                QuestDescriptionText.text = questNpc.Quest.completeDescription;
+                QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Complete);
+
+                return;
             }
+
+            QuestDescriptionText.text = questNpc.Quest.description;
+            QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Accept);
         }
 
         public void HideQuestCanvas()
@@ -164,6 +170,11 @@ namespace Assets.Scripts.UI
             {
                 _questLogObjectPool.Release(questLogObject);
                 _questLogObjects.Remove(characterQuest.questId);
+
+                if (_questLogObjects.Count == 0)
+                {
+                    QuestLog.SetActive(false);
+                }
             }
         }
 

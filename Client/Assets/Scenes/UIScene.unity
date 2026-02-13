@@ -721,7 +721,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0.000061035156, y: 0}
-  m_SizeDelta: {x: 17.931702, y: 0}
+  m_SizeDelta: {x: 3.396202, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &462141275
 MonoBehaviour:
@@ -1660,9 +1660,9 @@ RectTransform:
   m_Father: {fileID: 1314644601}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -2.4645, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1207461406
 MonoBehaviour:
@@ -2079,7 +2079,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -745.8, y: 165.29999}
+  m_AnchoredPosition: {x: -900.8, y: 284.2}
   m_SizeDelta: {x: 99.0683, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1314644602
@@ -2475,7 +2475,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0.000061035156, y: 0}
-  m_SizeDelta: {x: -175.2442, y: 0}
+  m_SizeDelta: {x: 1.2521057, y: 10}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1374416407
 MonoBehaviour:
@@ -2526,7 +2526,6 @@ GameObject:
   - component: {fileID: 1403551754}
   - component: {fileID: 1403551756}
   - component: {fileID: 1403551755}
-  - component: {fileID: 1403551757}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -2654,19 +2653,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1403551753}
   m_CullTransparentMesh: 1
---- !u!114 &1403551757
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1403551753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb097141f8b3c224999031c812f6590e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _key: 1
 --- !u!1 &1414841572
 GameObject:
   m_ObjectHideFlags: 0
@@ -4132,7 +4118,7 @@ RectTransform:
   m_Father: {fileID: 1935629998}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}

@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Mono;
+using Assets.Scripts.Network;
 using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,8 +17,8 @@ namespace StarterAssets
     public class ThirdPersonController : NetworkBehaviour
     {
         [Header("Player")]
-        [Tooltip("Move speed of the character in m/s")]
-        public float MoveSpeed = 2.0f;
+        [Tooltip("Lock speed of the character in m/s")]
+        public float LockSpeed = 3f;
 
         [Tooltip("Sprint speed of the character in m/s")]
         public float SprintSpeed = 5.335f;
@@ -103,10 +104,25 @@ namespace StarterAssets
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemachineVirtualCamera;
+        private TargetSelector _targetSelector;
+
+        [Header("Camera Zoom")]
+        [SerializeField] private float _minZoom = 0f;
+        [SerializeField] private float _maxZoom = 8f;
+        [SerializeField] private float _zoomSpeed = 0.1f;
+
+        private Cinemachine3rdPersonFollow _thirdPersonFollow;
+        private float _currentZoom;
+        private GameObject _geometry;
 
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
+
+        private Vector3? _lastMousePos = null;
+
+        private Transform _lockTarget = null;
+        [SerializeField] private float _lockLerpSpeed = 6f;
 
         private bool IsCurrentDeviceMouse
         {
@@ -150,6 +166,11 @@ namespace StarterAssets
                 var audioSource = GetComponent<AudioSource>();
                 audioSource.enabled = true;
                 AudioManager.Instance.Init(audioSource);
+
+                _thirdPersonFollow = _cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+                _currentZoom = _thirdPersonFollow.CameraDistance;
+                _geometry = transform.Find("Geometry").gameObject;
+                _targetSelector = GetComponent<TargetSelector>();   
             }
         }
 
@@ -180,20 +201,54 @@ namespace StarterAssets
                 GroundedCheck();
                 Move();
                 HandleCusor();
+                HandleZoom();
             }
         }
 
         private void HandleCusor()
         {
-            if (_input.Rotate)
+            if (_input.Rotate && Cursor.lockState == CursorLockMode.None)
             {
-                UnityEngine.Cursor.visible = false;
-                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-                return;
+                if (_lastMousePos == null)
+                {
+                    _lastMousePos = Mouse.current.position.ReadValue();
+                }
+
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
             }
 
-            UnityEngine.Cursor.visible = true;
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            if (!_input.Rotate && Cursor.lockState == CursorLockMode.Locked)
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+
+                if (_lastMousePos.HasValue)
+                {
+                    Mouse.current.WarpCursorPosition(_lastMousePos.Value);
+                    _lastMousePos = null;
+                }
+            }
+        }
+
+        private void HandleZoom()
+        {
+            float scroll = Mouse.current.scroll.ReadValue().y;
+
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                _currentZoom -= scroll * _zoomSpeed * Time.deltaTime * 100f;
+                _currentZoom = Mathf.Clamp(_currentZoom, _minZoom, _maxZoom);
+
+                var distance = Mathf.Lerp(_thirdPersonFollow.CameraDistance, _currentZoom, Time.deltaTime * 10f);
+
+                if (distance > 0)
+                {
+                    _thirdPersonFollow.CameraDistance = distance;
+
+                    _geometry.SetActive(distance > 0.5f);
+                }
+            }
         }
 
         private void LateUpdate()
@@ -224,7 +279,55 @@ namespace StarterAssets
         }
 
         private void CameraRotation()
-        {
+        {          
+            if (_lockTarget != null)
+            {
+                if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold)
+                {
+                    _targetSelector.HandleUnselect();
+                    _targetSelector.UnselectServerRpc();
+
+                    UnlockCamera();
+
+                    return;
+                }
+
+                Vector3 origin = CinemachineCameraTarget.transform.position;
+                Vector3 dir = (_lockTarget.position - origin).normalized;
+
+                if (dir.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion desired = Quaternion.LookRotation(dir);
+                    // clamp pitch
+                    Vector3 e = desired.eulerAngles;
+                    float pitch = e.x;
+
+                    if (pitch > 180f)
+                    {
+                        pitch -= 360f;
+                    }
+
+                    pitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
+                    desired = Quaternion.Euler(pitch + CameraAngleOverride, e.y, 0f);
+
+                    CinemachineCameraTarget.transform.rotation = Quaternion.Slerp(CinemachineCameraTarget.transform.rotation, desired, Time.deltaTime * _lockLerpSpeed);
+
+                    // keep yaw/pitch consistent with current rotation so other code can read them
+                    Vector3 cur = CinemachineCameraTarget.transform.rotation.eulerAngles;
+                    _cinemachineTargetYaw = cur.y;
+                    float curPitch = cur.x;
+
+                    if (curPitch > 180f)
+                    {
+                        curPitch -= 360f;
+                    }
+
+                    _cinemachineTargetPitch = curPitch - CameraAngleOverride;
+                }
+
+                return;
+            }
+
             if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold && !LockCameraPosition)
             {
                 //Don't multiply mouse input by Time.deltaTime;
@@ -245,7 +348,7 @@ namespace StarterAssets
         private void Move()
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed = _input.Sprint ? SprintSpeed : MoveSpeed;
+            float targetSpeed = _input.Sprint ? SprintSpeed : LockSpeed;
 
             // if there is no input, set the target speed to 0
             if (_input.Move == Vector2.zero)
@@ -280,7 +383,41 @@ namespace StarterAssets
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.Move.x, 0.0f, _input.Move.y).normalized;
 
-            // if there is a move input rotate player when the player is moving
+            // When locked on to a target, move relative to the target axis and rotate to face the target.
+            if (_lockTarget != null)
+            {
+                // compute yaw of the vector from player -> target
+                Vector3 toTarget = (_lockTarget.position - transform.position);
+                toTarget.y = 0f;
+                if (toTarget.sqrMagnitude < 0.0001f) toTarget = transform.forward;
+
+                float targetYaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+
+                // smoothly rotate player to face target (so player is oriented toward enemy)
+                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetYaw, ref _rotationVelocity, RotationSmoothTime);
+                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+
+                // movement axes relative to target
+                Quaternion targetYawRot = Quaternion.Euler(0f, targetYaw, 0f);
+                Vector3 forward = targetYawRot * Vector3.forward;
+                Vector3 right = targetYawRot * Vector3.right;
+
+                Vector3 moveDir = (right * _input.Move.x + forward * _input.Move.y);
+                if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
+
+                _controller.Move(moveDir * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+
+                // update animator
+                if (_hasAnimator)
+                {
+                    _animator.SetFloat(_animIDSpeed, _animationBlend);
+                    _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+                }
+
+                return;
+            }
+
+            // if there is a move input rotate player when the player is moving (free camera mode)
             if (_input.Move != Vector2.zero)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
@@ -424,6 +561,32 @@ namespace StarterAssets
             {
                 AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
             }
+        }
+
+        public void LockCameraToTarget(Transform target)
+        {
+            if (target == null) return;
+
+            _lockTarget = target;
+            LockCameraPosition = true;
+
+            Vector3 origin = CinemachineCameraTarget.transform.position;
+            Vector3 dir = (target.position - origin).normalized;
+            if (dir.sqrMagnitude < 0.0001f) return;
+
+            Quaternion lookRot = Quaternion.LookRotation(dir);
+            _cinemachineTargetYaw = lookRot.eulerAngles.y;
+            float pitch = lookRot.eulerAngles.x;
+            if (pitch > 180f) pitch -= 360f;
+            _cinemachineTargetPitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
+            _input.SprintInput(false);
+        }
+
+        public void UnlockCamera()
+        {
+            _lockTarget = null;
+            LockCameraPosition = false;
+            _input.SprintInput(true);
         }
     }
 }

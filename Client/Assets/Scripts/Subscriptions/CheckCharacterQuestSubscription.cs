@@ -1,4 +1,6 @@
-﻿namespace Assets.Scripts.Shared
+﻿using Assets.Scripts.Models;
+
+namespace Assets.Scripts.Shared
 {
     public class CheckCharacterQuestSubscription : AbstractSubscription<CheckCharacterQuestSubscription, CheckCharacterQuestSubscriptionEvent>
     {
