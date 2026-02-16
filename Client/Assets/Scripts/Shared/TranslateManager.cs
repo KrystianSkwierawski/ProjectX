@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -18,6 +19,16 @@ namespace Assets.Scripts.Shared
             var json = asset.ToString();
 
             _object = JObject.Parse(json);
+        }
+
+        public string GetByKey(string key)
+        {
+            if (Enum.TryParse<TranslateKeyEnum>(key, out var enumKey))
+            {
+                return GetByKey(enumKey);
+            }
+
+            return string.Empty;
         }
 
         public string GetByKey(TranslateKeyEnum key)

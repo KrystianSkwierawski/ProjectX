@@ -63,13 +63,14 @@ namespace Assets.Scripts.UI
                        GameObject = obj,
                        Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                        Mesh = mesh,
-                       Button = obj.GetComponent<Button>()
+                       Button = obj.GetComponent<Button>(),
                    };
                },
                actionOnGet: (LootPoolObject obj) => obj.GameObject.SetActive(true),
                actionOnRelease: (LootPoolObject obj) =>
                {
                    obj.Button.onClick.RemoveAllListeners();
+
                    obj.GameObject.SetActive(false);
                }
             );
@@ -83,6 +84,15 @@ namespace Assets.Scripts.UI
             {
                 var slot = _inventorySlots[i];
                 var item = value.inventory.items.ElementAtOrDefault(i);
+
+                var key = slot.GameObject.GetInstanceID().ToString();
+
+                if (slot.Type != item?.type)
+                {
+                    slot.Type = item?.type ?? CharacterInventoryTypeEnum.None;
+                    OnPointerEnterSubscription.Instance.Unsubscribe(key);
+                    OnPointerExitSubscription.Instance.Unsubscribe(key);
+                }
 
                 if (item == null)
                 {
@@ -98,6 +108,21 @@ namespace Assets.Scripts.UI
                 slot.Mesh.text = item.count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.type];
+                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
+                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+
+                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    if (slot.Type != CharacterInventoryTypeEnum.None)
+                    {
+                        slot.Preview.SetActive(true);
+                    }
+                });
+
+                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(false);
+                });
             }
         }
 
@@ -162,11 +187,16 @@ namespace Assets.Scripts.UI
             {
                 var slot = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
 
+                var preview = slot.transform.Find("PreviewCanvas/Preview").gameObject;
+
                 yield return new InventorySlot
                 {
                     GameObject = slot,
                     Image = slot.transform.Find("Background").GetComponent<RawImage>(),
                     Mesh = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                    Preview = preview,
+                    PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
+                    PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
                 };
             }
         }
@@ -178,6 +208,14 @@ namespace Assets.Scripts.UI
             public RawImage Image { get; set; }
 
             public TextMeshProUGUI Mesh { get; set; }
+
+            public GameObject Preview { get; set; }
+
+            public TextMeshProUGUI PreviewTitleMesh { get; set; }
+
+            public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
+
+            public CharacterInventoryTypeEnum Type { get; set; }
         }
 
         private class LootPoolObject

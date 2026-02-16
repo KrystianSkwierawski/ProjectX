@@ -4,5 +4,10 @@
 
     "Accept": "Accept",
     "Cancel": "Cancel",
-    "Complete": "Complete"
+    "Complete": "Complete",
+
+    "CanTitle": "Can",
+    "CanDescription": "A can is a container that can hold items. It can be used to store and transport various goods.",
+    "FishTitle": "Fish",
+    "FishDescription": "Fish are aquatic animals that live in water. They come in various shapes, sizes, and colors, and are an important part of the ecosystem."
 }

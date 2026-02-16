@@ -3,5 +3,10 @@
 
     "Accept": "Akceptuj",
     "Cancel": "Anuluj",
-    "Complete": "Zakończ"
+    "Complete": "Zakończ",
+
+    "CanTitle": "Puszka",
+    "CanDescription": "Puszka to pojemnik, który może przechowywać przedmioty. Może być używany do przechowywania i transportu różnych towarów.",
+    "FishTitle": "Rypcia",
+    "FishDescription": "Rypcie to ryby wodne, które żyją w wodzie. Żyją w różnych formach, rozmiarach i kolorach, i są ważnym elementem ekosystemu."
 }
