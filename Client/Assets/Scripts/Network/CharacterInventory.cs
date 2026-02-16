@@ -235,6 +235,7 @@ namespace Assets.Scripts.Mono
         private async UniTask UpdateCharacterInventoryAsync()
         {
             Inventory = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
+
             InventoryUI.Instance.UpdateInventory(Inventory);
         }
 

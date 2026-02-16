@@ -162,6 +162,8 @@ namespace Assets.Scripts.UI
                     }
                 });
 
+                // TODO: preview
+
                 _lootPoolObjects.Add(item.type, slot);
             }
         }
@@ -187,7 +189,7 @@ namespace Assets.Scripts.UI
             {
                 var slot = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
 
-                var preview = slot.transform.Find("PreviewCanvas/Preview").gameObject;
+                var preview = slot.transform.Find("Preview").gameObject;
 
                 yield return new InventorySlot
                 {
