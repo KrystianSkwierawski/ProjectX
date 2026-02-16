@@ -11,7 +11,7 @@ namespace Assets.Scripts.Network
 {
     public class TargetSelector : NetworkBehaviour
     {
-        [SerializeField] private float _maxCastDistance = 10.0f;
+        [SerializeField] private float _maxCastDistance = 12f;
         [SerializeField] private GameObject _fireballPrefab;
 
         private static Renderer _currentlySelectedRenderer = null;
