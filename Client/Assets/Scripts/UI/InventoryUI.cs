@@ -36,8 +36,8 @@ namespace Assets.Scripts.UI
 
         #endregion
 
-        private ObjectPool<LootPoolObject> _lootObjectPool;
-        private readonly IDictionary<CharacterInventoryTypeEnum, LootPoolObject> _lootPoolObjects = new Dictionary<CharacterInventoryTypeEnum, LootPoolObject>();
+        private ObjectPool<InventorySlot> _lootObjectPool;
+        private readonly IDictionary<CharacterInventoryTypeEnum, InventorySlot> _lootPoolObjects = new Dictionary<CharacterInventoryTypeEnum, InventorySlot>();
         private InventorySlot[] _inventorySlots;
 
         public void Start()
@@ -49,7 +49,7 @@ namespace Assets.Scripts.UI
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
             InitTextures();
 
-            _lootObjectPool = new ObjectPool<LootPoolObject>(
+            _lootObjectPool = new ObjectPool<InventorySlot>(
                createFunc: () =>
                {
                    var obj = Instantiate(_inventorySlotPrefab, LootContent.transform);
@@ -58,16 +58,21 @@ namespace Assets.Scripts.UI
 
                    mesh.gameObject.SetActive(true);
 
-                   return new LootPoolObject
+                   var preview = obj.transform.Find("Preview").gameObject;
+
+                   return new InventorySlot
                    {
                        GameObject = obj,
                        Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                        Mesh = mesh,
                        Button = obj.GetComponent<Button>(),
+                       Preview = preview,
+                       PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
+                       PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
                    };
                },
-               actionOnGet: (LootPoolObject obj) => obj.GameObject.SetActive(true),
-               actionOnRelease: (LootPoolObject obj) =>
+               actionOnGet: (InventorySlot obj) => obj.GameObject.SetActive(true),
+               actionOnRelease: (InventorySlot obj) =>
                {
                    obj.Button.onClick.RemoveAllListeners();
 
@@ -85,21 +90,14 @@ namespace Assets.Scripts.UI
                 var slot = _inventorySlots[i];
                 var item = value.inventory.items.ElementAtOrDefault(i);
 
-                var key = slot.GameObject.GetInstanceID().ToString();
-
-                if (slot.Type != item?.type)
-                {
-                    slot.Type = item?.type ?? CharacterInventoryTypeEnum.None;
-                    OnPointerEnterSubscription.Instance.Unsubscribe(key);
-                    OnPointerExitSubscription.Instance.Unsubscribe(key);
-                }
-
                 if (item == null)
                 {
                     slot.Mesh.gameObject.SetActive(false);
                     slot.Mesh.text = "0";
                     slot.Image.color = ColorUI.Black;
                     slot.Image.texture = null;
+                    slot.Type = CharacterInventoryTypeEnum.None;
+                    slot.HoverUI.enabled = false;
 
                     continue;
                 }
@@ -110,13 +108,14 @@ namespace Assets.Scripts.UI
                 slot.Image.texture = Textures[item.type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
                 slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+                slot.Type = item.type;
+                slot.HoverUI.enabled = true;
+
+                var key = slot.GameObject.GetInstanceID().ToString();
 
                 OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
                 {
-                    if (slot.Type != CharacterInventoryTypeEnum.None)
-                    {
-                        slot.Preview.SetActive(true);
-                    }
+                    slot.Preview.SetActive(true);
                 });
 
                 OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
@@ -144,6 +143,9 @@ namespace Assets.Scripts.UI
                 slot.Mesh.text = item.count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.type];
+                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
+                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+                slot.Type = item.type;
 
                 slot.Button.onClick.AddListener(() =>
                 {
@@ -162,7 +164,17 @@ namespace Assets.Scripts.UI
                     }
                 });
 
-                // TODO: preview
+                var key = slot.GameObject.GetInstanceID().ToString();
+
+                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(true);
+                });
+
+                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(false);
+                });
 
                 _lootPoolObjects.Add(item.type, slot);
             }
@@ -196,6 +208,7 @@ namespace Assets.Scripts.UI
                     GameObject = slot,
                     Image = slot.transform.Find("Background").GetComponent<RawImage>(),
                     Mesh = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                    HoverUI = slot.GetComponent<HoverUI>(),
                     Preview = preview,
                     PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                     PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
@@ -211,6 +224,10 @@ namespace Assets.Scripts.UI
 
             public TextMeshProUGUI Mesh { get; set; }
 
+            public HoverUI HoverUI { get; set; }
+
+            public Button Button { get; set; }
+
             public GameObject Preview { get; set; }
 
             public TextMeshProUGUI PreviewTitleMesh { get; set; }
@@ -218,17 +235,6 @@ namespace Assets.Scripts.UI
             public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
 
             public CharacterInventoryTypeEnum Type { get; set; }
-        }
-
-        private class LootPoolObject
-        {
-            public GameObject GameObject { get; set; }
-
-            public RawImage Image { get; set; }
-
-            public TextMeshProUGUI Mesh { get; set; }
-
-            public Button Button { get; set; }
         }
     }
 }
