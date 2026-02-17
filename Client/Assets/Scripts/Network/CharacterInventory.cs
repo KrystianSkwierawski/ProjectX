@@ -17,6 +17,8 @@ namespace Assets.Scripts.Mono
     {
         private IList<InventoryItem> _currentLoot = new List<InventoryItem>();
 
+        #region LootDictionary
+
         private readonly IDictionary<string, LootItem[]> _loot = new Dictionary<string, LootItem[]>
         {
             {
@@ -45,7 +47,61 @@ namespace Assets.Scripts.Mono
                     },
                 }
             },
+            {
+                "BlackRock",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.BlackOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 6
+                    },
+                }
+            },
+            {
+                "CopperRock",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.CopperOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 3
+                    },
+                }
+            },
+            {
+                "WhiteRock",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.WhiteOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 2
+                    },
+                }
+            },
+            {
+                "PurpleRock",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.PurpleOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 4
+                    },
+                }
+            },
         };
+
+        #endregion
 
         public CharacterInventoryDto Inventory { get; set; }
 
@@ -90,7 +146,7 @@ namespace Assets.Scripts.Mono
                 {
                     if (_loot.TryGetValue(e.GameObjectName, out var drops))
                     {
-                        ProcessLoot(e, drops);
+                        ProcessLoot(drops);
 
                         if (_currentLoot.Any())
                         {
@@ -107,7 +163,7 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        private void ProcessLoot(CheckLootSubscriptionEvent e, LootItem[] drops)
+        private void ProcessLoot(LootItem[] drops)
         {
             foreach (var drop in drops)
             {

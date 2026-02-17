@@ -97,14 +97,13 @@ public class Fishing : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void CheckLootServerRpc(string clientToken)
+    private void CheckLootServerRpc()
     {
         _canFishOut.Value = false;
 
         // TODO: validation
         CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
         {
-            ClientToken = clientToken,
             GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)
         });
     }
@@ -279,7 +278,7 @@ public class Fishing : NetworkBehaviour
         if (mouse.rightButton.wasPressedThisFrame)
         {
             StopCasting();
-            CheckLootServerRpc(UserManager.Instance.Token);
+            CheckLootServerRpc();
         }
     }
 
@@ -566,6 +565,7 @@ public class Fishing : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         _active.OnValueChanged -= OnRodActiveChanged;
+        base.OnNetworkDespawn();
     }
 
     [ClientRpc]

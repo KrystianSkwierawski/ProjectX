@@ -8,6 +8,11 @@
 
         Collect2Cans,
 
-        Catch2Fishses
+        Catch2Fishses,
+
+        Collect2PurpleOres,
+        Collect2WhiteOres,
+        Collect2CopperOres,
+        Collect2BlackOres,
     }
 }

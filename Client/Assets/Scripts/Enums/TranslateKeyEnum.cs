@@ -18,6 +18,14 @@
         CanDescription,
         FishTitle,
         FishDescription,
+        PurpleOreTitle,
+        PurpleOreDescription,
+        WhiteOreTitle,
+        WhiteOreDescription,
+        CopperOreTitle,
+        CopperOreDescription,
+        BlackOreTitle,
+        BlackOreDescription
 
         #endregion
     }

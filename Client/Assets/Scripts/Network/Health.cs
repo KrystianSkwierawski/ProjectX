@@ -42,7 +42,6 @@ namespace Assets.Scripts.Network
 
                         CheckLootSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckLootSubscriptionEvent
                         {
-                            ClientToken = e.ClientToken,
                             GameObjectName = gameObject.name
                         });
 

@@ -689,19 +689,35 @@
         "x-enum-names": [
           "None",
           "Can",
-          "Fish"
+          "Fish",
+          "PurpleOre",
+          "WhiteOre",
+          "CopperOre",
+          "BlackOre"
         ],
         "x-enum-varnames": [
           "None",
           "Can",
-          "Fish"
+          "Fish",
+          "PurpleOre",
+          "WhiteOre",
+          "CopperOre",
+          "BlackOre"
         ],
         "x-enumNames": [
           "None",
           "Can",
-          "Fish"
+          "Fish",
+          "PurpleOre",
+          "WhiteOre",
+          "CopperOre",
+          "BlackOre"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null
@@ -709,12 +725,20 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3,
+          4,
+          5,
+          6
         ]
       },
       "AddCharacterInventoryItemCommand": {
@@ -769,21 +793,37 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses"
+          "Catch2Fishses",
+          "Collect2PurpleOres",
+          "Collect2WhiteOres",
+          "Collect2CopperOres",
+          "Collect2BlackOres"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses"
+          "Catch2Fishses",
+          "Collect2PurpleOres",
+          "Collect2WhiteOres",
+          "Collect2CopperOres",
+          "Collect2BlackOres"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses"
+          "Catch2Fishses",
+          "Collect2PurpleOres",
+          "Collect2WhiteOres",
+          "Collect2CopperOres",
+          "Collect2BlackOres"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -793,13 +833,21 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
           2,
-          3
+          3,
+          4,
+          5,
+          6,
+          7
         ]
       },
       "CharacterQuestStatusEnum": {

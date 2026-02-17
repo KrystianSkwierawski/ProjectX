@@ -9,10 +9,30 @@
     "Collect2CansTitle": "Zbierz 2 puszki",
     "Collect2CansDescription": "Bla bla bla zbierz 2 puszki, ok?",
     "Collect2CansCompleteDescription": "ok, zebrałeś 2 puszki",
-    "Collect2CansStatusText": "Zebrano {0}/{1} cans",
+    "Collect2CansStatusText": "Zebrano {0}/{1} puszki",
 
     "Catch2FishsesTitle": "Złów 2 ryby",
     "Catch2FishsesDescription": "Bla bla bla collect 2 ryby, ok?",
     "Catch2FishsesCompleteDescription": "ok, złowiłeś 2 ryby",
-    "Catch2FishsesStatusText": "Złowiłeś {0}/{1} ryby"
+    "Catch2FishsesStatusText": "Złowiono {0}/{1} ryby",
+
+    "Collect2PurpleOresTitle": "Zbierz 2 fioletowe rudy",
+    "Collect2PurpleOresDescription": "Bla bla bla zbierz dwie fioletowe rudy, ok?",
+    "Collect2PurpleOresCompleteDescription": "ok, zebrałeś 2 fioletowe rudy",
+    "Collect2PurpleOresStatusText": "Zebrano {0}/{1} fioletowe rudy",
+
+    "Collect2WhiteOresTitle": "Zbierz 2 białe rudy",
+    "Collect2WhiteOresDescription": "Bla bla bla zbierz dwie białe rudy, ok?",
+    "Collect2WhiteOresCompleteDescription": "ok, zebrałeś 2 białe rudy",
+    "Collect2WhiteOresStatusText": "Zebrano {0}/{1} białe rudy",
+
+    "Collect2CopperOresTitle": "Zbierz 2 rudy miedzi",
+    "Collect2CopperOresDescription": "Bla bla bla zbierz dwie rudy miedzi, ok?",
+    "Collect2CopperOresCompleteDescription": "ok, zebrałeś 2 rudy miedzi",
+    "Collect2CopperOresStatusText": "Zebrano {0}/{1} rudy miedzi",
+
+    "Collect2BlackOresTitle": "Zbierz 2 czarne rudy",
+    "Collect2BlackOresDescription": "Bla bla bla zbierz dwie czarne rudy, ok?",
+    "Collect2BlackOresCompleteDescription": "ok, zebrałeś 2 czarne rudy",
+    "Collect2BlackOresStatusText": "Zebrano {0}/{1} czarne rudy"
 }

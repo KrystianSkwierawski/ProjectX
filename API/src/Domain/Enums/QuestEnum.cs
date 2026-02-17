@@ -43,7 +43,58 @@ public enum QuestEnum : short
         Requirement = 2,
         Reward = 1000
     )]
-    Catch2Fishses
+    Catch2Fishses,
+
+    [QuestParameters(
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2PurpleOresTitle,
+        Description = TranslateKeyEnum.Collect2PurpleOresDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2PurpleOresCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2PurpleOresStatusText,
+        GameObjectName = nameof(CharacterInventoryTypeEnum.PurpleOre),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2PurpleOres,
+
+    [QuestParameters(
+        PreviousQuestId = Collect2PurpleOres,
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2WhiteOresTitle,
+        Description = TranslateKeyEnum.Collect2WhiteOresDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2WhiteOresCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2WhiteOresStatusText,
+        GameObjectName = nameof(CharacterInventoryTypeEnum.WhiteOre),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2WhiteOres,
+
+    [QuestParameters(
+        PreviousQuestId = Collect2WhiteOres,
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2CopperOresTitle,
+        Description = TranslateKeyEnum.Collect2CopperOresDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2CopperOresDescription,
+        StatusText = TranslateKeyEnum.Collect2CopperOresStatusText,
+        GameObjectName = nameof(CharacterInventoryTypeEnum.CopperOre),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2CopperOres,
+
+    [QuestParameters(
+        PreviousQuestId = Collect2CopperOres,
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2BlackOresTitle,
+        Description = TranslateKeyEnum.Collect2BlackOresDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2BlackOresCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2BlackOresStatusText,
+        GameObjectName = nameof(CharacterInventoryTypeEnum.BlackOre),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2BlackOres,
 }
 
 public static class QuestEnumExtensions

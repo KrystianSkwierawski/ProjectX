@@ -18,6 +18,8 @@ namespace Assets.Scripts.Enums
         FishReelIn,
         FishingBobber,
         AddItem,
+        Mining,
+        MinedOre,
 
         #endregion
 

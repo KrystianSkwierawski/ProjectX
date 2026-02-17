@@ -16,8 +16,9 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterQuests : NetworkBehaviour
     {
+        private const float _npcMaxDistance = 5f;
+
         private QuestNpc _questNpc;
-        private float _npcMaxDistance = 5f;
         private StarterAssetsInputs _input;
 
         [ServerRpc]

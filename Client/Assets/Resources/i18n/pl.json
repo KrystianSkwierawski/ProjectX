@@ -8,5 +8,13 @@
     "CanTitle": "Puszka",
     "CanDescription": "Puszka to pojemnik, który może przechowywać przedmioty. Może być używany do przechowywania i transportu różnych towarów.",
     "FishTitle": "Rypcia",
-    "FishDescription": "Rypcie to ryby wodne, które żyją w wodzie. Żyją w różnych formach, rozmiarach i kolorach, i są ważnym elementem ekosystemu."
+    "FishDescription": "Rypcie to ryby wodne, które żyją w wodzie. Żyją w różnych formach, rozmiarach i kolorach, i są ważnym elementem ekosystemu.",
+    "PurpleOreTitle": "Fioletowa ruda",
+    "PurpleOreDescription": "Fioletowa ruda to rzadka i cenna minerał, który może być używany do tworzenia potężnych broni i zbroi.",
+    "WhiteOreTitle": "Biała ruda",
+    "WhiteOreDescription": "Biała ruda to cenna minerał, który może być używany w różnych recepturach kowalstwa i jest niezbędny do postępu w grze.",
+    "CopperOreTitle": "Ruda miedzi",
+    "CopperOreDescription": "Ruda miedzi to cenna minerał używany w budownictwie i produkcji.",
+    "BlackOreTitle": "Czarna ruda",
+    "BlackOreDescription": "Czarna ruda to rzadka i cenna minerał, który może być używany do tworzenia potężnych broni i zbroi."
 }

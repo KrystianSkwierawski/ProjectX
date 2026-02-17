@@ -11,6 +11,7 @@ TagManager:
   - InventorySlot
   - Bait
   - Water
+  - Rock
   layers:
   - Default
   - TransparentFX
