@@ -27,7 +27,8 @@ namespace Assets.Scripts.Network
                     var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
                         characterId = 1,
-                        type = ExperienceTypeEnum.Combat
+                        amount = 50,
+                        type = ExperienceTypeEnum.Main,
                     }, e.ClientToken);
 
                     if (experience.leveledUp)

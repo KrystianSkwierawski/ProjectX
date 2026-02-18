@@ -8,7 +8,7 @@ namespace Assets.Scripts.Models
     {
         public int characterId;
 
-        public int characterQuestId;
+        public int amount;
 
         public ExperienceTypeEnum type;
     }

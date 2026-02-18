@@ -27,7 +27,7 @@ namespace Assets.Scripts.Shared
 
         public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId)
         {
-            return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests", new AcceptCharacterQuestCommand
+            return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests/Accept", new AcceptCharacterQuestCommand
             {
                 questId = questId
             });
@@ -49,6 +49,14 @@ namespace Assets.Scripts.Shared
                 questId = questId,
                 progress = progress,
                 characterId = characterId,
+            }, clientToken);
+        }
+
+        public async UniTask<CompleteCharacterQuestDto> CompleteAsync(int characterQuestId, string clientToken)
+        {
+            return await UnityWebRequestHelper.ExecutePostAsync<CompleteCharacterQuestDto>("CharacterQuests/Complete", new CompleteCharacterQuestCommand
+            {
+                characterQuestId = characterQuestId,
             }, clientToken);
         }
     }

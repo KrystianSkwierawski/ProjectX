@@ -30,11 +30,13 @@ namespace Assets.Scripts.Mono
 
         private async UniTask CompleteQuestAsync(int characterQuestId, string clientToken, ulong clientId)
         {
+            var quest = await QuestManager.Instance.CompleteAsync(characterQuestId, clientToken);
+
             var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
             {
                 characterId = 1,
-                characterQuestId = characterQuestId,
-                type = ExperienceTypeEnum.Questing
+                amount = quest.reward,
+                type = ExperienceTypeEnum.Main
             }, clientToken);
 
             if (result.leveledUp)

@@ -175,12 +175,14 @@
             "JWT": []
           }
         ]
-      },
+      }
+    },
+    "/api/CharacterQuests/Accept": {
       "post": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "AcceptCharacterQuest",
+        "operationId": "PostApiCharacterQuestsAccept",
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -274,6 +276,43 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CheckCharacterQuestProgressDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/CharacterQuests/Complete": {
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "PostApiCharacterQuestsComplete",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteCharacterQuestCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteCharacterQuestDto"
                 }
               }
             }
@@ -521,7 +560,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "characterQuestId": {
+          "amount": {
             "type": "integer",
             "format": "int32"
           },
@@ -534,70 +573,30 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
-          "Unknown",
-          "Combat",
-          "Crafting",
-          "Gathering",
-          "Exploration",
-          "Questing",
-          "Trading",
-          "Survival",
-          "Technology",
-          "Healing",
-          "Building",
-          "Farming",
+          "Main",
           "Fishing",
+          "Mining",
+          "Lumberjack",
           "Cooking",
-          "Alchemy",
-          "Enchanting"
+          "Crafting"
         ],
         "x-enum-varnames": [
-          "Unknown",
-          "Combat",
-          "Crafting",
-          "Gathering",
-          "Exploration",
-          "Questing",
-          "Trading",
-          "Survival",
-          "Technology",
-          "Healing",
-          "Building",
-          "Farming",
+          "Main",
           "Fishing",
+          "Mining",
+          "Lumberjack",
           "Cooking",
-          "Alchemy",
-          "Enchanting"
+          "Crafting"
         ],
         "x-enumNames": [
-          "Unknown",
-          "Combat",
-          "Crafting",
-          "Gathering",
-          "Exploration",
-          "Questing",
-          "Trading",
-          "Survival",
-          "Technology",
-          "Healing",
-          "Building",
-          "Farming",
+          "Main",
           "Fishing",
+          "Mining",
+          "Lumberjack",
           "Cooking",
-          "Alchemy",
-          "Enchanting"
+          "Crafting"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
           null,
           null,
           null,
@@ -611,16 +610,6 @@
           null,
           null,
           null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
           null
         ],
         "enum": [
@@ -629,17 +618,7 @@
           2,
           3,
           4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15
+          5
         ]
       },
       "CharacterInventoryDto": {
@@ -960,6 +939,26 @@
             "format": "int32"
           },
           "characterId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CompleteCharacterQuestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reward": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CompleteCharacterQuestCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuestId": {
             "type": "integer",
             "format": "int32"
           }

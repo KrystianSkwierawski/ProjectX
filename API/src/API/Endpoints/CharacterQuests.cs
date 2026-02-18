@@ -5,6 +5,7 @@ using ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
 using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
 using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
 using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgres;
+using ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Domain.Constants;
 
@@ -19,7 +20,7 @@ public class CharacterQuests : EndpointGroupBase
             .RequireAuthorization(Policies.Client);
 
         groupBuilder
-            .MapPost(AcceptCharacterQuest)
+            .MapPost("Accept", AcceptCharacterQuest)
             .RequireAuthorization(Policies.Client);
 
         groupBuilder
@@ -28,6 +29,10 @@ public class CharacterQuests : EndpointGroupBase
 
         groupBuilder
             .MapPost("CheckProgress", CheckCharacterQuestProgress)
+            .RequireAuthorization(Policies.Server);
+
+        groupBuilder
+            .MapPost("Complete", CompleteCharacterQuest)
             .RequireAuthorization(Policies.Server);
     }
 
@@ -53,6 +58,13 @@ public class CharacterQuests : EndpointGroupBase
     }
 
     private static async Task<Ok<CheckCharacterQuestProgressDto>> CheckCharacterQuestProgress(ISender sender, CheckCharacterQuestProgressCommand command)
+    {
+        var result = await sender.Send(command);
+
+        return TypedResults.Ok(result);
+    }
+
+    private static async Task<Ok<CompleteCharacterQuestDto>> CompleteCharacterQuest(ISender sender, CompleteCharacterQuestCommand command)
     {
         var result = await sender.Send(command);
 
