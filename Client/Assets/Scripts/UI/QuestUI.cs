@@ -69,7 +69,7 @@ namespace Assets.Scripts.UI
             QuestLogContent = QuestLog.transform.Find("Viewport/Content").gameObject;
             QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
             QuestTitleText = QuestCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>();
-            QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description").GetComponent<TextMeshProUGUI>();
+            QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description/Viewport/Content/Text").GetComponent<TextMeshProUGUI>();
             QuestAcceptButton = QuestCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>();
             QuestCancelButton = QuestCanvas.transform.Find("Quest/CancelButton").GetComponent<Button>();
             Material001 = Resources.Load<Material>("Materials/Material.001");
