@@ -268,14 +268,14 @@ namespace StarterAssets
                 return false;
             }
 
-            var pointerData = new PointerEventData(EventSystem.current)
+            var eventData = new PointerEventData(EventSystem.current)
             {
                 position = Mouse.current.position.ReadValue()
             };
 
             var results = new List<RaycastResult>();
 
-            EventSystem.current.RaycastAll(pointerData, results);
+            EventSystem.current.RaycastAll(eventData, results);
 
             return results
                 .Where(x => x.gameObject != null)
@@ -316,8 +316,11 @@ namespace StarterAssets
             {
                 if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold)
                 {
-                    _targetSelector.HandleUnselect();
-                    _targetSelector.UnselectServerRpc();
+                    if (_lockTarget.tag == "Target")
+                    {
+                        _targetSelector.HandleUnselect();
+                        _targetSelector.UnselectServerRpc();
+                    }
 
                     UnlockCamera();
 
@@ -598,19 +601,26 @@ namespace StarterAssets
 
         public void LockCameraToTarget(Transform target)
         {
-            if (target == null) return;
-
             _lockTarget = target;
             LockCameraPosition = true;
 
-            Vector3 origin = CinemachineCameraTarget.transform.position;
-            Vector3 dir = (target.position - origin).normalized;
-            if (dir.sqrMagnitude < 0.0001f) return;
+            var origin = CinemachineCameraTarget.transform.position;
+            var dir = (target.position - origin).normalized;
 
-            Quaternion lookRot = Quaternion.LookRotation(dir);
+            if (dir.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            var lookRot = Quaternion.LookRotation(dir);
             _cinemachineTargetYaw = lookRot.eulerAngles.y;
             float pitch = lookRot.eulerAngles.x;
-            if (pitch > 180f) pitch -= 360f;
+
+            if (pitch > 180f)
+            {
+                pitch -= 360f;
+            }
+
             _cinemachineTargetPitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
             _input.SprintInput(false);
         }

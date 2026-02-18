@@ -32,6 +32,7 @@ public class Mining : NetworkBehaviour
     private float _interruptDuration = 0.2f;
     private float _interruptTimer = 0f;
     private GameObject _target;
+    private ThirdPersonController _thirdPersonController;
 
     public override void OnNetworkSpawn()
     {
@@ -50,6 +51,7 @@ public class Mining : NetworkBehaviour
         if (IsOwner)
         {
             _input = GetComponent<StarterAssetsInputs>();
+            _thirdPersonController = GetComponent<ThirdPersonController>();
         }
     }
 
@@ -127,7 +129,7 @@ public class Mining : NetworkBehaviour
             return;
         }
 
-        if (!IsValidTarget(hit.transform))
+        if (Vector3.Distance(transform.position, hit.transform.position) > _maxDistance)
         {
             CursorUI.Instance.ShowDefault();
 
@@ -172,6 +174,7 @@ public class Mining : NetworkBehaviour
         _sfxTimer = 0f;
 
         PlayerUI.Instance.ShowCastBar(_miningTimer / _miningTime);
+        _thirdPersonController.LockCameraToTarget(_target.transform);
     }
 
     private void StopMining()
@@ -183,6 +186,7 @@ public class Mining : NetworkBehaviour
         _miningTimer = 0f;
         _sfxTimer = 0f;
         PlayerUI.Instance.HideCastBar();
+        _thirdPersonController.UnlockCamera();
     }
 
     private void InterruptCast()
@@ -229,41 +233,5 @@ public class Mining : NetworkBehaviour
     {
         _active.OnValueChanged -= OnSetActiveChanged;
         base.OnNetworkDespawn();
-    }
-
-    private bool CheckMaxDistance(Transform selectedTransform)
-    {
-        float distance = Vector3.Distance(transform.position, selectedTransform.position);
-        var result = distance <= _maxDistance;
-
-        return result;
-    }
-
-    private bool CheckLineOfSight(Transform selectedTransform)
-    {
-        var origin = transform.position + Vector3.up * 1.0f;
-        var direction = (selectedTransform.position - origin).normalized;
-        var distance = Vector3.Distance(origin, selectedTransform.position);
-
-        var result = Physics.Raycast(origin, direction, out RaycastHit hit, distance) && hit.transform == selectedTransform;
-
-        return result;
-    }
-
-    private bool CheckAngle(Transform selectedTransform)
-    {
-        var toTarget = (selectedTransform.position - transform.position).normalized;
-        var playerForward = transform.forward;
-        var angle = Vector3.Angle(playerForward, toTarget);
-        var result = angle < 90f;
-
-        return result;
-    }
-
-    private bool IsValidTarget(Transform selectedTransform)
-    {
-        return CheckMaxDistance(selectedTransform) &&
-            CheckLineOfSight(selectedTransform) &&
-            CheckAngle(selectedTransform);
     }
 }
