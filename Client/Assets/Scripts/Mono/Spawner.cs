@@ -7,15 +7,17 @@ using UnityEngine.Pool;
 
 namespace Assets.Scripts.Mono
 {
-    public class BeanSpawner : MonoBehaviour
+    public class Spawner : MonoBehaviour
     {
-        [SerializeField] private GameObject _enemyPrefab;
-        [SerializeField] private int _beansCount = 2;
+        [SerializeField] private GameObject _prefab;
+        [SerializeField] private int _count = 2;
+        [SerializeField] private float _transformY; // FIXME: auto calc y
 
         private ObjectPool<GameObject> _pool;
 
         private bool _isSpawning;
         private Collider _collider;
+
 
 #if UNITY_SERVER && !UNITY_EDITOR
         private void Start()
@@ -25,7 +27,7 @@ namespace Assets.Scripts.Mono
             _pool = new ObjectPool<GameObject>(
                 createFunc: () =>
                 {
-                    var result = Instantiate(_enemyPrefab);
+                    var result = Instantiate(_prefab);
 
                     var instanceId = result.GetInstanceID().ToString();
 
@@ -39,7 +41,7 @@ namespace Assets.Scripts.Mono
                 },
                 actionOnGet: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Spawn(),
                 actionOnRelease: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Despawn(false),
-                defaultCapacity: _beansCount
+                defaultCapacity: _count
             );
         }
 
@@ -56,7 +58,7 @@ namespace Assets.Scripts.Mono
             if (init || inactive > 0)
             {
                 _isSpawning = true;
-                await RespawnAsync(init ? _beansCount : inactive);
+                await RespawnAsync(init ? _count : inactive);
             }
         }
 
@@ -74,7 +76,7 @@ namespace Assets.Scripts.Mono
             {
                 var bean = _pool.Get();
 
-                var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), -3.5f, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
+                var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), _transformY, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
 
                 bean.transform.SetPositionAndRotation(position, new Quaternion(0f, 0f, 0f, 0f));
             }

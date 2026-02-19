@@ -48,7 +48,7 @@ namespace Assets.Scripts.Mono
                 }
             },
             {
-                "BlackRock",
+                "BlackRock(Clone)",
                 new LootItem[]
                 {
                     new LootItem
@@ -61,7 +61,7 @@ namespace Assets.Scripts.Mono
                 }
             },
             {
-                "CopperRock",
+                "CopperRock(Clone)",
                 new LootItem[]
                 {
                     new LootItem
@@ -74,7 +74,7 @@ namespace Assets.Scripts.Mono
                 }
             },
             {
-                "WhiteRock",
+                "WhiteRock(Clone)",
                 new LootItem[]
                 {
                     new LootItem
@@ -87,7 +87,7 @@ namespace Assets.Scripts.Mono
                 }
             },
             {
-                "PurpleRock",
+                "PurpleRock(Clone)",
                 new LootItem[]
                 {
                     new LootItem

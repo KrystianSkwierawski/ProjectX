@@ -86,10 +86,7 @@ public class Mining : NetworkBehaviour
 
         if (_miningTimer >= _miningTime)
         {
-            // TODO: release on server
-            _target.SetActive(false);
-
-            CheckLootServerRpc(_target.name, UserManager.Instance.Token);
+            ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>(), UserManager.Instance.Token);
             StopMining();
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.3f);
         }
@@ -210,21 +207,27 @@ public class Mining : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void CheckLootServerRpc(string gameObjectName, string clientToken)
+    private void ProcessServerRpc(NetworkObjectReference networkObjectRef, string clientToken)
     {
         // TODO: validation
-        CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
+        if (networkObjectRef.TryGet(out NetworkObject networkObject))
         {
-            GameObjectName = gameObjectName,
-        });
+            var gameObject = networkObject.gameObject;
 
-        // TODO: release rock pool object
-        UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
-        {
-            characterId = 1,
-            amount = 50,
-            type = ExperienceTypeEnum.Mining
-        }, clientToken).Forget();
+            CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
+            {
+                GameObjectName = gameObject.name,
+            });
+
+            UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+            {
+                characterId = 1,
+                amount = 50,
+                type = ExperienceTypeEnum.Mining
+            }, clientToken).Forget();
+
+            ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
+        }
     }
 
     private void SetActive(bool value)
