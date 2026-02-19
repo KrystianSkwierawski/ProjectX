@@ -1,7 +1,9 @@
 using Assets.Scripts.Enums;
+using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.UI;
+using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
@@ -208,7 +210,7 @@ public class Mining : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void CheckLootServerRpc(string gameObjectName)
+    private void CheckLootServerRpc(string gameObjectName, string clientToken)
     {
         // TODO: validation
         CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
@@ -217,6 +219,12 @@ public class Mining : NetworkBehaviour
         });
 
         // TODO: release rock pool object
+        UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+        {
+            characterId = 1,
+            amount = 50,
+            type = ExperienceTypeEnum.Mining
+        }, clientToken).Forget();
     }
 
     private void SetActive(bool value)

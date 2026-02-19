@@ -1,11 +1,13 @@
 using System;
 using Assets.Scripts.Enums;
+using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
@@ -97,7 +99,7 @@ public class Fishing : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void CheckLootServerRpc()
+    private void CheckLootServerRpc(string clientToken)
     {
         _canFishOut.Value = false;
 
@@ -106,6 +108,13 @@ public class Fishing : NetworkBehaviour
         {
             GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)
         });
+
+        UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+        {
+            characterId = 1,
+            amount = 50,
+            type = ExperienceTypeEnum.Fishing
+        }, clientToken).Forget();
     }
 
     private void Update()
@@ -278,7 +287,7 @@ public class Fishing : NetworkBehaviour
         if (mouse.rightButton.wasPressedThisFrame)
         {
             StopCasting();
-            CheckLootServerRpc();
+            CheckLootServerRpc(UserManager.Instance.Token);
         }
     }
 
