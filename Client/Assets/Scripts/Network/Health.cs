@@ -1,3 +1,4 @@
+using Assets.Scripts.Enums;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
@@ -47,6 +48,8 @@ namespace Assets.Scripts.Network
 
                         AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
                         {
+                            Amount = 50,
+                            Type = ExperienceTypeEnum.Main,
                             ClientToken = e.ClientToken,
                         });
                     }

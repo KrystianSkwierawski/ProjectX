@@ -66,28 +66,17 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
             .Select(x => x.Amount)
             .Sum();
 
-        var newLevel = _experienceToLevel
-            .Where(x => x.Key <= result.Experience)
-            .Max(x => x.Value);
-
-        if (character.Level < newLevel)
-        {
-            if (request.Type == ExperienceTypeEnum.Main)
-            {
-                var diff = (byte)(newLevel - character.Level);
-                character.Level = newLevel;
-                character.SkillPoints += diff;
-                result.SkillPoints = character.SkillPoints;
-            }
-
-            result.LeveledUp = true;
-            result.Level = newLevel;
-
-            Log.Debug("LeveledUp. CharacterId: {0}", character.Id);
-        }
+        result.Level = GetLevel(result.Experience);
 
         await _context.SaveChangesAsync(cancellationToken);
 
         return result;
+    }
+
+    public static byte GetLevel(int experience)
+    {
+        return _experienceToLevel
+            .Where(x => x.Key <= experience)
+            .Max(x => x.Value);
     }
 }

@@ -32,29 +32,12 @@ namespace Assets.Scripts.Mono
         {
             var quest = await QuestManager.Instance.CompleteAsync(characterQuestId, clientToken);
 
-            var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+            AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
             {
-                characterId = 1,
-                amount = quest.reward,
-                type = ExperienceTypeEnum.Main
-            }, clientToken);
-
-            if (result.leveledUp)
-            {
-                UpdateLevelClientRpc(result.level, new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { clientId }
-                    }
-                });
-            }
-        }
-
-        [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
-        {
-            PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
+                Amount = quest.reward,
+                Type = ExperienceTypeEnum.Main,
+                ClientToken = clientToken,
+            });
         }
 
         private async void Start()

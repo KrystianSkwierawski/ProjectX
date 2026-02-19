@@ -7,9 +7,7 @@ namespace Assets.Scripts.Models
     {
         public string name;
 
-        public byte level;
-
-        public byte skillPoints;
+        public byte mainLevel;
 
         public int health;
     }

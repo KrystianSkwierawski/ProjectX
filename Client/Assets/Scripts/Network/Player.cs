@@ -24,18 +24,16 @@ namespace Assets.Scripts.Network
             {
                 AddExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
-                    var experience = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+                    var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
                         characterId = 1,
-                        amount = 50,
-                        type = ExperienceTypeEnum.Main,
+                        amount = e.Amount,
+                        type = e.Type,
                     }, e.ClientToken);
 
-                    if (experience.leveledUp)
+                    if (e.Type == ExperienceTypeEnum.Main)
                     {
-                        Debug.Log($"LevelUp! Level: {experience.level}, SkillPoints: {experience.skillPoints}, Experience: {experience.experience}");
-
-                        UpdateLevelClientRpc(experience.level, new ClientRpcParams
+                        UpdateLevelClientRpc(result.level, new ClientRpcParams
                         {
                             Send = new ClientRpcSendParams
                             {
@@ -55,10 +53,15 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
+        public void UpdateLevelClientRpc(byte level, ClientRpcParams rpcParams = default)
         {
-            PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+            if (level > _character.mainLevel)
+            {
+                _character.mainLevel = level;
+                PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+                Debug.Log($"LevelUp! Level: {level}");
+            }
         }
 
         public override void OnNetworkDespawn()

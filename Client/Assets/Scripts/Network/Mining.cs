@@ -89,7 +89,7 @@ public class Mining : NetworkBehaviour
             // TODO: release on server
             _target.SetActive(false);
 
-            CheckLootServerRpc(_target.name);
+            CheckLootServerRpc(_target.name, UserManager.Instance.Token);
             StopMining();
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.3f);
         }

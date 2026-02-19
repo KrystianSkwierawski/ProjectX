@@ -539,16 +539,9 @@
             "type": "integer",
             "format": "byte"
           },
-          "skillPoints": {
-            "type": "integer",
-            "format": "byte"
-          },
           "experience": {
             "type": "integer",
             "format": "int32"
-          },
-          "leveledUp": {
-            "type": "boolean"
           }
         }
       },
@@ -577,6 +570,7 @@
           "Fishing",
           "Mining",
           "Lumberjack",
+          "Herbalism",
           "Cooking",
           "Crafting"
         ],
@@ -585,6 +579,7 @@
           "Fishing",
           "Mining",
           "Lumberjack",
+          "Herbalism",
           "Cooking",
           "Crafting"
         ],
@@ -593,10 +588,12 @@
           "Fishing",
           "Mining",
           "Lumberjack",
+          "Herbalism",
           "Cooking",
           "Crafting"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -610,6 +607,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -618,7 +616,8 @@
           2,
           3,
           4,
-          5
+          5,
+          6
         ]
       },
       "CharacterInventoryDto": {
@@ -971,11 +970,7 @@
           "name": {
             "type": "string"
           },
-          "level": {
-            "type": "integer",
-            "format": "byte"
-          },
-          "skillPoints": {
+          "mainLevel": {
             "type": "integer",
             "format": "byte"
           },

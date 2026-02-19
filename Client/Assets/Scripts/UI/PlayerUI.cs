@@ -73,7 +73,7 @@ namespace Assets.Scripts.UI
         {
             PlayerNameText.text = character.name;
             PlayerHealthPointsText.text = character.health.ToString();
-            PlayerLevelText.text = $"Level: {character.level}";
+            PlayerLevelText.text = $"Level: {character.mainLevel}";
         }
     }
 }
