@@ -99,6 +99,19 @@ namespace Assets.Scripts.Mono
                     },
                 }
             },
+            {
+                "Chamomile(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Chamomile,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 4
+                    },
+                }
+            },
         };
 
         #endregion

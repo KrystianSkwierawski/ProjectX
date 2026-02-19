@@ -34,5 +34,10 @@
     "Collect2BlackOresTitle": "Zbierz 2 czarne rudy",
     "Collect2BlackOresDescription": "Bla bla bla zbierz dwie czarne rudy, ok?",
     "Collect2BlackOresCompleteDescription": "ok, zebrałeś 2 czarne rudy",
-    "Collect2BlackOresStatusText": "Zebrano {0}/{1} czarne rudy"
+    "Collect2BlackOresStatusText": "Zebrano {0}/{1} czarne rudy",
+
+    "Collect2ChamomileTitle": "Collect 2 Chamomile",
+    "Collect2ChamomileDescription": "Bla bla bla collect 2 chamomiles, ok?",
+    "Collect2ChamomileCompleteDescription": "ok, u collected 2 chamomiles",
+    "Collect2ChamomileStatusText": "Collected {0}/{1} Chamomile"
 }

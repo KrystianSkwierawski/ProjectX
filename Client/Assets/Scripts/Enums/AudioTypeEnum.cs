@@ -20,6 +20,7 @@ namespace Assets.Scripts.Enums
         AddItem,
         Mining,
         MinedOre,
+        Herbalism,
 
         #endregion
 

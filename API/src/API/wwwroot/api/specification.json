@@ -671,7 +671,8 @@
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
-          "BlackOre"
+          "BlackOre",
+          "Chamomile"
         ],
         "x-enum-varnames": [
           "None",
@@ -680,7 +681,8 @@
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
-          "BlackOre"
+          "BlackOre",
+          "Chamomile"
         ],
         "x-enumNames": [
           "None",
@@ -689,9 +691,11 @@
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
-          "BlackOre"
+          "BlackOre",
+          "Chamomile"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -707,6 +711,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -716,7 +721,8 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ]
       },
       "AddCharacterInventoryItemCommand": {
@@ -775,7 +781,8 @@
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
-          "Collect2BlackOres"
+          "Collect2BlackOres",
+          "Collect2Chamomiles"
         ],
         "x-enum-varnames": [
           "None",
@@ -785,7 +792,8 @@
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
-          "Collect2BlackOres"
+          "Collect2BlackOres",
+          "Collect2Chamomiles"
         ],
         "x-enumNames": [
           "None",
@@ -795,9 +803,11 @@
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
-          "Collect2BlackOres"
+          "Collect2BlackOres",
+          "Collect2Chamomiles"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -815,6 +825,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -825,7 +836,8 @@
           4,
           5,
           6,
-          7
+          7,
+          8
         ]
       },
       "CharacterQuestStatusEnum": {

@@ -78,7 +78,7 @@ namespace Assets.Scripts.Mono
 
                 var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), _transformY, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
 
-                bean.transform.SetPositionAndRotation(position, new Quaternion(0f, 0f, 0f, 0f));
+                bean.transform.position = position;
             }
 
             _isSpawning = false;

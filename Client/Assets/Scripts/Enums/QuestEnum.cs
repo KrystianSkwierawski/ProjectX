@@ -14,5 +14,7 @@
         Collect2WhiteOres,
         Collect2CopperOres,
         Collect2BlackOres,
+
+        Collect2Chamomiles
     }
 }

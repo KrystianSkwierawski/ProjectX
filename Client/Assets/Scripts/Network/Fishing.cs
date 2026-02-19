@@ -109,12 +109,12 @@ public class Fishing : NetworkBehaviour
             GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)
         });
 
-        UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
+        AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
         {
-            characterId = 1,
-            amount = 50,
-            type = ExperienceTypeEnum.Fishing
-        }, clientToken).Forget();
+            Amount = 50,
+            Type = ExperienceTypeEnum.Fishing,
+            ClientToken = clientToken
+        });
     }
 
     private void Update()

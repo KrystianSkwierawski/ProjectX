@@ -12,6 +12,7 @@ TagManager:
   - Bait
   - Water
   - Rock
+  - Herbalism
   layers:
   - Default
   - TransparentFX

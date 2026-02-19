@@ -21,6 +21,7 @@ public enum CharacterInventoryTypeEnum
     WhiteOre,
     CopperOre,
     BlackOre,
+    Chamomile
 
     #endregion
 }

@@ -1,52 +1,29 @@
 using Assets.Scripts.Enums;
-using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.UI;
-using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Mining : NetworkBehaviour
+public class Herbalism : NetworkBehaviour
 {
     private const float _maxDistance = 2f;
 
-    private GameObject _picaxe;
-
     private StarterAssetsInputs _input;
-
-    private readonly NetworkVariable<bool> _active =
-        new NetworkVariable<bool>(
-            false,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
 
     private Color _originalBarColor;
     private bool _isCasting = false;
-    private float _castingTime = 3f;
+    private float _castingTime = 2f;
     private float _castingTimer = 0f;
     private float _sfxTimer = 0f;
-    private float _sfxTime = 1f;
+    private float _sfxTime = 2f;
     private bool _isInterrupted = false;
     private float _interruptDuration = 0.2f;
     private float _interruptTimer = 0f;
     private GameObject _target;
     private ThirdPersonController _thirdPersonController;
-
-    public override void OnNetworkSpawn()
-    {
-        SetActive(_active.Value);
-        _active.OnValueChanged += OnSetActiveChanged;
-        base.OnNetworkSpawn();
-    }
-
-    private void Awake()
-    {
-        _picaxe = transform.Find("Picaxe").gameObject;
-    }
 
     private void Start()
     {
@@ -61,7 +38,7 @@ public class Mining : NetworkBehaviour
     {
         if (IsOwner)
         {
-            CheckSfx();
+            //CheckSfx();
             CheckInput();
             CheckMining();
             CheckInterrupt();
@@ -87,8 +64,7 @@ public class Mining : NetworkBehaviour
         if (_castingTimer >= _castingTime)
         {
             ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>(), UserManager.Instance.Token);
-            StopMining();
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.3f);
+            StopHerbalism();
         }
     }
 
@@ -104,7 +80,7 @@ public class Mining : NetworkBehaviour
         if (_sfxTimer >= _sfxTime)
         {
             _sfxTimer -= _sfxTime;
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Mining, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Herbalism, 0.5f);
         }
     }
 
@@ -119,7 +95,7 @@ public class Mining : NetworkBehaviour
 
         var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
 
-        var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Rock";
+        var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Herbalism";
 
         if (!hover)
         {
@@ -140,8 +116,8 @@ public class Mining : NetworkBehaviour
         if (mouse.rightButton.wasPressedThisFrame)
         {
             _target = hit.transform.gameObject;
-            StartMining();
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Mining, 0.5f);
+            StartHerbalism();
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Herbalism, 0.5f);
         }
     }
 
@@ -163,10 +139,8 @@ public class Mining : NetworkBehaviour
         }
     }
 
-    private void StartMining()
+    private void StartHerbalism()
     {
-        SetActiveServerRpc(true);
-
         _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
         _isCasting = true;
         _castingTimer = 0f;
@@ -176,10 +150,8 @@ public class Mining : NetworkBehaviour
         _thirdPersonController.LockCameraToTarget(_target.transform);
     }
 
-    private void StopMining()
+    private void StopHerbalism()
     {
-        SetActiveServerRpc(false);
-
         _target = null;
         _isCasting = false;
         _castingTimer = 0f;
@@ -196,14 +168,6 @@ public class Mining : NetworkBehaviour
 
         PlayerUI.Instance.FailCastBar();
         AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
-
-        SetActiveServerRpc(false);
-    }
-
-    [ServerRpc]
-    public void SetActiveServerRpc(bool value)
-    {
-        _active.Value = value;
     }
 
     [ServerRpc]
@@ -222,27 +186,11 @@ public class Mining : NetworkBehaviour
             AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
             {
                 Amount = 50,
-                Type = ExperienceTypeEnum.Mining,
+                Type = ExperienceTypeEnum.Herbalism,
                 ClientToken = clientToken
             });
 
             ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());
         }
-    }
-
-    private void SetActive(bool value)
-    {
-        _picaxe.SetActive(value);
-    }
-
-    private void OnSetActiveChanged(bool prev, bool next)
-    {
-        SetActive(next);
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        _active.OnValueChanged -= OnSetActiveChanged;
-        base.OnNetworkDespawn();
     }
 }

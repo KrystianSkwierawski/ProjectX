@@ -25,7 +25,9 @@
         CopperOreTitle,
         CopperOreDescription,
         BlackOreTitle,
-        BlackOreDescription
+        BlackOreDescription,
+        ChamomileTitle,
+        ChamomileDescription
 
         #endregion
     }

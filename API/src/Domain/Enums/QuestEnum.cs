@@ -95,6 +95,18 @@ public enum QuestEnum : short
         Reward = 1000
     )]
     Collect2BlackOres,
+
+    [QuestParameters(
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2ChamomileTitle,
+        Description = TranslateKeyEnum.Collect2ChamomileDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2ChamomileCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2ChamomileStatusText,
+        GameObjectName = nameof(CharacterInventoryTypeEnum.Chamomile),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2Chamomiles,
 }
 
 public static class QuestEnumExtensions

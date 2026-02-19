@@ -35,5 +35,10 @@
     Collect2BlackOresTitle,
     Collect2BlackOresDescription,
     Collect2BlackOresCompleteDescription,
-    Collect2BlackOresStatusText
+    Collect2BlackOresStatusText,
+
+    Collect2ChamomileTitle,
+    Collect2ChamomileDescription,
+    Collect2ChamomileCompleteDescription,
+    Collect2ChamomileStatusText
 }

@@ -22,6 +22,7 @@ namespace Assets.Scripts.Enums
         WhiteOre,
         CopperOre,
         BlackOre,
+        Chamomile,
 
         #endregion
     }
