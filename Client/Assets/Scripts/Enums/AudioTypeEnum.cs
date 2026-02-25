@@ -21,6 +21,7 @@ namespace Assets.Scripts.Enums
         Mining,
         MinedOre,
         Herbalism,
+        // TODO Lumberjack, 
 
         #endregion
 

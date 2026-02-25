@@ -112,6 +112,19 @@ namespace Assets.Scripts.Mono
                     },
                 }
             },
+            {
+            "Tree(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = CharacterInventoryTypeEnum.Wood,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 4
+                    },
+                }
+            },
         };
 
         #endregion

@@ -39,5 +39,10 @@
     "Collect2ChamomileTitle": "Collect 2 Chamomile",
     "Collect2ChamomileDescription": "Bla bla bla collect 2 chamomiles, ok?",
     "Collect2ChamomileCompleteDescription": "ok, u collected 2 chamomiles",
-    "Collect2ChamomileStatusText": "Collected {0}/{1} Chamomile"
+    "Collect2ChamomileStatusText": "Collected {0}/{1} Chamomile",
+
+    "Collect2WoodsTitle": "Collect 2 woods",
+    "Collect2WoodsDescription": "Bla bla bla collect 2 woods, ok?",
+    "Collect2WoodsCompleteDescription": "ok, u collected 2 woods",
+    "Collect2WoodsStatusText": "Collected {0}/{1} woods"
 }

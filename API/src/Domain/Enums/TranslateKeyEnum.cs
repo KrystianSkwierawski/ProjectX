@@ -40,5 +40,10 @@
     Collect2ChamomileTitle,
     Collect2ChamomileDescription,
     Collect2ChamomileCompleteDescription,
-    Collect2ChamomileStatusText
+    Collect2ChamomileStatusText,
+
+    Collect2WoodsTitle,
+    Collect2WoodsDescription,
+    Collect2WoodsCompleteDescription,
+    Collect2WoodsStatusText
 }

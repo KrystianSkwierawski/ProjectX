@@ -98,15 +98,15 @@ public enum QuestEnum : short
 
     [QuestParameters(
         Type = QuestTypeEnum.Collect,
-        TitleKey = TranslateKeyEnum.Collect2ChamomileTitle,
-        Description = TranslateKeyEnum.Collect2ChamomileDescription,
-        CompleteDescription = TranslateKeyEnum.Collect2ChamomileCompleteDescription,
-        StatusText = TranslateKeyEnum.Collect2ChamomileStatusText,
+        TitleKey = TranslateKeyEnum.Collect2WoodsTitle,
+        Description = TranslateKeyEnum.Collect2WoodsDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2WoodsCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2WoodsStatusText,
         GameObjectName = nameof(CharacterInventoryTypeEnum.Chamomile),
         Requirement = 2,
         Reward = 1000
     )]
-    Collect2Chamomiles,
+    Collect2Woods,
 }
 
 public static class QuestEnumExtensions

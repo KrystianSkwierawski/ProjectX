@@ -82,7 +82,7 @@ namespace Assets.Scripts.Mono
             }
 
             _isSpawning = false;
-            Debug.Log($"{count} beans spawned");
+            Debug.Log($"{count} {_prefab.name} spawned");
         }
 #endif
     }
