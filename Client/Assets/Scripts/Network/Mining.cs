@@ -173,7 +173,7 @@ public class Mining : NetworkBehaviour
         _sfxTimer = 0f;
 
         PlayerUI.Instance.ShowCastBar(_castingTimer / _castingTime);
-        _thirdPersonController.LockCameraToTarget(_target.transform);
+        _thirdPersonController.LockCameraToTarget(_target.transform, 0f);
     }
 
     private void StopMining()

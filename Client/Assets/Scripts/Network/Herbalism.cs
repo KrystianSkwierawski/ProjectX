@@ -147,7 +147,7 @@ public class Herbalism : NetworkBehaviour
         _sfxTimer = 0f;
 
         PlayerUI.Instance.ShowCastBar(_castingTimer / _castingTime);
-        _thirdPersonController.LockCameraToTarget(_target.transform);
+        _thirdPersonController.LockCameraToTarget(_target.transform, -15f);
     }
 
     private void StopHerbalism()

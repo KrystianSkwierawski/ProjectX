@@ -28,8 +28,8 @@
         BlackOreDescription,
         ChamomileTitle,
         ChamomileDescription,
-        Collect2WoodsTitle,
-        Collect2WoodsDescription
+        WoodTitle,
+        WoodDescription
 
         #endregion
     }

@@ -76,8 +76,7 @@ namespace StarterAssets
         [Tooltip("How far in degrees can you move the camera down")]
         public float BottomClamp = -30.0f;
 
-        [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-        public float CameraAngleOverride = 10f;
+        private float _cameraAngleOverride;
 
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
@@ -344,7 +343,7 @@ namespace StarterAssets
                     }
 
                     pitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
-                    desired = Quaternion.Euler(pitch + CameraAngleOverride, e.y, 0f);
+                    desired = Quaternion.Euler(pitch + _cameraAngleOverride, e.y, 0f);
 
                     CinemachineCameraTarget.transform.rotation = Quaternion.Slerp(CinemachineCameraTarget.transform.rotation, desired, Time.deltaTime * _lockLerpSpeed);
 
@@ -358,7 +357,7 @@ namespace StarterAssets
                         curPitch -= 360f;
                     }
 
-                    _cinemachineTargetPitch = curPitch - CameraAngleOverride;
+                    _cinemachineTargetPitch = curPitch - _cameraAngleOverride;
                 }
 
                 return;
@@ -378,7 +377,7 @@ namespace StarterAssets
             _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
             // Cinemachine will follow this target
-            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
+            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + _cameraAngleOverride, _cinemachineTargetYaw, 0.0f);
         }
 
         private void Move()
@@ -599,8 +598,9 @@ namespace StarterAssets
             }
         }
 
-        public void LockCameraToTarget(Transform target)
+        public void LockCameraToTarget(Transform target, float angleOverride = 10f)
         {
+            _cameraAngleOverride = angleOverride;
             _lockTarget = target;
             LockCameraPosition = true;
 
