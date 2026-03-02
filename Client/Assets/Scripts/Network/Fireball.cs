@@ -122,11 +122,12 @@ namespace Assets.Scripts.Network
             {
                 _hit = true;
 
-                UpdateHealthSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new UpdateHealthSubscriptionEvent
+                AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
                     Value = 50f,
-                    ClientToken = _clientToken
+                    ClientToken = _clientToken,
+                    Player = _caster
                 });
 
                 OnHitTargetClientRpc();

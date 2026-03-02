@@ -2,6 +2,7 @@ using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
+using Assets.Scripts.Subscriptions;
 using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
@@ -42,7 +43,39 @@ namespace Assets.Scripts.Network
                         });
                     }
                 });
+
+                AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+                {
+                    AttackPlayerClientRpc(e.Value, new ClientRpcParams
+                    {
+                        Send = new ClientRpcSendParams
+                        {
+                            TargetClientIds = new ulong[] { OwnerClientId }
+                        }
+                    });
+
+                    // TODO: call api
+                });
             }
+        }
+
+        [ClientRpc]
+        private void AttackPlayerClientRpc(int value, ClientRpcParams rpcParams = default)
+        {
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
+
+            _character.health -= value;
+
+            if (_character.health <= 0)
+            {
+                _character.health = 0;
+
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Death, 0.3f);
+
+                transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
+            }
+
+            PlayerUI.Instance.SetHealth(_character.health);
         }
 
         private async UniTask GetCharacterAsync()
@@ -68,7 +101,10 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                AddExperienceSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                var key = OwnerClientId.ToString();
+
+                AddExperienceSubscription.Instance.Unsubscribe(key);
+                AttackPlayerSubscription.Instance.Unsubscribe(key);
             }
 
             base.OnNetworkDespawn();
@@ -77,7 +113,10 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                AddExperienceSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+                var key = OwnerClientId.ToString();
+
+                AddExperienceSubscription.Instance.Unsubscribe(key);
+                AttackPlayerSubscription.Instance.Unsubscribe(key);
             }
 
             base.OnDestroy();

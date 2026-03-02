@@ -16,7 +16,7 @@ namespace Assets.Scripts.Network
             {
                 var gameObjectKey = gameObject.GetInstanceID().ToString();
 
-                UpdateHealthSubscription.Instance.Subscribe(gameObjectKey, (e) =>
+                AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
                     Network.Value -= e.Value;
                     Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
@@ -54,6 +54,12 @@ namespace Assets.Scripts.Network
                         });
                     }
 
+                    MonsterAggroSubscription.Instance.Invoke(gameObjectKey, new MonsterAggroSubscriptionEvent
+                    {
+                        ClientId = e.ClientId,
+                        Target = targetSelectorSubscriptionsEvent.Killed ? null : e.Player
+                    });
+
                     UpdateTargetSelectorSubscription.Instance.Invoke(gameObjectKey, targetSelectorSubscriptionsEvent);
                 });
             }
@@ -73,7 +79,7 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                UpdateHealthSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
+                AttackTargetSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
             }
 
             base.OnDestroy();

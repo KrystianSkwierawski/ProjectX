@@ -22,6 +22,9 @@ namespace Assets.Scripts.Enums
         MinedOre,
         Herbalism,
         // TODO Lumberjack, 
+        Death,
+        MonsterAggro,
+        MonsterAttack,
 
         #endregion
 
