@@ -71,14 +71,24 @@ namespace Assets.Scripts.UI
 
         public void SetPlayer(CharacterDto character)
         {
-            PlayerNameText.text = character.name;
+            SetName(character.name);
             SetHealth(character.health);
-            PlayerLevelText.text = $"Level: {character.mainLevel}";
+            SetLevel(character.mainLevel);
+        }
+
+        public void SetName(string name)
+        {
+            PlayerNameText.text = name;
         }
 
         public void SetHealth(int health)
         {
             PlayerHealthPointsText.text = health.ToString();
-        }   
+        }
+
+        public void SetLevel(int level)
+        {
+            PlayerLevelText.text = $"Level: {level}";
+        }
     }
 }

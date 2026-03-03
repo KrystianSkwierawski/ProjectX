@@ -1,4 +1,5 @@
 using Assets.Scripts.Enums;
+using Assets.Scripts.Extensions;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Unity.Netcode;
@@ -96,23 +97,12 @@ namespace Assets.Scripts.Network
                 return;
             }
 
-            MoveTowardsTarget();
+            transform.MoveTowardsTarget(_target, true, _speed);
 
-            if (IsCloseToTarget())
+            if (transform.IsCloseToTarget(_target))
             {
                 OnHitTarget();
             }
-        }
-
-        private void MoveTowardsTarget()
-        {
-            Vector3 direction = (_target.transform.position - transform.position).normalized;
-            transform.position += direction * _speed * Time.deltaTime;
-        }
-
-        private bool IsCloseToTarget()
-        {
-            return Vector3.Distance(transform.position, _target.transform.position) < 0.5f;
         }
 
         // FIXME: disconnect error

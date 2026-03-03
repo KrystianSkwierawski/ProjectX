@@ -18,7 +18,7 @@ namespace Assets.Scripts.Network
         {
             if (IsOwner)
             {
-                await GetCharacterAsync();
+                SetCharacterServerRpc(UserManager.Instance.Token);
             }
 
             if (IsServer)
@@ -32,8 +32,10 @@ namespace Assets.Scripts.Network
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (e.Type == ExperienceTypeEnum.Main)
+                    if (e.Type == ExperienceTypeEnum.Main && result.level > _character.mainLevel)
                     {
+                        _character.mainLevel = result.level;
+
                         UpdateLevelClientRpc(result.level, new ClientRpcParams
                         {
                             Send = new ClientRpcSendParams
@@ -46,7 +48,14 @@ namespace Assets.Scripts.Network
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    AttackPlayerClientRpc(e.Value, new ClientRpcParams
+                    _character.health -= _character.health <= 0 ? 0 : e.Value;
+
+                    if (_character.health <= 0)
+                    {
+                        _character.health = 0;
+                    }
+
+                    AttackPlayerClientRpc(_character.health, new ClientRpcParams
                     {
                         Send = new ClientRpcSendParams
                         {
@@ -60,41 +69,55 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        private void AttackPlayerClientRpc(int value, ClientRpcParams rpcParams = default)
+        private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
+            _character.health = health;
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 
-            _character.health -= value;
-
-            if (_character.health <= 0)
+            if (health == 0)
             {
-                _character.health = 0;
-
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Death, 0.3f);
 
+                // FIXME: set on server
                 transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
             }
 
             PlayerUI.Instance.SetHealth(_character.health);
         }
 
-        private async UniTask GetCharacterAsync()
+        [ServerRpc]
+        private void SetCharacterServerRpc(string clientToken)
         {
-            _character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1");
+            SetCharacterAsync(clientToken).Forget();
+        }
 
+        private async UniTask SetCharacterAsync(string clientToken)
+        {
+            _character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+
+            UpdatePlayerClientRpc(_character, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+
+        [ClientRpc]
+        public void UpdatePlayerClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
+        {
+            _character = character;
             PlayerUI.Instance.SetPlayer(_character);
         }
 
         [ClientRpc]
         public void UpdateLevelClientRpc(byte level, ClientRpcParams rpcParams = default)
         {
-            if (level > _character.mainLevel)
-            {
-                _character.mainLevel = level;
-                PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
-                Debug.Log($"LevelUp! Level: {level}");
-            }
+            _character.mainLevel = level;
+            PlayerUI.Instance.SetLevel(level);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
         }
 
         public override void OnNetworkDespawn()
