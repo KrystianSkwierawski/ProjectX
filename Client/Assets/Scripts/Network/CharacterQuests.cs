@@ -80,9 +80,10 @@ namespace Assets.Scripts.Mono
                 .Where(x => x.gameObjectName == gameObjectName)
                 .FirstOrDefault();
 
-            if (quest == null)
+            if (quest == null || quest.id == QuestEnum.None)
             {
                 Debug.Log($"Quest not found. GameObjectName: {gameObjectName}");
+
                 return;
             }
 
