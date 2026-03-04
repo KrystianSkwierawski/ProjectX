@@ -14,7 +14,7 @@ namespace Assets.Scripts.Network
     {
         private CharacterDto _character;
 
-        private async void Start()
+        private void Start()
         {
             if (IsOwner)
             {
