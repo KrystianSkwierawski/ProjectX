@@ -8,6 +8,7 @@ namespace Assets.Scripts.Shared
 {
     public class TranslateManager : Singleton<TranslateManager>
     {
+        // TODO: cache manager with expiration?
         private IDictionary<TranslateKeyEnum, string> _cache = new Dictionary<TranslateKeyEnum, string>();
 
         private JObject _object;

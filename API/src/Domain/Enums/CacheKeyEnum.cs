@@ -23,7 +23,7 @@ public enum CacheKeyEnum
     Quests,
 
     [CacheKeyParameters(
-      Format = "CraftingRecipes",
+      Format = "CraftingRecipes_{0}",
       ExpiryInSeconds = 3600
     )]
     CraftingRecipes,

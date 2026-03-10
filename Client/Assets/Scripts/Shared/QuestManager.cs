@@ -7,20 +7,21 @@ namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
+        // FIXME: array?
         public IList<QuestDto> Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
 
-        public async UniTask LoadQuestsAsync()
+        public async UniTask LoadAsync()
         {
             var result = await UnityWebRequestHelper.ExecuteGetAsync<GetQuestsDto>("Quests");
 
             Quests = result.quests;
         }
 
-        public async UniTask LoadCharacterQuestsAsync()
+        public async UniTask LoadAsync(int characterId)
         {
-            var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>("CharacterQuests?CharacterId=1");
+            var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>($"CharacterQuests?CharacterId={characterId}");
 
             CharacterQuests = result.characterQuests;
         }

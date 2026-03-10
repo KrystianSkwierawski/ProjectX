@@ -13,7 +13,7 @@ public class CraftingRecipeConfiguration : IEntityTypeConfiguration<CraftingReci
             .ValueGeneratedNever();
 
         builder
-            .HasIndex(x => x.Status)
-            .HasDatabaseName("IX.CraftingRecipe.Status");
+            .HasIndex(x => new { x.Type, x.Status })
+            .HasDatabaseName("IX.CraftingRecipe.Type.Status");
     }
 }

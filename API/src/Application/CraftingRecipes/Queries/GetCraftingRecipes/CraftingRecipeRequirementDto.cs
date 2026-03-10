@@ -3,7 +3,8 @@
 namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
 public class CraftingRecipeRequirementDto
 {
-    public InventoryItem[] Items { get; set; } = [];
+    // FIXME: array?
+    public IList<InventoryItem> Items { get; set; } = [];
 
     public int Level { get; set; }
 }
