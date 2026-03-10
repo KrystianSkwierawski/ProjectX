@@ -22,7 +22,7 @@ public class TranslateService : ITranslateService
     {
         language ??= _currentUserService.Language;
 
-        return _memoryCache.GetOrCreate(CacheKeyEnum.Translate, (ICacheEntry entry) =>
+        return _memoryCache.GetOrCreate(CacheKeyEnum.Translate, entry =>
         {
             try
             {

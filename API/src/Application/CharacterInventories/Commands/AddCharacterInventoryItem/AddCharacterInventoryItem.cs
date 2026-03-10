@@ -33,9 +33,7 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
 
-        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
-
-        var slot = inventory.Items
+        var slot = inventory!.Items
             .Where(x => x.Type == request.inventoryItem.Type)
             .FirstOrDefault();
 

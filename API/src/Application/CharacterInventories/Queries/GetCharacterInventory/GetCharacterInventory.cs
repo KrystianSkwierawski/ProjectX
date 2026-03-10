@@ -36,12 +36,10 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(result.Items);
 
-        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
-
         return new CharacterInventoryDto
         {
             CharacterId = result.Id,
-            Inventory = inventory,
+            Inventory = inventory!,
             Count = result.Count
         };
     }

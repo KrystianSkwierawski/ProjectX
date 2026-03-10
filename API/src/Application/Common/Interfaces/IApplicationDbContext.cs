@@ -17,6 +17,8 @@ public interface IApplicationDbContext
 
     DbSet<Quest> Quests { get; }
 
+    DbSet<CraftingRecipe> CraftingRecipes { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     TransactionScope CreateTransactionScope();
