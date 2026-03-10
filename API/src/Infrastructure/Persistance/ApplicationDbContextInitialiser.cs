@@ -47,6 +47,7 @@ public class ApplicationDbContextInitialiser
         Log.Debug("InitialiseAsync -> Ensured created database");
 
         await InsertOrUpdateQuestsAsync();
+        await InsertOrUpdateCraftingRecipesAsync();
 
         await CreateRoleAsync(Roles.Server);
         await CreateRoleAsync(Roles.Client);
@@ -148,7 +149,7 @@ public class ApplicationDbContextInitialiser
 
         var update = enumQuests
             .Where(x => dbQuests.Any(y => y.Id == x))
-            .ToDictionary(x => x, x => x.GetQuestParametersAttribute())
+            .ToDictionary(x => x, x => x.GetParameters())
             .Select(x => new Quest
             {
                 Id = x.Key,
@@ -167,7 +168,7 @@ public class ApplicationDbContextInitialiser
 
         var insert = enumQuests
             .Where(x => !dbQuests.Any(y => y.Id == x))
-            .ToDictionary(x => x, x => x.GetQuestParametersAttribute())
+            .ToDictionary(x => x, x => x.GetParameters())
             .Select(x => new Quest
             {
                 Id = x.Key,
@@ -199,5 +200,76 @@ public class ApplicationDbContextInitialiser
         scope.Complete();
 
         Log.Verbose("InsertOrUpdateQuestsAsync -> Stop");
+    }
+
+    private async Task InsertOrUpdateCraftingRecipesAsync()
+    {
+        Log.Verbose("InsertOrUpdateCraftingRecipesAsync -> Start");
+
+        using var scope = _context.CreateTransactionScope();
+
+        var dbCraftingRecipes = await _context.CraftingRecipes
+            .Select(x => new CraftingRecipe
+            {
+                Id = x.Id
+            })
+            .ToListAsync();
+
+        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Db crafting recipes count: {0}", dbCraftingRecipes.Count);
+
+        var enumCraftingRecipes = Enum.GetValues(typeof(CraftingRecipieEnum))
+            .OfType<CraftingRecipieEnum>()
+            .Where(x => x != CraftingRecipieEnum.None)
+            .ToList();
+
+        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Enum crafting recipes count: {0}", enumCraftingRecipes.Count);
+
+        var update = enumCraftingRecipes
+            .Where(x => dbCraftingRecipes.Any(y => y.Id == x))
+            .ToDictionary(x => x, x => x.GetParameters())
+            .Select(x => new CraftingRecipe
+            {
+                Id = x.Key,
+                Name = x.Key.ToString(),
+                Requirement = x.Value.Requirement,
+                Reward = x.Value.Reward,
+                Status = x.Value.Status,
+                ModDate = DateTime.Now
+            })
+            .ToList();
+
+        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Update crafting recipes count: {0}", update.Count);
+
+        var insert = enumCraftingRecipes
+            .Where(x => !dbCraftingRecipes.Any(y => y.Id == x))
+            .ToDictionary(x => x, x => x.GetParameters())
+            .Select(x => new CraftingRecipe
+            {
+                Id = x.Key,
+                Name = x.Key.ToString(),
+                Requirement = x.Value.Requirement,
+                Reward = x.Value.Reward,
+                Status = x.Value.Status,
+                ModDate = DateTime.Now
+            })
+            .ToList();
+
+        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Insert crafting recipes count: {0}", insert.Count);
+
+        var delete = dbCraftingRecipes
+            .Where(x => !update.Any(y => y.Id == x.Id))
+            .ToList();
+
+        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Delete crafting recipes count: {0}", delete.Count);
+
+        _context.CraftingRecipes.UpdateRange(update);
+        _context.CraftingRecipes.AddRange(insert);
+        _context.CraftingRecipes.UpdateRange(delete);
+
+        await _context.SaveChangesAsync();
+
+        scope.Complete();
+
+        Log.Verbose("InsertOrUpdateCraftingRecipesAsync -> Stop");
     }
 }

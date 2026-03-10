@@ -123,7 +123,7 @@ public enum QuestEnum : short
 
 public static class QuestEnumExtensions
 {
-    public static QuestParametersAttribute GetQuestParametersAttribute(this QuestEnum value)
+    public static QuestParametersAttribute GetParameters(this QuestEnum value)
     {
         var member = value
             .GetType()

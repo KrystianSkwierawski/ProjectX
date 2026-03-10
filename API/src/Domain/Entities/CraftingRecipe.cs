@@ -10,9 +10,9 @@ public class CraftingRecipe
 
     public string Name { get; set; }
 
-    public required string Requirement { get; set; }
+    public string Requirement { get; set; }
 
-    public required string Reward { get; set; }
+    public string Reward { get; set; }
 
     public StatusEnum Status { get; set; }
 

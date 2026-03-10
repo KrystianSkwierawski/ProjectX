@@ -415,6 +415,42 @@
         ]
       }
     },
+    "/api/CraftingRecipes": {
+      "get": {
+        "tags": [
+          "CraftingRecipes"
+        ],
+        "operationId": "GetCraftingRecipes",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CraftingRecipieTypeEnum"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCraftingRecipesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Quests/{id}": {
       "get": {
         "tags": [
@@ -1049,6 +1085,120 @@
           "rotationY": {
             "type": "number",
             "format": "float"
+          }
+        }
+      },
+      "GetCraftingRecipesDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "craftingRecipes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CraftingRecipeDto"
+            }
+          }
+        }
+      },
+      "CraftingRecipeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/CraftingRecipieTypeEnum"
+          },
+          "requirement": {
+            "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
+          },
+          "reward": {
+            "$ref": "#/components/schemas/CraftingRecipeRewardDto"
+          }
+        }
+      },
+      "CraftingRecipieTypeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "Alchemy",
+          "Blacksmithing",
+          "Enchanting",
+          "Leatherworking",
+          "Tailoring",
+          "Cooking"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "Alchemy",
+          "Blacksmithing",
+          "Enchanting",
+          "Leatherworking",
+          "Tailoring",
+          "Cooking"
+        ],
+        "x-enumNames": [
+          "None",
+          "Alchemy",
+          "Blacksmithing",
+          "Enchanting",
+          "Leatherworking",
+          "Tailoring",
+          "Cooking"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "CraftingRecipeRequirementDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItem"
+            }
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CraftingRecipeRewardDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/InventoryItem"
+          },
+          "experience": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
