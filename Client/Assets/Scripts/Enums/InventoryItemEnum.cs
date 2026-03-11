@@ -1,6 +1,6 @@
 namespace Assets.Scripts.Enums
 {
-    public enum CharacterInventoryTypeEnum
+    public enum InventoryItemEnum
     {
         None,
 

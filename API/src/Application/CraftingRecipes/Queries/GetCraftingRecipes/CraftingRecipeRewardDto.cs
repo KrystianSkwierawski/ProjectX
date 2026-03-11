@@ -3,7 +3,7 @@
 namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
 public class CraftingRecipeRewardDto
 {
-    public required InventoryItem Item { get; set; }
+    public required InventoryItemDto Item { get; set; }
 
     public int Experience { get; set; }
 }

@@ -679,17 +679,17 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/InventoryItem"
+              "$ref": "#/components/schemas/InventoryItemDto"
             }
           }
         }
       },
-      "InventoryItem": {
+      "InventoryItemDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/CharacterInventoryTypeEnum"
+            "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "count": {
             "type": "integer",
@@ -697,13 +697,14 @@
           }
         }
       },
-      "CharacterInventoryTypeEnum": {
+      "InventoryItemEnum": {
         "type": "integer",
         "description": "",
         "x-enum-names": [
           "None",
           "Can",
           "Fish",
+          "CookedFish",
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
@@ -715,6 +716,7 @@
           "None",
           "Can",
           "Fish",
+          "CookedFish",
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
@@ -726,6 +728,7 @@
           "None",
           "Can",
           "Fish",
+          "CookedFish",
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
@@ -734,6 +737,7 @@
           "Wood"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -753,6 +757,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -764,7 +769,8 @@
           5,
           6,
           7,
-          8
+          8,
+          9
         ]
       },
       "AddCharacterInventoryItemCommand": {
@@ -776,7 +782,7 @@
             "format": "int32"
           },
           "inventoryItem": {
-            "$ref": "#/components/schemas/InventoryItem"
+            "$ref": "#/components/schemas/InventoryItemDto"
           }
         }
       },
@@ -1104,14 +1110,40 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "type": {
-            "$ref": "#/components/schemas/CraftingRecipeTypeEnum"
-          },
           "requirement": {
             "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
           },
           "reward": {
             "$ref": "#/components/schemas/CraftingRecipeRewardDto"
+          }
+        }
+      },
+      "CraftingRecipeRequirementDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CraftingRecipeRewardDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/InventoryItemDto"
+          },
+          "experience": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1172,35 +1204,6 @@
           5,
           6
         ]
-      },
-      "CraftingRecipeRequirementDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InventoryItem"
-            }
-          },
-          "level": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "CraftingRecipeRewardDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "item": {
-            "$ref": "#/components/schemas/InventoryItem"
-          },
-          "experience": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
       },
       "QuestDto": {
         "type": "object",

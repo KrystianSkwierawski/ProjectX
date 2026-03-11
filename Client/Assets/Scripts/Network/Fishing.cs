@@ -106,7 +106,7 @@ public class Fishing : NetworkBehaviour
         // TODO: validation
         CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
         {
-            GameObjectName = nameof(CharacterInventoryTypeEnum.Fish)
+            GameObjectName = nameof(InventoryItemEnum.Fish)
         });
 
         AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent

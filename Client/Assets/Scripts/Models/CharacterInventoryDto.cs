@@ -16,6 +16,6 @@ namespace Assets.Scripts.Models
     [Serializable]
     public class InventoryDto
     {
-        public List<InventoryItem> items = new List<InventoryItem>(); 
+        public List<InventoryItemDto> items = new List<InventoryItemDto>(); 
     }
 }

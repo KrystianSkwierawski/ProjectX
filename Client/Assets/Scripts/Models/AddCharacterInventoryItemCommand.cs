@@ -7,6 +7,6 @@ namespace Assets.Scripts.Models
     {
         public int characterId;
 
-        public InventoryItem inventoryItem;
+        public InventoryItemDto inventoryItem;
     }
 }

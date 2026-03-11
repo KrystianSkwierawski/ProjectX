@@ -1,4 +1,5 @@
-﻿using ProjectX.Domain.Enums;
+﻿using ProjectX.Domain.Entities;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Attributes;
 

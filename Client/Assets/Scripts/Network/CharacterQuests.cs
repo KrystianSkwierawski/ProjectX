@@ -156,9 +156,9 @@ namespace Assets.Scripts.Mono
             {
                 RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
                 {
-                    Item = new InventoryItem
+                    Item = new InventoryItemDto
                     {
-                        type = Enum.Parse<CharacterInventoryTypeEnum>(quest.gameObjectName),
+                        type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
                         count = quest.requirement
                     }
                 });

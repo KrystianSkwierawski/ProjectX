@@ -15,7 +15,7 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterInventory : NetworkBehaviour
     {
-        private IList<InventoryItem> _currentLoot = new List<InventoryItem>();
+        private IList<InventoryItemDto> _currentLoot = new List<InventoryItemDto>();
 
         #region LootDictionary
 
@@ -27,7 +27,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.Can,
+                        Type = InventoryItemEnum.Can,
                         Chance = 50,
                         Min = 0,
                         Max = 2
@@ -35,12 +35,12 @@ namespace Assets.Scripts.Mono
                 }
             },
             {
-                nameof(CharacterInventoryTypeEnum.Fish),
+                nameof(InventoryItemEnum.Fish),
                 new LootItem[]
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.Fish,
+                        Type = InventoryItemEnum.Fish,
                         Chance = 90,
                         Min = 1,
                         Max = 1
@@ -53,7 +53,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.BlackOre,
+                        Type = InventoryItemEnum.BlackOre,
                         Chance = 90,
                         Min = 1,
                         Max = 6
@@ -66,7 +66,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.CopperOre,
+                        Type = InventoryItemEnum.CopperOre,
                         Chance = 90,
                         Min = 1,
                         Max = 3
@@ -79,7 +79,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.WhiteOre,
+                        Type = InventoryItemEnum.WhiteOre,
                         Chance = 90,
                         Min = 1,
                         Max = 2
@@ -92,7 +92,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.PurpleOre,
+                        Type = InventoryItemEnum.PurpleOre,
                         Chance = 90,
                         Min = 1,
                         Max = 4
@@ -105,7 +105,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.Chamomile,
+                        Type = InventoryItemEnum.Chamomile,
                         Chance = 90,
                         Min = 1,
                         Max = 4
@@ -118,7 +118,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.Wood,
+                        Type = InventoryItemEnum.Wood,
                         Chance = 90,
                         Min = 1,
                         Max = 4
@@ -209,7 +209,7 @@ namespace Assets.Scripts.Mono
 
                     if (loot == null)
                     {
-                        _currentLoot.Add(new InventoryItem
+                        _currentLoot.Add(new InventoryItemDto
                         {
                             type = drop.Type,
                             count = count,
@@ -248,18 +248,18 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void ShowLootClientRpc(InventoryItem[] items, ClientRpcParams rpcParams = default)
+        private void ShowLootClientRpc(InventoryItemDto[] items, ClientRpcParams rpcParams = default)
         {
             InventoryUI.Instance.UpdateLoot(items, OwnerClientId, UserManager.Instance.Token);
         }
 
         [ServerRpc]
-        private void AddItemServerRpc(InventoryItem item, string clientToken)
+        private void AddItemServerRpc(InventoryItemDto item, string clientToken)
         {
             AddItemAsync(item, clientToken).Forget();
         }
 
-        private async UniTask AddItemAsync(InventoryItem item, string clientToken)
+        private async UniTask AddItemAsync(InventoryItemDto item, string clientToken)
         {
             var serverItem = _currentLoot
                 .Where(x => x.type == item.type)
@@ -290,7 +290,7 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void AddInventoryItemClientRpc(InventoryItem item, ClientRpcParams rpcParams = default)
+        private void AddInventoryItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
         {
             var slot = Inventory.inventory.items
                 .Where(x => x.type == item.type)
@@ -359,7 +359,7 @@ namespace Assets.Scripts.Mono
 
         private class LootItem
         {
-            public CharacterInventoryTypeEnum Type { get; set; }
+            public InventoryItemEnum Type { get; set; }
 
             public int Chance { get; set; }
 

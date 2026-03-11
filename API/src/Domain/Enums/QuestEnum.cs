@@ -26,7 +26,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2CansDescription,
         CompleteDescription = TranslateKeyEnum.Collect2CansCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2CansStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.Can),
+        GameObjectName = nameof(InventoryItemEnum.Can),
         Requirement = 2,
         Reward = 1000
     )]
@@ -39,7 +39,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Catch2FishsesDescription,
         CompleteDescription = TranslateKeyEnum.Catch2FishsesCompleteDescription,
         StatusText = TranslateKeyEnum.Catch2FishsesStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.Fish),
+        GameObjectName = nameof(InventoryItemEnum.Fish),
         Requirement = 2,
         Reward = 1000
     )]
@@ -51,7 +51,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2PurpleOresDescription,
         CompleteDescription = TranslateKeyEnum.Collect2PurpleOresCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2PurpleOresStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.PurpleOre),
+        GameObjectName = nameof(InventoryItemEnum.PurpleOre),
         Requirement = 2,
         Reward = 1000
     )]
@@ -64,7 +64,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2WhiteOresDescription,
         CompleteDescription = TranslateKeyEnum.Collect2WhiteOresCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2WhiteOresStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.WhiteOre),
+        GameObjectName = nameof(InventoryItemEnum.WhiteOre),
         Requirement = 2,
         Reward = 1000
     )]
@@ -77,7 +77,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2CopperOresDescription,
         CompleteDescription = TranslateKeyEnum.Collect2CopperOresDescription,
         StatusText = TranslateKeyEnum.Collect2CopperOresStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.CopperOre),
+        GameObjectName = nameof(InventoryItemEnum.CopperOre),
         Requirement = 2,
         Reward = 1000
     )]
@@ -90,7 +90,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2BlackOresDescription,
         CompleteDescription = TranslateKeyEnum.Collect2BlackOresCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2BlackOresStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.BlackOre),
+        GameObjectName = nameof(InventoryItemEnum.BlackOre),
         Requirement = 2,
         Reward = 1000
     )]
@@ -102,7 +102,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2ChamomileDescription,
         CompleteDescription = TranslateKeyEnum.Collect2ChamomileCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2ChamomileStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.Chamomile),
+        GameObjectName = nameof(InventoryItemEnum.Chamomile),
         Requirement = 2,
         Reward = 1000
     )]
@@ -114,7 +114,7 @@ public enum QuestEnum : short
         Description = TranslateKeyEnum.Collect2WoodsDescription,
         CompleteDescription = TranslateKeyEnum.Collect2WoodsCompleteDescription,
         StatusText = TranslateKeyEnum.Collect2WoodsStatusText,
-        GameObjectName = nameof(CharacterInventoryTypeEnum.Wood),
+        GameObjectName = nameof(InventoryItemEnum.Wood),
         Requirement = 2,
         Reward = 1000
     )]

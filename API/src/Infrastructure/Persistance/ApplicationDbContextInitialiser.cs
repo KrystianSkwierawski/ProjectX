@@ -47,6 +47,7 @@ public class ApplicationDbContextInitialiser
         Log.Debug("InitialiseAsync -> Ensured created database");
 
         await InsertOrUpdateQuestsAsync();
+        await InsertOrUpdateInventoryItemsAsync();
         await InsertOrUpdateCraftingRecipesAsync();
 
         await CreateRoleAsync(Roles.Server);
@@ -73,9 +74,9 @@ public class ApplicationDbContextInitialiser
     {
         if (_userManager.Users.All(u => u.UserName != userName))
         {
-            var user = new ApplicationUser 
-            { 
-                UserName = userName, 
+            var user = new ApplicationUser
+            {
+                UserName = userName,
                 Email = userName,
                 Language = language
             };
@@ -96,9 +97,9 @@ public class ApplicationDbContextInitialiser
                     {
                         Items =
                         [
-                            new InventoryItem
+                            new InventoryItemDto
                             {
-                                Type = CharacterInventoryTypeEnum.Can,
+                                Type = InventoryItemEnum.Can,
                                 Count = 2
                             }
                         ]
@@ -125,7 +126,7 @@ public class ApplicationDbContextInitialiser
         }
     }
 
-    #region TODO: DRY
+    #region TODO: DRY, SR
 
     private async Task InsertOrUpdateQuestsAsync()
     {
@@ -204,6 +205,71 @@ public class ApplicationDbContextInitialiser
         Log.Verbose("InsertOrUpdateQuestsAsync -> Stop");
     }
 
+    private async Task InsertOrUpdateInventoryItemsAsync()
+    {
+        Log.Verbose("InsertOrUpdateInventoryItemsAsync -> Start");
+
+        using var scope = _context.CreateTransactionScope();
+
+        var dbInventoryItems = await _context.InventoryItems
+            .Select(x => new InventoryItem
+            {
+                Id = x.Id
+            })
+            .ToListAsync();
+
+        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Db inventory items count: {0}", dbInventoryItems.Count);
+
+        var enumInventoryItems = Enum.GetValues(typeof(InventoryItemEnum))
+            .OfType<InventoryItemEnum>()
+            .Where(x => x != InventoryItemEnum.None)
+            .ToList();
+
+        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Enum inventory items count: {0}", enumInventoryItems.Count);
+
+        var update = enumInventoryItems
+            .Where(x => dbInventoryItems.Any(y => y.Id == x))
+            .Select(x => new InventoryItem
+            {
+                Id = x,
+                Name = x.ToString(),
+                MaxCount = byte.MaxValue,
+                ModDate = DateTime.Now
+            })
+            .ToList();
+
+        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Update inventory items count: {0}", update.Count);
+
+        var insert = enumInventoryItems
+            .Where(x => !dbInventoryItems.Any(y => y.Id == x))
+            .Select(x => new InventoryItem
+            {
+                Id = x,
+                Name = x.ToString(),
+                MaxCount = byte.MaxValue,
+                ModDate = DateTime.Now
+            })
+            .ToList();
+
+        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Insert inventory items count: {0}", insert.Count);
+
+        var delete = dbInventoryItems
+            .Where(x => !update.Any(y => y.Id == x.Id))
+            .ToList();
+
+        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Delete inventory items count: {0}", delete.Count);
+
+        _context.InventoryItems.UpdateRange(update);
+        _context.InventoryItems.AddRange(insert);
+        _context.InventoryItems.UpdateRange(delete);
+
+        await _context.SaveChangesAsync();
+
+        scope.Complete();
+
+        Log.Verbose("InsertOrUpdateInventoryItemsAsync -> Stop");
+    }
+
     private async Task InsertOrUpdateCraftingRecipesAsync()
     {
         Log.Verbose("InsertOrUpdateCraftingRecipesAsync -> Start");
@@ -229,14 +295,19 @@ public class ApplicationDbContextInitialiser
         var update = enumCraftingRecipes
             .Where(x => dbCraftingRecipes.Any(y => y.Id == x))
             .ToDictionary(x => x, x => x.GetParameters())
-            .Select(x => new CraftingRecipe
+            .Select(x =>
             {
-                Id = x.Key,
-                Name = x.Key.ToString(),
-                Requirement = x.Value.Requirement,
-                Reward = x.Value.Reward,
-                Status = x.Value.Status,
-                ModDate = DateTime.Now
+                var name = x.Key.ToString();
+
+                return new CraftingRecipe
+                {
+                    Id = x.Key,
+                    Name = name,
+                    Requirement = x.Value.Requirement,
+                    Reward = x.Value.Reward,
+                    Status = x.Value.Status,
+                    ModDate = DateTime.Now
+                };
             })
             .ToList();
 
@@ -245,14 +316,19 @@ public class ApplicationDbContextInitialiser
         var insert = enumCraftingRecipes
             .Where(x => !dbCraftingRecipes.Any(y => y.Id == x))
             .ToDictionary(x => x, x => x.GetParameters())
-            .Select(x => new CraftingRecipe
+            .Select(x =>
             {
-                Id = x.Key,
-                Name = x.Key.ToString(),
-                Requirement = x.Value.Requirement,
-                Reward = x.Value.Reward,
-                Status = x.Value.Status,
-                ModDate = DateTime.Now
+                var name = x.Key.ToString();
+
+                return new CraftingRecipe
+                {
+                    Id = x.Key,
+                    Name = name,
+                    Requirement = x.Value.Requirement,
+                    Reward = x.Value.Reward,
+                    Status = x.Value.Status,
+                    ModDate = DateTime.Now
+                };
             })
             .ToList();
 

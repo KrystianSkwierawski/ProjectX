@@ -10,7 +10,7 @@ namespace Assets.Scripts.Subscriptions
 
     public class AddInventoryItemSubscriptionEvent
     {
-        public InventoryItem Item { get; set; }
+        public InventoryItemDto Item { get; set; }
 
         public ulong ClientId { get; set; }
 

@@ -27,6 +27,8 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
 
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+
     public DbSet<CraftingRecipe> CraftingRecipes => Set<CraftingRecipe>();
 
     public TransactionScope CreateTransactionScope()

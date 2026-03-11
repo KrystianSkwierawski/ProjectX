@@ -5,9 +5,9 @@ using Unity.Netcode;
 namespace Assets.Scripts.Models
 {
     [Serializable]
-    public class InventoryItem : INetworkSerializable
+    public class InventoryItemDto : INetworkSerializable
     {
-        public CharacterInventoryTypeEnum type;
+        public InventoryItemEnum type;
 
         public int count;
 

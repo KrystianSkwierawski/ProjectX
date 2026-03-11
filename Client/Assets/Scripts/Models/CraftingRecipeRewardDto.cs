@@ -5,7 +5,7 @@ namespace Assets.Scripts.Models
     [Serializable]
     public class CraftingRecipeRewardDto
     {
-        public InventoryItem item;
+        public InventoryItemDto item;
 
         public int experience;
     }

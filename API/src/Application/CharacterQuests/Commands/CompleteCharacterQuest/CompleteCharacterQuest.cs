@@ -57,7 +57,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
     private async Task CollectItemsAsync(string userId, CharacterQuest characterQuest, CancellationToken cancellationToken)
     {
-        var itemType = Enum.Parse<CharacterInventoryTypeEnum>(characterQuest.Quest.GameObjectName);
+        var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
 
         var characterInventory = await _context.CharacterInventories
             //.Where(x => x.CharacterId == request.CharacterId)

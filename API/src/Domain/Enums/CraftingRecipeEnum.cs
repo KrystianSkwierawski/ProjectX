@@ -10,7 +10,7 @@ public enum CraftingRecipeEnum : short
     [CraftingRecipeParameters(
         Type = CraftingRecipeTypeEnum.Cooking,
         Requirement = "{ Items: [ { Type: 2, Count: 1 } ], Level: 1 }",
-        Reward = "{ Item: { Type: 2, Count: 1 }, Experience: 1000 }"
+        Reward = "{ Item: { Type: 3, Count: 1 }, Experience: 1000 }"
     )]
     CookedFish,
 }

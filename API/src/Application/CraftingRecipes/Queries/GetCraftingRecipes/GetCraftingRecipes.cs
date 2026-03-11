@@ -24,7 +24,6 @@ public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQue
             .Where(x => x.Status == StatusEnum.Active)
             .Select(x => new
             {
-                x.Type,
                 x.Requirement,
                 x.Reward,
             })

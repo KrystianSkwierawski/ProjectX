@@ -14,7 +14,7 @@ namespace Assets.Scripts.UI
 {
     public class InventoryUI : MonoSingleton<InventoryUI>
     {
-        public readonly IDictionary<CharacterInventoryTypeEnum, Texture> Textures = new Dictionary<CharacterInventoryTypeEnum, Texture>();
+        public readonly IDictionary<InventoryItemEnum, Texture> Textures = new Dictionary<InventoryItemEnum, Texture>();
 
         #region Prefab
 
@@ -37,7 +37,7 @@ namespace Assets.Scripts.UI
         #endregion
 
         private ObjectPool<InventorySlot> _lootObjectPool;
-        private readonly IDictionary<CharacterInventoryTypeEnum, InventorySlot> _lootPoolObjects = new Dictionary<CharacterInventoryTypeEnum, InventorySlot>();
+        private readonly IDictionary<InventoryItemEnum, InventorySlot> _lootPoolObjects = new Dictionary<InventoryItemEnum, InventorySlot>();
         private InventorySlot[] _inventorySlots;
 
         public void Start()
@@ -96,7 +96,7 @@ namespace Assets.Scripts.UI
                     slot.Mesh.text = "0";
                     slot.Image.color = ColorUI.Black;
                     slot.Image.texture = null;
-                    slot.Type = CharacterInventoryTypeEnum.None;
+                    slot.Type = InventoryItemEnum.None;
                     slot.HoverUI.enabled = false;
 
                     continue;
@@ -125,7 +125,7 @@ namespace Assets.Scripts.UI
             }
         }
 
-        public void UpdateLoot(InventoryItem[] items, ulong clientId, string clientToken)
+        public void UpdateLoot(InventoryItemDto[] items, ulong clientId, string clientToken)
         {
             Loot.SetActive(true);
 
@@ -182,7 +182,7 @@ namespace Assets.Scripts.UI
 
         private void InitTextures()
         {
-            foreach (var type in Enum.GetValues(typeof(CharacterInventoryTypeEnum)).Cast<CharacterInventoryTypeEnum>())
+            foreach (var type in Enum.GetValues(typeof(InventoryItemEnum)).Cast<InventoryItemEnum>())
             {
                 var texture = Resources.Load<Texture>($"Textures/{type}");
 
@@ -234,7 +234,7 @@ namespace Assets.Scripts.UI
 
             public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
 
-            public CharacterInventoryTypeEnum Type { get; set; }
+            public InventoryItemEnum Type { get; set; }
         }
     }
 }

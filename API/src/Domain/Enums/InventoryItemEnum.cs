@@ -1,5 +1,5 @@
 ﻿namespace ProjectX.Domain.Enums;
-public enum CharacterInventoryTypeEnum
+public enum InventoryItemEnum
 {
     None,
 
@@ -12,6 +12,7 @@ public enum CharacterInventoryTypeEnum
     #region Fish
 
     Fish,
+    CookedFish,
 
     #endregion
 

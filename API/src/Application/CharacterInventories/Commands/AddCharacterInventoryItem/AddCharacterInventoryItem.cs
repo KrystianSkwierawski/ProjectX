@@ -5,7 +5,7 @@ using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Commands.AddCharacterInventoryItem;
-public record AddCharacterInventoryItemCommand(int CharacterId, InventoryItem inventoryItem) : IRequest;
+public record AddCharacterInventoryItemCommand(int CharacterId, InventoryItemDto inventoryItem) : IRequest;
 
 public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharacterInventoryItemCommand>
 {
