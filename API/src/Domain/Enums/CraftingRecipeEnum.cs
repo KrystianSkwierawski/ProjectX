@@ -3,21 +3,21 @@ using ProjectX.Domain.Attributes;
 
 namespace ProjectX.Domain.Enums;
 
-public enum CraftingRecipieEnum : short
+public enum CraftingRecipeEnum : short
 {
     None,
 
     [CraftingRecipeParameters(
-        Type = CraftingRecipieTypeEnum.Cooking,
-        Requirement = "{ Items: [{Type: 2, Count: 1}], Level: 1 }",
+        Type = CraftingRecipeTypeEnum.Cooking,
+        Requirement = "{ Items: [ { Type: 2, Count: 1 } ], Level: 1 }",
         Reward = "{ Item: { Type: 2, Count: 1 }, Experience: 1000 }"
     )]
     CookedFish,
 }
 
-public static class CraftingRecipieEnumExtensions
+public static class CraftingRecipeEnumExtensions
 {
-    public static CraftingRecipeParametersAttribute GetParameters(this CraftingRecipieEnum value)
+    public static CraftingRecipeParametersAttribute GetParameters(this CraftingRecipeEnum value)
     {
         var member = value
             .GetType()

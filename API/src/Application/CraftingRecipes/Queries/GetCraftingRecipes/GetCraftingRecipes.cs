@@ -6,7 +6,7 @@ using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
 
-public record GetCraftingRecipesQuery(CraftingRecipieTypeEnum type) : IRequest<GetCraftingRecipesDto>;
+public record GetCraftingRecipesQuery(CraftingRecipeTypeEnum type) : IRequest<GetCraftingRecipesDto>;
 
 public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQuery, GetCraftingRecipesDto>
 {

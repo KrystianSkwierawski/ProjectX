@@ -8,9 +8,9 @@ namespace Assets.Scripts.Shared
     public class CraftingRecipeManager : Singleton<CraftingRecipeManager>
     {
         // TODO: cache manager with expiration?
-        private IDictionary<CraftingRecipieTypeEnum, GetCraftingRecipesDto> _cache = new Dictionary<CraftingRecipieTypeEnum, GetCraftingRecipesDto>();
+        private IDictionary<CraftingRecipeTypeEnum, GetCraftingRecipesDto> _cache = new Dictionary<CraftingRecipeTypeEnum, GetCraftingRecipesDto>();
 
-        public async UniTask<GetCraftingRecipesDto> GetAsync(CraftingRecipieTypeEnum type)
+        public async UniTask<GetCraftingRecipesDto> GetAsync(CraftingRecipeTypeEnum type)
         {
             if (_cache.TryGetValue(type, out var result))
             {

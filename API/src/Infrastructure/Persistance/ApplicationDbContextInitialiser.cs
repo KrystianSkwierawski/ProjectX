@@ -125,6 +125,8 @@ public class ApplicationDbContextInitialiser
         }
     }
 
+    #region TODO: DRY
+
     private async Task InsertOrUpdateQuestsAsync()
     {
         Log.Verbose("InsertOrUpdateQuestsAsync -> Start");
@@ -217,9 +219,9 @@ public class ApplicationDbContextInitialiser
 
         Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Db crafting recipes count: {0}", dbCraftingRecipes.Count);
 
-        var enumCraftingRecipes = Enum.GetValues(typeof(CraftingRecipieEnum))
-            .OfType<CraftingRecipieEnum>()
-            .Where(x => x != CraftingRecipieEnum.None)
+        var enumCraftingRecipes = Enum.GetValues(typeof(CraftingRecipeEnum))
+            .OfType<CraftingRecipeEnum>()
+            .Where(x => x != CraftingRecipeEnum.None)
             .ToList();
 
         Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Enum crafting recipes count: {0}", enumCraftingRecipes.Count);
@@ -272,4 +274,6 @@ public class ApplicationDbContextInitialiser
 
         Log.Verbose("InsertOrUpdateCraftingRecipesAsync -> Stop");
     }
+
+    #endregion
 }

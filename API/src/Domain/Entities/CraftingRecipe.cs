@@ -4,9 +4,9 @@ namespace ProjectX.Domain.Entities;
 
 public class CraftingRecipe
 {
-    public CraftingRecipieEnum Id { get; set; }
+    public CraftingRecipeEnum Id { get; set; }
 
-    public CraftingRecipieTypeEnum Type { get; set; }
+    public CraftingRecipeTypeEnum Type { get; set; }
 
     public string Name { get; set; }
 

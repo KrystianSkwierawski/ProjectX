@@ -1,6 +1,6 @@
 ﻿namespace ProjectX.Domain.Enums;
 
-public enum CraftingRecipieTypeEnum : byte
+public enum CraftingRecipeTypeEnum : byte
 {
     None,
 

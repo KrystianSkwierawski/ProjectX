@@ -427,7 +427,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/CraftingRecipieTypeEnum"
+              "$ref": "#/components/schemas/CraftingRecipeTypeEnum"
             },
             "x-position": 1
           }
@@ -1105,7 +1105,7 @@
         "additionalProperties": false,
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/CraftingRecipieTypeEnum"
+            "$ref": "#/components/schemas/CraftingRecipeTypeEnum"
           },
           "requirement": {
             "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
@@ -1115,7 +1115,7 @@
           }
         }
       },
-      "CraftingRecipieTypeEnum": {
+      "CraftingRecipeTypeEnum": {
         "type": "integer",
         "description": "",
         "x-enum-names": [

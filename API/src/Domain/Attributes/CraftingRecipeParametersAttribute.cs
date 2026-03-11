@@ -5,7 +5,7 @@ namespace ProjectX.Domain.Attributes;
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
 public class CraftingRecipeParametersAttribute : Attribute
 {
-    public CraftingRecipieTypeEnum Type { get; set; }
+    public CraftingRecipeTypeEnum Type { get; set; }
 
     public required string Requirement { get; set; }
 
