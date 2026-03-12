@@ -6,8 +6,8 @@ namespace Assets.Scripts.Models
     [Serializable]
     public class CraftingRecipeRequirementDto
     {
-        public List<InventoryItemDto> items { get; set; }
+        public List<InventoryItemDto> items;
 
-        public int level { get; set; }
+        public int level;
     }
 }

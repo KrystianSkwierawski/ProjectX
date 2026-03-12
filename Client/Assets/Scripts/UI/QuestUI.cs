@@ -104,6 +104,11 @@ namespace Assets.Scripts.UI
 
         public void ShowQuest(QuestNpc questNpc)
         {
+            if (Quest.activeSelf)
+            {
+                return;
+            }
+
             Quest.SetActive(true);
             QuestTitleText.text = questNpc.Quest.title;
 
@@ -119,7 +124,7 @@ namespace Assets.Scripts.UI
             QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Accept);
         }
 
-        public void HideQuestCanvas()
+        public void HideQuest()
         {
             Quest.SetActive(false);
         }

@@ -47,11 +47,11 @@ namespace Assets.Scripts.Mono
             {
                 _input = GetComponent<StarterAssetsInputs>();
 
-                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.HideQuestCanvas());
+                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.HideQuest());
 
                 QuestUI.Instance.QuestAcceptButton.onClick.AddListener(async () =>
                 {
-                    QuestUI.Instance.HideQuestCanvas();
+                    QuestUI.Instance.HideQuest();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
                         .Where(x => x.questId == _questNpc.Quest.id)
@@ -201,7 +201,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (hit.transform.IsFarToTarget(transform, _npcMaxDistance))
+            if (hit.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance))
             {
                 CursorUI.Instance.ShowDefault();
 

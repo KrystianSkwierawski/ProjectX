@@ -33,9 +33,9 @@ namespace Assets.Scripts.Extensions
             return Vector3.Distance(transform.position, target.transform.position) > distance;
         }
 
-        public static bool IsFarToTarget(this Transform transform, Transform target, float distance = 15f)
-        {
-            return transform.IsFarToTarget(target, distance);
-        }
+        //public static bool IsFarToTarget(this Transform transform, Transform target, float distance = 15f)
+        //{
+        //    return transform.IsFarToTarget(target, distance);
+        //}
     }
 }

@@ -305,6 +305,7 @@ public class ApplicationDbContextInitialiser
                 {
                     Id = x.Key,
                     Name = name,
+                    Type = x.Value.Type,
                     Requirement = x.Value.Requirement,
                     Reward = x.Value.Reward,
                     Status = x.Value.Status,
@@ -326,6 +327,7 @@ public class ApplicationDbContextInitialiser
                 {
                     Id = x.Key,
                     Name = name,
+                    Type = x.Value.Type,
                     Requirement = x.Value.Requirement,
                     Reward = x.Value.Reward,
                     Status = x.Value.Status,

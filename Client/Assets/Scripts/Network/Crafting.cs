@@ -1,17 +1,27 @@
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
+using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class Crafting : NetworkBehaviour
 {
     private void Start()
     {
+        if (IsOwner)
+        {
+            CraftingUI.Instance.ExitButton.onClick.AddListener(() => CraftingUI.Instance.Hide());
 
+            CraftingUI.Instance.CraftButton.onClick.AddListener(() =>
+            {
+                Debug.Log("craft");
+            });
+        }
     }
 
     private void Update()
@@ -37,9 +47,10 @@ public class Crafting : NetworkBehaviour
             return;
         }
 
-        if (hit.transform.IsFarToTarget(transform, 5f))
+        if (hit.transform.IsFarToTarget(transform.gameObject, 3f))
         {
             CursorUI.Instance.ShowDefault();
+            CraftingUI.Instance.Hide();
 
             return;
         }
@@ -67,6 +78,6 @@ public class Crafting : NetworkBehaviour
 
         var recipes = await CraftingRecipeManager.Instance.GetAsync(type);
 
-        CraftingUI.Instance.Show(recipes);
+        CraftingUI.Instance.Show(recipes, type);
     }
 }

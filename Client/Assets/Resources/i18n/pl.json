@@ -4,6 +4,8 @@
     "Accept": "Akceptuj",
     "Cancel": "Anuluj",
     "Complete": "Zakończ",
+    "Exit": "Wyjdź",
+    "Craft": "Kraftuj",
 
     "CanTitle": "Puszka",
     "CanDescription": "Puszka to pojemnik, który może przechowywać przedmioty. Może być używany do przechowywania i transportu różnych towarów.",
@@ -22,5 +24,8 @@
     "ChamomileDescription": "Rumianek to zioło, które jest powszechnie używane ze względu na swoje uspokajające właściwości i często stosowane w herbatkach oraz leczniczych przygotowaniach.",
 
     "WoodTitle": "Drewno",
-    "WoodDescription": "Drewno to materiał pochodzenia roślinnego, który jest szeroko stosowany w budownictwie, meblarstwie i produkcji papieru. Jest cenione za swoją trwałość i estetykę."
+    "WoodDescription": "Drewno to materiał pochodzenia roślinnego, który jest szeroko stosowany w budownictwie, meblarstwie i produkcji papieru. Jest cenione za swoją trwałość i estetykę.",
+
+    "CookedFishTitle": "Gotowana ryba",
+    "CookedFishDescription": "Gotowana ryba to potrawa przygotowana poprzez"
 }

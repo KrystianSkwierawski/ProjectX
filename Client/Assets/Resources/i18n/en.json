@@ -4,6 +4,8 @@
   "Accept": "Accept",
   "Cancel": "Cancel",
   "Complete": "Complete",
+  "Exit": "Exit",
+  "Craft": "Craft",
 
   "CanTitle": "Can",
   "CanDescription": "A can is a container that can hold items. It can be used to store and transport various goods.",
@@ -23,5 +25,7 @@
   "ChamomileDescription": "Chamomile is a herb that is commonly used for its calming properties and is often used in teas and medicinal preparations.",
 
   "WoodTitle": "Wood",
-  "WoodDescription": "Wood is a versatile material that can be used for construction, crafting, and furniture making."
+  "WoodDescription": "Wood is a versatile material that can be used for construction, crafting, and furniture making.",
+  "CookedFishTitle": "Cooked Fish",
+  "CookedFishDescription": "Cooked fish is a delicious and nutritious meal that can be prepared by cooking raw fish. It is often enjoyed with various seasonings and sides."
 }

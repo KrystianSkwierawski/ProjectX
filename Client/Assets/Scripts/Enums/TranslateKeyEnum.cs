@@ -9,6 +9,8 @@
         Accept,
         Cancel,
         Complete,
+        Exit,
+        Craft,
 
         #endregion
 
@@ -29,7 +31,9 @@
         ChamomileTitle,
         ChamomileDescription,
         WoodTitle,
-        WoodDescription
+        WoodDescription,
+        CookedFishTitle,
+        CookedFishDescription,
 
         #endregion
     }
