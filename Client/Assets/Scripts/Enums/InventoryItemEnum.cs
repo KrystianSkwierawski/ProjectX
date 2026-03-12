@@ -6,24 +6,25 @@ namespace Assets.Scripts.Enums
 
         #region Common
 
-        Can,
+        Can = 100,
 
         #endregion
 
         #region Fish
 
-        Fish,
+        Fish = 200,
+        CookedFish = 201,
 
         #endregion
 
         #region Ore
 
-        PurpleOre,
-        WhiteOre,
-        CopperOre,
-        BlackOre,
-        Chamomile,
-        Wood,
+        PurpleOre = 300,
+        WhiteOre = 301,
+        CopperOre = 302,
+        BlackOre = 303,
+        Chamomile = 304,
+        Wood = 305,
 
         #endregion
     }

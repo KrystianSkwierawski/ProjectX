@@ -9,7 +9,7 @@ public interface IApplicationDbContext
 
     DbSet<CharacterTransform> CharacterTransforms { get; }
 
-    DbSet<ProjectX.Domain.Entities.CharacterExperience> CharacterExperiences { get; }
+    DbSet<CharacterExperience> CharacterExperiences { get; }
 
     DbSet<CharacterQuest> CharacterQuests { get; }
 

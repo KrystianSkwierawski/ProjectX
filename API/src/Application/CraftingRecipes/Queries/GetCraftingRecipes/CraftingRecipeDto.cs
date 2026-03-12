@@ -1,6 +1,4 @@
-﻿using ProjectX.Domain.Enums;
-
-namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
+﻿namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
 public class CraftingRecipeDto
 {
     public required CraftingRecipeRequirementDto Requirement { get; set; }

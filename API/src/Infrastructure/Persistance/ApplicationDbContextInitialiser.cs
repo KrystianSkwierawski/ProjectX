@@ -38,13 +38,13 @@ public class ApplicationDbContextInitialiser
 
     public async Task InitialiseAsync()
     {
-        Log.Information("InitialiseAsync -> Start");
+        Log.Information("{0} -> Start", nameof(InitialiseAsync));
 
         await _context.Database.EnsureDeletedAsync();
-        Log.Debug("InitialiseAsync -> Ensured deleted database");
+        Log.Debug("{0} -> Ensured deleted database", nameof(InitialiseAsync));
 
         await _context.Database.EnsureCreatedAsync();
-        Log.Debug("InitialiseAsync -> Ensured created database");
+        Log.Debug("{0} -> Ensured created database", nameof(InitialiseAsync));
 
         await InsertOrUpdateQuestsAsync();
         await InsertOrUpdateInventoryItemsAsync();
@@ -58,15 +58,17 @@ public class ApplicationDbContextInitialiser
         await CreateUserAsync("user1@localhost", "User1!", Roles.Client, LanguageEnum.pl);
         await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.en);
 
-        Log.Information("InitialiseAsync -> Stop");
+        Log.Information("{0} -> Stop", nameof(InitialiseAsync));
     }
+
+    #region Helpers
 
     private async Task CreateRoleAsync(string role)
     {
         if (_roleManager.Roles.All(r => r.Name != role))
         {
             await _roleManager.CreateAsync(new IdentityRole(role));
-            Log.Debug("CreateRoleAsync -> Created role. Name: {0}", role);
+            Log.Debug("{0} -> Created role. Name: {1}", nameof(CreateRoleAsync), role);
         }
     }
 
@@ -122,7 +124,7 @@ public class ApplicationDbContextInitialiser
 
             await _context.SaveChangesAsync();
 
-            Log.Debug("CreateUserAsync -> Created user. UserName: {0}, Role: {1}, CharacterId: {2}", user, role, character.Id);
+            Log.Debug("{0} -> Created user. UserName: {1}, Role: {2}, CharacterId: {3}", nameof(CreateUserAsync), user, role, character.Id);
         }
     }
 
@@ -130,7 +132,7 @@ public class ApplicationDbContextInitialiser
 
     private async Task InsertOrUpdateQuestsAsync()
     {
-        Log.Verbose("InsertOrUpdateQuestsAsync -> Start");
+        Log.Verbose("{0} -> Start", nameof(InsertOrUpdateQuestsAsync));
 
         using var scope = _context.CreateTransactionScope();
 
@@ -141,14 +143,14 @@ public class ApplicationDbContextInitialiser
             })
             .ToListAsync();
 
-        Log.Debug("InsertOrUpdateQuestsAsync -> Db quests count: {0}", dbQuests.Count);
+        Log.Debug("{0} -> Db quests count: {1}", nameof(InsertOrUpdateQuestsAsync), dbQuests.Count);
 
         var enumQuests = Enum.GetValues(typeof(QuestEnum))
             .OfType<QuestEnum>()
             .Where(x => x != QuestEnum.None)
             .ToList();
 
-        Log.Debug("InsertOrUpdateQuestsAsync -> Enum quests count: {0}", enumQuests.Count);
+        Log.Debug("{0} -> Enum quests count: {1}", nameof(InsertOrUpdateQuestsAsync), enumQuests.Count);
 
         var update = enumQuests
             .Where(x => dbQuests.Any(y => y.Id == x))
@@ -167,7 +169,7 @@ public class ApplicationDbContextInitialiser
             })
             .ToList();
 
-        Log.Debug("InsertOrUpdateQuestsAsync -> Update quests count: {0}", update.Count);
+        Log.Debug("{0} -> Update quests count: {1}", nameof(InsertOrUpdateQuestsAsync), update.Count);
 
         var insert = enumQuests
             .Where(x => !dbQuests.Any(y => y.Id == x))
@@ -186,13 +188,13 @@ public class ApplicationDbContextInitialiser
             })
             .ToList();
 
-        Log.Debug("InsertOrUpdateQuestsAsync -> Insert quests count: {0}", insert.Count);
+        Log.Debug("{0} -> Insert quests count: {1}", nameof(InsertOrUpdateQuestsAsync), insert.Count);
 
         var delete = dbQuests
             .Where(x => !update.Any(y => y.Id == x.Id))
             .ToList();
 
-        Log.Debug("InsertOrUpdateQuestsAsync -> Delete quests count: {0}", delete.Count);
+        Log.Debug("{0} -> Delete quests count: {1}", nameof(InsertOrUpdateQuestsAsync), delete.Count);
 
         _context.Quests.UpdateRange(update);
         _context.Quests.AddRange(insert);
@@ -202,12 +204,12 @@ public class ApplicationDbContextInitialiser
 
         scope.Complete();
 
-        Log.Verbose("InsertOrUpdateQuestsAsync -> Stop");
+        Log.Verbose("{0} -> Stop", nameof(InsertOrUpdateQuestsAsync));
     }
 
     private async Task InsertOrUpdateInventoryItemsAsync()
     {
-        Log.Verbose("InsertOrUpdateInventoryItemsAsync -> Start");
+        Log.Verbose("{0} -> Start", nameof(InsertOrUpdateInventoryItemsAsync));
 
         using var scope = _context.CreateTransactionScope();
 
@@ -218,14 +220,14 @@ public class ApplicationDbContextInitialiser
             })
             .ToListAsync();
 
-        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Db inventory items count: {0}", dbInventoryItems.Count);
+        Log.Debug("{0} -> Db inventory items count: {1}", nameof(InsertOrUpdateInventoryItemsAsync), dbInventoryItems.Count);
 
         var enumInventoryItems = Enum.GetValues(typeof(InventoryItemEnum))
             .OfType<InventoryItemEnum>()
             .Where(x => x != InventoryItemEnum.None)
             .ToList();
 
-        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Enum inventory items count: {0}", enumInventoryItems.Count);
+        Log.Debug("{0} -> Enum inventory items count: {1}", nameof(InsertOrUpdateInventoryItemsAsync), enumInventoryItems.Count);
 
         var update = enumInventoryItems
             .Where(x => dbInventoryItems.Any(y => y.Id == x))
@@ -238,7 +240,7 @@ public class ApplicationDbContextInitialiser
             })
             .ToList();
 
-        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Update inventory items count: {0}", update.Count);
+        Log.Debug("{0} -> Update inventory items count: {1}", nameof(InsertOrUpdateInventoryItemsAsync), update.Count);
 
         var insert = enumInventoryItems
             .Where(x => !dbInventoryItems.Any(y => y.Id == x))
@@ -251,13 +253,13 @@ public class ApplicationDbContextInitialiser
             })
             .ToList();
 
-        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Insert inventory items count: {0}", insert.Count);
+        Log.Debug("{0} -> Insert inventory items count: {1}", nameof(InsertOrUpdateInventoryItemsAsync), insert.Count);
 
         var delete = dbInventoryItems
             .Where(x => !update.Any(y => y.Id == x.Id))
             .ToList();
 
-        Log.Debug("InsertOrUpdateInventoryItemsAsync -> Delete inventory items count: {0}", delete.Count);
+        Log.Debug("{0} -> Delete inventory items count: {1}", nameof(InsertOrUpdateInventoryItemsAsync), delete.Count);
 
         _context.InventoryItems.UpdateRange(update);
         _context.InventoryItems.AddRange(insert);
@@ -267,12 +269,12 @@ public class ApplicationDbContextInitialiser
 
         scope.Complete();
 
-        Log.Verbose("InsertOrUpdateInventoryItemsAsync -> Stop");
+        Log.Verbose("{0} -> Stop", nameof(InsertOrUpdateInventoryItemsAsync));
     }
 
     private async Task InsertOrUpdateCraftingRecipesAsync()
     {
-        Log.Verbose("InsertOrUpdateCraftingRecipesAsync -> Start");
+        Log.Verbose("{0} -> Start", nameof(InsertOrUpdateCraftingRecipesAsync));
 
         using var scope = _context.CreateTransactionScope();
 
@@ -283,14 +285,14 @@ public class ApplicationDbContextInitialiser
             })
             .ToListAsync();
 
-        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Db crafting recipes count: {0}", dbCraftingRecipes.Count);
+        Log.Debug("{0} -> Db crafting recipes count: {1}", nameof(InsertOrUpdateCraftingRecipesAsync), dbCraftingRecipes.Count);
 
         var enumCraftingRecipes = Enum.GetValues(typeof(CraftingRecipeEnum))
             .OfType<CraftingRecipeEnum>()
             .Where(x => x != CraftingRecipeEnum.None)
             .ToList();
 
-        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Enum crafting recipes count: {0}", enumCraftingRecipes.Count);
+        Log.Debug("{0} -> Enum crafting recipes count: {1}", nameof(InsertOrUpdateCraftingRecipesAsync), enumCraftingRecipes.Count);
 
         var update = enumCraftingRecipes
             .Where(x => dbCraftingRecipes.Any(y => y.Id == x))
@@ -311,7 +313,7 @@ public class ApplicationDbContextInitialiser
             })
             .ToList();
 
-        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Update crafting recipes count: {0}", update.Count);
+        Log.Debug("{0} -> Update crafting recipes count: {1}", nameof(InsertOrUpdateCraftingRecipesAsync), update.Count);
 
         var insert = enumCraftingRecipes
             .Where(x => !dbCraftingRecipes.Any(y => y.Id == x))
@@ -332,13 +334,13 @@ public class ApplicationDbContextInitialiser
             })
             .ToList();
 
-        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Insert crafting recipes count: {0}", insert.Count);
+        Log.Debug("{0} -> Insert crafting recipes count: {1}", nameof(InsertOrUpdateCraftingRecipesAsync), insert.Count);
 
         var delete = dbCraftingRecipes
             .Where(x => !update.Any(y => y.Id == x.Id))
             .ToList();
 
-        Log.Debug("InsertOrUpdateCraftingRecipesAsync -> Delete crafting recipes count: {0}", delete.Count);
+        Log.Debug("{0} -> Delete crafting recipes count: {1}", nameof(InsertOrUpdateCraftingRecipesAsync), delete.Count);
 
         _context.CraftingRecipes.UpdateRange(update);
         _context.CraftingRecipes.AddRange(insert);
@@ -348,8 +350,10 @@ public class ApplicationDbContextInitialiser
 
         scope.Complete();
 
-        Log.Verbose("InsertOrUpdateCraftingRecipesAsync -> Stop");
+        Log.Verbose("{0} -> Stop", nameof(InsertOrUpdateCraftingRecipesAsync));
     }
+
+    #endregion
 
     #endregion
 }
