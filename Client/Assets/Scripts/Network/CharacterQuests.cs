@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using Assets.Scripts.Enums;
+using Assets.Scripts.Extensions;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
@@ -200,7 +201,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (Vector3.Distance(hit.transform.position, transform.position) > _npcMaxDistance)
+            if (hit.transform.IsFarToTarget(transform, _npcMaxDistance))
             {
                 CursorUI.Instance.ShowDefault();
 
