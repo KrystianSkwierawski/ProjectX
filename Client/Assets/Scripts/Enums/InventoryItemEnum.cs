@@ -10,7 +10,7 @@ namespace Assets.Scripts.Enums
 
         #endregion
 
-        #region Fish
+        #region Food
 
         Fish = 200,
         CookedFish = 201,

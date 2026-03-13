@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
-using Assets.Scripts.Subscriptions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -76,13 +74,14 @@ namespace Assets.Scripts.UI
             );
         }
 
-        public void Show(GetCraftingRecipesDto craftingRecipes, CraftingRecipeTypeEnum type)
+        public void Show(GetCraftingRecipesDto dto, CraftingRecipeTypeEnum type)
         {
             if (Crafting.activeSelf)
             {
                 return;
             }
 
+            QuestUI.Instance.Hide();
             Crafting.SetActive(true);
 
             if (_type == type)
@@ -92,31 +91,12 @@ namespace Assets.Scripts.UI
 
             if (_type != CraftingRecipeTypeEnum.None)
             {
-                foreach (var recipeObject in _recipeObjects)
-                {
-                    _recipeObjectPool.Release(recipeObject.Value);
-                }
-
-                _recipeObjects.Clear();
+                ClearRecipes();
             }
 
             _type = type;
 
-            foreach (var recipe in craftingRecipes.craftingRecipes)
-            {
-                var obj = _recipeObjectPool.Get();
-                obj.Mesh.text = TranslateManager.Instance.GetByKey($"{recipe.reward.item.type}Title");
-
-                obj.Button.onClick.AddListener(() =>
-                {
-                    foreach (var recipeObject in _recipeObjects)
-                    {
-                        obj.Mesh.color = recipeObject.Key == recipe.reward.item.type ? ColorUI.Green : ColorUI.White;
-                    }
-                });
-
-                _recipeObjects.Add(recipe.reward.item.type, obj);
-            }
+            AddRecipes(dto);
         }
 
         public void Hide()
@@ -127,6 +107,35 @@ namespace Assets.Scripts.UI
             }
 
             Crafting.SetActive(false);
+        }
+
+        private void AddRecipes(GetCraftingRecipesDto dto)
+        {
+            foreach (var recipe in dto.craftingRecipes)
+            {
+                var obj = _recipeObjectPool.Get();
+                obj.Mesh.text = TranslateManager.Instance.GetByKey($"{recipe.reward.item.type}Title");
+
+                obj.Button.onClick.AddListener(() =>
+                {
+                    foreach (var recipeObject in _recipeObjects)
+                    {
+                        recipeObject.Value.Mesh.color = recipeObject.Key == recipe.reward.item.type ? ColorUI.Green : ColorUI.White;
+                    }
+                });
+
+                _recipeObjects.Add(recipe.reward.item.type, obj);
+            }
+        }
+
+        private void ClearRecipes()
+        {
+            foreach (var recipeObject in _recipeObjects)
+            {
+                _recipeObjectPool.Release(recipeObject.Value);
+            }
+
+            _recipeObjects.Clear();
         }
 
         private class RecipePoolObject

@@ -47,11 +47,11 @@ namespace Assets.Scripts.Mono
             {
                 _input = GetComponent<StarterAssetsInputs>();
 
-                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.HideQuest());
+                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.Hide());
 
                 QuestUI.Instance.QuestAcceptButton.onClick.AddListener(async () =>
                 {
-                    QuestUI.Instance.HideQuest();
+                    QuestUI.Instance.Hide();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
                         .Where(x => x.questId == _questNpc.Quest.id)
@@ -114,7 +114,7 @@ namespace Assets.Scripts.Mono
             characterQuest.progress += progress;
             characterQuest.status = status;
 
-            QuestUI.Instance.UpdateQuestProgress(characterQuest);
+            QuestUI.Instance.UpdateProgress(characterQuest);
 
             if (status == CharacterQuestStatusEnum.Finished)
             {
@@ -130,7 +130,7 @@ namespace Assets.Scripts.Mono
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
-            QuestUI.Instance.AcceptQuest(characterQuest);
+            QuestUI.Instance.Accept(characterQuest);
 
             // TODO: server rpc + validation
             AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.id.ToString(), new AddQuestSubscriptionEvent
@@ -149,7 +149,7 @@ namespace Assets.Scripts.Mono
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
 
-            QuestUI.Instance.CompleteQuest(characterQuest);
+            QuestUI.Instance.Complete(characterQuest);
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
@@ -175,7 +175,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (_questNpc != null && _input.Move != Vector2.zero && Vector3.Distance(_questNpc.transform.position, transform.position) > _npcMaxDistance)
+            if (_questNpc != null && _input.Move != Vector2.zero && _questNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance))
             {
                 _questNpc = null;
                 QuestUI.Instance.Quest.SetActive(false);
@@ -228,7 +228,7 @@ namespace Assets.Scripts.Mono
 
             if (mouse.rightButton.wasPressedThisFrame)
             {
-                QuestUI.Instance.ShowQuest(_questNpc);
+                QuestUI.Instance.Show(_questNpc);
             }
         }
 

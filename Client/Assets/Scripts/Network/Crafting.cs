@@ -1,21 +1,29 @@
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
-using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
+using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 
 public class Crafting : NetworkBehaviour
 {
+    private StarterAssetsInputs _input;
+    private GameObject _crafting;
+
     private void Start()
     {
         if (IsOwner)
         {
-            CraftingUI.Instance.ExitButton.onClick.AddListener(() => CraftingUI.Instance.Hide());
+            _input = GetComponent<StarterAssetsInputs>();
+
+            CraftingUI.Instance.ExitButton.onClick.AddListener(() =>
+            {
+                CraftingUI.Instance.Hide();
+                _crafting = null;
+            });
 
             CraftingUI.Instance.CraftButton.onClick.AddListener(() =>
             {
@@ -28,7 +36,17 @@ public class Crafting : NetworkBehaviour
     {
         if (IsOwner)
         {
+            CheckHide();
             CheckStationClicked();
+        }
+    }
+
+    private void CheckHide()
+    {
+        if (_crafting != null && _input.Move != Vector2.zero && _crafting.transform.IsFarToTarget(transform.gameObject, 3f))
+        {
+            CraftingUI.Instance.Hide();
+            _crafting = null;
         }
     }
 
@@ -50,7 +68,6 @@ public class Crafting : NetworkBehaviour
         if (hit.transform.IsFarToTarget(transform.gameObject, 3f))
         {
             CursorUI.Instance.ShowDefault();
-            CraftingUI.Instance.Hide();
 
             return;
         }
@@ -59,6 +76,8 @@ public class Crafting : NetworkBehaviour
 
         if (mouse.rightButton.wasPressedThisFrame)
         {
+            _crafting = hit.transform.gameObject;
+
             var type = hit.transform.gameObject.name switch
             {
                 "CookingStation" => CraftingRecipeTypeEnum.Cooking,
@@ -76,8 +95,8 @@ public class Crafting : NetworkBehaviour
             return;
         }
 
-        var recipes = await CraftingRecipeManager.Instance.GetAsync(type);
+        var dto = await CraftingRecipeManager.Instance.GetAsync(type);
 
-        CraftingUI.Instance.Show(recipes, type);
+        CraftingUI.Instance.Show(dto, type);
     }
 }

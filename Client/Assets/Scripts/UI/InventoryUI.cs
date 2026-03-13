@@ -81,14 +81,14 @@ namespace Assets.Scripts.UI
             );
         }
 
-        public void UpdateInventory(CharacterInventoryDto value)
+        public void UpdateInventory(CharacterInventoryDto dto)
         {
-            _inventorySlots ??= InstantiateInventorySlots(value.count).ToArray();
+            _inventorySlots ??= InstantiateInventorySlots(dto.count).ToArray();
 
             for (int i = 0; i < _inventorySlots.Length; i++)
             {
                 var slot = _inventorySlots[i];
-                var item = value.inventory.items.ElementAtOrDefault(i);
+                var item = dto.inventory.items.ElementAtOrDefault(i);
 
                 if (item == null)
                 {

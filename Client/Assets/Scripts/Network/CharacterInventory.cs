@@ -129,7 +129,7 @@ namespace Assets.Scripts.Mono
 
         #endregion
 
-        public CharacterInventoryDto Inventory { get; set; }
+        public CharacterInventoryDto dto { get; set; }
 
         private async void Start()
         {
@@ -147,21 +147,21 @@ namespace Assets.Scripts.Mono
 
                 RemoveInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
-                    var item = Inventory.inventory.items
+                    var item = dto.inventory.items
                        .Where(x => x.type == e.Item.type)
                        .Where(x => x.count >= e.Item.count)
                        .First();
 
                     if (item.count == e.Item.count)
                     {
-                        Inventory.inventory.items.Remove(item);
+                        dto.inventory.items.Remove(item);
                     }
                     else
                     {
                         item.count -= e.Item.count;
                     }
 
-                    InventoryUI.Instance.UpdateInventory(Inventory);
+                    InventoryUI.Instance.UpdateInventory(dto);
                     AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
                 });
             }
@@ -292,11 +292,11 @@ namespace Assets.Scripts.Mono
         [ClientRpc]
         private void AddInventoryItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
         {
-            var slot = Inventory.inventory.items
+            var slot = dto.inventory.items
                 .Where(x => x.type == item.type)
                 .FirstOrDefault();
 
-            if (slot == null && Inventory.inventory.items.Count >= Inventory.count)
+            if (slot == null && dto.inventory.items.Count >= dto.count)
             {
                 // TODO: out of slots
                 return;
@@ -308,17 +308,17 @@ namespace Assets.Scripts.Mono
             }
             else
             {
-                Inventory.inventory.items.Add(item);
+                dto.inventory.items.Add(item);
             }
 
-            InventoryUI.Instance.UpdateInventory(Inventory);
+            InventoryUI.Instance.UpdateInventory(dto);
         }
 
         private async UniTask UpdateCharacterInventoryAsync()
         {
-            Inventory = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
+            dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
 
-            InventoryUI.Instance.UpdateInventory(Inventory);
+            InventoryUI.Instance.UpdateInventory(dto);
         }
 
         public override void OnNetworkDespawn()

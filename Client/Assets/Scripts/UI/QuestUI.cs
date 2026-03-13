@@ -98,17 +98,18 @@ namespace Assets.Scripts.UI
             foreach (var characterQuest in QuestManager.Instance.CharacterQuests
                 .Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
             {
-                AcceptQuest(characterQuest);
+                Accept(characterQuest);
             }
         }
 
-        public void ShowQuest(QuestNpc questNpc)
+        public void Show(QuestNpc questNpc)
         {
             if (Quest.activeSelf)
             {
                 return;
             }
 
+            CraftingUI.Instance.Hide();
             Quest.SetActive(true);
             QuestTitleText.text = questNpc.Quest.title;
 
@@ -124,12 +125,12 @@ namespace Assets.Scripts.UI
             QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Accept);
         }
 
-        public void HideQuest()
+        public void Hide()
         {
             Quest.SetActive(false);
         }
 
-        public void AcceptQuest(CharacterQuestDto characterQuest)
+        public void Accept(CharacterQuestDto characterQuest)
         {
             if (!QuestLog.activeSelf)
             {
@@ -152,7 +153,7 @@ namespace Assets.Scripts.UI
             _questLogObjects.Add(quest.id, questLogObject);
         }
 
-        public void UpdateQuestProgress(CharacterQuestDto characterQuest)
+        public void UpdateProgress(CharacterQuestDto characterQuest)
         {
             if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
             {
@@ -169,7 +170,7 @@ namespace Assets.Scripts.UI
             }
         }
 
-        public void CompleteQuest(CharacterQuestDto characterQuest)
+        public void Complete(CharacterQuestDto characterQuest)
         {
             if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
             {

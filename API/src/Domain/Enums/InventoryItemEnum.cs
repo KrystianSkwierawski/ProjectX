@@ -9,7 +9,7 @@ public enum InventoryItemEnum
 
     #endregion
 
-    #region Fish
+    #region Food
 
     Fish = 200,
     CookedFish = 201,
