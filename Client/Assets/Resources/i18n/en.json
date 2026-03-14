@@ -6,11 +6,15 @@
   "Complete": "Complete",
   "Exit": "Exit",
   "Craft": "Craft",
+  "Reward": "Reward:",
+  "Requirements": "Requirements:",
 
   "CanTitle": "Can",
   "CanDescription": "A can is a container that can hold items. It can be used to store and transport various goods.",
   "FishTitle": "Fish",
   "FishDescription": "Fish are aquatic animals that live in water. They come in various shapes, sizes, and colors, and are an important part of the ecosystem.",
+  "CookedFishTitle": "Cooked Fish",
+  "CookedFishDescription": "Cooked fish is a delicious and nutritious dish that can",
 
   "PurpleOreTitle": "Purple Ore",
   "PurpleOreDescription": "purple ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
@@ -26,6 +30,8 @@
 
   "WoodTitle": "Wood",
   "WoodDescription": "Wood is a versatile material that can be used for construction, crafting, and furniture making.",
-  "CookedFishTitle": "Cooked Fish",
-  "CookedFishDescription": "Cooked fish is a delicious and nutritious meal that can be prepared by cooking raw fish. It is often enjoyed with various seasonings and sides."
+  "RiceTitle": "Rice",
+  "RiceDescription": "Rice is a staple food crop that is consumed by billions of people worldwide.",
+  "SushiTitle": "Sushi",
+  "SushiDescription": "Sushi is a traditional Japanese dish that typically consists of vinegared rice, seafood, and vegetables, often wrapped in seaweed."
 }

@@ -14,6 +14,8 @@ namespace Assets.Scripts.Enums
 
         Fish = 200,
         CookedFish = 201,
+        Rice = 202,
+        Sushi = 203,
 
         #endregion
 

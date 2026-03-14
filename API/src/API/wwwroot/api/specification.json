@@ -705,6 +705,8 @@
           "Can",
           "Fish",
           "CookedFish",
+          "Rice",
+          "Sushi",
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
@@ -717,6 +719,8 @@
           "Can",
           "Fish",
           "CookedFish",
+          "Rice",
+          "Sushi",
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
@@ -729,6 +733,8 @@
           "Can",
           "Fish",
           "CookedFish",
+          "Rice",
+          "Sushi",
           "PurpleOre",
           "WhiteOre",
           "CopperOre",
@@ -737,6 +743,8 @@
           "Wood"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
           null,
           null,
           null,
@@ -758,6 +766,8 @@
           null,
           null,
           null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -765,6 +775,8 @@
           100,
           200,
           201,
+          202,
+          203,
           300,
           301,
           302,

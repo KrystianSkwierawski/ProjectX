@@ -6,11 +6,15 @@
     "Complete": "Zakończ",
     "Exit": "Wyjdź",
     "Craft": "Kraftuj",
+    "Reward": "Nagroda:",
+    "Requirements": "Wymagania:",
 
     "CanTitle": "Puszka",
     "CanDescription": "Puszka to pojemnik, który może przechowywać przedmioty. Może być używany do przechowywania i transportu różnych towarów.",
     "FishTitle": "Rypcia",
     "FishDescription": "Rypcie to ryby wodne, które żyją w wodzie. Żyją w różnych formach, rozmiarach i kolorach, i są ważnym elementem ekosystemu.",
+    "CookedFishTitle": "Gotowana rypcia",
+    "CookedFishDescription": "Gotowana rypcia to potrawa przygotowana",
     "PurpleOreTitle": "Fioletowa ruda",
     "PurpleOreDescription": "Fioletowa ruda to rzadka i cenna minerał, który może być używany do tworzenia potężnych broni i zbroi.",
     "WhiteOreTitle": "Biała ruda",
@@ -26,6 +30,8 @@
     "WoodTitle": "Drewno",
     "WoodDescription": "Drewno to materiał pochodzenia roślinnego, który jest szeroko stosowany w budownictwie, meblarstwie i produkcji papieru. Jest cenione za swoją trwałość i estetykę.",
 
-    "CookedFishTitle": "Gotowana ryba",
-    "CookedFishDescription": "Gotowana ryba to potrawa przygotowana poprzez"
+    "RiceTitle": "Ryż",
+    "RiceDescription": "Ryż to zboże, które jest jednym z najważniejszych produktów spożywczych na świecie. Jest szeroko stosowany w kuchni i może być przygotowywany na różne sposoby.",
+    "SushiTitle": "Sushi",
+    "SushiDescription": "Sushi to japońska potrawa składająca się z gotowanego ryżu, surowej ryby i innych składników, takich jak warzywa i owoce morza. Jest popularna na całym świecie ze względu na swój unikalny smak i estetykę."   
 }

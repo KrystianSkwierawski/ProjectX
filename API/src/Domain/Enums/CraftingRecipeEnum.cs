@@ -13,6 +13,13 @@ public enum CraftingRecipeEnum : short
         Reward = """{ "Item": { "Type": 201, "Count": 1 }, "Experience": 1000 }"""
     )]
     CookedFish,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Cooking,
+        Requirement = """{ "Items": [ { "Type": 201, "Count": 1 }, { "Type": 202, "Count": 1 } ], "Level": 1 }""",
+        Reward = """{ "Item": { "Type": 203, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    Sushi,
 }
 
 public static class CraftingRecipeEnumExtensions

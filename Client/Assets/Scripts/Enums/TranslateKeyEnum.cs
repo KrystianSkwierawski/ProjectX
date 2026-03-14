@@ -11,6 +11,8 @@
         Complete,
         Exit,
         Craft,
+        Reward,
+        Requirements,
 
         #endregion
 
@@ -20,6 +22,8 @@
         CanDescription,
         FishTitle,
         FishDescription,
+        CookedFishTitle,
+        CookedFishDescription,
         PurpleOreTitle,
         PurpleOreDescription,
         WhiteOreTitle,
@@ -32,8 +36,10 @@
         ChamomileDescription,
         WoodTitle,
         WoodDescription,
-        CookedFishTitle,
-        CookedFishDescription,
+        RiceTitle,
+        RiceDescription,
+        SushiTitle,
+        SushiDescription,
 
         #endregion
     }
