@@ -21,11 +21,11 @@ namespace Assets.Scripts.Mono
         {
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
             {
-                await UserManager.Instance.LoginAsync("user1@localhost", "User1!");
+                await UserManager.Instance.LoginAsync("user2@localhost", "User2!");
             }
             else
             {
-                await UserManager.Instance.LoginAsync("user2@localhost", "User2!");
+                await UserManager.Instance.LoginAsync("user1@localhost", "User1!");
             }
 
             await QuestManager.Instance.LoadAsync();

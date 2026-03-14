@@ -215,6 +215,7 @@ namespace Assets.Scripts.UI
         private void SetRequirements(CraftingRecipeDto recipe)
         {
             RequirementsText.SetActive(true);
+            Requirements.GetComponent<FlexibleGridLayout>().columns = recipe.requirement.items.Count;
 
             foreach (var item in recipe.requirement.items)
             {
