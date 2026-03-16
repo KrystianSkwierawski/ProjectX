@@ -2,6 +2,8 @@ namespace Assets.Scripts.Enums
 {
     public enum ExperienceTypeEnum : byte
     {
+        None,
+
         Main,
 
         Fishing,

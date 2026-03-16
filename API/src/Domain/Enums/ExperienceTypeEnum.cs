@@ -2,6 +2,8 @@
 
 public enum ExperienceTypeEnum : byte
 {
+    None,
+
     Main,
 
     Fishing,

@@ -48,7 +48,7 @@ namespace Assets.Scripts.Mono
 
             foreach (var type in Enum.GetValues(typeof(AudioTypeEnum)).Cast<AudioTypeEnum>())
             {
-                var audioClip = Resources.Load<AudioClip>($"Audios/{type}");
+                var audioClip = type == AudioTypeEnum.None ? null : Resources.Load<AudioClip>($"Audios/{type}");
 
                 if (audioClip != null)
                 {

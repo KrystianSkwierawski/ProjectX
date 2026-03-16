@@ -314,7 +314,7 @@ public class Fishing : NetworkBehaviour
             _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             _isCasting = true;
             _castTimer = _castTime;
-            PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
+            PlayerUI.Instance.UpdateCastBar(_castTimer / _castTime);
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishCast, 0.5f);
         }
@@ -359,7 +359,7 @@ public class Fishing : NetworkBehaviour
 
         _castTimer -= Time.deltaTime;
         var normalized = _castTime > 0f ? (_castTimer / _castTime) : 0f;
-        PlayerUI.Instance.ShowCastBar(Mathf.Clamp01(normalized));
+        PlayerUI.Instance.UpdateCastBar(Mathf.Clamp01(normalized));
 
         if (_castTimer <= 0f)
         {

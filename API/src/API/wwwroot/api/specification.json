@@ -602,6 +602,7 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
+          "None",
           "Main",
           "Fishing",
           "Mining",
@@ -611,6 +612,7 @@
           "Crafting"
         ],
         "x-enum-varnames": [
+          "None",
           "Main",
           "Fishing",
           "Mining",
@@ -620,6 +622,7 @@
           "Crafting"
         ],
         "x-enumNames": [
+          "None",
           "Main",
           "Fishing",
           "Mining",
@@ -635,9 +638,11 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "x-enumDescriptions": [
+          null,
           null,
           null,
           null,
@@ -653,7 +658,8 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ]
       },
       "CharacterInventoryDto": {
@@ -837,39 +843,47 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses",
+          "Catch2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
-          "Collect2Woods"
+          "Collect2Woods",
+          "Collect2Fish",
+          "Collect2Sushi"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses",
+          "Catch2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
-          "Collect2Woods"
+          "Collect2Woods",
+          "Collect2Fish",
+          "Collect2Sushi"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses",
+          "Catch2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
-          "Collect2Woods"
+          "Collect2Woods",
+          "Collect2Fish",
+          "Collect2Sushi"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
           null,
           null,
           null,
@@ -891,6 +905,8 @@
           null,
           null,
           null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -903,7 +919,9 @@
           6,
           7,
           8,
-          9
+          9,
+          10,
+          11
         ]
       },
       "CharacterQuestStatusEnum": {
@@ -1122,6 +1140,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CraftingRecipeEnum"
+          },
           "requirement": {
             "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
           },
@@ -1129,6 +1150,40 @@
             "$ref": "#/components/schemas/CraftingRecipeRewardDto"
           }
         }
+      },
+      "CraftingRecipeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "CookedFish",
+          "Sushi"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "CookedFish",
+          "Sushi"
+        ],
+        "x-enumNames": [
+          "None",
+          "CookedFish",
+          "Sushi"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
       },
       "CraftingRecipeRequirementDto": {
         "type": "object",
@@ -1265,7 +1320,8 @@
           "Find",
           "Gather",
           "Drop",
-          "Collect"
+          "Collect",
+          "Craft"
         ],
         "x-enum-varnames": [
           "Indefinite",
@@ -1274,7 +1330,8 @@
           "Find",
           "Gather",
           "Drop",
-          "Collect"
+          "Collect",
+          "Craft"
         ],
         "x-enumNames": [
           "Indefinite",
@@ -1283,9 +1340,11 @@
           "Find",
           "Gather",
           "Drop",
-          "Collect"
+          "Collect",
+          "Craft"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -1301,6 +1360,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -1310,7 +1370,8 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ]
       },
       "GetQuestsDto": {

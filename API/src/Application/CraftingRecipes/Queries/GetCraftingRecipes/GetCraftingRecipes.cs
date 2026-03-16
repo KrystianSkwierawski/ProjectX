@@ -24,6 +24,7 @@ public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQue
             .Where(x => x.Status == StatusEnum.Active)
             .Select(x => new
             {
+                x.Id,
                 x.Requirement,
                 x.Reward,
             })
@@ -33,6 +34,7 @@ public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQue
         {
             CraftingRecipes = craftingRecipes.Select(x => new CraftingRecipeDto
             {
+                Id = x.Id,
                 Requirement = JsonSerializer.Deserialize<CraftingRecipeRequirementDto>(x.Requirement)!,
                 Reward = JsonSerializer.Deserialize<CraftingRecipeRewardDto>(x.Reward)!,
             }).ToList()

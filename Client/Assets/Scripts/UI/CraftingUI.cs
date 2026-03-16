@@ -49,13 +49,18 @@ namespace Assets.Scripts.UI
 
         #endregion
 
+        public CraftingRecipeDto CurrentRecipe { get; private set; }
+
+        public CraftingRecipeTypeEnum CurrentType { get; private set; }
+
         private ObjectPool<RecipesPoolObject> _recipesObjectPool;
+
         private IDictionary<InventoryItemEnum, RecipesPoolObject> _recipesPoolObjects = new Dictionary<InventoryItemEnum, RecipesPoolObject>();
 
         private ObjectPool<RecipePoolObject> _recipeObjectPool;
+
         private IDictionary<InventoryItemEnum, RecipePoolObject> _recipeObjects = new Dictionary<InventoryItemEnum, RecipePoolObject>();
 
-        private CraftingRecipeTypeEnum _type;
         private CraftingRecipeDto _currentRecipe;
 
         private void Start()
@@ -142,18 +147,18 @@ namespace Assets.Scripts.UI
             QuestUI.Instance.Hide();
             Crafting.SetActive(true);
 
-            if (_type == type)
+            if (CurrentType == type)
             {
                 return;
             }
 
-            if (_type != CraftingRecipeTypeEnum.None)
+            if (CurrentType != CraftingRecipeTypeEnum.None)
             {
                 ClearRecipes();
                 ClearRecipe();
             }
 
-            _type = type;
+            CurrentType = type;
 
             AddRecipes(dto);
         }
@@ -186,7 +191,7 @@ namespace Assets.Scripts.UI
 
         private void SetRecipe(CraftingRecipeDto recipe)
         {
-            if (_currentRecipe == recipe)
+            if (CurrentRecipe == recipe)
             {
                 return;
             }
@@ -202,7 +207,7 @@ namespace Assets.Scripts.UI
 
             SetRequirements(recipe);
 
-            _currentRecipe = recipe;
+            CurrentRecipe = recipe;
         }
 
         private void SetReward(CraftingRecipeDto recipe)

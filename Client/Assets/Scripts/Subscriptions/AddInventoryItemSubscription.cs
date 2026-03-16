@@ -12,8 +12,6 @@ namespace Assets.Scripts.Subscriptions
     {
         public InventoryItemDto Item { get; set; }
 
-        public ulong ClientId { get; set; }
-
         public string ClientToken { get; set; }
     }
 }

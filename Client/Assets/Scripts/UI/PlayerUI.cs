@@ -42,7 +42,7 @@ namespace Assets.Scripts.UI
             CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
         }
 
-        public void ShowCastBar(float progress)
+        public void UpdateCastBar(float progress)
         {
             if (CastProgressBar != null)
             {

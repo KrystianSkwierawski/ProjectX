@@ -2,7 +2,9 @@ namespace Assets.Scripts.Enums
 {
     public enum AudioTypeEnum : byte
     {
-        #region sfx
+        None,
+
+        #region Sfx
 
         CastingFailed,
         FireballCast,
@@ -25,10 +27,12 @@ namespace Assets.Scripts.Enums
         Death,
         MonsterAggro,
         MonsterAttack,
+        CookingPrepare,
+        CookingComplete,
 
         #endregion
 
-        #region music
+        #region Music
 
         BacgroundMusic,
         BacgroundMusic2,

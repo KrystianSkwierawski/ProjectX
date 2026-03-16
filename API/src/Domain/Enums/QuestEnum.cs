@@ -35,15 +35,15 @@ public enum QuestEnum : short
     [QuestParameters(
         PreviousQuestId = Kill2Beans,
         Type = QuestTypeEnum.Collect,
-        TitleKey = TranslateKeyEnum.Catch2FishsesTitle,
-        Description = TranslateKeyEnum.Catch2FishsesDescription,
-        CompleteDescription = TranslateKeyEnum.Catch2FishsesCompleteDescription,
-        StatusText = TranslateKeyEnum.Catch2FishsesStatusText,
+        TitleKey = TranslateKeyEnum.Catch2FishTitle,
+        Description = TranslateKeyEnum.Catch2FishDescription,
+        CompleteDescription = TranslateKeyEnum.Catch2FishCompleteDescription,
+        StatusText = TranslateKeyEnum.Catch2FishsStatusText,
         GameObjectName = nameof(InventoryItemEnum.Fish),
         Requirement = 2,
         Reward = 1000
     )]
-    Catch2Fishses,
+    Catch2Fish,
 
     [QuestParameters(
         Type = QuestTypeEnum.Collect,
@@ -119,6 +119,31 @@ public enum QuestEnum : short
         Reward = 1000
     )]
     Collect2Woods,
+
+    [QuestParameters(
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2FishTitle,
+        Description = TranslateKeyEnum.Collect2FishDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2FishCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2FishStatusText,
+        GameObjectName = nameof(InventoryItemEnum.CookedFish),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2Fish, // TODO: cook
+
+    [QuestParameters(
+        PreviousQuestId = Collect2Fish,
+        Type = QuestTypeEnum.Collect,
+        TitleKey = TranslateKeyEnum.Collect2SushiTitle,
+        Description = TranslateKeyEnum.Collect2SushiDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2SushiCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2SushiStatusText,
+        GameObjectName = nameof(InventoryItemEnum.Sushi),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2Sushi, // TODO: cook
 }
 
 public static class QuestEnumExtensions

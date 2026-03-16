@@ -80,7 +80,7 @@ public class Lumberjack : NetworkBehaviour
         }
 
         _castingTimer += Time.deltaTime;
-        PlayerUI.Instance.ShowCastBar(_castingTimer / _castingTime);
+        PlayerUI.Instance.UpdateCastBar(_castingTimer / _castingTime);
 
         if (_castingTimer >= _castingTime)
         {
@@ -170,7 +170,7 @@ public class Lumberjack : NetworkBehaviour
         _castingTimer = 0f;
         _sfxTimer = 0f;
 
-        PlayerUI.Instance.ShowCastBar(_castingTimer / _castingTime);
+        PlayerUI.Instance.UpdateCastBar(_castingTimer / _castingTime);
         _thirdPersonController.LockCameraToTarget(_target.transform, -30f);
     }
 

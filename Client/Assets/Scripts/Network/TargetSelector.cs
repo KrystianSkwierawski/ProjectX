@@ -225,7 +225,7 @@ namespace Assets.Scripts.Network
         {
             _isCasting = true;
             _castTimer = 0f;
-            PlayerUI.Instance.ShowCastBar(_castTimer);
+            PlayerUI.Instance.UpdateCastBar(_castTimer);
         }
 
         [ServerRpc]
@@ -262,7 +262,7 @@ namespace Assets.Scripts.Network
             }
 
             _castTimer += Time.deltaTime;
-            PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
+            PlayerUI.Instance.UpdateCastBar(_castTimer / _castTime);
 
             if (_castTimer >= _castTime)
             {

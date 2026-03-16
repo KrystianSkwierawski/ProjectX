@@ -15,7 +15,7 @@ public class CraftingRecipes : EndpointGroupBase
     {
         groupBuilder
             .MapGet(GetCraftingRecipes)
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(Policies.ServerOrClient);
     }
 
     private static async Task<Ok<GetCraftingRecipesDto>> GetCraftingRecipes(IMemoryCache memoryCache, ISender sender, [AsParameters] GetCraftingRecipesQuery query)

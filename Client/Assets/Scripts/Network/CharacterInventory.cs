@@ -139,12 +139,14 @@ namespace Assets.Scripts.Mono
             {
                 await UpdateCharacterInventoryAsync();
 
+                // TODO: server rpc?
                 AddInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
                     AddItemServerRpc(e.Item, e.ClientToken);
                     AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
                 });
 
+                // TODO: server rpc?
                 RemoveInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
                     var item = dto.inventory.items
@@ -163,11 +165,24 @@ namespace Assets.Scripts.Mono
 
                     InventoryUI.Instance.UpdateInventory(dto);
                     AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+
+                    // TODO: server rpc
                 });
             }
 
             if (IsServer)
             {
+                AddInventoryItemSubscription.Instance.Subscribe(key, async (e) =>
+                {
+                    _currentLoot.Add(new InventoryItemDto
+                    {
+                        type = e.Item.type,
+                        count = e.Item.count,
+                    });
+
+                    await AddItemAsync(e.Item, e.ClientToken);
+                });
+
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
                 {
                     if (_loot.TryGetValue(e.GameObjectName, out var drops))
@@ -333,6 +348,7 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
+                AddInventoryItemSubscription.Instance.Unsubscribe(key);
                 CheckLootSubscription.Instance.Unsubscribe(key);
             }
 
@@ -351,6 +367,7 @@ namespace Assets.Scripts.Mono
 
             if (IsServer)
             {
+                AddInventoryItemSubscription.Instance.Unsubscribe(key);
                 CheckLootSubscription.Instance.Unsubscribe(key);
             }
 
