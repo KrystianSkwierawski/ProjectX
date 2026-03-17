@@ -37,6 +37,8 @@ namespace Assets.Scripts.UI
 
         public GameObject Requirements { get; private set; }
 
+        public FlexibleGridLayout RequirementsFlexibleGridLayout { get; private set; }
+
         public GameObject RequirementsText { get; private set; }
 
         #endregion
@@ -73,6 +75,7 @@ namespace Assets.Scripts.UI
             Reward = Recipe.transform.Find("Reward").gameObject;
             RewardText = Recipe.transform.Find("RewardText").gameObject;
             Requirements = Recipe.transform.Find("Requirements").gameObject;
+            RequirementsFlexibleGridLayout = Requirements.GetComponent<FlexibleGridLayout>();
             RequirementsText = Recipe.transform.Find("RequirementsText").gameObject;
             CraftButton = Crafting.transform.Find("CraftButton").GetComponent<Button>();
             ExitButton = Crafting.transform.Find("ExitButton").GetComponent<Button>();
@@ -220,7 +223,7 @@ namespace Assets.Scripts.UI
         private void SetRequirements(CraftingRecipeDto recipe)
         {
             RequirementsText.SetActive(true);
-            Requirements.GetComponent<FlexibleGridLayout>().columns = recipe.requirement.items.Count;
+            RequirementsFlexibleGridLayout.columns = recipe.requirement.items.Count;
 
             foreach (var item in recipe.requirement.items)
             {
