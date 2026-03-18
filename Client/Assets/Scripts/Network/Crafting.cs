@@ -66,7 +66,7 @@ public class Crafting : NetworkBehaviour
 
         if (_craftingTimer >= _craftingTime)
         {
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CookingComplete, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
             StopCrafting();
             CraftServerRpc(CraftingUI.Instance.CurrentRecipe.id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
 
