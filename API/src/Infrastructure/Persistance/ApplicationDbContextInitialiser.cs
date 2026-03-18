@@ -103,6 +103,16 @@ public class ApplicationDbContextInitialiser
                             {
                                 Type = InventoryItemEnum.Can,
                                 Count = 2
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Rice,
+                                Count = 2
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Fish,
+                                Count = 2
                             }
                         ]
                     }),

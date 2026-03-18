@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Subscriptions;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.UI
 {
@@ -15,6 +16,11 @@ namespace Assets.Scripts.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            if (gameObject.TryGetComponent<Button>(out var button) && !button.interactable)
+            {
+                return;
+            }
+
             CursorUI.Instance.ShowPointer();
             OnPointerEnterSubscription.Instance.Invoke(_key, new OnPointerEnterEvent());
         }

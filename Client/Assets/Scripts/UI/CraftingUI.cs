@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
@@ -63,7 +64,18 @@ namespace Assets.Scripts.UI
 
         private IDictionary<InventoryItemEnum, RecipePoolObject> _recipeObjects = new Dictionary<InventoryItemEnum, RecipePoolObject>();
 
-        private CraftingRecipeDto _currentRecipe;
+        public bool HasAllRequirements => HasRequiredItems && HasRequiredLevel;
+
+        public bool HasRequiredItems => CraftingUI.Instance.CurrentRecipe.requirement.items.All(x =>
+        {
+            var count = InventoryManager.Instance.Dto.inventory.items
+                .Where(i => i.type == x.type)
+                .Sum(i => i.count);
+
+            return count >= x.count;
+        });
+
+        public bool HasRequiredLevel => true; // TODO
 
         private void Start()
         {
@@ -176,6 +188,27 @@ namespace Assets.Scripts.UI
             Crafting.SetActive(false);
         }
 
+        public void UpdateRequirements()
+        {
+            foreach (var obj in _recipeObjects)
+            {
+                if (obj.Value.GameObject.transform.parent == Requirements.transform)
+                {
+                    var count = InventoryManager.Instance.Dto.inventory.items
+                        .Where(x => x.type == obj.Key)
+                        .Sum(x => x.count);
+
+                    var required = CurrentRecipe.requirement.items
+                        .Where(x => x.type == obj.Key)
+                        .Sum(x => x.count);
+
+                    obj.Value.Mesh.text = $"{count}/{required}";
+                }
+            }
+
+            CraftButton.interactable = HasAllRequirements;
+        }
+
         private void AddRecipes(GetCraftingRecipesDto dto)
         {
             foreach (var recipe in dto.craftingRecipes)
@@ -206,18 +239,20 @@ namespace Assets.Scripts.UI
 
             ClearRecipe();
 
+            CurrentRecipe = recipe;
+
+            CraftButton.interactable = HasAllRequirements;
+
             SetReward(recipe);
 
             SetRequirements(recipe);
-
-            CurrentRecipe = recipe;
         }
 
         private void SetReward(CraftingRecipeDto recipe)
         {
             RewardText.SetActive(true);
 
-            AddInventoryItem(recipe.reward.item.type, Reward.transform);
+            AddInventoryItem(recipe.reward.item, Reward.transform);
         }
 
         private void SetRequirements(CraftingRecipeDto recipe)
@@ -227,20 +262,27 @@ namespace Assets.Scripts.UI
 
             foreach (var item in recipe.requirement.items)
             {
-                AddInventoryItem(item.type, Requirements.transform);
+                AddInventoryItem(item, Requirements.transform);
             }
         }
 
-        private void AddInventoryItem(InventoryItemEnum type, Transform parent)
+        private void AddInventoryItem(InventoryItemDto item, Transform parent)
         {
             var obj = _recipeObjectPool.Get();
 
             obj.GameObject.transform.SetParent(parent);
 
-            obj.Image.texture = InventoryUI.Instance.Textures[type];
-            obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
-            obj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{type}Description");
-            obj.Mesh.text = "1/1";
+            obj.Image.texture = InventoryUI.Instance.Textures[item.type];
+            obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
+            obj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+
+            var count = InventoryManager.Instance.Dto.inventory.items
+                .Where(x => x.type == item.type)
+                .Sum(x => x.count);
+
+            obj.Mesh.text = parent == Requirements.transform
+                ? $"{count}/{item.count}"
+                : item.count.ToString();
 
             var key = obj.GameObject.GetInstanceID().ToString();
 
@@ -254,7 +296,7 @@ namespace Assets.Scripts.UI
                 obj.Preview.SetActive(false);
             });
 
-            _recipeObjects.Add(type, obj);
+            _recipeObjects.Add(item.type, obj);
         }
 
         private void ClearRecipes()
@@ -298,8 +340,6 @@ namespace Assets.Scripts.UI
             public TextMeshProUGUI Mesh { get; set; }
 
             public HoverUI HoverUI { get; set; }
-
-            //public Button Button { get; set; }
 
             public GameObject Preview { get; set; }
 

@@ -129,41 +129,28 @@ namespace Assets.Scripts.Mono
 
         #endregion
 
-        public CharacterInventoryDto dto { get; set; }
-
         private async void Start()
         {
             var key = OwnerClientId.ToString();
 
             if (IsOwner)
             {
-                await UpdateCharacterInventoryAsync();
+                await InventoryManager.Instance.LoadAsync();
 
-                // TODO: server rpc?
+                InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
                 AddInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
                     AddItemServerRpc(e.Item, e.ClientToken);
-                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
                 });
 
                 // TODO: server rpc?
                 RemoveInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
-                    var item = dto.inventory.items
-                       .Where(x => x.type == e.Item.type)
-                       .Where(x => x.count >= e.Item.count)
-                       .First();
+                    InventoryManager.Instance.Remove(e.Item);
 
-                    if (item.count == e.Item.count)
-                    {
-                        dto.inventory.items.Remove(item);
-                    }
-                    else
-                    {
-                        item.count -= e.Item.count;
-                    }
+                    InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
-                    InventoryUI.Instance.UpdateInventory(dto);
                     AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
 
                     // TODO: server rpc
@@ -276,6 +263,14 @@ namespace Assets.Scripts.Mono
 
         private async UniTask AddItemAsync(InventoryItemDto item, string clientToken)
         {
+            AddInventoryItemClientRpc(item, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+
             var serverItem = _currentLoot
                 .Where(x => x.type == item.type)
                 .First();
@@ -294,48 +289,17 @@ namespace Assets.Scripts.Mono
             }, clientToken);
 
             _currentLoot.Remove(serverItem);
-
-            AddInventoryItemClientRpc(item, new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
         }
 
         [ClientRpc]
         private void AddInventoryItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
         {
-            var slot = dto.inventory.items
-                .Where(x => x.type == item.type)
-                .FirstOrDefault();
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
 
-            if (slot == null && dto.inventory.items.Count >= dto.count)
-            {
-                // TODO: out of slots
-                return;
-            }
+            InventoryManager.Instance.Add(item);
 
-            if (slot != null)
-            {
-                slot.count += item.count;
-            }
-            else
-            {
-                dto.inventory.items.Add(item);
-            }
-
-            InventoryUI.Instance.UpdateInventory(dto);
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
         }
-
-        private async UniTask UpdateCharacterInventoryAsync()
-        {
-            dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
-
-            InventoryUI.Instance.UpdateInventory(dto);
-        }
-
         public override void OnNetworkDespawn()
         {
             var key = OwnerClientId.ToString();

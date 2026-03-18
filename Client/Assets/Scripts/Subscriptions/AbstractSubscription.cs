@@ -12,6 +12,11 @@ namespace Assets.Scripts.Shared
     {
         protected readonly IDictionary<string, UnityAction<J>> Subscriptions = new Dictionary<string, UnityAction<J>>();
 
+        public void Subscribe(int key, UnityAction<J> action)
+        {
+            Subscribe(key.ToString(), action);
+        }
+
         public virtual void Subscribe(string key, UnityAction<J> action)
         {
             if (!Subscriptions.ContainsKey(key))

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
@@ -66,7 +65,6 @@ public class Crafting : NetworkBehaviour
 
         if (_craftingTimer >= _craftingTime)
         {
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
             StopCrafting();
             CraftServerRpc(CraftingUI.Instance.CurrentRecipe.id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
 
@@ -78,6 +76,8 @@ public class Crafting : NetworkBehaviour
                     Item = requirement,
                 });
             }
+
+            CraftingUI.Instance.UpdateRequirements();
         }
     }
 
@@ -91,6 +91,7 @@ public class Crafting : NetworkBehaviour
     [ServerRpc]
     private void CraftServerRpc(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string clientToken)
     {
+        // TODO: validate
         CraftAsync(id, type, clientToken).Forget();
     }
 

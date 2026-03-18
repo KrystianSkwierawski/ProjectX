@@ -17,7 +17,7 @@ namespace Assets.Scripts.Shared
                 return result;
             }
 
-            result = await UnityWebRequestHelper.ExecuteGetAsync<GetCraftingRecipesDto>($"CraftingRecipes?Type={type}", UserManager.Instance.Token);
+            result = await UnityWebRequestHelper.ExecuteGetAsync<GetCraftingRecipesDto>($"CraftingRecipes?Type={type}");
 
             _cache.Add(type, result);
 
