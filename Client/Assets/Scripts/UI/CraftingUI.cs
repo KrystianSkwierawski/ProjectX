@@ -66,7 +66,7 @@ namespace Assets.Scripts.UI
 
         public bool HasAllRequirements => HasRequiredItems && HasRequiredLevel;
 
-        public bool HasRequiredItems => CraftingUI.Instance.CurrentRecipe.requirement.items.All(x =>
+        public bool HasRequiredItems => CurrentRecipe.requirement.items.All(x =>
         {
             var count = InventoryManager.Instance.Dto.inventory.items
                 .Where(i => i.type == x.type)
@@ -190,19 +190,24 @@ namespace Assets.Scripts.UI
 
         public void UpdateRequirements()
         {
-            foreach (var obj in _recipeObjects)
+            if (_recipeObjects.Count == 0)
             {
-                if (obj.Value.GameObject.transform.parent == Requirements.transform)
+                return;
+            }
+
+            foreach (var recipeObject in _recipeObjects)
+            {
+                if (recipeObject.Value.GameObject.transform.parent == Requirements.transform)
                 {
                     var count = InventoryManager.Instance.Dto.inventory.items
-                        .Where(x => x.type == obj.Key)
+                        .Where(x => x.type == recipeObject.Key)
                         .Sum(x => x.count);
 
                     var required = CurrentRecipe.requirement.items
-                        .Where(x => x.type == obj.Key)
+                        .Where(x => x.type == recipeObject.Key)
                         .Sum(x => x.count);
 
-                    obj.Value.Mesh.text = $"{count}/{required}";
+                    recipeObject.Value.Mesh.text = $"{count}/{required}";
                 }
             }
 
@@ -232,10 +237,7 @@ namespace Assets.Scripts.UI
                 return;
             }
 
-            foreach (var recipeObject in _recipesPoolObjects)
-            {
-                recipeObject.Value.Mesh.color = recipeObject.Key == recipe.reward.item.type ? ColorUI.Green : ColorUI.White;
-            }
+            SetRecipesColor(recipe);
 
             ClearRecipe();
 
@@ -246,6 +248,14 @@ namespace Assets.Scripts.UI
             SetReward(recipe);
 
             SetRequirements(recipe);
+        }
+
+        private void SetRecipesColor(CraftingRecipeDto recipe)
+        {
+            foreach (var recipeObject in _recipesPoolObjects)
+            {
+                recipeObject.Value.Mesh.color = recipeObject.Key == recipe.reward.item.type ? ColorUI.Green : ColorUI.White;
+            }
         }
 
         private void SetReward(CraftingRecipeDto recipe)

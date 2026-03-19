@@ -67,17 +67,6 @@ public class Crafting : NetworkBehaviour
         {
             StopCrafting();
             CraftServerRpc(CraftingUI.Instance.CurrentRecipe.id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
-
-            // TODO: server rpc
-            foreach (var requirement in CraftingUI.Instance.CurrentRecipe.requirement.items)
-            {
-                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
-                {
-                    Item = requirement,
-                });
-            }
-
-            CraftingUI.Instance.UpdateRequirements();
         }
     }
 
@@ -103,13 +92,25 @@ public class Crafting : NetworkBehaviour
             .Where(x => x.id == id)
             .Single();
 
-        AddInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddInventoryItemSubscriptionEvent
+        var key = OwnerClientId.ToString();
+
+        AddInventoryItemSubscription.Instance.Invoke(key, new AddInventoryItemSubscriptionEvent
         {
             Item = recipe.reward.item,
             ClientToken = clientToken,
         });
 
-        CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+        // TODO: invoke once?
+        foreach (var requirement in recipe.requirement.items)
+        {
+            RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
+            {
+                Item = requirement,
+                ClientToken = clientToken,
+            });
+        }
+
+        CheckCharacterQuestSubscription.Instance.Invoke(key, new CheckCharacterQuestSubscriptionEvent
         {
             Progress = recipe.reward.item.count,
             GameObjectName = recipe.reward.item.type.ToString(),
@@ -124,7 +125,7 @@ public class Crafting : NetworkBehaviour
 
         if (experienceType != ExperienceTypeEnum.None)
         {
-            AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
+            AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
             {
                 Amount = recipe.reward.experience,
                 Type = experienceType,

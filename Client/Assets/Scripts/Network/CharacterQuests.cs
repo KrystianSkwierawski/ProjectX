@@ -23,19 +23,37 @@ namespace Assets.Scripts.Mono
         private StarterAssetsInputs _input;
 
         [ServerRpc]
-        private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
+        private void CompleteQuestServerRpc(QuestEnum questId, int characterQuestId, string token)
         {
             // TODO: validation
-            CompleteQuestAsync(characterQuestId, token, clientId).Forget();
+            CompleteQuestAsync(questId, characterQuestId, token).Forget();
         }
 
-        private async UniTask CompleteQuestAsync(int characterQuestId, string clientToken, ulong clientId)
+        private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string clientToken)
         {
-            var quest = await QuestManager.Instance.CompleteAsync(characterQuestId, clientToken);
+            // TODO: validate and get type from complete?
+            var quest = QuestManager.Instance.Quests
+                .Where(x => x.id == questId)
+                .Single();
+
+            if (quest.type == QuestTypeEnum.Collect)
+            {
+                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
+                {
+                    Item = new InventoryItemDto
+                    {
+                        type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
+                        count = quest.requirement,
+                    },
+                    ClientToken = UserManager.Instance.Token,
+                });
+            }
+
+            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, clientToken);
 
             AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
             {
-                Amount = quest.reward,
+                Amount = result.reward,
                 Type = ExperienceTypeEnum.Main,
                 ClientToken = clientToken,
             });
@@ -153,19 +171,7 @@ namespace Assets.Scripts.Mono
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
-            if (quest.type == QuestTypeEnum.Collect)
-            {
-                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
-                {
-                    Item = new InventoryItemDto
-                    {
-                        type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
-                        count = quest.requirement
-                    }
-                });
-            }
-
-            CompleteQuestServerRpc(characterQuest.id, UserManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
+            CompleteQuestServerRpc(quest.id, characterQuest.id, UserManager.Instance.Token);
         }
 
         private void Update()

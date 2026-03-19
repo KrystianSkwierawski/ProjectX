@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
@@ -143,18 +142,6 @@ namespace Assets.Scripts.Mono
                 {
                     AddItemServerRpc(e.Item, e.ClientToken);
                 });
-
-                // TODO: server rpc?
-                RemoveInventoryItemSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    InventoryManager.Instance.Remove(e.Item);
-
-                    InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
-
-                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
-
-                    // TODO: server rpc
-                });
             }
 
             if (IsServer)
@@ -168,6 +155,11 @@ namespace Assets.Scripts.Mono
                     });
 
                     await AddItemAsync(e.Item, e.ClientToken);
+                });
+
+                RemoveInventoryItemSubscription.Instance.Subscribe(key, async (e) =>
+                {
+                    await RemoveItemAsync(e.Item, e.ClientToken);
                 });
 
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
@@ -291,6 +283,36 @@ namespace Assets.Scripts.Mono
             _currentLoot.Remove(serverItem);
         }
 
+        private async UniTask RemoveItemAsync(InventoryItemDto item, string clientToken)
+        {
+            RemoveItemClientRpc(item, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+
+            // TODO: remvoe
+            await UniTask.Delay(1000);
+            //await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
+            //{
+            //    characterId = 1,
+            //}, clientToken);
+        }
+
+        [ClientRpc]
+        private void RemoveItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
+        {
+            InventoryManager.Instance.Remove(item);
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+
+            CraftingUI.Instance.UpdateRequirements();
+        }
+
         [ClientRpc]
         private void AddInventoryItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
         {
@@ -304,17 +326,9 @@ namespace Assets.Scripts.Mono
         {
             var key = OwnerClientId.ToString();
 
-            if (IsOwner)
-            {
-                AddInventoryItemSubscription.Instance.Unsubscribe(key);
-                RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
-            }
-
-            if (IsServer)
-            {
-                AddInventoryItemSubscription.Instance.Unsubscribe(key);
-                CheckLootSubscription.Instance.Unsubscribe(key);
-            }
+            AddInventoryItemSubscription.Instance.Unsubscribe(key);
+            RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
+            CheckLootSubscription.Instance.Unsubscribe(key);
 
             base.OnNetworkDespawn();
         }
@@ -323,17 +337,9 @@ namespace Assets.Scripts.Mono
         {
             var key = OwnerClientId.ToString();
 
-            if (IsOwner)
-            {
-                AddInventoryItemSubscription.Instance.Unsubscribe(key);
-                RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
-            }
-
-            if (IsServer)
-            {
-                AddInventoryItemSubscription.Instance.Unsubscribe(key);
-                CheckLootSubscription.Instance.Unsubscribe(key);
-            }
+            AddInventoryItemSubscription.Instance.Unsubscribe(key);
+            CheckLootSubscription.Instance.Unsubscribe(key);
+            RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
 
             base.OnDestroy();
         }
