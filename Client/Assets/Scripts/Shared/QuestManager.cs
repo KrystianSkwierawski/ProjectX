@@ -7,27 +7,28 @@ namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
+        // FIXME: array?
         public IList<QuestDto> Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
 
-        public async UniTask LoadQuestsAsync()
+        public async UniTask LoadAsync()
         {
             var result = await UnityWebRequestHelper.ExecuteGetAsync<GetQuestsDto>("Quests");
 
             Quests = result.quests;
         }
 
-        public async UniTask LoadCharacterQuestsAsync()
+        public async UniTask LoadAsync(int characterId)
         {
-            var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>("CharacterQuests?CharacterId=1");
+            var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>($"CharacterQuests?CharacterId={characterId}");
 
             CharacterQuests = result.characterQuests;
         }
 
         public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId)
         {
-            return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests", new AcceptCharacterQuestCommand
+            return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests/Accept", new AcceptCharacterQuestCommand
             {
                 questId = questId
             });
@@ -49,6 +50,14 @@ namespace Assets.Scripts.Shared
                 questId = questId,
                 progress = progress,
                 characterId = characterId,
+            }, clientToken);
+        }
+
+        public async UniTask<CompleteCharacterQuestDto> CompleteAsync(int characterQuestId, string clientToken)
+        {
+            return await UnityWebRequestHelper.ExecutePostAsync<CompleteCharacterQuestDto>("CharacterQuests/Complete", new CompleteCharacterQuestCommand
+            {
+                characterQuestId = characterQuestId,
             }, clientToken);
         }
     }

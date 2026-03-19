@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using Assets.Scripts.Enums;
+using Assets.Scripts.Extensions;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
@@ -16,42 +17,46 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterQuests : NetworkBehaviour
     {
+        private const float _npcMaxDistance = 5f;
+
         private QuestNpc _questNpc;
-        private float _npcMaxDistance = 5f;
         private StarterAssetsInputs _input;
 
         [ServerRpc]
-        private void CompleteQuestServerRpc(int characterQuestId, string token, ulong clientId)
+        private void CompleteQuestServerRpc(QuestEnum questId, int characterQuestId, string token)
         {
             // TODO: validation
-            CompleteQuestAsync(characterQuestId, token, clientId).Forget();
+            CompleteQuestAsync(questId, characterQuestId, token).Forget();
         }
 
-        private async UniTask CompleteQuestAsync(int characterQuestId, string clientToken, ulong clientId)
+        private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string clientToken)
         {
-            var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
-            {
-                characterId = 1,
-                characterQuestId = characterQuestId,
-                type = ExperienceTypeEnum.Questing
-            }, clientToken);
+            // TODO: validate and get type from complete?
+            var quest = QuestManager.Instance.Quests
+                .Where(x => x.id == questId)
+                .Single();
 
-            if (result.leveledUp)
+            if (quest.type == QuestTypeEnum.Collect)
             {
-                UpdateLevelClientRpc(result.level, new ClientRpcParams
+                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
                 {
-                    Send = new ClientRpcSendParams
+                    Item = new InventoryItemDto
                     {
-                        TargetClientIds = new ulong[] { clientId }
-                    }
+                        type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
+                        count = quest.requirement,
+                    },
+                    ClientToken = UserManager.Instance.Token,
                 });
             }
-        }
 
-        [ClientRpc]
-        public void UpdateLevelClientRpc(int level, ClientRpcParams rpcParams = default)
-        {
-            PlayerUI.Instance.PlayerLevelText.text = $"Level: {level}";
+            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, clientToken);
+
+            AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
+            {
+                Amount = result.reward,
+                Type = ExperienceTypeEnum.Main,
+                ClientToken = clientToken,
+            });
         }
 
         private async void Start()
@@ -60,11 +65,11 @@ namespace Assets.Scripts.Mono
             {
                 _input = GetComponent<StarterAssetsInputs>();
 
-                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.HideQuestCanvas());
+                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.Hide());
 
                 QuestUI.Instance.QuestAcceptButton.onClick.AddListener(async () =>
                 {
-                    QuestUI.Instance.HideQuestCanvas();
+                    QuestUI.Instance.Hide();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
                         .Where(x => x.questId == _questNpc.Quest.id)
@@ -94,9 +99,10 @@ namespace Assets.Scripts.Mono
                 .Where(x => x.gameObjectName == gameObjectName)
                 .FirstOrDefault();
 
-            if (quest == null)
+            if (quest == null || quest.id == QuestEnum.None)
             {
                 Debug.Log($"Quest not found. GameObjectName: {gameObjectName}");
+
                 return;
             }
 
@@ -126,7 +132,7 @@ namespace Assets.Scripts.Mono
             characterQuest.progress += progress;
             characterQuest.status = status;
 
-            QuestUI.Instance.UpdateQuestProgress(characterQuest);
+            QuestUI.Instance.UpdateProgress(characterQuest);
 
             if (status == CharacterQuestStatusEnum.Finished)
             {
@@ -142,7 +148,7 @@ namespace Assets.Scripts.Mono
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
-            QuestUI.Instance.AcceptQuest(characterQuest);
+            QuestUI.Instance.Accept(characterQuest);
 
             // TODO: server rpc + validation
             AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.id.ToString(), new AddQuestSubscriptionEvent
@@ -161,23 +167,11 @@ namespace Assets.Scripts.Mono
 
             characterQuest.status = CharacterQuestStatusEnum.Completed;
 
-            QuestUI.Instance.CompleteQuest(characterQuest);
+            QuestUI.Instance.Complete(characterQuest);
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
 
-            if (quest.type == QuestTypeEnum.Collect)
-            {
-                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
-                {
-                    Item = new InventoryItem
-                    {
-                        type = Enum.Parse<CharacterInventoryTypeEnum>(quest.gameObjectName),
-                        count = quest.requirement
-                    }
-                });
-            }
-
-            CompleteQuestServerRpc(characterQuest.id, UserManager.Instance.Token, NetworkManager.Singleton.LocalClientId);
+            CompleteQuestServerRpc(quest.id, characterQuest.id, UserManager.Instance.Token);
         }
 
         private void Update()
@@ -187,7 +181,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (_questNpc != null && _input.Move != Vector2.zero && Vector3.Distance(_questNpc.transform.position, transform.position) > _npcMaxDistance)
+            if (_questNpc != null && _input.Move != Vector2.zero && _questNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance))
             {
                 _questNpc = null;
                 QuestUI.Instance.Quest.SetActive(false);
@@ -213,7 +207,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (Vector3.Distance(hit.transform.position, transform.position) > _npcMaxDistance)
+            if (hit.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance))
             {
                 CursorUI.Instance.ShowDefault();
 
@@ -240,7 +234,7 @@ namespace Assets.Scripts.Mono
 
             if (mouse.rightButton.wasPressedThisFrame)
             {
-                QuestUI.Instance.ShowQuest(_questNpc);
+                QuestUI.Instance.Show(_questNpc);
             }
         }
 

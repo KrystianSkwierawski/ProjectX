@@ -34,7 +34,7 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
             })
             .SingleAsync(cancellationToken);
 
-        var parameters = quest.Id.GetQuestParametersAttribute();
+        var parameters = quest.Id.GetParameters();
         var language = _currentUserService.Language;
 
         // TODO: translate service

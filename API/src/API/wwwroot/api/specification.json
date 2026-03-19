@@ -175,12 +175,14 @@
             "JWT": []
           }
         ]
-      },
+      }
+    },
+    "/api/CharacterQuests/Accept": {
       "post": {
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "AcceptCharacterQuest",
+        "operationId": "PostApiCharacterQuestsAccept",
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -286,6 +288,43 @@
         ]
       }
     },
+    "/api/CharacterQuests/Complete": {
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "operationId": "PostApiCharacterQuestsComplete",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteCharacterQuestCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteCharacterQuestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Characters/{id}": {
       "get": {
         "tags": [
@@ -367,6 +406,42 @@
         "responses": {
           "201": {
             "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/CraftingRecipes": {
+      "get": {
+        "tags": [
+          "CraftingRecipes"
+        ],
+        "operationId": "GetCraftingRecipes",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CraftingRecipeTypeEnum"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCraftingRecipesDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -500,16 +575,9 @@
             "type": "integer",
             "format": "byte"
           },
-          "skillPoints": {
-            "type": "integer",
-            "format": "byte"
-          },
           "experience": {
             "type": "integer",
             "format": "int32"
-          },
-          "leveledUp": {
-            "type": "boolean"
           }
         }
       },
@@ -521,7 +589,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "characterQuestId": {
+          "amount": {
             "type": "integer",
             "format": "int32"
           },
@@ -534,68 +602,36 @@
         "type": "integer",
         "description": "",
         "x-enum-names": [
-          "Unknown",
-          "Combat",
-          "Crafting",
-          "Gathering",
-          "Exploration",
-          "Questing",
-          "Trading",
-          "Survival",
-          "Technology",
-          "Healing",
-          "Building",
-          "Farming",
+          "None",
+          "Main",
           "Fishing",
+          "Mining",
+          "Lumberjack",
+          "Herbalism",
           "Cooking",
-          "Alchemy",
-          "Enchanting"
+          "Crafting"
         ],
         "x-enum-varnames": [
-          "Unknown",
-          "Combat",
-          "Crafting",
-          "Gathering",
-          "Exploration",
-          "Questing",
-          "Trading",
-          "Survival",
-          "Technology",
-          "Healing",
-          "Building",
-          "Farming",
+          "None",
+          "Main",
           "Fishing",
+          "Mining",
+          "Lumberjack",
+          "Herbalism",
           "Cooking",
-          "Alchemy",
-          "Enchanting"
+          "Crafting"
         ],
         "x-enumNames": [
-          "Unknown",
-          "Combat",
-          "Crafting",
-          "Gathering",
-          "Exploration",
-          "Questing",
-          "Trading",
-          "Survival",
-          "Technology",
-          "Healing",
-          "Building",
-          "Farming",
+          "None",
+          "Main",
           "Fishing",
+          "Mining",
+          "Lumberjack",
+          "Herbalism",
           "Cooking",
-          "Alchemy",
-          "Enchanting"
+          "Crafting"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
           null,
           null,
           null,
@@ -613,14 +649,6 @@
           null,
           null,
           null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
           null
         ],
         "enum": [
@@ -631,15 +659,7 @@
           4,
           5,
           6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15
+          7
         ]
       },
       "CharacterInventoryDto": {
@@ -665,17 +685,17 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/InventoryItem"
+              "$ref": "#/components/schemas/InventoryItemDto"
             }
           }
         }
       },
-      "InventoryItem": {
+      "InventoryItemDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/CharacterInventoryTypeEnum"
+            "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "count": {
             "type": "integer",
@@ -683,25 +703,61 @@
           }
         }
       },
-      "CharacterInventoryTypeEnum": {
+      "InventoryItemEnum": {
         "type": "integer",
         "description": "",
         "x-enum-names": [
           "None",
           "Can",
-          "Fish"
+          "Fish",
+          "CookedFish",
+          "Rice",
+          "Sushi",
+          "PurpleOre",
+          "WhiteOre",
+          "CopperOre",
+          "BlackOre",
+          "Chamomile",
+          "Wood"
         ],
         "x-enum-varnames": [
           "None",
           "Can",
-          "Fish"
+          "Fish",
+          "CookedFish",
+          "Rice",
+          "Sushi",
+          "PurpleOre",
+          "WhiteOre",
+          "CopperOre",
+          "BlackOre",
+          "Chamomile",
+          "Wood"
         ],
         "x-enumNames": [
           "None",
           "Can",
-          "Fish"
+          "Fish",
+          "CookedFish",
+          "Rice",
+          "Sushi",
+          "PurpleOre",
+          "WhiteOre",
+          "CopperOre",
+          "BlackOre",
+          "Chamomile",
+          "Wood"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null
@@ -709,12 +765,30 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
-          1,
-          2
+          100,
+          200,
+          201,
+          202,
+          203,
+          300,
+          301,
+          302,
+          303,
+          304,
+          305
         ]
       },
       "AddCharacterInventoryItemCommand": {
@@ -726,7 +800,7 @@
             "format": "int32"
           },
           "inventoryItem": {
-            "$ref": "#/components/schemas/InventoryItem"
+            "$ref": "#/components/schemas/InventoryItemDto"
           }
         }
       },
@@ -769,21 +843,53 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses"
+          "Catch2Fish",
+          "Collect2PurpleOres",
+          "Collect2WhiteOres",
+          "Collect2CopperOres",
+          "Collect2BlackOres",
+          "Collect2Chamomile",
+          "Collect2Woods",
+          "Collect2Fish",
+          "Collect2Sushi"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses"
+          "Catch2Fish",
+          "Collect2PurpleOres",
+          "Collect2WhiteOres",
+          "Collect2CopperOres",
+          "Collect2BlackOres",
+          "Collect2Chamomile",
+          "Collect2Woods",
+          "Collect2Fish",
+          "Collect2Sushi"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fishses"
+          "Catch2Fish",
+          "Collect2PurpleOres",
+          "Collect2WhiteOres",
+          "Collect2CopperOres",
+          "Collect2BlackOres",
+          "Collect2Chamomile",
+          "Collect2Woods",
+          "Collect2Fish",
+          "Collect2Sushi"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -793,13 +899,29 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
           2,
-          3
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
         ]
       },
       "CharacterQuestStatusEnum": {
@@ -917,6 +1039,26 @@
           }
         }
       },
+      "CompleteCharacterQuestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reward": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CompleteCharacterQuestCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuestId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "CharacterDto": {
         "type": "object",
         "additionalProperties": false,
@@ -924,11 +1066,7 @@
           "name": {
             "type": "string"
           },
-          "level": {
-            "type": "integer",
-            "format": "byte"
-          },
-          "skillPoints": {
+          "mainLevel": {
             "type": "integer",
             "format": "byte"
           },
@@ -986,6 +1124,154 @@
           }
         }
       },
+      "GetCraftingRecipesDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "craftingRecipes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CraftingRecipeDto"
+            }
+          }
+        }
+      },
+      "CraftingRecipeDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/CraftingRecipeEnum"
+          },
+          "requirement": {
+            "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
+          },
+          "reward": {
+            "$ref": "#/components/schemas/CraftingRecipeRewardDto"
+          }
+        }
+      },
+      "CraftingRecipeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "CookedFish",
+          "Sushi"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "CookedFish",
+          "Sushi"
+        ],
+        "x-enumNames": [
+          "None",
+          "CookedFish",
+          "Sushi"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "CraftingRecipeRequirementDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CraftingRecipeRewardDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/InventoryItemDto"
+          },
+          "experience": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CraftingRecipeTypeEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enum-names": [
+          "None",
+          "Alchemy",
+          "Blacksmithing",
+          "Enchanting",
+          "Leatherworking",
+          "Tailoring",
+          "Cooking"
+        ],
+        "x-enum-varnames": [
+          "None",
+          "Alchemy",
+          "Blacksmithing",
+          "Enchanting",
+          "Leatherworking",
+          "Tailoring",
+          "Cooking"
+        ],
+        "x-enumNames": [
+          "None",
+          "Alchemy",
+          "Blacksmithing",
+          "Enchanting",
+          "Leatherworking",
+          "Tailoring",
+          "Cooking"
+        ],
+        "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "x-enumDescriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
       "QuestDto": {
         "type": "object",
         "additionalProperties": false,
@@ -1034,7 +1320,8 @@
           "Find",
           "Gather",
           "Drop",
-          "Collect"
+          "Collect",
+          "Craft"
         ],
         "x-enum-varnames": [
           "Indefinite",
@@ -1043,7 +1330,8 @@
           "Find",
           "Gather",
           "Drop",
-          "Collect"
+          "Collect",
+          "Craft"
         ],
         "x-enumNames": [
           "Indefinite",
@@ -1052,9 +1340,11 @@
           "Find",
           "Gather",
           "Drop",
-          "Collect"
+          "Collect",
+          "Craft"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -1070,6 +1360,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -1079,7 +1370,8 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ]
       },
       "GetQuestsDto": {

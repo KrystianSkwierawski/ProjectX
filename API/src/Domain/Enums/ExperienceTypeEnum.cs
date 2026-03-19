@@ -1,35 +1,20 @@
 ﻿namespace ProjectX.Domain.Enums;
+
 public enum ExperienceTypeEnum : byte
 {
-    Unknown,
+    None,
 
-    Combat,
-
-    Crafting,
-
-    Gathering,
-
-    Exploration,
-
-    Questing,
-
-    Trading,
-
-    Survival,
-
-    Technology,
-
-    Healing,
-
-    Building,
-
-    Farming,
+    Main,
 
     Fishing,
 
+    Mining,
+
+    Lumberjack,
+
+    Herbalism,
+
     Cooking,
 
-    Alchemy,
-
-    Enchanting,
+    Crafting,
 }

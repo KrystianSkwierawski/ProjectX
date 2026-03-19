@@ -1,5 +1,4 @@
-﻿namespace ProjectX.Domain.Enums;
-public enum TranslateKeyEnum
+﻿public enum TranslateKeyEnum
 {
     Empty,
 
@@ -13,8 +12,48 @@ public enum TranslateKeyEnum
     Collect2CansCompleteDescription,
     Collect2CansStatusText,
 
-    Catch2FishsesTitle,
-    Catch2FishsesDescription,
-    Catch2FishsesCompleteDescription,
-    Catch2FishsesStatusText
+    Catch2FishTitle,
+    Catch2FishDescription,
+    Catch2FishCompleteDescription,
+    Catch2FishsStatusText,
+
+    Collect2PurpleOresTitle,
+    Collect2PurpleOresDescription,
+    Collect2PurpleOresCompleteDescription,
+    Collect2PurpleOresStatusText,
+
+    Collect2WhiteOresTitle,
+    Collect2WhiteOresDescription,
+    Collect2WhiteOresCompleteDescription,
+    Collect2WhiteOresStatusText,
+
+    Collect2CopperOresTitle,
+    Collect2CopperOresDescription,
+    Collect2CopperOresCompleteDescription,
+    Collect2CopperOresStatusText,
+
+    Collect2BlackOresTitle,
+    Collect2BlackOresDescription,
+    Collect2BlackOresCompleteDescription,
+    Collect2BlackOresStatusText,
+
+    Collect2ChamomileTitle,
+    Collect2ChamomileDescription,
+    Collect2ChamomileCompleteDescription,
+    Collect2ChamomileStatusText,
+
+    Collect2WoodsTitle,
+    Collect2WoodsDescription,
+    Collect2WoodsCompleteDescription,
+    Collect2WoodsStatusText,
+
+    Collect2FishTitle,
+    Collect2FishDescription,
+    Collect2FishCompleteDescription,
+    Collect2FishStatusText,
+
+    Collect2SushiTitle,
+    Collect2SushiDescription,
+    Collect2SushiCompleteDescription,
+    Collect2SushiStatusText,
 }

@@ -11,8 +11,48 @@
     "Collect2CansCompleteDescription": "ok, u collected 2 cans",
     "Collect2CansStatusText": "Collected {0}/{1} cans",
 
-    "Catch2FishsesTitle": "Catch 2 fishes",
-    "Catch2FishsesDescription": "Bla bla bla catch 2 fishes, ok?",
-    "Catch2FishsesCompleteDescription": "ok, u catched 2 fishes",
-    "Catch2FishsesStatusText": "Catched {0}/{1} fishes"
+    "Catch2FishTitle": "Catch 2 fish",
+    "Catch2FishDescription": "Bla bla bla catch 2 fishes, ok?",
+    "Catch2FishCompleteDescription": "ok, u catched 2 fishes",
+    "Catch2FishStatusText": "Catched {0}/{1} fishes",
+
+    "Collect2PurpleOresTitle": "Collect 2 purple ores",
+    "Collect2PurpleOresDescription": "Bla bla bla collect 2 purple ores, ok?",
+    "Collect2PurpleOresCompleteDescription": "ok, u collected 2 purple ores",
+    "Collect2PurpleOresStatusText": "Collected {0}/{1} purple ores",
+
+    "Collect2WhiteOresTitle": "Collect 2 white ores",
+    "Collect2WhiteOresDescription": "Bla bla bla collect 2 white ores, ok?",
+    "Collect2WhiteOresCompleteDescription": "ok, u collected 2 white ores",
+    "Collect2WhiteOresStatusText": "Collected {0}/{1} white ores",
+
+    "Collect2CopperOresTitle": "Collect 2 copper ores",
+    "Collect2CopperOresDescription": "Bla bla bla collect 2 copper ores, ok?",
+    "Collect2CopperOresCompleteDescription": "ok, u collected 2 copper ores",
+    "Collect2CopperOresStatusText": "Collected {0}/{1} copper ores",
+
+    "Collect2BlackOresTitle": "Collect 2 black ores",
+    "Collect2BlackOresDescription": "Bla bla bla collect 2 black ores, ok?",
+    "Collect2BlackOresCompleteDescription": "ok, u collected 2 black ores",
+    "Collect2BlackOresStatusText": "Collected {0}/{1} black ores",
+
+    "Collect2ChamomileTitle": "Collect 2 chamomile",
+    "Collect2ChamomileDescription": "Bla bla bla collect 2 chamomiles, ok?",
+    "Collect2ChamomileCompleteDescription": "ok, u collected 2 chamomiles",
+    "Collect2ChamomileStatusText": "Collected {0}/{1} Chamomile",
+
+    "Collect2WoodsTitle": "Collect 2 woods",
+    "Collect2WoodsDescription": "Bla bla bla collect 2 woods, ok?",
+    "Collect2WoodsCompleteDescription": "ok, u collected 2 woods",
+    "Collect2WoodsStatusText": "Collected {0}/{1} woods",
+
+    "Collect2FishTitle": "Collect 2 fish",
+    "Collect2FishDescription": "Bla bla bla collect 2 fish, ok?",
+    "Collect2FishCompleteDescription": "ok, u collected 2 fish",
+    "Collect2FishStatusText": "Collected {0}/{1} fish",
+
+    "Collect2SushiTitle": "Collect 2 sushies",
+    "Collect2SushiDescription": "Bla bla bla collect 2 sush",
+    "Collect2SushiCompleteDescription": "ok, u collected 2 sushies",
+    "Collect2SushiStatusText": "Collected {0}/{1} sushies"
 }

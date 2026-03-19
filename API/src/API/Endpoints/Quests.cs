@@ -26,7 +26,7 @@ public class Quests : EndpointGroupBase
 
     private static async Task<Ok<QuestDto>> GetQuest(IMemoryCache memoryCache, ICurrentUserService currentUserService, ISender sender, QuestEnum id)
     {
-        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quest, async (ICacheEntry entry) =>
+        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quest, async entry =>
         {
             var result = await sender.Send(new GetQuestQuery(id));
 
@@ -36,7 +36,7 @@ public class Quests : EndpointGroupBase
 
     private static async Task<Ok<GetQuestsDto>> GetQuests(IMemoryCache memoryCache, ICurrentUserService currentUserService, ISender sender, [AsParameters] GetQuestsQuery query)
     {
-        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quests, async (ICacheEntry entry) =>
+        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quests, async entry =>
         {
             var result = await sender.Send(query);
 

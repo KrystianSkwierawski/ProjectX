@@ -6,13 +6,14 @@ namespace Assets.Scripts.Network
 {
     public class MonsterPatrol : NetworkBehaviour
     {
+        public bool IsWaiting { get; set; }
+
         [SerializeField] private float _patrolRadius = 5f;
         [SerializeField] private float _moveSpeed = 2f;
         [SerializeField] private float _pointTolerance = 0.2f;
 
         private Vector3 _startPosition;
         private Vector3 _currentTarget;
-        private bool _isWaiting = false;
 
         private void Start()
         {
@@ -25,7 +26,7 @@ namespace Assets.Scripts.Network
 
         private async void Update()
         {
-            if (IsServer && !_isWaiting)
+            if (IsServer && !IsWaiting)
             {
                 await PatrolAsync();
             }
@@ -44,7 +45,7 @@ namespace Assets.Scripts.Network
 
         private async UniTask WaitBeforeNextPointAsync()
         {
-            _isWaiting = true;
+            IsWaiting = true;
 
             float delay = new System.Random().Next(5, 10);
 
@@ -52,8 +53,7 @@ namespace Assets.Scripts.Network
 
             PickNewPatrolPoint();
 
-            _isWaiting = false;
-
+            IsWaiting = false;
         }
 
         private void PickNewPatrolPoint()

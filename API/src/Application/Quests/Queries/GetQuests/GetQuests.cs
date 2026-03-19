@@ -22,7 +22,7 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
 
     public async Task<GetQuestsDto> Handle(GetQuestsQuery request, CancellationToken cancellationToken)
     {
-        var quest = await _context.Quests
+        var quests = await _context.Quests
             .Where(x => x.Status == StatusEnum.Active)
             .Select(x => new
             {
@@ -39,9 +39,9 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
 
         return new GetQuestsDto
         {
-            Quests = quest.Select(x =>
+            Quests = quests.Select(x =>
             {
-                var parameters = x.Id.GetQuestParametersAttribute();
+                var parameters = x.Id.GetParameters();
 
                 // TODO: translate service
                 return new QuestDto

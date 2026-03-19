@@ -14,7 +14,7 @@ namespace Assets.Scripts.UI
 {
     public class InventoryUI : MonoSingleton<InventoryUI>
     {
-        public readonly IDictionary<CharacterInventoryTypeEnum, Texture> Textures = new Dictionary<CharacterInventoryTypeEnum, Texture>();
+        public readonly IDictionary<InventoryItemEnum, Texture> Textures = new Dictionary<InventoryItemEnum, Texture>();
 
         #region Prefab
 
@@ -36,8 +36,8 @@ namespace Assets.Scripts.UI
 
         #endregion
 
-        private ObjectPool<LootPoolObject> _lootObjectPool;
-        private readonly IDictionary<CharacterInventoryTypeEnum, LootPoolObject> _lootPoolObjects = new Dictionary<CharacterInventoryTypeEnum, LootPoolObject>();
+        private ObjectPool<InventorySlot> _lootObjectPool;
+        private readonly IDictionary<InventoryItemEnum, InventorySlot> _lootPoolObjects = new Dictionary<InventoryItemEnum, InventorySlot>();
         private InventorySlot[] _inventorySlots;
 
         public void Start()
@@ -49,7 +49,7 @@ namespace Assets.Scripts.UI
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
             InitTextures();
 
-            _lootObjectPool = new ObjectPool<LootPoolObject>(
+            _lootObjectPool = new ObjectPool<InventorySlot>(
                createFunc: () =>
                {
                    var obj = Instantiate(_inventorySlotPrefab, LootContent.transform);
@@ -58,31 +58,37 @@ namespace Assets.Scripts.UI
 
                    mesh.gameObject.SetActive(true);
 
-                   return new LootPoolObject
+                   var preview = obj.transform.Find("Preview").gameObject;
+
+                   return new InventorySlot
                    {
                        GameObject = obj,
                        Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                        Mesh = mesh,
-                       Button = obj.GetComponent<Button>()
+                       Button = obj.GetComponent<Button>(),
+                       Preview = preview,
+                       PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
+                       PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
                    };
                },
-               actionOnGet: (LootPoolObject obj) => obj.GameObject.SetActive(true),
-               actionOnRelease: (LootPoolObject obj) =>
+               actionOnGet: (InventorySlot obj) => obj.GameObject.SetActive(true),
+               actionOnRelease: (InventorySlot obj) =>
                {
                    obj.Button.onClick.RemoveAllListeners();
+
                    obj.GameObject.SetActive(false);
                }
             );
         }
 
-        public void UpdateInventory(CharacterInventoryDto value)
+        public void UpdateInventory(CharacterInventoryDto dto)
         {
-            _inventorySlots ??= InstantiateInventorySlots(value.count).ToArray();
+            _inventorySlots ??= InstantiateInventorySlots(dto.count).ToArray();
 
             for (int i = 0; i < _inventorySlots.Length; i++)
             {
                 var slot = _inventorySlots[i];
-                var item = value.inventory.items.ElementAtOrDefault(i);
+                var item = dto.inventory.items.ElementAtOrDefault(i);
 
                 if (item == null)
                 {
@@ -90,6 +96,8 @@ namespace Assets.Scripts.UI
                     slot.Mesh.text = "0";
                     slot.Image.color = ColorUI.Black;
                     slot.Image.texture = null;
+                    slot.Type = InventoryItemEnum.None;
+                    slot.HoverUI.enabled = false;
 
                     continue;
                 }
@@ -98,10 +106,26 @@ namespace Assets.Scripts.UI
                 slot.Mesh.text = item.count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.type];
+                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
+                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+                slot.Type = item.type;
+                slot.HoverUI.enabled = true;
+
+                var key = slot.GameObject.GetInstanceID().ToString();
+
+                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(true);
+                });
+
+                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(false);
+                });
             }
         }
 
-        public void UpdateLoot(InventoryItem[] items, ulong clientId, string clientToken)
+        public void UpdateLoot(InventoryItemDto[] items, ulong clientId, string clientToken)
         {
             Loot.SetActive(true);
 
@@ -119,6 +143,9 @@ namespace Assets.Scripts.UI
                 slot.Mesh.text = item.count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.type];
+                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
+                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+                slot.Type = item.type;
 
                 slot.Button.onClick.AddListener(() =>
                 {
@@ -137,13 +164,25 @@ namespace Assets.Scripts.UI
                     }
                 });
 
+                var key = slot.GameObject.GetInstanceID().ToString();
+
+                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(true);
+                });
+
+                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(false);
+                });
+
                 _lootPoolObjects.Add(item.type, slot);
             }
         }
 
         private void InitTextures()
         {
-            foreach (var type in Enum.GetValues(typeof(CharacterInventoryTypeEnum)).Cast<CharacterInventoryTypeEnum>())
+            foreach (var type in Enum.GetValues(typeof(InventoryItemEnum)).Cast<InventoryItemEnum>())
             {
                 var texture = Resources.Load<Texture>($"Textures/{type}");
 
@@ -162,11 +201,17 @@ namespace Assets.Scripts.UI
             {
                 var slot = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
 
+                var preview = slot.transform.Find("Preview").gameObject;
+
                 yield return new InventorySlot
                 {
                     GameObject = slot,
                     Image = slot.transform.Find("Background").GetComponent<RawImage>(),
                     Mesh = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                    HoverUI = slot.GetComponent<HoverUI>(),
+                    Preview = preview,
+                    PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
+                    PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
                 };
             }
         }
@@ -178,17 +223,18 @@ namespace Assets.Scripts.UI
             public RawImage Image { get; set; }
 
             public TextMeshProUGUI Mesh { get; set; }
-        }
 
-        private class LootPoolObject
-        {
-            public GameObject GameObject { get; set; }
-
-            public RawImage Image { get; set; }
-
-            public TextMeshProUGUI Mesh { get; set; }
+            public HoverUI HoverUI { get; set; }
 
             public Button Button { get; set; }
+
+            public GameObject Preview { get; set; }
+
+            public TextMeshProUGUI PreviewTitleMesh { get; set; }
+
+            public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
+
+            public InventoryItemEnum Type { get; set; }
         }
     }
 }

@@ -314,6 +314,9 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<byte>("Language")
+                        .HasColumnType("tinyint");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -375,11 +378,6 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("Health")
                         .HasColumnType("int");
 
-                    b.Property<byte>("Level")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
-                        .HasDefaultValue((byte)1);
-
                     b.Property<DateTime>("ModDate")
                         .HasColumnType("datetime2");
 
@@ -387,9 +385,6 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<byte>("SkillPoints")
-                        .HasColumnType("tinyint");
 
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
@@ -468,8 +463,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("Progress")
                         .HasColumnType("int");
 
-                    b.Property<int>("QuestId")
-                        .HasColumnType("int");
+                    b.Property<short>("QuestId")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -519,23 +514,64 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("CharacterTransforms");
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.CraftingRecipe", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("ModDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Requirement")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reward")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type", "Status")
+                        .HasDatabaseName("IX.CraftingRecipe.Type.Status");
+
+                    b.ToTable("CraftingRecipes");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<byte>("MaxCount")
+                        .HasColumnType("tinyint");
 
-                    b.Property<string>("CompleteDescription")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.Property<DateTime>("ModDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InventoryItems");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("GameObjectName")
                         .IsRequired()
@@ -545,8 +581,12 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<DateTime>("ModDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("PreviousQuestId")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short>("PreviousQuestId")
+                        .HasColumnType("smallint");
 
                     b.Property<int>("Requirement")
                         .HasColumnType("int");
@@ -554,20 +594,16 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("Reward")
                         .HasColumnType("int");
 
-                    b.Property<string>("StatusText")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
 
                     b.Property<byte>("Type")
                         .HasColumnType("tinyint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX.Quests.Status");
 
                     b.ToTable("Quests");
                 });

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
@@ -15,7 +14,9 @@ namespace Assets.Scripts.Mono
 {
     public class CharacterInventory : NetworkBehaviour
     {
-        private IList<InventoryItem> _currentLoot = new List<InventoryItem>();
+        private IList<InventoryItemDto> _currentLoot = new List<InventoryItemDto>();
+
+        #region LootDictionary
 
         private readonly IDictionary<string, LootItem[]> _loot = new Dictionary<string, LootItem[]>
         {
@@ -25,7 +26,7 @@ namespace Assets.Scripts.Mono
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.Can,
+                        Type = InventoryItemEnum.Can,
                         Chance = 50,
                         Min = 0,
                         Max = 2
@@ -33,21 +34,99 @@ namespace Assets.Scripts.Mono
                 }
             },
             {
-                nameof(CharacterInventoryTypeEnum.Fish),
+                nameof(InventoryItemEnum.Fish),
                 new LootItem[]
                 {
                     new LootItem
                     {
-                        Type = CharacterInventoryTypeEnum.Fish,
+                        Type = InventoryItemEnum.Fish,
                         Chance = 90,
                         Min = 1,
                         Max = 1
                     },
                 }
             },
+            {
+                "BlackRock(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = InventoryItemEnum.BlackOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 6
+                    },
+                }
+            },
+            {
+                "CopperRock(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = InventoryItemEnum.CopperOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 3
+                    },
+                }
+            },
+            {
+                "WhiteRock(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = InventoryItemEnum.WhiteOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 2
+                    },
+                }
+            },
+            {
+                "PurpleRock(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = InventoryItemEnum.PurpleOre,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 4
+                    },
+                }
+            },
+            {
+                "Chamomile(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = InventoryItemEnum.Chamomile,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 4
+                    },
+                }
+            },
+            {
+            "Tree(Clone)",
+                new LootItem[]
+                {
+                    new LootItem
+                    {
+                        Type = InventoryItemEnum.Wood,
+                        Chance = 90,
+                        Min = 1,
+                        Max = 4
+                    },
+                }
+            },
         };
 
-        public CharacterInventoryDto Inventory { get; set; }
+        #endregion
 
         private async void Start()
         {
@@ -55,42 +134,39 @@ namespace Assets.Scripts.Mono
 
             if (IsOwner)
             {
-                await UpdateCharacterInventoryAsync();
+                await InventoryManager.Instance.LoadAsync();
+
+                InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
                 AddInventoryItemSubscription.Instance.Subscribe(key, (e) =>
                 {
                     AddItemServerRpc(e.Item, e.ClientToken);
-                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
-                });
-
-                RemoveInventoryItemSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    var item = Inventory.inventory.items
-                       .Where(x => x.type == e.Item.type)
-                       .Where(x => x.count >= e.Item.count)
-                       .First();
-
-                    if (item.count == e.Item.count)
-                    {
-                        Inventory.inventory.items.Remove(item);
-                    }
-                    else
-                    {
-                        item.count -= e.Item.count;
-                    }
-
-                    InventoryUI.Instance.UpdateInventory(Inventory);
-                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
                 });
             }
 
             if (IsServer)
             {
+                AddInventoryItemSubscription.Instance.Subscribe(key, async (e) =>
+                {
+                    _currentLoot.Add(new InventoryItemDto
+                    {
+                        type = e.Item.type,
+                        count = e.Item.count,
+                    });
+
+                    await AddItemAsync(e.Item, e.ClientToken);
+                });
+
+                RemoveInventoryItemSubscription.Instance.Subscribe(key, async (e) =>
+                {
+                    await RemoveItemAsync(e.Item, e.ClientToken);
+                });
+
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
                 {
                     if (_loot.TryGetValue(e.GameObjectName, out var drops))
                     {
-                        ProcessLoot(e, drops);
+                        ProcessLoot(drops);
 
                         if (_currentLoot.Any())
                         {
@@ -107,7 +183,7 @@ namespace Assets.Scripts.Mono
             }
         }
 
-        private void ProcessLoot(CheckLootSubscriptionEvent e, LootItem[] drops)
+        private void ProcessLoot(LootItem[] drops)
         {
             foreach (var drop in drops)
             {
@@ -127,7 +203,7 @@ namespace Assets.Scripts.Mono
 
                     if (loot == null)
                     {
-                        _currentLoot.Add(new InventoryItem
+                        _currentLoot.Add(new InventoryItemDto
                         {
                             type = drop.Type,
                             count = count,
@@ -166,19 +242,27 @@ namespace Assets.Scripts.Mono
         }
 
         [ClientRpc]
-        private void ShowLootClientRpc(InventoryItem[] items, ClientRpcParams rpcParams = default)
+        private void ShowLootClientRpc(InventoryItemDto[] items, ClientRpcParams rpcParams = default)
         {
             InventoryUI.Instance.UpdateLoot(items, OwnerClientId, UserManager.Instance.Token);
         }
 
         [ServerRpc]
-        private void AddItemServerRpc(InventoryItem item, string clientToken)
+        private void AddItemServerRpc(InventoryItemDto item, string clientToken)
         {
             AddItemAsync(item, clientToken).Forget();
         }
 
-        private async UniTask AddItemAsync(InventoryItem item, string clientToken)
+        private async UniTask AddItemAsync(InventoryItemDto item, string clientToken)
         {
+            AddInventoryItemClientRpc(item, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+
             var serverItem = _currentLoot
                 .Where(x => x.type == item.type)
                 .First();
@@ -197,61 +281,54 @@ namespace Assets.Scripts.Mono
             }, clientToken);
 
             _currentLoot.Remove(serverItem);
+        }
 
-            AddInventoryItemClientRpc(item, new ClientRpcParams
+        private async UniTask RemoveItemAsync(InventoryItemDto item, string clientToken)
+        {
+            RemoveItemClientRpc(item, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
                     TargetClientIds = new ulong[] { OwnerClientId }
                 }
             });
+
+            // TODO: remvoe
+            await UniTask.Delay(1000);
+            //await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
+            //{
+            //    characterId = 1,
+            //}, clientToken);
         }
 
         [ClientRpc]
-        private void AddInventoryItemClientRpc(InventoryItem item, ClientRpcParams rpcParams = default)
+        private void RemoveItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
         {
-            var slot = Inventory.inventory.items
-                .Where(x => x.type == item.type)
-                .FirstOrDefault();
+            InventoryManager.Instance.Remove(item);
 
-            if (slot == null && Inventory.inventory.items.Count >= Inventory.count)
-            {
-                // TODO: out of slots
-                return;
-            }
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
-            if (slot != null)
-            {
-                slot.count += item.count;
-            }
-            else
-            {
-                Inventory.inventory.items.Add(item);
-            }
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
 
-            InventoryUI.Instance.UpdateInventory(Inventory);
+            CraftingUI.Instance.UpdateRequirements();
         }
 
-        private async UniTask UpdateCharacterInventoryAsync()
+        [ClientRpc]
+        private void AddInventoryItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
         {
-            Inventory = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
-            InventoryUI.Instance.UpdateInventory(Inventory);
-        }
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
 
+            InventoryManager.Instance.Add(item);
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+        }
         public override void OnNetworkDespawn()
         {
             var key = OwnerClientId.ToString();
 
-            if (IsOwner)
-            {
-                AddInventoryItemSubscription.Instance.Unsubscribe(key);
-                RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
-            }
-
-            if (IsServer)
-            {
-                CheckLootSubscription.Instance.Unsubscribe(key);
-            }
+            AddInventoryItemSubscription.Instance.Unsubscribe(key);
+            RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
+            CheckLootSubscription.Instance.Unsubscribe(key);
 
             base.OnNetworkDespawn();
         }
@@ -260,23 +337,16 @@ namespace Assets.Scripts.Mono
         {
             var key = OwnerClientId.ToString();
 
-            if (IsOwner)
-            {
-                AddInventoryItemSubscription.Instance.Unsubscribe(key);
-                RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
-            }
-
-            if (IsServer)
-            {
-                CheckLootSubscription.Instance.Unsubscribe(key);
-            }
+            AddInventoryItemSubscription.Instance.Unsubscribe(key);
+            CheckLootSubscription.Instance.Unsubscribe(key);
+            RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
 
             base.OnDestroy();
         }
 
         private class LootItem
         {
-            public CharacterInventoryTypeEnum Type { get; set; }
+            public InventoryItemEnum Type { get; set; }
 
             public int Chance { get; set; }
 

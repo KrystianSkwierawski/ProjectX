@@ -14,10 +14,6 @@ public class Character
 
     public string ApplicationUserId { get; set; }
 
-    public byte Level { get; set; } = 1;
-
-    public byte SkillPoints { get; set; }
-
     public int Health { get; set; }
 
     public required string Name { get; set; }

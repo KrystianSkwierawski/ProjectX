@@ -9,6 +9,8 @@ namespace Assets.Scripts.Subscriptions
 
     public class RemoveInventoryItemSubscriptionEvent
     {
-        public InventoryItem Item { get; set; }
+        public InventoryItemDto Item { get; set; }
+
+        public string ClientToken { get; set; }
     }
 }

@@ -1,5 +1,0 @@
-tasks:
-- questo bottons localization
-- validate accept/complete quest position (server)
-- new question mark
-- fix cast validations through targets

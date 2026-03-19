@@ -1,37 +1,21 @@
 namespace Assets.Scripts.Enums
 {
-public enum ExperienceTypeEnum : byte
-{
-    None,
+    public enum ExperienceTypeEnum : byte
+    {
+        None,
 
-    Combat,
+        Main,
 
-    Crafting,
+        Fishing,
 
-    Gathering,
+        Mining,
 
-    Exploration,
+        Lumberjack,
 
-    Questing,
+        Herbalism,
 
-    Trading,
+        Cooking,
 
-    Survival,
-
-    Technology,
-
-    Healing,
-
-    Building,
-
-    Farming,
-
-    Fishing,
-
-    Cooking,
-
-    Alchemy,
-
-    Enchanting,
-}
+        Crafting,
+    }
 }

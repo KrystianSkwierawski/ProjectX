@@ -17,7 +17,6 @@ namespace Assets.Scripts.Mono
 #endif
         }
 
-        // TODO: task.whenall?
         private static async UniTask StartClient()
         {
             if (Unity.Multiplayer.Playmode.CurrentPlayer.IsMainEditor)
@@ -29,8 +28,8 @@ namespace Assets.Scripts.Mono
                 await UserManager.Instance.LoginAsync("user2@localhost", "User2!");
             }
 
-            await QuestManager.Instance.LoadQuestsAsync();
-            await QuestManager.Instance.LoadCharacterQuestsAsync();
+            await QuestManager.Instance.LoadAsync();
+            await QuestManager.Instance.LoadAsync(1);
 
             await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
             Debug.Log("MainScene Loaded");
@@ -53,7 +52,7 @@ namespace Assets.Scripts.Mono
         {
             await UserManager.Instance.LoginAsync("server1@localhost", "Server1!");
 
-            await QuestManager.Instance.LoadQuestsAsync();
+            await QuestManager.Instance.LoadAsync();
 
             await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
             Debug.Log("MainScene Loaded");

@@ -7,10 +7,6 @@ namespace Assets.Scripts.Models
     {
         public byte level;
 
-        public byte skillPoints;
-
         public int experience;
-
-        public bool leveledUp;
     }
 }

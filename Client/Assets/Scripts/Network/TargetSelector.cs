@@ -11,7 +11,7 @@ namespace Assets.Scripts.Network
 {
     public class TargetSelector : NetworkBehaviour
     {
-        [SerializeField] private float _maxCastDistance = 10.0f;
+        [SerializeField] private float _maxCastDistance = 12f;
         [SerializeField] private GameObject _fireballPrefab;
 
         private static Renderer _currentlySelectedRenderer = null;
@@ -115,7 +115,11 @@ namespace Assets.Scripts.Network
                 _originalSelectedColor = newRenderer.material.color;
                 newRenderer.material.color = ColorUI.Green;
                 _selectedTarget = hit.transform.gameObject;
-                _thirdPersonController.LockCameraToTarget(_selectedTarget.transform);
+
+                if (!_onlyView)
+                {
+                    _thirdPersonController.LockCameraToTarget(_selectedTarget.transform);
+                }
 
                 TargetUI.Instance.SetTarget("Bean", _selectedTarget.GetComponent<Health>().Network.Value.ToString());
                 SelectServerRpc((NetworkObjectReference)_selectedTarget.GetComponent<NetworkObject>());
@@ -221,7 +225,7 @@ namespace Assets.Scripts.Network
         {
             _isCasting = true;
             _castTimer = 0f;
-            PlayerUI.Instance.ShowCastBar(_castTimer);
+            PlayerUI.Instance.UpdateCastBar(_castTimer);
         }
 
         [ServerRpc]
@@ -232,7 +236,14 @@ namespace Assets.Scripts.Network
 
         private void CheckCasting()
         {
-            if (_isCasting || _selectedTarget == null || _onlyView)
+            if (_selectedTarget == null)
+            {
+                StopCasting();
+
+                return;
+            }
+
+            if (_isCasting || _onlyView)
             {
                 return;
             }
@@ -251,7 +262,7 @@ namespace Assets.Scripts.Network
             }
 
             _castTimer += Time.deltaTime;
-            PlayerUI.Instance.ShowCastBar(_castTimer / _castTime);
+            PlayerUI.Instance.UpdateCastBar(_castTimer / _castTime);
 
             if (_castTimer >= _castTime)
             {

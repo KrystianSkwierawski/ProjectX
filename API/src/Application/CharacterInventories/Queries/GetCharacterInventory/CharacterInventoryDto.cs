@@ -17,12 +17,12 @@ public class CharacterInventoryDto
 
 public class InventoryDto
 {
-    public IList<InventoryItem> Items { get; set; } = [];
+    public IList<InventoryItemDto> Items { get; set; } = [];
 }
 
-public class InventoryItem
+public class InventoryItemDto
 {
-    public CharacterInventoryTypeEnum Type { get; set; }
+    public InventoryItemEnum Type { get; set; }
 
     public int Count { get; set; }
 }

@@ -12,7 +12,7 @@ public class Characters : EndpointGroupBase
     {
         groupBuilder
             .MapGet(GetCharacter, "{id}")
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(Policies.Server);
     }
 
     private static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, int id)

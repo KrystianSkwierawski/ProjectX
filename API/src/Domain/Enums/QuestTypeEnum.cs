@@ -13,5 +13,7 @@ public enum QuestTypeEnum : byte
 
     Drop,
 
-    Collect
+    Collect,
+
+    Craft,
 }

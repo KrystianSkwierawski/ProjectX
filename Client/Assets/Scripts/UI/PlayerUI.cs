@@ -42,7 +42,7 @@ namespace Assets.Scripts.UI
             CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
         }
 
-        public void ShowCastBar(float progress)
+        public void UpdateCastBar(float progress)
         {
             if (CastProgressBar != null)
             {
@@ -71,9 +71,24 @@ namespace Assets.Scripts.UI
 
         public void SetPlayer(CharacterDto character)
         {
-            PlayerNameText.text = character.name;
-            PlayerHealthPointsText.text = character.health.ToString();
-            PlayerLevelText.text = $"Level: {character.level}";
+            SetName(character.name);
+            SetHealth(character.health);
+            SetLevel(character.mainLevel);
+        }
+
+        public void SetName(string name)
+        {
+            PlayerNameText.text = name;
+        }
+
+        public void SetHealth(int health)
+        {
+            PlayerHealthPointsText.text = health.ToString();
+        }
+
+        public void SetLevel(int level)
+        {
+            PlayerLevelText.text = $"Level: {level}";
         }
     }
 }

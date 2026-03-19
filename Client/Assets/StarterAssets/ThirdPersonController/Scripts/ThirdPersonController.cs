@@ -3,6 +3,11 @@ using Assets.Scripts.Network;
 using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using System.Collections.Generic;
+using System.Linq;
+
 
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -66,13 +71,12 @@ namespace StarterAssets
         public GameObject CinemachineCameraTarget;
 
         [Tooltip("How far in degrees can you move the camera up")]
-        public float TopClamp = 70.0f;
+        public float TopClamp = 80.0f;
 
         [Tooltip("How far in degrees can you move the camera down")]
         public float BottomClamp = -30.0f;
 
-        [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-        public float CameraAngleOverride = 0.0f;
+        private float _cameraAngleOverride;
 
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
@@ -170,7 +174,7 @@ namespace StarterAssets
                 _thirdPersonFollow = _cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
                 _currentZoom = _thirdPersonFollow.CameraDistance;
                 _geometry = transform.Find("Geometry").gameObject;
-                _targetSelector = GetComponent<TargetSelector>();   
+                _targetSelector = GetComponent<TargetSelector>();
             }
         }
 
@@ -233,9 +237,14 @@ namespace StarterAssets
 
         private void HandleZoom()
         {
+            if (IsNotScrollReact())
+            {
+                return;
+            }
+
             float scroll = Mouse.current.scroll.ReadValue().y;
 
-            if (Mathf.Abs(scroll) > 0.01f)
+            if (Mathf.Abs(scroll) > 0.1f)
             {
                 _currentZoom -= scroll * _zoomSpeed * Time.deltaTime * 100f;
                 _currentZoom = Mathf.Clamp(_currentZoom, _minZoom, _maxZoom);
@@ -249,6 +258,28 @@ namespace StarterAssets
                     _geometry.SetActive(distance > 0.5f);
                 }
             }
+        }
+
+        private bool IsNotScrollReact()
+        {
+            if (EventSystem.current == null)
+            {
+                return false;
+            }
+
+            var eventData = new PointerEventData(EventSystem.current)
+            {
+                position = Mouse.current.position.ReadValue()
+            };
+
+            var results = new List<RaycastResult>();
+
+            EventSystem.current.RaycastAll(eventData, results);
+
+            return results
+                .Where(x => x.gameObject != null)
+                .Where(x => x.gameObject.GetComponentInParent<ScrollRect>() != null)
+                .Any();
         }
 
         private void LateUpdate()
@@ -279,13 +310,16 @@ namespace StarterAssets
         }
 
         private void CameraRotation()
-        {          
+        {
             if (_lockTarget != null)
             {
                 if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold)
                 {
-                    _targetSelector.HandleUnselect();
-                    _targetSelector.UnselectServerRpc();
+                    if (_lockTarget.tag == "Target")
+                    {
+                        _targetSelector.HandleUnselect();
+                        _targetSelector.UnselectServerRpc();
+                    }
 
                     UnlockCamera();
 
@@ -298,6 +332,7 @@ namespace StarterAssets
                 if (dir.sqrMagnitude > 0.0001f)
                 {
                     Quaternion desired = Quaternion.LookRotation(dir);
+
                     // clamp pitch
                     Vector3 e = desired.eulerAngles;
                     float pitch = e.x;
@@ -308,7 +343,7 @@ namespace StarterAssets
                     }
 
                     pitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
-                    desired = Quaternion.Euler(pitch + CameraAngleOverride, e.y, 0f);
+                    desired = Quaternion.Euler(pitch + _cameraAngleOverride, e.y, 0f);
 
                     CinemachineCameraTarget.transform.rotation = Quaternion.Slerp(CinemachineCameraTarget.transform.rotation, desired, Time.deltaTime * _lockLerpSpeed);
 
@@ -322,7 +357,7 @@ namespace StarterAssets
                         curPitch -= 360f;
                     }
 
-                    _cinemachineTargetPitch = curPitch - CameraAngleOverride;
+                    _cinemachineTargetPitch = curPitch - _cameraAngleOverride;
                 }
 
                 return;
@@ -342,7 +377,7 @@ namespace StarterAssets
             _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
             // Cinemachine will follow this target
-            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
+            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + _cameraAngleOverride, _cinemachineTargetYaw, 0.0f);
         }
 
         private void Move()
@@ -535,7 +570,7 @@ namespace StarterAssets
 
         private void OnDrawGizmosSelected()
         {
-            Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
+            Color transparentGreen = new Color(0.0f, 1.0f, 0.35f, 0.35f);
             Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
 
             Gizmos.color = Grounded ? transparentGreen : transparentRed;
@@ -563,21 +598,29 @@ namespace StarterAssets
             }
         }
 
-        public void LockCameraToTarget(Transform target)
+        public void LockCameraToTarget(Transform target, float angleOverride = 10f)
         {
-            if (target == null) return;
-
+            _cameraAngleOverride = angleOverride;
             _lockTarget = target;
             LockCameraPosition = true;
 
-            Vector3 origin = CinemachineCameraTarget.transform.position;
-            Vector3 dir = (target.position - origin).normalized;
-            if (dir.sqrMagnitude < 0.0001f) return;
+            var origin = CinemachineCameraTarget.transform.position;
+            var dir = (target.position - origin).normalized;
 
-            Quaternion lookRot = Quaternion.LookRotation(dir);
+            if (dir.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            var lookRot = Quaternion.LookRotation(dir);
             _cinemachineTargetYaw = lookRot.eulerAngles.y;
             float pitch = lookRot.eulerAngles.x;
-            if (pitch > 180f) pitch -= 360f;
+
+            if (pitch > 180f)
+            {
+                pitch -= 360f;
+            }
+
             _cinemachineTargetPitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
             _input.SprintInput(false);
         }

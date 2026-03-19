@@ -36,8 +36,6 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
 
         int characterId = await GetCharacterIdAsync(userId, cancellationToken);
 
-        await ValidatePositionAsync(request, characterId);
-
         await SavePositionAsync(request, characterId, cancellationToken);
     }
 
@@ -70,34 +68,5 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
         Log.Debug("Found character: {0} for user: {1}", result, userId);
 
         return result;
-    }
-
-    private async Task ValidatePositionAsync(SaveTransformTransformCommand request, int characterId)
-    {
-        var last = await _context.CharacterTransforms
-            .Where(x => x.CharacterId == characterId)
-            .OrderByDescending(x => x.ModDate)
-            .Select(x => new
-            {
-                x.PositionX,
-                x.PositionY,
-                x.PositionZ
-            })
-            .FirstAsync();
-
-        if (Math.Abs(request.PositionX - last.PositionX) > 30)
-        {
-            Log.Warning("Suspected PositionX: {0}", request.PositionX);
-        }
-
-        if (Math.Abs(request.PositionY - last.PositionY) > 30)
-        {
-            Log.Warning("Suspected PositionY: {0}", request.PositionY);
-        }
-
-        if (Math.Abs(request.PositionZ - last.PositionZ) > 30)
-        {
-            Log.Warning("Suspected PositionZ: {0}", request.PositionZ);
-        }
     }
 }

@@ -11,6 +11,10 @@ TagManager:
   - InventorySlot
   - Bait
   - Water
+  - Rock
+  - Herbalism
+  - Tree
+  - Crafting
   layers:
   - Default
   - TransparentFX

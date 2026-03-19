@@ -19,5 +19,9 @@ public class QuestConfiguration : IEntityTypeConfiguration<Quest>
             .HasMany(x => x.CharacterQuests)
             .WithOne(x => x.Quest)
             .HasForeignKey(x => x.QuestId);
+
+        builder
+            .HasIndex(x => x.Status)
+            .HasDatabaseName("IX.Quests.Status");
     }
 }

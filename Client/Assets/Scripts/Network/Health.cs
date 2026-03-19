@@ -1,3 +1,4 @@
+using Assets.Scripts.Enums;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
@@ -15,7 +16,7 @@ namespace Assets.Scripts.Network
             {
                 var gameObjectKey = gameObject.GetInstanceID().ToString();
 
-                UpdateHealthSubscription.Instance.Subscribe(gameObjectKey, (e) =>
+                AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
                     Network.Value -= e.Value;
                     Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
@@ -42,15 +43,22 @@ namespace Assets.Scripts.Network
 
                         CheckLootSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckLootSubscriptionEvent
                         {
-                            ClientToken = e.ClientToken,
                             GameObjectName = gameObject.name
                         });
 
                         AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
                         {
+                            Amount = 50,
+                            Type = ExperienceTypeEnum.Main,
                             ClientToken = e.ClientToken,
                         });
                     }
+
+                    MonsterAggroSubscription.Instance.Invoke(gameObjectKey, new MonsterAggroSubscriptionEvent
+                    {
+                        ClientId = e.ClientId,
+                        Target = targetSelectorSubscriptionsEvent.Killed ? null : e.Player
+                    });
 
                     UpdateTargetSelectorSubscription.Instance.Invoke(gameObjectKey, targetSelectorSubscriptionsEvent);
                 });
@@ -71,7 +79,7 @@ namespace Assets.Scripts.Network
         {
             if (IsServer)
             {
-                UpdateHealthSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
+                AttackTargetSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
             }
 
             base.OnDestroy();

@@ -13,10 +13,6 @@ public class CharacterConfiguration : IEntityTypeConfiguration<Character>
             .HasMaxLength(100);
 
         builder
-            .Property(x => x.Level)
-            .HasDefaultValue((byte)1);
-
-        builder
             .HasOne(x => x.ApplicationUser)
             .WithMany(x => x.Characters)
             .HasForeignKey(x => x.ApplicationUserId);

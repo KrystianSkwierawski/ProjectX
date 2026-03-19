@@ -27,6 +27,10 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
 
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+
+    public DbSet<CraftingRecipe> CraftingRecipes => Set<CraftingRecipe>();
+
     public TransactionScope CreateTransactionScope()
     {
         var options = new TransactionOptions
@@ -40,6 +44,7 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 }
