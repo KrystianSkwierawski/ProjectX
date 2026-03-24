@@ -11,10 +11,10 @@
     "Collect2CansCompleteDescription": "ok, u collected 2 cans",
     "Collect2CansStatusText": "Collected {0}/{1} cans",
 
-    "Catch2FishTitle": "Catch 2 fish",
-    "Catch2FishDescription": "Bla bla bla catch 2 fishes, ok?",
-    "Catch2FishCompleteDescription": "ok, u catched 2 fishes",
-    "Catch2FishStatusText": "Catched {0}/{1} fishes",
+    "Collec2FishTitle": "Catch 2 fish",
+    "Collec2FishDescription": "Bla bla bla catch 2 fishes, ok?",
+    "Collec2FishCompleteDescription": "ok, u catched 2 fishes",
+    "Collec2FishStatusText": "Catched {0}/{1} fishes",
 
     "Collect2PurpleOresTitle": "Collect 2 purple ores",
     "Collect2PurpleOresDescription": "Bla bla bla collect 2 purple ores, ok?",
@@ -46,10 +46,10 @@
     "Collect2WoodsCompleteDescription": "ok, u collected 2 woods",
     "Collect2WoodsStatusText": "Collected {0}/{1} woods",
 
-    "Collect2FishTitle": "Collect 2 fish",
-    "Collect2FishDescription": "Bla bla bla collect 2 fish, ok?",
-    "Collect2FishCompleteDescription": "ok, u collected 2 fish",
-    "Collect2FishStatusText": "Collected {0}/{1} fish",
+    "Collect2CookedFishTitle": "Collect 2 cooked fish",
+    "Collect2CookedFishDescription": "Bla bla bla collect 2 cooked fish, ok?",
+    "Collect2CookedFishCompleteDescription": "ok, u collected 2 cooked fish",
+    "Collect2FishStatusText": "Collected {0}/{1} cooked fish",
 
     "Collect2SushiTitle": "Collect 2 sushies",
     "Collect2SushiDescription": "Bla bla bla collect 2 sush",

@@ -43,7 +43,7 @@ public enum QuestEnum : short
         Requirement = 2,
         Reward = 1000
     )]
-    Catch2Fish,
+    Collect2Fish,
 
     [QuestParameters(
         Type = QuestTypeEnum.Collect,
@@ -122,18 +122,18 @@ public enum QuestEnum : short
 
     [QuestParameters(
         Type = QuestTypeEnum.Collect,
-        TitleKey = TranslateKeyEnum.Collect2FishTitle,
-        Description = TranslateKeyEnum.Collect2FishDescription,
-        CompleteDescription = TranslateKeyEnum.Collect2FishCompleteDescription,
-        StatusText = TranslateKeyEnum.Collect2FishStatusText,
+        TitleKey = TranslateKeyEnum.Collect2CookedFishTitle,
+        Description = TranslateKeyEnum.Collect2CookedFishDescription,
+        CompleteDescription = TranslateKeyEnum.Collect2CookedFishCompleteDescription,
+        StatusText = TranslateKeyEnum.Collect2CookedFishStatusText,
         GameObjectName = nameof(InventoryItemEnum.CookedFish),
         Requirement = 2,
         Reward = 1000
     )]
-    Collect2Fish, // TODO: cook
+    Collect2CookedFish, // TODO: cook
 
     [QuestParameters(
-        PreviousQuestId = Collect2Fish,
+        PreviousQuestId = Collect2CookedFish,
         Type = QuestTypeEnum.Collect,
         TitleKey = TranslateKeyEnum.Collect2SushiTitle,
         Description = TranslateKeyEnum.Collect2SushiDescription,

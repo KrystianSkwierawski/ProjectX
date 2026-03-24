@@ -47,10 +47,10 @@
     Collect2WoodsCompleteDescription,
     Collect2WoodsStatusText,
 
-    Collect2FishTitle,
-    Collect2FishDescription,
-    Collect2FishCompleteDescription,
-    Collect2FishStatusText,
+    Collect2CookedFishTitle,
+    Collect2CookedFishDescription,
+    Collect2CookedFishCompleteDescription,
+    Collect2CookedFishStatusText,
 
     Collect2SushiTitle,
     Collect2SushiDescription,
