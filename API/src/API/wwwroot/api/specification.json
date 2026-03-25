@@ -110,18 +110,50 @@
             "JWT": []
           }
         ]
-      },
+      }
+    },
+    "/api/CharacterInventories/Add": {
       "post": {
         "tags": [
           "CharacterInventories"
         ],
-        "operationId": "AddCharacterInventoryItem",
+        "operationId": "PostApiCharacterInventoriesAdd",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AddCharacterInventoryItemCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/CharacterInventories/Remove": {
+      "post": {
+        "tags": [
+          "CharacterInventories"
+        ],
+        "operationId": "PostApiCharacterInventoriesRemove",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveCharacterInventoryItemCommand"
               }
             }
           },
@@ -804,6 +836,19 @@
           }
         }
       },
+      "RemoveCharacterInventoryItemCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inventoryItem": {
+            "$ref": "#/components/schemas/InventoryItemDto"
+          }
+        }
+      },
       "GetCharacterQuestsDto": {
         "type": "object",
         "additionalProperties": false,
@@ -843,42 +888,42 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fish",
+          "Collect2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
           "Collect2Woods",
-          "Collect2Fish",
+          "Collect2CookedFish",
           "Collect2Sushi"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fish",
+          "Collect2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
           "Collect2Woods",
-          "Collect2Fish",
+          "Collect2CookedFish",
           "Collect2Sushi"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fish",
+          "Collect2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
           "Collect2Woods",
-          "Collect2Fish",
+          "Collect2CookedFish",
           "Collect2Sushi"
         ],
         "x-enum-descriptions": [

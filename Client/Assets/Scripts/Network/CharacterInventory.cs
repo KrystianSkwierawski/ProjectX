@@ -274,11 +274,7 @@ namespace Assets.Scripts.Mono
                 ClientToken = clientToken,
             });
 
-            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
-            {
-                characterId = 1,
-                inventoryItem = serverItem
-            }, clientToken);
+            await InventoryManager.Instance.AddAsync(1, serverItem, clientToken);
 
             _currentLoot.Remove(serverItem);
         }
@@ -293,12 +289,7 @@ namespace Assets.Scripts.Mono
                 }
             });
 
-            // TODO: remvoe
-            await UniTask.Delay(1000);
-            //await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", new AddCharacterInventoryItemCommand
-            //{
-            //    characterId = 1,
-            //}, clientToken);
+            await InventoryManager.Instance.RemoveAsync(1, item, clientToken);
         }
 
         [ClientRpc]

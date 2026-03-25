@@ -13,6 +13,24 @@ namespace Assets.Scripts.Shared
             Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
         }
 
+        public async UniTask AddAsync(int characterId, InventoryItemDto item, string clientToken)
+        {
+            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories/Add", new AddCharacterInventoryItemCommand
+            {
+                characterId = 1,
+                inventoryItem = item
+            }, clientToken);
+        }
+
+        public async UniTask RemoveAsync(int characterId, InventoryItemDto item, string clientToken)
+        {
+            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories/Remove", new RemoveCharacterInventoryItemCommand
+            {
+                characterId = characterId,
+                inventoryItem = item
+            }, clientToken);
+        }
+
         public void Add(InventoryItemDto item)
         {
             var slot = Dto.inventory.items
@@ -42,6 +60,7 @@ namespace Assets.Scripts.Shared
                 .Where(x => x.count >= item.count)
                 .First();
 
+            // TODO: multiple stacks?
             if (slot.count == item.count)
             {
                 Dto.inventory.items.Remove(slot);

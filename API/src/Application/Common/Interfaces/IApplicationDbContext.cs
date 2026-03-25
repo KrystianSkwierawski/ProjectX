@@ -23,5 +23,5 @@ public interface IApplicationDbContext
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
-    TransactionScope CreateTransactionScope();
+    TransactionScope CreateTransactionScope(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted);
 }

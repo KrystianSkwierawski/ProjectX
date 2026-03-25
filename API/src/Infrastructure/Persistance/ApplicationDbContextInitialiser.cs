@@ -116,6 +116,7 @@ public class ApplicationDbContextInitialiser
                             }
                         ]
                     }),
+                    ModDate = DateTime.Now,
                     Count = 15
                 },
                 CharacterTransforms =

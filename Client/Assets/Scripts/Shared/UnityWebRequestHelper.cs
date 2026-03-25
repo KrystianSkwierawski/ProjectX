@@ -27,6 +27,13 @@ namespace Assets.Scripts.Shared
             return await SendWebRequestAsync<T>(request, clientToken, memberName);
         }
 
+        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string clientToken = null, [CallerMemberName] string memberName = "")
+        {
+            using var request = UnityWebRequest.Delete($"{_baseUrl}/{endpoint}");
+
+            return await SendWebRequestAsync<T>(request, clientToken, memberName);
+        }
+
         private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, string memberName)
         {
             request.SetRequestHeader("Authorization", $"Bearer {UserManager.Instance.Token}");
