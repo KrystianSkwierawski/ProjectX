@@ -138,28 +138,27 @@ namespace Assets.Scripts.Mono
 
                 InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
-                AddInventoryItemSubscription.Instance.Subscribe(key, (e) =>
+                UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
-                    AddItemServerRpc(e.Item, e.ClientToken);
+                    UpdateInventory(e.Request);
+
+                    UpdateInventoryServerRpc(e.Request, e.ClientToken);
                 });
             }
 
             if (IsServer)
             {
-                AddInventoryItemSubscription.Instance.Subscribe(key, async (e) =>
+                UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
-                    _currentLoot.Add(new InventoryItemDto
+                    UpdateInventoryClientRpc(e.Request, new ClientRpcParams
                     {
-                        type = e.Item.type,
-                        count = e.Item.count,
+                        Send = new ClientRpcSendParams
+                        {
+                            TargetClientIds = new ulong[] { OwnerClientId }
+                        }
                     });
 
-                    await AddItemAsync(e.Item, e.ClientToken);
-                });
-
-                RemoveInventoryItemSubscription.Instance.Subscribe(key, async (e) =>
-                {
-                    await RemoveItemAsync(e.Item, e.ClientToken);
+                    UpdateInventoryAsync(e.Request, e.ClientToken).Forget();
                 });
 
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
@@ -247,90 +246,76 @@ namespace Assets.Scripts.Mono
             InventoryUI.Instance.UpdateLoot(items, OwnerClientId, UserManager.Instance.Token);
         }
 
-        [ServerRpc]
-        private void AddItemServerRpc(InventoryItemDto item, string clientToken)
-        {
-            AddItemAsync(item, clientToken).Forget();
-        }
-
-        private async UniTask AddItemAsync(InventoryItemDto item, string clientToken)
-        {
-            AddInventoryItemClientRpc(item, new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
-
-            var serverItem = _currentLoot
-                .Where(x => x.type == item.type)
-                .First();
-
-            CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
-            {
-                Progress = serverItem.count,
-                GameObjectName = serverItem.type.ToString(),
-                ClientToken = clientToken,
-            });
-
-            await InventoryManager.Instance.AddAsync(1, serverItem, clientToken);
-
-            _currentLoot.Remove(serverItem);
-        }
-
-        private async UniTask RemoveItemAsync(InventoryItemDto item, string clientToken)
-        {
-            RemoveItemClientRpc(item, new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
-
-            await InventoryManager.Instance.RemoveAsync(1, item, clientToken);
-        }
-
         [ClientRpc]
-        private void RemoveItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
+        private void UpdateInventoryClientRpc(UpdateCharacterInventoryCommand request, ClientRpcParams rpcParams = default)
         {
-            InventoryManager.Instance.Remove(item);
+            UpdateInventory(request);
+        }
+
+        private void UpdateInventory(UpdateCharacterInventoryCommand request)
+        {
+            if (request.add.Any())
+            {
+                foreach (var item in request.add)
+                {
+                    InventoryManager.Instance.Add(item);
+                }
+
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+            }
+
+            foreach (var item in request.remove)
+            {
+                InventoryManager.Instance.Remove(item);
+            }
 
             InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
-
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
-
             CraftingUI.Instance.UpdateRequirements();
         }
 
-        [ClientRpc]
-        private void AddInventoryItemClientRpc(InventoryItemDto item, ClientRpcParams rpcParams = default)
+        [ServerRpc]
+        private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request, string clientToken)
         {
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+            var isValid = request.add.All(x =>
+            {
+                return _currentLoot
+                    .Where(c => c.type == x.type)
+                    .Any();
+            });
 
-            InventoryManager.Instance.Add(item);
+            if (isValid)
+            {
+                UpdateInventoryAsync(request, clientToken).Forget();
 
-            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+                _currentLoot.Clear();
+            }
         }
+
+        private async UniTask UpdateInventoryAsync(UpdateCharacterInventoryCommand request, string clientToken)
+        {
+            await InventoryManager.Instance.UpdateAsync(request, clientToken);
+
+            foreach (var item in request.add)
+            {
+                CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                {
+                    Progress = item.count,
+                    GameObjectName = item.type.ToString(),
+                    ClientToken = clientToken,
+                });
+            }
+        }
+
         public override void OnNetworkDespawn()
         {
-            var key = OwnerClientId.ToString();
-
-            AddInventoryItemSubscription.Instance.Unsubscribe(key);
-            RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
-            CheckLootSubscription.Instance.Unsubscribe(key);
+            UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnNetworkDespawn();
         }
 
         public override void OnDestroy()
         {
-            var key = OwnerClientId.ToString();
-
-            AddInventoryItemSubscription.Instance.Unsubscribe(key);
-            CheckLootSubscription.Instance.Unsubscribe(key);
-            RemoveInventoryItemSubscription.Instance.Unsubscribe(key);
+            UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnDestroy();
         }

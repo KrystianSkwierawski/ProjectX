@@ -110,50 +110,18 @@
             "JWT": []
           }
         ]
-      }
-    },
-    "/api/CharacterInventories/Add": {
+      },
       "post": {
         "tags": [
           "CharacterInventories"
         ],
-        "operationId": "PostApiCharacterInventoriesAdd",
+        "operationId": "UpdateCharacterInventory",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddCharacterInventoryItemCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      }
-    },
-    "/api/CharacterInventories/Remove": {
-      "post": {
-        "tags": [
-          "CharacterInventories"
-        ],
-        "operationId": "PostApiCharacterInventoriesRemove",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RemoveCharacterInventoryItemCommand"
+                "$ref": "#/components/schemas/UpdateCharacterInventoryCommand"
               }
             }
           },
@@ -823,7 +791,7 @@
           305
         ]
       },
-      "AddCharacterInventoryItemCommand": {
+      "UpdateCharacterInventoryCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -831,21 +799,17 @@
             "type": "integer",
             "format": "int32"
           },
-          "inventoryItem": {
-            "$ref": "#/components/schemas/InventoryItemDto"
-          }
-        }
-      },
-      "RemoveCharacterInventoryItemCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
+          "add": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
           },
-          "inventoryItem": {
-            "$ref": "#/components/schemas/InventoryItemDto"
+          "remove": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
           }
         }
       },

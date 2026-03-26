@@ -13,22 +13,9 @@ namespace Assets.Scripts.Shared
             Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
         }
 
-        public async UniTask AddAsync(int characterId, InventoryItemDto item, string clientToken)
+        public async UniTask UpdateAsync(UpdateCharacterInventoryCommand request, string clientToken)
         {
-            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories/Add", new AddCharacterInventoryItemCommand
-            {
-                characterId = 1,
-                inventoryItem = item
-            }, clientToken);
-        }
-
-        public async UniTask RemoveAsync(int characterId, InventoryItemDto item, string clientToken)
-        {
-            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories/Remove", new RemoveCharacterInventoryItemCommand
-            {
-                characterId = characterId,
-                inventoryItem = item
-            }, clientToken);
+            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", request, clientToken);
         }
 
         public void Add(InventoryItemDto item)
@@ -37,20 +24,16 @@ namespace Assets.Scripts.Shared
                 .Where(x => x.type == item.type)
                 .FirstOrDefault();
 
-            if (slot == null && Dto.inventory.items.Count >= Dto.count)
-            {
-                // TODO: out of slots
-                return;
-            }
+            // TODO: out of slots?
 
-            if (slot != null)
+            if (slot == null)
             {
-                slot.count += item.count;
+                Dto.inventory.items.Add(item);
 
                 return;
             }
 
-            Dto.inventory.items.Add(item);
+            slot.count += item.count;
         }
 
         public void Remove(InventoryItemDto item)
@@ -61,6 +44,7 @@ namespace Assets.Scripts.Shared
                 .First();
 
             // TODO: multiple stacks?
+
             if (slot.count == item.count)
             {
                 Dto.inventory.items.Remove(slot);

@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
-using ProjectX.Application.CharacterInventories.Commands.AddCharacterInventoryItem;
-using ProjectX.Application.CharacterInventories.Commands.RemoveCharacterInventoryItem;
 using ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Domain.Constants;
@@ -18,15 +16,7 @@ public class CharacterInventories : EndpointGroupBase
             .RequireAuthorization(Policies.Client);
 
         groupBuilder
-            .MapPost("Add", AddCharacterInventoryItem)
-            .RequireAuthorization(Policies.Server);
-
-        groupBuilder
-            .MapPost("Remove", RemoveCharacterInventoryItem)
-            .RequireAuthorization(Policies.Server);
-
-        groupBuilder
-            .MapPost("Update", UpdateCharacterInventory)
+            .MapPost(UpdateCharacterInventory)
             .RequireAuthorization(Policies.Server);
     }
 
@@ -35,20 +25,6 @@ public class CharacterInventories : EndpointGroupBase
         var result = await sender.Send(query);
 
         return TypedResults.Ok(result);
-    }
-
-    private static async Task<NoContent> AddCharacterInventoryItem(ISender sender, AddCharacterInventoryItemCommand command)
-    {
-        await sender.Send(command);
-
-        return TypedResults.NoContent();
-    }
-
-    private static async Task<NoContent> RemoveCharacterInventoryItem(ISender sender, RemoveCharacterInventoryItemCommand command)
-    {
-        await sender.Send(command);
-
-        return TypedResults.NoContent();
     }
 
     private static async Task<NoContent> UpdateCharacterInventory(ISender sender, UpdateCharacterInventoryCommand command)
