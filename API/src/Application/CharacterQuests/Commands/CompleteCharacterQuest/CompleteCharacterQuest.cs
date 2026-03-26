@@ -66,7 +66,9 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(characterInventory.Inventory);
 
-        var item = inventory!.Items
+        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
+
+        var item = inventory.Items
             .Where(x => x.Type == itemType)
             .Where(x => x.Count >= characterQuest.Quest.Requirement)
             .First();

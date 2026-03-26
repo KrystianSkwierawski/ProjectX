@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Entities;
 
 namespace ProjectX.Application.CharacterInventories.Commands.AddCharacterInventoryItem;
 public record AddCharacterInventoryItemCommand(int CharacterId, InventoryItemDto InventoryItem) : IRequest;
@@ -23,6 +24,15 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
 
     public async Task Handle(AddCharacterInventoryItemCommand request, CancellationToken cancellationToken)
     {
+        using var scope = _context.CreateTransactionScope(IsolationLevel.Serializable);
+
+        await AddAsync(request, cancellationToken);
+
+        scope.Complete();
+    }
+
+    private async Task AddAsync(AddCharacterInventoryItemCommand request, CancellationToken cancellationToken)
+    {
         var userId = _currentUserService.GetId();
 
         var entity = await _context.CharacterInventories
@@ -34,31 +44,33 @@ public class AddCharacterInventoryItemCommandHandler : IRequestHandler<AddCharac
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
 
-        var slot = inventory!.Items
-            .Where(x => x.Type == request.InventoryItem.Type)
-            .FirstOrDefault();
+        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
 
-        if (slot == null && inventory.Items.Count >= entity.Count)
-        {
-            throw new Exception($"Inventory full for Id: {entity.Id}");
-        }
-
-        if (slot != null)
-        {
-            slot.Count += request.InventoryItem.Count;
-            Log.Debug("Updated item for inventory Id: {0}, Type: {1}, New Count: {2}", entity.Id, request.InventoryItem.Type, slot.Count);
-
-        }
-        else
-        {
-            inventory.Items.Add(request.InventoryItem);
-            Log.Debug("Created new item for inventory Id: {0}, Type: {1}, Count: {2}", entity.Id, request.InventoryItem.Type, request.InventoryItem.Count);
-        }
+        Add(request.InventoryItem, inventory);
 
         entity.Inventory = JsonSerializer.Serialize(inventory);
 
         await _context.SaveChangesAsync(cancellationToken);
 
         Log.Debug("Added item for inventory Id: {0}, Type: {1}, Count: {2}", entity.Id, request.InventoryItem.Type, request.InventoryItem.Count);
+    }
+
+    private static void Add(InventoryItemDto item, InventoryDto inventory)
+    {
+        var slot = inventory.Items
+            .Where(x => x.Type == item.Type)
+            .FirstOrDefault();
+
+        // TODO: out of slots?
+
+        if (slot == null)
+        {
+            inventory.Items.Add(item);
+
+            return;
+
+        }
+
+        slot.Count += item.Count;
     }
 }

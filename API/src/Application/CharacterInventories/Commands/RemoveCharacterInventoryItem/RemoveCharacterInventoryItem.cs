@@ -24,6 +24,15 @@ public class RemoveCharacterInventoryItemCommandHandler : IRequestHandler<Remove
 
     public async Task Handle(RemoveCharacterInventoryItemCommand request, CancellationToken cancellationToken)
     {
+        using var scope = _context.CreateTransactionScope(IsolationLevel.Serializable);
+
+        await RemoveAsync(request, cancellationToken);
+
+        scope.Complete();
+    }
+
+    private async Task RemoveAsync(RemoveCharacterInventoryItemCommand request, CancellationToken cancellationToken)
+    {
         var userId = _currentUserService.GetId();
 
         var entity = await _context.CharacterInventories
@@ -35,25 +44,33 @@ public class RemoveCharacterInventoryItemCommandHandler : IRequestHandler<Remove
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
 
-        var slot = inventory!.Items
-            .Where(x => x.Type == request.InventoryItem.Type)
-            .Where(x => x.Count >= request.InventoryItem.Count)
-            .First();
+        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
 
-        // TODO: multiple stacks?
-        if (slot.Count == request.InventoryItem.Count)
-        {
-            inventory.Items.Remove(slot);
-        }
-        else
-        {
-            slot.Count -= request.InventoryItem.Count;
-        }
+        Remove(request.InventoryItem, inventory);
 
         entity.Inventory = JsonSerializer.Serialize(inventory);
 
         await _context.SaveChangesAsync(cancellationToken);
 
         Log.Debug("Removed item for inventory Id: {0}, Type: {1}, Count: {2}", entity.Id, request.InventoryItem.Type, request.InventoryItem.Count);
+    }
+
+    private static void Remove(InventoryItemDto item, InventoryDto inventory)
+    {
+        var slot = inventory.Items
+            .Where(x => x.Type == item.Type)
+            .Where(x => x.Count >= item.Count)
+            .First();
+
+        // TODO: multiple stacks?
+
+        if (slot.Count == item.Count)
+        {
+            inventory.Items.Remove(slot);
+
+            return;
+        }
+
+        slot.Count -= item.Count;
     }
 }
