@@ -49,7 +49,7 @@
     "Collect2CookedFishTitle": "Collect 2 cooked fish",
     "Collect2CookedFishDescription": "Bla bla bla collect 2 cooked fish, ok?",
     "Collect2CookedFishCompleteDescription": "ok, u collected 2 cooked fish",
-    "Collect2FishStatusText": "Collected {0}/{1} cooked fish",
+    "Collect2CookedFishStatusText": "Collected {0}/{1} cooked fish",
 
     "Collect2SushiTitle": "Collect 2 sushies",
     "Collect2SushiDescription": "Bla bla bla collect 2 sush",

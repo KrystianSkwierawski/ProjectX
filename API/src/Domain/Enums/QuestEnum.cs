@@ -38,7 +38,7 @@ public enum QuestEnum : short
         TitleKey = TranslateKeyEnum.Catch2FishTitle,
         Description = TranslateKeyEnum.Catch2FishDescription,
         CompleteDescription = TranslateKeyEnum.Catch2FishCompleteDescription,
-        StatusText = TranslateKeyEnum.Catch2FishsStatusText,
+        StatusText = TranslateKeyEnum.Catch2FishStatusText,
         GameObjectName = nameof(InventoryItemEnum.Fish),
         Requirement = 2,
         Reward = 1000

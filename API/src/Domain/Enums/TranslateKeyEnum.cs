@@ -15,7 +15,7 @@
     Catch2FishTitle,
     Catch2FishDescription,
     Catch2FishCompleteDescription,
-    Catch2FishsStatusText,
+    Catch2FishStatusText,
 
     Collect2PurpleOresTitle,
     Collect2PurpleOresDescription,
