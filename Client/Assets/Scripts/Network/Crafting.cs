@@ -51,6 +51,7 @@ public class Crafting : NetworkBehaviour
         _isCrafting = true;
         _craftingTimer = 0f;
         PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
+        CraftingUI.Instance.CraftButton.interactable = false;
     }
 
     private void CheckCrafting()
@@ -77,6 +78,7 @@ public class Crafting : NetworkBehaviour
         _isCrafting = false;
         _craftingTimer = 0f;
         PlayerUI.Instance.HideCastBar();
+        CraftingUI.Instance.CraftButton.interactable = true;
     }
 
     [ServerRpc]
