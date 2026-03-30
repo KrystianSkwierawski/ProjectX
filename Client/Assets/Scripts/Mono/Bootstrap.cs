@@ -40,6 +40,9 @@ namespace Assets.Scripts.Mono
             await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
             Debug.Log("AudioScene Loaded");
 
+            await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
+            Debug.Log("EnvironmentScene Loaded");
+
             await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);
             Debug.Log("TestScene Loaded");
 
@@ -59,6 +62,9 @@ namespace Assets.Scripts.Mono
 
             await SceneManager.LoadSceneAsync("ServerScene", LoadSceneMode.Additive);
             Debug.Log("ServerScene Loaded");
+
+            await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
+            Debug.Log("EnvironmentScene Loaded");
 
             NetworkManager.Singleton.StartServer();
 

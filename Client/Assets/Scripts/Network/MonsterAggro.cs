@@ -6,6 +6,7 @@ using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class MonsterAggro : NetworkBehaviour
 {
@@ -15,6 +16,9 @@ public class MonsterAggro : NetworkBehaviour
     private float _attackTimer = 0f;
     private MonsterPatrol _patrol;
     private Vector3 _initPosition;
+    private NavMeshAgent _agent;
+    private bool _isReturning = false;
+    private float _destinationUpdateThreshold = 0.5f;
 
     private void Start()
     {
@@ -24,12 +28,16 @@ public class MonsterAggro : NetworkBehaviour
 
             _patrol = GetComponent<MonsterPatrol>();
 
+            _agent = GetComponent<NavMeshAgent>();
+
+            _agent.isStopped = false;
+            _agent.updatePosition = true;
+
             MonsterAggroSubscription.Instance.Subscribe(key, (e) =>
             {
                 if (e.Target == null)
                 {
                     LoseAggro();
-
                     return;
                 }
 
@@ -39,6 +47,10 @@ public class MonsterAggro : NetworkBehaviour
                     _initPosition = transform.position;
                     _target = e.Target;
                     _clientId = e.ClientId;
+                    _isReturning = false;
+
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_target.transform.position);
 
                     AggroClientRpc(new ClientRpcParams
                     {
@@ -62,6 +74,13 @@ public class MonsterAggro : NetworkBehaviour
     {
         if (_target == null)
         {
+            if (_isReturning && !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
+            {
+                _agent.isStopped = true;
+                _isReturning = false;
+                _patrol.IsWaiting = false;
+            }
+
             return;
         }
 
@@ -74,12 +93,21 @@ public class MonsterAggro : NetworkBehaviour
 
         if (transform.IsCloseToTarget(_target, 2f))
         {
+            if (!_agent.isStopped)
+            {
+                _agent.isStopped = true;
+            }
+
             CheckAttack();
 
             return;
         }
 
-        transform.MoveTowardsTarget(_target, false);
+        if (!_agent.hasPath || Vector3.Distance(_agent.destination, _target.transform.position) > _destinationUpdateThreshold)
+        {
+            _agent.isStopped = false;
+            _agent.SetDestination(_target.transform.position);
+        }
     }
 
     private void CheckAttack()
@@ -104,7 +132,10 @@ public class MonsterAggro : NetworkBehaviour
         _attackTimer = 0f;
         _target = null;
         _clientId = null;
-        _patrol.IsWaiting = false;
-        transform.position = _initPosition; // TODO: walk to position
+
+        _isReturning = true;
+        _patrol.IsWaiting = true;
+        _agent.isStopped = false;
+        _agent.SetDestination(_initPosition);
     }
 }
