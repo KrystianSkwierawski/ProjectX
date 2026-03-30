@@ -167,7 +167,7 @@ namespace Assets.Scripts.Mono
                     {
                         ProcessLoot(drops);
 
-                        if (_currentLoot.Any())
+                        if (_currentLoot.Count > 0)
                         {
                             ShowLootClientRpc(_currentLoot.ToArray(), new ClientRpcParams
                             {
@@ -254,7 +254,7 @@ namespace Assets.Scripts.Mono
 
         private void UpdateInventory(UpdateCharacterInventoryCommand request)
         {
-            if (request.add.Any())
+            if (request.add.Count > 0)
             {
                 foreach (var item in request.add)
                 {

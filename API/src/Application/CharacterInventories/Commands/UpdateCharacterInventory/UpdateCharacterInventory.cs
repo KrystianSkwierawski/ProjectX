@@ -24,8 +24,6 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
     public async Task Handle(UpdateCharacterInventoryCommand request, CancellationToken cancellationToken)
     {
-        using var scope = _context.CreateTransactionScope(IsolationLevel.Serializable);
-
         var userId = _currentUserService.GetId();
 
         var entity = await _context.CharacterInventories
@@ -56,8 +54,6 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         entity.Inventory = JsonSerializer.Serialize(inventory);
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        scope.Complete();
 
         Log.Debug("Saved inventory for Id: {0}", entity.Id);
     }

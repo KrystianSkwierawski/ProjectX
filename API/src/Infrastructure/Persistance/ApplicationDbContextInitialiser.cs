@@ -145,8 +145,6 @@ public class ApplicationDbContextInitialiser
     {
         Log.Verbose("{0} -> Start", nameof(InsertOrUpdateQuestsAsync));
 
-        using var scope = _context.CreateTransactionScope();
-
         var dbQuests = await _context.Quests
             .Select(x => new Quest
             {
@@ -213,16 +211,12 @@ public class ApplicationDbContextInitialiser
 
         await _context.SaveChangesAsync();
 
-        scope.Complete();
-
         Log.Verbose("{0} -> Stop", nameof(InsertOrUpdateQuestsAsync));
     }
 
     private async Task InsertOrUpdateInventoryItemsAsync()
     {
         Log.Verbose("{0} -> Start", nameof(InsertOrUpdateInventoryItemsAsync));
-
-        using var scope = _context.CreateTransactionScope();
 
         var dbInventoryItems = await _context.InventoryItems
             .Select(x => new InventoryItem
@@ -278,16 +272,12 @@ public class ApplicationDbContextInitialiser
 
         await _context.SaveChangesAsync();
 
-        scope.Complete();
-
         Log.Verbose("{0} -> Stop", nameof(InsertOrUpdateInventoryItemsAsync));
     }
 
     private async Task InsertOrUpdateCraftingRecipesAsync()
     {
         Log.Verbose("{0} -> Start", nameof(InsertOrUpdateCraftingRecipesAsync));
-
-        using var scope = _context.CreateTransactionScope();
 
         var dbCraftingRecipes = await _context.CraftingRecipes
             .Select(x => new CraftingRecipe
@@ -360,8 +350,6 @@ public class ApplicationDbContextInitialiser
         _context.CraftingRecipes.UpdateRange(delete);
 
         await _context.SaveChangesAsync();
-
-        scope.Complete();
 
         Log.Verbose("{0} -> Stop", nameof(InsertOrUpdateCraftingRecipesAsync));
     }
