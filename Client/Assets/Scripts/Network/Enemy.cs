@@ -1,24 +1,29 @@
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.Mono;
-using Assets.Scripts.Network;
-using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class MonsterAggro : NetworkBehaviour
+public class Enemy : NetworkBehaviour
 {
     private GameObject _target;
     private ulong? _clientId;
     private float _attackTime = 2f;
     private float _attackTimer = 0f;
-    private MonsterPatrol _patrol;
     private Vector3 _initPosition;
     private NavMeshAgent _agent;
     private bool _isReturning = false;
     private float _destinationUpdateThreshold = 0.5f;
+
+    private bool _isPatrolling = false;
+    private float _patrolRadius = 5f;
+    private float _patrolWaitTime = 2f;
+    private float _patrolWaitTimer = 0f;
+    private Vector3 _currentPatrolPoint;
+
+    private float _maxChasePathLength = 30f;
 
     private void Start()
     {
@@ -26,28 +31,25 @@ public class MonsterAggro : NetworkBehaviour
         {
             var key = gameObject.GetInstanceID().ToString();
 
-            _patrol = GetComponent<MonsterPatrol>();
+            _initPosition = transform.position;
 
             _agent = GetComponent<NavMeshAgent>();
 
-            _agent.isStopped = false;
-            _agent.updatePosition = true;
-
-            MonsterAggroSubscription.Instance.Subscribe(key, (e) =>
+            EnemyAggroSubscription.Instance.Subscribe(key, (e) =>
             {
                 if (e.Target == null)
                 {
                     LoseAggro();
+
                     return;
                 }
 
                 if (_target == null)
                 {
-                    _patrol.IsWaiting = true;
-                    _initPosition = transform.position;
                     _target = e.Target;
                     _clientId = e.ClientId;
                     _isReturning = false;
+                    _isPatrolling = false;
 
                     _agent.isStopped = false;
                     _agent.SetDestination(_target.transform.position);
@@ -76,15 +78,19 @@ public class MonsterAggro : NetworkBehaviour
         {
             if (_isReturning && !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
             {
-                _agent.isStopped = true;
                 _isReturning = false;
-                _patrol.IsWaiting = false;
+                StartPatrolling();
+            }
+
+            if (_isPatrolling)
+            {
+                HandlePatrolling();
             }
 
             return;
         }
 
-        if (transform.IsFarToTarget(_target))
+        if (IsAgentPathTooLong())
         {
             LoseAggro();
 
@@ -118,7 +124,6 @@ public class MonsterAggro : NetworkBehaviour
         {
             _attackTimer = 0f;
 
-            Debug.Log("Attack player");
             AttackPlayerSubscription.Instance.Invoke(_clientId.Value.ToString(), new PlayerAttackSubscriptionEvent
             {
                 Value = 50,
@@ -129,13 +134,88 @@ public class MonsterAggro : NetworkBehaviour
     private void LoseAggro()
     {
         Debug.Log("Lose aggro");
+
+        // TODO: slow regeneration
+        SetHealthSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new SetHealthSubscriptionEvent
+        {
+            Value = 100
+        });
+
         _attackTimer = 0f;
         _target = null;
         _clientId = null;
 
         _isReturning = true;
-        _patrol.IsWaiting = true;
+        _isPatrolling = false;
         _agent.isStopped = false;
         _agent.SetDestination(_initPosition);
+    }
+
+    private void StartPatrolling()
+    {
+        _isPatrolling = true;
+        _patrolWaitTimer = 0f;
+        _agent.isStopped = false;
+        _currentPatrolPoint = GetRandomPointAround(_initPosition, _patrolRadius);
+        _agent.SetDestination(_currentPatrolPoint);
+    }
+
+    private void HandlePatrolling()
+    {
+        if (_agent.pathPending)
+        {
+            return;
+        }
+
+        if (_agent.remainingDistance <= _agent.stoppingDistance)
+        {
+            _patrolWaitTimer += Time.deltaTime;
+
+            if (_patrolWaitTimer >= _patrolWaitTime)
+            {
+                _patrolWaitTimer = 0f;
+                _currentPatrolPoint = GetRandomPointAround(_initPosition, _patrolRadius);
+                _agent.SetDestination(_currentPatrolPoint);
+            }
+        }
+    }
+
+    private Vector3 GetRandomPointAround(Vector3 center, float radius)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 randomPos = center + Random.insideUnitSphere * radius;
+
+            if (NavMesh.SamplePosition(randomPos, out var hit, 1.0f, NavMesh.AllAreas))
+            {
+                return hit.position;
+            }
+        }
+
+        return center;
+    }
+
+    private bool IsAgentPathTooLong()
+    {
+        var path = new NavMeshPath();
+
+        bool pathCalculated = _agent.CalculatePath(_target.transform.position, path);
+
+        // if no path could be calculated or path is not complete, consider it too long / unreachable
+        if (!pathCalculated || path.status != NavMeshPathStatus.PathComplete)
+        {
+            return true;
+        }
+
+        var length = 0f;
+        var previous = _agent.transform.position;
+
+        for (int i = 0; i < path.corners.Length; i++)
+        {
+            length += Vector3.Distance(previous, path.corners[i]);
+            previous = path.corners[i];
+        }
+
+        return length > _maxChasePathLength;
     }
 }
