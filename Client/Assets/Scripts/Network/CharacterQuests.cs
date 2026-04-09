@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Assets.Scripts.Enums;
@@ -38,12 +39,19 @@ namespace Assets.Scripts.Mono
 
             if (quest.type == QuestTypeEnum.Collect)
             {
-                RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
+                UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
                 {
-                    Item = new InventoryItemDto
+                    Request = new UpdateCharacterInventoryCommand
                     {
-                        type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
-                        count = quest.requirement,
+                        characterId = 1,
+                        remove = new List<InventoryItemDto>
+                        {
+                            new InventoryItemDto
+                            {
+                                type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
+                                count = quest.requirement,
+                            }
+                        }
                     },
                     ClientToken = UserManager.Instance.Token,
                 });

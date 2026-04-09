@@ -1,7 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Transactions;
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ProjectX.Application.Common.Interfaces;
@@ -31,7 +33,7 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<CraftingRecipe> CraftingRecipes => Set<CraftingRecipe>();
 
-    public TransactionScope CreateTransactionScope()
+    public TransactionScope CreateTransactionScope(IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted)
     {
         var options = new TransactionOptions
         {

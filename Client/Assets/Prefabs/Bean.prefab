@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 3696680866453560561}
   - component: {fileID: 6281970205948669045}
   - component: {fileID: 3261350837771284739}
-  - component: {fileID: 5156581894214852486}
   - component: {fileID: 6613491746221372621}
   - component: {fileID: -76553557396054819}
+  - component: {fileID: 2474390662614978819}
   m_Layer: 0
   m_Name: Bean
   m_TagString: Target
@@ -186,22 +186,6 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &5156581894214852486
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7630075145136831269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa9da4a06f8284743adee3884291382f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  _patrolRadius: 5
-  _moveSpeed: 2
-  _pointTolerance: 0.2
 --- !u!114 &6613491746221372621
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,3 +211,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ac049f8b2882474c811bc54aea4945d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!195 &2474390662614978819
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7630075145136831269}
+  m_Enabled: 0
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

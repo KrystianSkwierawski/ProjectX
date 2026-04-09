@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
+using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
@@ -49,6 +51,7 @@ public class Crafting : NetworkBehaviour
         _isCrafting = true;
         _craftingTimer = 0f;
         PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
+        CraftingUI.Instance.CraftButton.interactable = false;
     }
 
     private void CheckCrafting()
@@ -75,6 +78,7 @@ public class Crafting : NetworkBehaviour
         _isCrafting = false;
         _craftingTimer = 0f;
         PlayerUI.Instance.HideCastBar();
+        CraftingUI.Instance.CraftButton.interactable = true;
     }
 
     [ServerRpc]
@@ -94,21 +98,16 @@ public class Crafting : NetworkBehaviour
 
         var key = OwnerClientId.ToString();
 
-        AddInventoryItemSubscription.Instance.Invoke(key, new AddInventoryItemSubscriptionEvent
+        UpdateInventorySubscription.Instance.Invoke(key, new UpdateInventorySubscriptionEvent
         {
-            Item = recipe.reward.item,
+            Request = new UpdateCharacterInventoryCommand
+            {
+                characterId = 1,
+                add = new List<InventoryItemDto> { recipe.reward.item },
+                remove = recipe.requirement.items
+            },
             ClientToken = clientToken,
         });
-
-        // TODO: invoke once?
-        foreach (var requirement in recipe.requirement.items)
-        {
-            RemoveInventoryItemSubscription.Instance.Invoke(OwnerClientId.ToString(), new RemoveInventoryItemSubscriptionEvent
-            {
-                Item = requirement,
-                ClientToken = clientToken,
-            });
-        }
 
         CheckCharacterQuestSubscription.Instance.Invoke(key, new CheckCharacterQuestSubscriptionEvent
         {

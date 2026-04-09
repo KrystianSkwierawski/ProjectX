@@ -13,26 +13,27 @@ namespace Assets.Scripts.Shared
             Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
         }
 
+        public async UniTask UpdateAsync(UpdateCharacterInventoryCommand request, string clientToken)
+        {
+            await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterInventories", request, clientToken);
+        }
+
         public void Add(InventoryItemDto item)
         {
             var slot = Dto.inventory.items
                 .Where(x => x.type == item.type)
                 .FirstOrDefault();
 
-            if (slot == null && Dto.inventory.items.Count >= Dto.count)
-            {
-                // TODO: out of slots
-                return;
-            }
+            // TODO: out of slots?
 
-            if (slot != null)
+            if (slot == null)
             {
-                slot.count += item.count;
+                Dto.inventory.items.Add(item);
 
                 return;
             }
 
-            Dto.inventory.items.Add(item);
+            slot.count += item.count;
         }
 
         public void Remove(InventoryItemDto item)
@@ -41,6 +42,8 @@ namespace Assets.Scripts.Shared
                 .Where(x => x.type == item.type)
                 .Where(x => x.count >= item.count)
                 .First();
+
+            // TODO: multiple stacks?
 
             if (slot.count == item.count)
             {

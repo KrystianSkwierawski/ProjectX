@@ -115,13 +115,13 @@
         "tags": [
           "CharacterInventories"
         ],
-        "operationId": "AddCharacterInventoryItem",
+        "operationId": "UpdateCharacterInventory",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddCharacterInventoryItemCommand"
+                "$ref": "#/components/schemas/UpdateCharacterInventoryCommand"
               }
             }
           },
@@ -791,7 +791,7 @@
           305
         ]
       },
-      "AddCharacterInventoryItemCommand": {
+      "UpdateCharacterInventoryCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -799,8 +799,17 @@
             "type": "integer",
             "format": "int32"
           },
-          "inventoryItem": {
-            "$ref": "#/components/schemas/InventoryItemDto"
+          "add": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
           }
         }
       },
@@ -843,42 +852,42 @@
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fish",
+          "Collect2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
           "Collect2Woods",
-          "Collect2Fish",
+          "Collect2CookedFish",
           "Collect2Sushi"
         ],
         "x-enum-varnames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fish",
+          "Collect2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
           "Collect2Woods",
-          "Collect2Fish",
+          "Collect2CookedFish",
           "Collect2Sushi"
         ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
           "Collect2Cans",
-          "Catch2Fish",
+          "Collect2Fish",
           "Collect2PurpleOres",
           "Collect2WhiteOres",
           "Collect2CopperOres",
           "Collect2BlackOres",
           "Collect2Chamomile",
           "Collect2Woods",
-          "Collect2Fish",
+          "Collect2CookedFish",
           "Collect2Sushi"
         ],
         "x-enum-descriptions": [

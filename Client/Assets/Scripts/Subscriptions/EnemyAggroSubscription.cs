@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace Assets.Scripts.Subscriptions
 {
-    public class MonsterAggroSubscription : AbstractSubscription<MonsterAggroSubscription, MonsterAggroSubscriptionEvent>
+    public class EnemyAggroSubscription : AbstractSubscription<EnemyAggroSubscription, EnemyAggroSubscriptionEvent>
     {
     }
 
-    public class MonsterAggroSubscriptionEvent
+    public class EnemyAggroSubscriptionEvent
     {
         public ulong ClientId { get; set; }
 

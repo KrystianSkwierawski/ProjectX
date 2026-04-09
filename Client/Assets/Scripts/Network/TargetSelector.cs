@@ -326,7 +326,7 @@ namespace Assets.Scripts.Network
         private bool IsValidTarget(Transform selectedTransform)
         {
             return CheckMaxDistance(selectedTransform) &&
-                CheckLineOfSight(selectedTransform) &&
+                //CheckLineOfSight(selectedTransform) &&
                 CheckAngle(selectedTransform);
         }
     }

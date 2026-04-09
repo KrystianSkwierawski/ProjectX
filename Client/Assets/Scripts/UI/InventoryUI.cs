@@ -149,9 +149,13 @@ namespace Assets.Scripts.UI
 
                 slot.Button.onClick.AddListener(() =>
                 {
-                    AddInventoryItemSubscription.Instance.Invoke(clientId.ToString(), new AddInventoryItemSubscriptionEvent
+                    UpdateInventorySubscription.Instance.Invoke(clientId.ToString(), new UpdateInventorySubscriptionEvent
                     {
-                        Item = item,
+                        Request = new UpdateCharacterInventoryCommand
+                        {
+                            characterId = 1,
+                            add = new List<InventoryItemDto> { item },
+                        },
                         ClientToken = clientToken
                     });
 
