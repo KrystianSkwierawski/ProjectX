@@ -63,6 +63,8 @@ public class Enemy : NetworkBehaviour
                     });
                 }
             });
+
+            _agent.enabled = true;
         }
     }
 
@@ -74,6 +76,19 @@ public class Enemy : NetworkBehaviour
 
     private void Update()
     {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        if (!_agent.enabled)
+        {
+            // TODO: update transfrom directly?
+            Debug.Log("NavMeshAgent disabled");
+
+            return;
+        }
+
         if (_target == null)
         {
             if (_isReturning && !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
