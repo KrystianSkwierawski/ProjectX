@@ -1,4 +1,5 @@
 ﻿namespace ProjectX.Domain.Enums;
+
 public enum InventoryItemEnum
 {
     None,
@@ -9,7 +10,7 @@ public enum InventoryItemEnum
 
     #endregion
 
-    #region Food
+    #region Fishing&Cooking
 
     Fish = 200,
     CookedFish = 201,
@@ -18,14 +19,28 @@ public enum InventoryItemEnum
 
     #endregion
 
-    #region Ore
+    #region Mining&Blacksmithing
 
     PurpleOre = 300,
     WhiteOre = 301,
     CopperOre = 302,
     BlackOre = 303,
-    Chamomile = 304,
-    Wood = 305,
+    PurpleBar = 304,
+    WhiteBar = 305,
+    CopperBar = 306,
+    BlackBar = 307,
+
+    #endregion
+
+    #region Lumberjack
+
+    Wood = 400,
+
+    #endregion
+
+    #region Herbalism
+
+    Chamomile = 500,
 
     #endregion
 }
