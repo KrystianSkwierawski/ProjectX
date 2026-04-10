@@ -188,7 +188,7 @@ namespace Assets.Scripts.UI
         {
             foreach (var type in Enum.GetValues(typeof(InventoryItemEnum)).Cast<InventoryItemEnum>())
             {
-                var texture = Resources.Load<Texture>($"Textures/{type}");
+                var texture = Resources.Load<Texture>($"Icons/{type}");
 
                 if (texture != null)
                 {
