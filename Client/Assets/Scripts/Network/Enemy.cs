@@ -105,7 +105,7 @@ public class Enemy : NetworkBehaviour
             return;
         }
 
-        if (IsAgentPathTooLong())
+        if (IsAgentPathTooLong(_target.transform.position) || IsAgentPathTooLong(_initPosition))
         {
             LoseAggro();
 
@@ -210,11 +210,11 @@ public class Enemy : NetworkBehaviour
         return center;
     }
 
-    private bool IsAgentPathTooLong()
+    private bool IsAgentPathTooLong(Vector3 position)
     {
         var path = new NavMeshPath();
 
-        bool pathCalculated = _agent.CalculatePath(_target.transform.position, path);
+        bool pathCalculated = _agent.CalculatePath(position, path);
 
         // if no path could be calculated or path is not complete, consider it too long / unreachable
         if (!pathCalculated || path.status != NavMeshPathStatus.PathComplete)
