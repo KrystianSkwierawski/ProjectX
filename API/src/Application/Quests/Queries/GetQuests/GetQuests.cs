@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.Quests.Queries.GetQuest;
+using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuests;
@@ -49,10 +50,10 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
                     Id = x.Id,
                     PreviousQuestId = x.PreviousQuestId,
                     Type = x.Type,
-                    Title = _translateService.GetByKey(parameters.TitleKey, language),
-                    Description = _translateService.GetByKey(parameters.Description, language),
-                    CompleteDescription = _translateService.GetByKey(parameters.CompleteDescription, language),
-                    StatusText = _translateService.GetByKey(parameters.StatusText, language),
+                    Title = _translateService.GetByKey($"{x.Id}Title", language),
+                    Description = _translateService.GetByKey($"{x.Id}Description", language),
+                    CompleteDescription = _translateService.GetByKey($"{x.Id}CompleteDescription", language),
+                    StatusText = _translateService.GetByKey($"{x.Id}StatusText", language),
                     GameObjectName = x.GameObjectName,
                     Requirement = x.Requirement,
                     Reward = x.Reward

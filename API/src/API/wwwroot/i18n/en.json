@@ -11,10 +11,10 @@
     "Collect2CansCompleteDescription": "ok, u collected 2 cans",
     "Collect2CansStatusText": "Collected {0}/{1} cans",
 
-    "Collec2FishTitle": "Catch 2 fish",
-    "Collec2FishDescription": "Bla bla bla catch 2 fishes, ok?",
-    "Collec2FishCompleteDescription": "ok, u catched 2 fishes",
-    "Collec2FishStatusText": "Catched {0}/{1} fishes",
+    "Collect2FishTitle": "Catch 2 fish",
+    "Collect2FishDescription": "Bla bla bla catch 2 fishes, ok?",
+    "Collect2FishCompleteDescription": "ok, u catched 2 fishes",
+    "Collect2FishStatusText": "Catched {0}/{1} fishes",
 
     "Collect2PurpleOresTitle": "Collect 2 purple ores",
     "Collect2PurpleOresDescription": "Bla bla bla collect 2 purple ores, ok?",

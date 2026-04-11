@@ -12,10 +12,10 @@
     Collect2CansCompleteDescription,
     Collect2CansStatusText,
 
-    Catch2FishTitle,
-    Catch2FishDescription,
-    Catch2FishCompleteDescription,
-    Catch2FishStatusText,
+    Collect2FishTitle,
+    Collect2FishDescription,
+    Collect2FishCompleteDescription,
+    Collect2FishStatusText,
 
     Collect2PurpleOresTitle,
     Collect2PurpleOresDescription,

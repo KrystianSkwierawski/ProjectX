@@ -5,6 +5,7 @@ using ProjectX.Application.Extensions;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Translate;
+
 public class TranslateService : ITranslateService
 {
     private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<TranslateService>();
@@ -16,6 +17,16 @@ public class TranslateService : ITranslateService
     {
         _memoryCache = memoryCache;
         _currentUserService = currentUserService;
+    }
+
+    public string GetByKey(string key, LanguageEnum? language = null)
+    {
+        if (Enum.TryParse<TranslateKeyEnum>(key, out var enumKey))
+        {
+            return GetByKey(enumKey, language);
+        }
+
+        return string.Empty;
     }
 
     public string GetByKey(TranslateKeyEnum key, LanguageEnum? language = null)

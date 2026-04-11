@@ -717,8 +717,12 @@
           "WhiteOre",
           "CopperOre",
           "BlackOre",
-          "Chamomile",
-          "Wood"
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "Wood",
+          "Chamomile"
         ],
         "x-enum-varnames": [
           "None",
@@ -731,8 +735,12 @@
           "WhiteOre",
           "CopperOre",
           "BlackOre",
-          "Chamomile",
-          "Wood"
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "Wood",
+          "Chamomile"
         ],
         "x-enumNames": [
           "None",
@@ -745,10 +753,18 @@
           "WhiteOre",
           "CopperOre",
           "BlackOre",
-          "Chamomile",
-          "Wood"
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "Wood",
+          "Chamomile"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -774,6 +790,10 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -788,7 +808,11 @@
           302,
           303,
           304,
-          305
+          305,
+          306,
+          307,
+          400,
+          500
         ]
       },
       "UpdateCharacterInventoryCommand": {

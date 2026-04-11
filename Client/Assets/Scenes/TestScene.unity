@@ -340,6 +340,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: QuestNpc (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 4897076225033202235, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5241688923522805889, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -34.77
@@ -382,11 +386,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: _questsIds.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[0]'
-      value: 10
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[1]'
