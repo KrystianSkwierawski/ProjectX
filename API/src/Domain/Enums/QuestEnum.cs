@@ -90,7 +90,7 @@ public enum QuestEnum : short
         Requirement = 2,
         Reward = 1000
     )]
-    Collect2CookedFish, // TODO: cook
+    Collect2CookedFish,
 
     [QuestParameters(
         PreviousQuestId = Collect2CookedFish,
@@ -99,7 +99,42 @@ public enum QuestEnum : short
         Requirement = 2,
         Reward = 1000
     )]
-    Collect2Sushi, // TODO: cook
+    Collect2Sushi,
+
+    [QuestParameters(
+        Type = QuestTypeEnum.Collect,
+        GameObjectName = nameof(InventoryItemEnum.PurpleBar),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2PurpleBars,
+
+    [QuestParameters(
+       PreviousQuestId = Collect2PurpleBars,
+       Type = QuestTypeEnum.Collect,
+       GameObjectName = nameof(InventoryItemEnum.WhiteBar),
+       Requirement = 2,
+       Reward = 1000
+    )]
+    Collect2WhiteBars,
+
+    [QuestParameters(
+       PreviousQuestId = Collect2WhiteBars,
+       Type = QuestTypeEnum.Collect,
+       GameObjectName = nameof(InventoryItemEnum.CopperBar),
+       Requirement = 2,
+       Reward = 1000
+    )]
+    Collect2CopperBars,
+
+    [QuestParameters(
+       PreviousQuestId = Collect2CopperBars,
+       Type = QuestTypeEnum.Collect,
+       GameObjectName = nameof(InventoryItemEnum.BlackBar),
+       Requirement = 2,
+       Reward = 1000
+    )]
+    Collect2BlackBars,
 }
 
 public static class QuestEnumExtensions

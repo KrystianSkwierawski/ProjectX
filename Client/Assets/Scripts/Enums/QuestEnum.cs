@@ -13,6 +13,10 @@
         Collect2Chamomiles,
         Collect2Woods,
         Collect2CokedFish,
-        Collect2Sushi
+        Collect2Sushi,
+        Collect2PurpleBars,
+        Collect2WhiteBars,
+        Collect2CopperBars,
+        Collect2BlackBars,
     }
 }

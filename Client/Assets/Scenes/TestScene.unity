@@ -386,15 +386,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: _questsIds.Array.size
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[0]'
-      value: 0
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[1]'
-      value: 11
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: '_questsIds.Array.data[2]'
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: '_questsIds.Array.data[3]'
+      value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
