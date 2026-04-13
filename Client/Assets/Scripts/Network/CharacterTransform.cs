@@ -52,7 +52,7 @@ namespace Assets.Scripts.Network
                 positionY = transform.position.y,
                 positionZ = transform.position.z,
                 rotationY = transform.rotation.y,
-            }, clientToken)
+            }, clientToken, log: false)
             .Forget();
         }
     }

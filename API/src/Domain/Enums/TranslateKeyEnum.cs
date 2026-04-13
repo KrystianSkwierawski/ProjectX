@@ -56,4 +56,24 @@
     Collect2SushiDescription,
     Collect2SushiCompleteDescription,
     Collect2SushiStatusText,
+
+    Collect2PurpleBarsTitle,
+    Collect2PurpleBarsDescription,
+    Collect2PurpleBarsCompleteDescription,
+    Collect2PurpleBarsStatusText,
+
+    Collect2WhiteBarsTitle,
+    Collect2WhiteBarsDescription,
+    Collect2WhiteBarsCompleteDescription,
+    Collect2WhiteBarsStatusText,
+
+    Collect2CopperBarsTitle,
+    Collect2CopperBarsDescription,
+    Collect2CopperBarsCompleteDescription,
+    Collect2CopperBarsStatusText,
+
+    Collect2BlackBarsTitle,
+    Collect2BlackBarsDescription,
+    Collect2BlackBarsCompleteDescription,
+    Collect2BlackBarsStatusText,
 }

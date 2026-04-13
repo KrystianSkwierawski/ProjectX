@@ -616,7 +616,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1731321648279680215, guid: c6d50bedf6df027468d13c727a5e7edd, type: 3}
       propertyPath: m_Name
-      value: CookingStation
+      value: CookingCrafting
       objectReference: {fileID: 0}
     - target: {fileID: 1731321648279680215, guid: c6d50bedf6df027468d13c727a5e7edd, type: 3}
       propertyPath: m_TagString
@@ -776,7 +776,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5199965630465263966, guid: 55b31a52c4ed0c84884b91de92eea078, type: 3}
       propertyPath: m_Name
-      value: BlacksmithingStation
+      value: BlacksmithingCrafting
+      objectReference: {fileID: 0}
+    - target: {fileID: 5199965630465263966, guid: 55b31a52c4ed0c84884b91de92eea078, type: 3}
+      propertyPath: m_TagString
+      value: Crafting
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

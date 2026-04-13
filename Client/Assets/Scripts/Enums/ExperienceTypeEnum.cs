@@ -16,6 +16,6 @@ namespace Assets.Scripts.Enums
 
         Cooking,
 
-        Crafting,
+        Blacksmithing,
     }
 }

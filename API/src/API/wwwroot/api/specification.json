@@ -609,7 +609,7 @@
           "Lumberjack",
           "Herbalism",
           "Cooking",
-          "Crafting"
+          "Blacksmithing"
         ],
         "x-enum-varnames": [
           "None",
@@ -619,7 +619,7 @@
           "Lumberjack",
           "Herbalism",
           "Cooking",
-          "Crafting"
+          "Blacksmithing"
         ],
         "x-enumNames": [
           "None",
@@ -629,7 +629,7 @@
           "Lumberjack",
           "Herbalism",
           "Cooking",
-          "Crafting"
+          "Blacksmithing"
         ],
         "x-enum-descriptions": [
           null,
@@ -884,7 +884,11 @@
           "Collect2Chamomile",
           "Collect2Woods",
           "Collect2CookedFish",
-          "Collect2Sushi"
+          "Collect2Sushi",
+          "Collect2PurpleBars",
+          "Collect2WhiteBars",
+          "Collect2CopperBars",
+          "Collect2BlackBars"
         ],
         "x-enum-varnames": [
           "None",
@@ -898,7 +902,11 @@
           "Collect2Chamomile",
           "Collect2Woods",
           "Collect2CookedFish",
-          "Collect2Sushi"
+          "Collect2Sushi",
+          "Collect2PurpleBars",
+          "Collect2WhiteBars",
+          "Collect2CopperBars",
+          "Collect2BlackBars"
         ],
         "x-enumNames": [
           "None",
@@ -912,9 +920,17 @@
           "Collect2Chamomile",
           "Collect2Woods",
           "Collect2CookedFish",
-          "Collect2Sushi"
+          "Collect2Sushi",
+          "Collect2PurpleBars",
+          "Collect2WhiteBars",
+          "Collect2CopperBars",
+          "Collect2BlackBars"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -940,6 +956,10 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -954,7 +974,11 @@
           8,
           9,
           10,
-          11
+          11,
+          12,
+          13,
+          14,
+          15
         ]
       },
       "CharacterQuestStatusEnum": {
@@ -1190,19 +1214,35 @@
         "x-enum-names": [
           "None",
           "CookedFish",
-          "Sushi"
+          "Sushi",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar"
         ],
         "x-enum-varnames": [
           "None",
           "CookedFish",
-          "Sushi"
+          "Sushi",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar"
         ],
         "x-enumNames": [
           "None",
           "CookedFish",
-          "Sushi"
+          "Sushi",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null
@@ -1210,12 +1250,20 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3,
+          4,
+          5,
+          6
         ]
       },
       "CraftingRecipeRequirementDto": {

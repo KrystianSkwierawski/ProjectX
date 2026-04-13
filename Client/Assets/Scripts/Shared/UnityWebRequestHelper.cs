@@ -11,30 +11,30 @@ namespace Assets.Scripts.Shared
     {
         private static readonly string _baseUrl = "https://localhost:5001/api";
 
-        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string clientToken = "", [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string clientToken = "", bool log = false, [CallerMemberName] string memberName = "")
         {
             using var request = UnityWebRequest.Get($"{_baseUrl}/{endpoint}");
 
-            return await SendWebRequestAsync<T>(request, clientToken, memberName);
+            return await SendWebRequestAsync<T>(request, clientToken, log, memberName);
         }
 
-        public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object obj, string clientToken = null, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object obj, string clientToken = null, bool log = false, [CallerMemberName] string memberName = "")
         {
             var data = JsonUtility.ToJson(obj);
 
             using var request = UnityWebRequest.Post($"{_baseUrl}/{endpoint}", data, "application/json");
 
-            return await SendWebRequestAsync<T>(request, clientToken, memberName);
+            return await SendWebRequestAsync<T>(request, clientToken, log, memberName);
         }
 
-        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string clientToken = null, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string clientToken = null, bool log = false, [CallerMemberName] string memberName = "")
         {
             using var request = UnityWebRequest.Delete($"{_baseUrl}/{endpoint}");
 
-            return await SendWebRequestAsync<T>(request, clientToken, memberName);
+            return await SendWebRequestAsync<T>(request, clientToken, log, memberName);
         }
 
-        private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, string memberName)
+        private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, bool log = false, string memberName = "")
         {
             request.SetRequestHeader("Authorization", $"Bearer {UserManager.Instance.Token}");
 
@@ -45,8 +45,11 @@ namespace Assets.Scripts.Shared
 
             await request.SendWebRequest();
 
-            Debug.Log($"{memberName} result: {request.result}");
-            Debug.Log($"{memberName} text: {request.downloadHandler.text}");
+            if (log)
+            {
+                Debug.Log($"{memberName} result: {request.result}");
+                Debug.Log($"{memberName} text: {request.downloadHandler.text}");
+            }
 
             if (request.result == UnityWebRequest.Result.Success)
             {

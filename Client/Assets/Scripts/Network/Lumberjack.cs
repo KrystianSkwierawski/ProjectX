@@ -86,7 +86,7 @@ public class Lumberjack : NetworkBehaviour
         {
             ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>(), UserManager.Instance.Token);
             StopLumberjack();
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.3f); // // TODO: change sfx
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.1f); // // TODO: change sfx
         }
     }
 

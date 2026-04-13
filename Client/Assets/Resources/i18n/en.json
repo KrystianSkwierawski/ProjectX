@@ -11,17 +11,22 @@
 
   "CanTitle": "Can",
   "CanDescription": "A can is a container that can hold items. It can be used to store and transport various goods.",
+
   "FishTitle": "Fish",
   "FishDescription": "Fish are aquatic animals that live in water. They come in various shapes, sizes, and colors, and are an important part of the ecosystem.",
+
   "CookedFishTitle": "Cooked Fish",
   "CookedFishDescription": "Cooked fish is a delicious and nutritious dish that can",
 
   "PurpleOreTitle": "Purple Ore",
   "PurpleOreDescription": "purple ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
-  "WhiteOreTitle": "White Ores",
+
+  "WhiteOreTitle": "White Ores", 
   "WhiteOreDescription": "white ore is a valuable mineral that can be used in various crafting recipes and is essential for progressing in the game.",
+
   "CopperOreTitle": "Copper Ore",
   "CopperOreDescription": "Copper ore is a valuable mineral used in construction and manufacturing.",
+  
   "BlackOreTitle": "Black Ore",
   "BlackOreDescription": "black ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
 
@@ -30,8 +35,22 @@
 
   "WoodTitle": "Wood",
   "WoodDescription": "Wood is a versatile material that can be used for construction, crafting, and furniture making.",
+
   "RiceTitle": "Rice",
   "RiceDescription": "Rice is a staple food crop that is consumed by billions of people worldwide.",
+
   "SushiTitle": "Sushi",
-  "SushiDescription": "Sushi is a traditional Japanese dish that typically consists of vinegared rice, seafood, and vegetables, often wrapped in seaweed."
+  "SushiDescription": "Sushi is a traditional Japanese dish that typically consists of vinegared rice, seafood, and vegetables, often wrapped in seaweed.",
+
+  "PurpleBarTitle": "Purple Bar",
+  "PurpleBarDescription": "A purple bar is a type of metal bar that is made from purple ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+
+  "WhiteBarTitle": "White Bar",
+  "WhiteBarDescription": "A white bar is a type of metal bar that is made from white ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+
+  "CopperBarTitle": "Copper Bar",
+  "CopperBarDescription": "A copper bar is a type of metal bar that is made from copper ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+  
+  "BlackBarTitle": "Black Bar",
+  "BlackBarDescription": "A black bar is a type of metal bar that is made from black ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game."
 }

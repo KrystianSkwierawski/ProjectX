@@ -16,5 +16,5 @@ public enum ExperienceTypeEnum : byte
 
     Cooking,
 
-    Crafting,
+    Blacksmithing,
 }
