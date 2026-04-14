@@ -52,5 +52,8 @@
   "CopperBarDescription": "A copper bar is a type of metal bar that is made from copper ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
   
   "BlackBarTitle": "Black Bar",
-  "BlackBarDescription": "A black bar is a type of metal bar that is made from black ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game."
+  "BlackBarDescription": "A black bar is a type of metal bar that is made from black ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+
+  "HealthPotionTitle": "Health Potion",
+  "HealthPotionDescription": "A health potion is a consumable item that can be used"
 }

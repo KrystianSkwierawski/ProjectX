@@ -56,5 +56,8 @@
 
         BlackBarTitle,
         BlackBarDescription,
+
+        HealthPotionTitle,
+        HealthPotionDescription,
     }
 }
