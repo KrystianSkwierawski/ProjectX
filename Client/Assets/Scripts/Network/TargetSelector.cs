@@ -20,7 +20,6 @@ namespace Assets.Scripts.Network
         private float _castTime = 1.5f;
         private float _castTimer = 0f;
 
-        private Color _originalBarColor;
         private GameObject _selectedTarget;
         private ObjectPool<GameObject> _fireballPool;
         private GameObject _currentFireball;
@@ -191,7 +190,6 @@ namespace Assets.Scripts.Network
 
         private void StartCasting()
         {
-            _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             SpawnProjectileServerRpc(UserManager.Instance.Token);
         }
 

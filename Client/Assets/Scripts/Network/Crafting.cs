@@ -73,6 +73,7 @@ public class Crafting : NetworkBehaviour
         }
 
         // TODO: interrupt
+        //PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
 
         _craftingTimer += Time.deltaTime;
         PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
