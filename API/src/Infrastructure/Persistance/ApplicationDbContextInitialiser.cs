@@ -133,7 +133,12 @@ public class ApplicationDbContextInitialiser
                             {
                                 Type = InventoryItemEnum.BlackOre,
                                 Count = 2
-                            }
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Chamomile,
+                                Count = 2
+                            },
                         ]
                     }),
                     ModDate = DateTime.Now,

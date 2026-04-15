@@ -76,4 +76,9 @@
     Collect2BlackBarsDescription,
     Collect2BlackBarsCompleteDescription,
     Collect2BlackBarsStatusText,
+
+    Collect2HealthPotionsTitle,
+    Collect2HealthPotionsDescription,
+    Collect2HealthPotionsCompleteDescription,
+    Collect2HealthPotionsStatusText,
 }

@@ -38,9 +38,10 @@ public enum InventoryItemEnum
 
     #endregion
 
-    #region Herbalism
+    #region Herbalism&Alchemy
 
     Chamomile = 500,
+    HealthPotion = 501,
 
     #endregion
 }

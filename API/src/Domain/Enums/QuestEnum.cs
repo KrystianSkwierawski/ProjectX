@@ -135,6 +135,15 @@ public enum QuestEnum : short
        Reward = 1000
     )]
     Collect2BlackBars,
+
+    [QuestParameters(
+        PreviousQuestId = Collect2CopperBars,
+        Type = QuestTypeEnum.Collect,
+        GameObjectName = nameof(InventoryItemEnum.HealthPotion),
+        Requirement = 2,
+        Reward = 1000
+    )]
+    Collect2HealthPotions,
 }
 
 public static class QuestEnumExtensions

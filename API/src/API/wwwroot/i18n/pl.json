@@ -74,5 +74,10 @@
     "Collect2BlackBarsTitle": "Collect 2 black bars",
     "Collect2BlackBarsDescription": "Bla bla bla collect 2 black bars, ok?",
     "Collect2BlackBarsCompleteDescription": "ok, u collected 2 black bars",
-    "Collect2BlackBarsStatusText": "Collected {0}/{1} black bars"
+    "Collect2BlackBarsStatusText": "Collected {0}/{1} black bars",
+
+    "Collect2HealthPotionsTitle": "Collect 2 health potions",
+    "Collect2HealthPotionsDescription": "Bla bla bla collect 2 health potions, ok?",
+    "Collect2HealthPotionsCompleteDescription": "ok, u collected 2 health potions",
+    "Collect2HealthPotionsStatusText": "Collected {0}/{1} health potions"
 }

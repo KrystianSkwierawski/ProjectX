@@ -18,5 +18,6 @@
         Collect2WhiteBars,
         Collect2CopperBars,
         Collect2BlackBars,
+        Collect2HealthPotions,
     }
 }

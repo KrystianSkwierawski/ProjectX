@@ -8,6 +8,7 @@
         PurpleBar,
         WhiteBar,
         CopperBar,
-        BlackBar
+        BlackBar,
+        HealthPotion
     }
 }

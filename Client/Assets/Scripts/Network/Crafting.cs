@@ -53,6 +53,7 @@ public class Crafting : NetworkBehaviour
         {
             CraftingRecipeTypeEnum.Cooking => AudioManager.Instance.AudioClips[AudioTypeEnum.CookingPrepare].length,
             CraftingRecipeTypeEnum.Blacksmithing => AudioManager.Instance.AudioClips[AudioTypeEnum.Blacksmithing].length + 0.5f,
+            CraftingRecipeTypeEnum.Alchemy => AudioManager.Instance.AudioClips[AudioTypeEnum.Alchemy].length,
             _ => 0f
         };
 
@@ -125,6 +126,7 @@ public class Crafting : NetworkBehaviour
         {
             CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
             CraftingRecipeTypeEnum.Blacksmithing => ExperienceTypeEnum.Blacksmithing,
+            CraftingRecipeTypeEnum.Alchemy => ExperienceTypeEnum.Alchemy,
             _ => ExperienceTypeEnum.None,
         };
 
@@ -180,6 +182,7 @@ public class Crafting : NetworkBehaviour
             {
                 "CookingCrafting" => CraftingRecipeTypeEnum.Cooking,
                 "BlacksmithingCrafting" => CraftingRecipeTypeEnum.Blacksmithing,
+                "AlchemyCrafting" => CraftingRecipeTypeEnum.Alchemy,
                 _ => CraftingRecipeTypeEnum.None
             };
 
@@ -214,6 +217,7 @@ public class Crafting : NetworkBehaviour
             {
                 CraftingRecipeTypeEnum.Cooking => AudioTypeEnum.CookingPrepare,
                 CraftingRecipeTypeEnum.Blacksmithing => AudioTypeEnum.Blacksmithing,
+                CraftingRecipeTypeEnum.Alchemy => AudioTypeEnum.Alchemy,
                 _ => AudioTypeEnum.None
             };
 

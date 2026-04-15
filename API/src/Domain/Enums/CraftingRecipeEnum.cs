@@ -47,7 +47,14 @@ public enum CraftingRecipeEnum : short
         Requirement = """{ "Items": [ { "Type": 303, "Count": 1 } ], "Level": 1 }""",
         Reward = """{ "Item": { "Type": 307, "Count": 1 }, "Experience": 1000 }"""
     )]
-    BlackBar
+    BlackBar,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Alchemy,
+        Requirement = """{ "Items": [ { "Type": 500, "Count": 1 } ], "Level": 1 }""",
+        Reward = """{ "Item": { "Type": 501, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    HealthPotion
 }
 
 public static class CraftingRecipeEnumExtensions
