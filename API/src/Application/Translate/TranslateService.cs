@@ -37,7 +37,7 @@ public class TranslateService : ITranslateService
         {
             try
             {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "i18n", $"{language}.json");
+                var path = Path.Combine(AppContext.BaseDirectory, "wwwroot", "i18n", $"{language}.json");
 
                 using var reader = new StreamReader(path);
 
