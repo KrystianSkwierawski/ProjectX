@@ -32,9 +32,9 @@ namespace Assets.Scripts.Network
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (e.Type == ExperienceTypeEnum.Main && result.level > _character.mainLevel)
+                    if (e.Type == ExperienceTypeEnum.Main && result.level > _character.Levels[ExperienceTypeEnum.Main])
                     {
-                        _character.mainLevel = result.level;
+                        _character.Levels[ExperienceTypeEnum.Main] = result.level;
 
                         UpdateLevelClientRpc(result.level, new ClientRpcParams
                         {
@@ -48,14 +48,14 @@ namespace Assets.Scripts.Network
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    _character.health -= _character.health <= 0 ? 0 : e.Value;
+                    _character.Health -= _character.Health <= 0 ? 0 : e.Value;
 
-                    if (_character.health <= 0)
+                    if (_character.Health <= 0)
                     {
-                        _character.health = 0;
+                        _character.Health = 0;
                     }
 
-                    AttackPlayerClientRpc(_character.health, new ClientRpcParams
+                    AttackPlayerClientRpc(_character.Health, new ClientRpcParams
                     {
                         Send = new ClientRpcSendParams
                         {
@@ -71,7 +71,7 @@ namespace Assets.Scripts.Network
         [ClientRpc]
         private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
-            _character.health = health;
+            _character.Health = health;
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 
@@ -83,7 +83,7 @@ namespace Assets.Scripts.Network
                 transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
             }
 
-            PlayerUI.Instance.SetHealth(_character.health);
+            PlayerUI.Instance.SetHealth(_character.Health);
         }
 
         [ServerRpc]
@@ -115,8 +115,8 @@ namespace Assets.Scripts.Network
         [ClientRpc]
         public void UpdateLevelClientRpc(byte level, ClientRpcParams rpcParams = default)
         {
-            _character.mainLevel = level;
-            PlayerUI.Instance.SetLevel(level);
+            _character.Levels[ExperienceTypeEnum.Main] = level;
+            PlayerUI.Instance.SetMainLevel(level);
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
         }
 

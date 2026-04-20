@@ -1141,9 +1141,15 @@
           "name": {
             "type": "string"
           },
-          "mainLevel": {
-            "type": "integer",
-            "format": "byte"
+          "levels": {
+            "type": "object",
+            "x-dictionaryKey": {
+              "$ref": "#/components/schemas/ExperienceTypeEnum"
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "format": "byte"
+            }
           },
           "health": {
             "type": "integer",

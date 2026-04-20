@@ -29,12 +29,15 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
             .OrderByDescending(x => x.ModDate)
             .Select(x => new
             {
+                Id = x.Id,
                 Health = x.Health,
                 Name = x.Name,
-                MainExperience = x.CharacterExperiences
-                    .Where(x => x.Type == ExperienceTypeEnum.Main)
-                    .Select(x => x.Amount)
-                    .Sum(),
+                CharacterExperiences = x.CharacterExperiences
+                    .Select(x => new
+                    {
+                        x.Type,
+                        x.Amount
+                    }).ToList()
             })
             .SingleAsync(cancellationToken);
 
@@ -42,7 +45,13 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
         {
             Name = character.Name,
             Health = character.Health,
-            MainLevel = AddCharacterExperienceCommandHandler.GetLevel(character.MainExperience),
+            Levels = Enum.GetValues<ExperienceTypeEnum>().ToDictionary(
+                type => type,
+                type => AddCharacterExperienceCommandHandler.GetLevel(character.CharacterExperiences
+                    .Where(x => x.Type == type)
+                    .Sum(x => x.Amount)
+                )
+            )
         };
     }
 }

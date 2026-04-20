@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Models;
+﻿using Assets.Scripts.Enums;
+using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
 using TMPro;
 using UnityEngine;
@@ -71,9 +72,9 @@ namespace Assets.Scripts.UI
 
         public void SetPlayer(CharacterDto character)
         {
-            SetName(character.name);
-            SetHealth(character.health);
-            SetLevel(character.mainLevel);
+            SetName(character.Name);
+            SetHealth(character.Health);
+            SetMainLevel(character.Levels[ExperienceTypeEnum.Main]);
         }
 
         public void SetName(string name)
@@ -86,7 +87,7 @@ namespace Assets.Scripts.UI
             PlayerHealthPointsText.text = health.ToString();
         }
 
-        public void SetLevel(int level)
+        public void SetMainLevel(int level)
         {
             PlayerLevelText.text = $"Level: {level}";
         }
