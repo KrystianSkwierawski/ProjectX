@@ -7,9 +7,9 @@ namespace Assets.Scripts.Models
     {
         public int CharacterId { get; set; }
 
-        public InventoryItemDto[] Add { get; set; }
+        public InventoryItemDto[] Add { get; set; } = Array.Empty<InventoryItemDto>();
 
-        public InventoryItemDto[] Remove { get; set; }
+        public InventoryItemDto[] Remove { get; set; } = Array.Empty<InventoryItemDto>();
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {

@@ -1,3 +1,4 @@
+using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Mono;
@@ -7,6 +8,7 @@ using Assets.Scripts.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Assets.Scripts.Network
 {
@@ -32,11 +34,11 @@ namespace Assets.Scripts.Network
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (e.Type == ExperienceTypeEnum.Main && result.Level > _character.Levels[ExperienceTypeEnum.Main])
+                    if (result.Level > _character.Levels[e.Type])
                     {
-                        _character.Levels[ExperienceTypeEnum.Main] = result.Level;
+                        _character.Levels[e.Type] = result.Level;
 
-                        UpdateLevelClientRpc(result.Level, new ClientRpcParams
+                        UpdateLevelClientRpc(e.Type, result.Level, new ClientRpcParams
                         {
                             Send = new ClientRpcSendParams
                             {
@@ -66,6 +68,34 @@ namespace Assets.Scripts.Network
                     // TODO: call api
                 });
             }
+        }
+
+        private void Update()
+        {
+            if (IsOwner && Keyboard.current.cKey.wasPressedThisFrame)
+            {
+                ToggleCharacter();
+            }
+        }
+
+        private void ToggleCharacter()
+        {
+            // TODO: exid recipe, quest etc.
+            if (CharacterUI.Instance.Character.activeSelf)
+            {
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
+
+                CharacterUI.Instance.Character.SetActive(false);
+
+                return;
+            }
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
+
+            // TODO: 18n
+            CharacterUI.Instance.DescriptionText.text = string.Format(CharacterUI.Instance.DescriptionText.text, _character.Levels.Values.Cast<object>().ToArray());
+
+            CharacterUI.Instance.Character.SetActive(true);
         }
 
         [ClientRpc]
@@ -113,11 +143,15 @@ namespace Assets.Scripts.Network
         }
 
         [ClientRpc]
-        public void UpdateLevelClientRpc(byte level, ClientRpcParams rpcParams = default)
+        public void UpdateLevelClientRpc(ExperienceTypeEnum type, byte level, ClientRpcParams rpcParams = default)
         {
-            _character.Levels[ExperienceTypeEnum.Main] = level;
-            PlayerUI.Instance.SetMainLevel(level);
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+            _character.Levels[type] = level;
+
+            if (type == ExperienceTypeEnum.Main)
+            {
+                PlayerUI.Instance.SetMainLevel(level);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+            }
         }
 
         public override void OnNetworkDespawn()

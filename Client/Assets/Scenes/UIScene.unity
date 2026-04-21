@@ -2261,12 +2261,12 @@ GameObject:
   - component: {fileID: 785149835}
   - component: {fileID: 785149834}
   m_Layer: 5
-  m_Name: Quest
+  m_Name: Character
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &785149833
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5688,6 +5688,7 @@ GameObject:
   - component: {fileID: 1524911724}
   - component: {fileID: 1524911728}
   - component: {fileID: 1524911729}
+  - component: {fileID: 1524911730}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -5786,6 +5787,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _inventorySlotPrefab: {fileID: 2896474591842914507, guid: 7e58fd153c4ab6d47ab2a705a8bebd7d, type: 3}
   _textButtonPrefab: {fileID: 7569446746335785453, guid: ce99e67bb3edc0641a9b68d8793ac42a, type: 3}
+--- !u!114 &1524911730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1524911721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fdea478daf0b494480bf5d2a807486a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1540948113
 GameObject:
   m_ObjectHideFlags: 0
@@ -6086,26 +6099,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Character Lv. 1
-
-    Fishing Lv. 1
-
-    Mining Lv. 1
-
-    Lumberjack
-    Lv. 1
-
-    Herbalism Lv. 1
-
-    Cooking Lv. 1
-
-    Blacksmithing Lv. 1
-
-    Alchemy
-    Lv. 1
-
-
-    1F60A /1F60A \1F60A'
+  m_text: "Character Lv. {0} \uF007\r\nFishing Lv. {1} \uF578\r\nMining Lv. {2} \uF379\r\nLumberjack
+    Lv. {3} \uF1BB\r\nHerbalism Lv. {4} \uE2CD\r\nCooking Lv. {5} \uF2E7\r\nBlacksmithing
+    Lv. {6} \uF06D\r\nAlchemy Lv. {7} \uF0C3\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4b46c7763084c204fa7fbc23f2b400d0, type: 2}
   m_sharedMaterial: {fileID: 6846365499850709697, guid: 4b46c7763084c204fa7fbc23f2b400d0, type: 2}
@@ -6124,7 +6120,7 @@ MonoBehaviour:
     bottomLeft: {r: 1, g: 1, b: 1, a: 1}
     bottomRight: {r: 1, g: 1, b: 1, a: 1}
   m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 11400000, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
+  m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
   m_TextStyleHashCode: -1183493901
@@ -6132,8 +6128,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 26
+  m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
