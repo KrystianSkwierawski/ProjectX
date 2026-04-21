@@ -83,12 +83,12 @@ namespace Assets.Scripts.UI
 
         public void UpdateInventory(CharacterInventoryDto dto)
         {
-            _inventorySlots ??= InstantiateInventorySlots(dto.count).ToArray();
+            _inventorySlots ??= InstantiateInventorySlots(dto.Count).ToArray();
 
             for (int i = 0; i < _inventorySlots.Length; i++)
             {
                 var slot = _inventorySlots[i];
-                var item = dto.inventory.items.ElementAtOrDefault(i);
+                var item = dto.Inventory.Items.ElementAtOrDefault(i);
 
                 if (item == null)
                 {
@@ -103,12 +103,12 @@ namespace Assets.Scripts.UI
                 }
 
                 slot.Mesh.gameObject.SetActive(true);
-                slot.Mesh.text = item.count.ToString();
+                slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
-                slot.Image.texture = Textures[item.type];
-                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
-                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
-                slot.Type = item.type;
+                slot.Image.texture = Textures[item.Type];
+                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
+                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+                slot.Type = item.Type;
                 slot.HoverUI.enabled = true;
 
                 var key = slot.GameObject.GetInstanceID().ToString();
@@ -131,21 +131,21 @@ namespace Assets.Scripts.UI
 
             foreach (var item in items)
             {
-                if (_lootPoolObjects.TryGetValue(item.type, out var slot))
+                if (_lootPoolObjects.TryGetValue(item.Type, out var slot))
                 {
-                    slot.Mesh.text = item.count.ToString();
+                    slot.Mesh.text = item.Count.ToString();
 
                     continue;
                 }
 
                 slot = _lootObjectPool.Get();
 
-                slot.Mesh.text = item.count.ToString();
+                slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
-                slot.Image.texture = Textures[item.type];
-                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
-                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
-                slot.Type = item.type;
+                slot.Image.texture = Textures[item.Type];
+                slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
+                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+                slot.Type = item.Type;
 
                 slot.Button.onClick.AddListener(() =>
                 {
@@ -153,14 +153,14 @@ namespace Assets.Scripts.UI
                     {
                         Request = new UpdateCharacterInventoryCommand
                         {
-                            characterId = 1,
-                            add = new List<InventoryItemDto> { item },
+                            CharacterId = 1,
+                            Add = new InventoryItemDto[] { item },
                         },
                         ClientToken = clientToken
                     });
 
                     _lootObjectPool.Release(slot);
-                    _lootPoolObjects.Remove(item.type);
+                    _lootPoolObjects.Remove(item.Type);
 
                     if (_lootPoolObjects.Count == 0)
                     {
@@ -180,7 +180,7 @@ namespace Assets.Scripts.UI
                     slot.Preview.SetActive(false);
                 });
 
-                _lootPoolObjects.Add(item.type, slot);
+                _lootPoolObjects.Add(item.Type, slot);
             }
         }
 

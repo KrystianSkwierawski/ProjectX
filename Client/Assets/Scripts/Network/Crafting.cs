@@ -82,7 +82,7 @@ public class Crafting : NetworkBehaviour
         if (_craftingTimer >= _craftingTime)
         {
             StopCrafting();
-            CraftServerRpc(CraftingUI.Instance.CurrentRecipe.id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
+            CraftServerRpc(CraftingUI.Instance.CurrentRecipe.Id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
         }
     }
 
@@ -105,8 +105,8 @@ public class Crafting : NetworkBehaviour
     {
         var dto = await CraftingRecipeManager.Instance.GetAsync(type);
 
-        var recipe = dto.craftingRecipes
-            .Where(x => x.id == id)
+        var recipe = dto.CraftingRecipes
+            .Where(x => x.Id == id)
             .Single();
 
         var key = OwnerClientId.ToString();
@@ -115,9 +115,9 @@ public class Crafting : NetworkBehaviour
         {
             Request = new UpdateCharacterInventoryCommand
             {
-                characterId = 1,
-                add = new List<InventoryItemDto> { recipe.reward.item },
-                remove = recipe.requirement.items
+                CharacterId = 1,
+                Add = new InventoryItemDto[] { recipe.Reward.Item },
+                Remove = recipe.Requirement.Items
             },
             ClientToken = clientToken,
         });
@@ -134,7 +134,7 @@ public class Crafting : NetworkBehaviour
         {
             AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
             {
-                Amount = recipe.reward.experience,
+                Amount = recipe.Reward.Experience,
                 Type = experienceType,
                 ClientToken = clientToken,
             });

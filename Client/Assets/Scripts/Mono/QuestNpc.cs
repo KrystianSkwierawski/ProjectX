@@ -27,8 +27,8 @@ namespace Assets.Scripts.Mono
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => _questsIds.Contains(x.questId))
-                .Where(x => x.status != CharacterQuestStatusEnum.Completed)
+                .Where(x => _questsIds.Contains(x.QuestId))
+                .Where(x => x.Status != CharacterQuestStatusEnum.Completed)
                 .FirstOrDefault();
 
             SetStatus();
@@ -36,7 +36,7 @@ namespace Assets.Scripts.Mono
             foreach (var questId in _questsIds)
             {
                 var characterQuest = QuestManager.Instance.CharacterQuests
-                    .Where(x => x.questId == questId)
+                    .Where(x => x.QuestId == questId)
                     .SingleOrDefault();
 
                 var key = questId.ToString();
@@ -66,7 +66,7 @@ namespace Assets.Scripts.Mono
 
         private void SetStatus()
         {
-            Action action = CharacterQuest?.status switch
+            Action action = CharacterQuest?.Status switch
             {
                 CharacterQuestStatusEnum.Accepted => LoadAccepted,
                 CharacterQuestStatusEnum.Finished => LoadFinishedQuest,
@@ -79,12 +79,12 @@ namespace Assets.Scripts.Mono
         private void LoadNextQuest()
         {
             var completedQuests = QuestManager.Instance.CharacterQuests
-                .Where(x => x.status == CharacterQuestStatusEnum.Completed);
+                .Where(x => x.Status == CharacterQuestStatusEnum.Completed);
 
-            var filteredIds = _questsIds.Where(x => !completedQuests.Any(cq => cq.questId == x));
+            var filteredIds = _questsIds.Where(x => !completedQuests.Any(cq => cq.QuestId == x));
 
             Quest = QuestManager.Instance.Quests
-                .Where(x => filteredIds.Contains(x.id))
+                .Where(x => filteredIds.Contains(x.Id))
                 .FirstOrDefault();
 
             if (Quest != null)
@@ -96,7 +96,7 @@ namespace Assets.Scripts.Mono
         private void LoadFinishedQuest()
         {
             Quest = QuestManager.Instance.Quests
-                .Where(x => x.id == CharacterQuest.questId)
+                .Where(x => x.Id == CharacterQuest.QuestId)
                 .First();
 
             ShowQuestionMark();
@@ -105,7 +105,7 @@ namespace Assets.Scripts.Mono
         public void CheckNextQuest()
         {
             Quest = QuestManager.Instance.Quests
-                .Where(x => x.previousQuestId == Quest.id)
+                .Where(x => x.PreviousQuestId == Quest.Id)
                 .FirstOrDefault();
 
             if (Quest == null)
@@ -114,7 +114,7 @@ namespace Assets.Scripts.Mono
             }
 
             CharacterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => x.questId == Quest.id)
+                .Where(x => x.QuestId == Quest.Id)
                 .FirstOrDefault();
 
             if (CharacterQuest == null)
@@ -155,7 +155,7 @@ namespace Assets.Scripts.Mono
             MarkAsAccepted();
 
             Quest = QuestManager.Instance.Quests
-                .Where(x => x.id == CharacterQuest.questId)
+                .Where(x => x.Id == CharacterQuest.QuestId)
                 .First();
         }
     }

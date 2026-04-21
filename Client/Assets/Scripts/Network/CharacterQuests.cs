@@ -34,22 +34,22 @@ namespace Assets.Scripts.Mono
         {
             // TODO: validate and get type from complete?
             var quest = QuestManager.Instance.Quests
-                .Where(x => x.id == questId)
+                .Where(x => x.Id == questId)
                 .Single();
 
-            if (quest.type == QuestTypeEnum.Collect)
+            if (quest.Type == QuestTypeEnum.Collect)
             {
                 UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
                 {
                     Request = new UpdateCharacterInventoryCommand
                     {
-                        characterId = 1,
-                        remove = new List<InventoryItemDto>
+                        CharacterId = 1,
+                        Remove = new InventoryItemDto[]
                         {
                             new InventoryItemDto
                             {
-                                type = Enum.Parse<InventoryItemEnum>(quest.gameObjectName),
-                                count = quest.requirement,
+                                Type = Enum.Parse<InventoryItemEnum>(quest.GameObjectName),
+                                Count = quest.Requirement,
                             }
                         }
                     },
@@ -61,7 +61,7 @@ namespace Assets.Scripts.Mono
 
             AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
             {
-                Amount = result.reward,
+                Amount = result.Reward,
                 Type = ExperienceTypeEnum.Main,
                 ClientToken = clientToken,
             });
@@ -80,10 +80,10 @@ namespace Assets.Scripts.Mono
                     QuestUI.Instance.Hide();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
-                        .Where(x => x.questId == _questNpc.Quest.id)
+                        .Where(x => x.QuestId == _questNpc.Quest.Id)
                         .FirstOrDefault();
 
-                    if (characterQuest?.status == CharacterQuestStatusEnum.Finished)
+                    if (characterQuest?.Status == CharacterQuestStatusEnum.Finished)
                     {
                         CompleteQuest(characterQuest);
                     }
@@ -104,21 +104,21 @@ namespace Assets.Scripts.Mono
         {
             // TODO: multiple quests with same gameObjectName
             var quest = QuestManager.Instance.Quests
-                .Where(x => x.gameObjectName == gameObjectName)
+                .Where(x => x.GameObjectName == gameObjectName)
                 .FirstOrDefault();
 
-            if (quest == null || quest.id == QuestEnum.None)
+            if (quest == null || quest.Id == QuestEnum.None)
             {
                 Debug.Log($"Quest not found. GameObjectName: {gameObjectName}");
 
                 return;
             }
 
-            var result = await QuestManager.Instance.CheckProgressAsync(quest.id, progress, 1, clientToken);
+            var result = await QuestManager.Instance.CheckProgressAsync(quest.Id, progress, 1, clientToken);
 
-            if (result.status != CharacterQuestStatusEnum.None)
+            if (result.Status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestClientRpc(result.characterQuestId, progress, result.status, new ClientRpcParams
+                UpdateQuestClientRpc(result.CharacterQuestId, progress, result.Status, new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
@@ -134,17 +134,17 @@ namespace Assets.Scripts.Mono
             Debug.Log($"UpdateQuestLogClientRpc: {characterQuestId}");
 
             var characterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => x.id == characterQuestId)
+                .Where(x => x.Id == characterQuestId)
                 .Single();
 
-            characterQuest.progress += progress;
-            characterQuest.status = status;
+            characterQuest.Progress += progress;
+            characterQuest.Status = status;
 
             QuestUI.Instance.UpdateProgress(characterQuest);
 
             if (status == CharacterQuestStatusEnum.Finished)
             {
-                FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.questId.ToString(), new FinishCharacterQuestSubscriptionEvent());
+                FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.QuestId.ToString(), new FinishCharacterQuestSubscriptionEvent());
             }
         }
 
@@ -152,14 +152,14 @@ namespace Assets.Scripts.Mono
         {
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
 
-            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questNpc.Quest.id);
+            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questNpc.Quest.Id);
 
             QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
             QuestUI.Instance.Accept(characterQuest);
 
             // TODO: server rpc + validation
-            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.id.ToString(), new AddQuestSubscriptionEvent
+            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.Id.ToString(), new AddQuestSubscriptionEvent
             {
                 CharacterQuest = characterQuest
             });
@@ -168,18 +168,18 @@ namespace Assets.Scripts.Mono
         private void CompleteQuest(CharacterQuestDto characterQuest)
         {
             var quest = QuestManager.Instance.Quests
-                .Where(x => x.id == characterQuest.questId)
+                .Where(x => x.Id == characterQuest.QuestId)
                 .Single();
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
 
-            characterQuest.status = CharacterQuestStatusEnum.Completed;
+            characterQuest.Status = CharacterQuestStatusEnum.Completed;
 
             QuestUI.Instance.Complete(characterQuest);
 
-            CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.questId.ToString(), new CompleteQuestSubscriptionEvent());
+            CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.QuestId.ToString(), new CompleteQuestSubscriptionEvent());
 
-            CompleteQuestServerRpc(quest.id, characterQuest.id, UserManager.Instance.Token);
+            CompleteQuestServerRpc(quest.Id, characterQuest.Id, UserManager.Instance.Token);
         }
 
         private void Update()
@@ -231,7 +231,7 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (_questNpc.CharacterQuest?.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Completed)
+            if (_questNpc.CharacterQuest?.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Completed)
             {
                 CursorUI.Instance.ShowDefault();
 

@@ -1,10 +1,7 @@
-﻿using System;
-
-namespace Assets.Scripts.Models
+﻿namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CompleteCharacterQuestCommand
     {
-        public int characterQuestId;
+        public int CharacterQuestId { get; set; }
     }
 }

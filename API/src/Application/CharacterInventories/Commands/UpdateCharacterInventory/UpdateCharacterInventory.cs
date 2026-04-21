@@ -7,7 +7,7 @@ using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
-public record UpdateCharacterInventoryCommand(int CharacterId, IList<InventoryItemDto> Add, IList<InventoryItemDto> Remove) : IRequest;
+public record UpdateCharacterInventoryCommand(int CharacterId, InventoryItemDto[] Add, InventoryItemDto[] Remove) : IRequest;
 
 public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand>
 {

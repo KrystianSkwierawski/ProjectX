@@ -1,21 +1,18 @@
-using System;
 using System.Collections.Generic;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CharacterInventoryDto
     {
-        public int characterId;
+        public int CharacterId { get; set; }
 
-        public InventoryDto inventory;
+        public InventoryDto Inventory { get; set; }
 
-        public short count;
+        public short Count { get; set; }
     }
 
-    [Serializable]
     public class InventoryDto
     {
-        public List<InventoryItemDto> items = new List<InventoryItemDto>(); 
+        public IList<InventoryItemDto> Items { get; set; }
     }
 }

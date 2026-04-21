@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Unity.Netcode;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CharacterDto : INetworkSerializable
     {
         public string Name { get; set; }

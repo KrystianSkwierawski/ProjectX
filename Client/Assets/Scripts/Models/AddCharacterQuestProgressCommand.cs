@@ -1,12 +1,9 @@
-using System;
-
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class AddCharacterQuestProgressCommand
     {
-        public int characterQuestId;
+        public int CharacterQuestId { get; set; }
 
-        public int progress;
+        public int Progress { get; set; }
     }
 }

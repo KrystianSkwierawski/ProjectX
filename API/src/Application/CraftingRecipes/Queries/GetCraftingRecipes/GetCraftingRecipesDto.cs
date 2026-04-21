@@ -2,5 +2,5 @@
 
 public class GetCraftingRecipesDto
 {
-    public IList<CraftingRecipeDto> CraftingRecipes { get; set; }
+    public required CraftingRecipeDto[] CraftingRecipes { get; set; }
 }

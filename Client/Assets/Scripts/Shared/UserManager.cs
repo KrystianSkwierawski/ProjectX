@@ -15,12 +15,12 @@ namespace Assets.Scripts.Shared
         {
             var result = await UnityWebRequestHelper.ExecutePostAsync<LoginApplicationUserDto>("ApplicationUsers", new LoginApplicationUserCommand
             {
-                userName = userName,
-                password = password
+                UserName = userName,
+                Password = password
             });
 
-            Token = result.token;
-            Language = result.language;
+            Token = result.Token;
+            Language = result.Language;
 
             Debug.Log($"Login -> UserName: {userName}, Token: {Token}, Language: {Language}");
         }

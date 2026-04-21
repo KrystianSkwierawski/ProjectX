@@ -1,18 +1,15 @@
-using System;
-
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CharacterTransformDto
     {
-        public int characterId;
+        public int CharacterId { get; set; }
 
-        public float positionX;
+        public float PositionX { get; set; }
 
-        public float positionY;
+        public float PositionY { get; set; }
 
-        public float positionZ;
+        public float PositionZ { get; set; }
 
-        public float rotationY;
+        public float RotationY { get; set; }
     }
 }

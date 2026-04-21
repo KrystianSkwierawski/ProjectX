@@ -27,16 +27,16 @@ namespace Assets.Scripts.Network
                 {
                     var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
-                        characterId = 1,
-                        amount = e.Amount,
+                        CharacterId = 1,
+                        Amount = e.Amount,
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (e.Type == ExperienceTypeEnum.Main && result.level > _character.Levels[ExperienceTypeEnum.Main])
+                    if (e.Type == ExperienceTypeEnum.Main && result.Level > _character.Levels[ExperienceTypeEnum.Main])
                     {
-                        _character.Levels[ExperienceTypeEnum.Main] = result.level;
+                        _character.Levels[ExperienceTypeEnum.Main] = result.Level;
 
-                        UpdateLevelClientRpc(result.level, new ClientRpcParams
+                        UpdateLevelClientRpc(result.Level, new ClientRpcParams
                         {
                             Send = new ClientRpcSendParams
                             {

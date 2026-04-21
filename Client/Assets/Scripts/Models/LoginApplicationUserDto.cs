@@ -1,13 +1,11 @@
-using System;
 using Assets.Scripts.Enums;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class LoginApplicationUserDto
     {
-        public string token;
+        public string Token { get; set; }
 
-        public LanguageEnum language;
+        public LanguageEnum Language { get; set; }
     }
 }

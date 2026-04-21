@@ -96,7 +96,7 @@ namespace Assets.Scripts.UI
             );
 
             foreach (var characterQuest in QuestManager.Instance.CharacterQuests
-                .Where(x => x.status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
+                .Where(x => x.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
             {
                 Accept(characterQuest);
             }
@@ -111,17 +111,17 @@ namespace Assets.Scripts.UI
 
             CraftingUI.Instance.Hide();
             Quest.SetActive(true);
-            QuestTitleText.text = questNpc.Quest.title;
+            QuestTitleText.text = questNpc.Quest.Title;
 
-            if (questNpc.CharacterQuest?.status == CharacterQuestStatusEnum.Finished)
+            if (questNpc.CharacterQuest?.Status == CharacterQuestStatusEnum.Finished)
             {
-                QuestDescriptionText.text = questNpc.Quest.completeDescription;
+                QuestDescriptionText.text = questNpc.Quest.CompleteDescription;
                 QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Complete);
 
                 return;
             }
 
-            QuestDescriptionText.text = questNpc.Quest.description;
+            QuestDescriptionText.text = questNpc.Quest.Description;
             QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Accept);
         }
 
@@ -138,32 +138,32 @@ namespace Assets.Scripts.UI
             }
 
             var quest = QuestManager.Instance.Quests
-                .Where(y => y.id == characterQuest.questId)
+                .Where(y => y.Id == characterQuest.QuestId)
                 .Single();
 
             var questLogObject = _questLogObjectPool.Get();
 
-            questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
+            questLogObject.Mesh.text = string.Format(quest.StatusText, Math.Min(characterQuest.Progress, quest.Requirement), quest.Requirement);
 
-            if (characterQuest.status == CharacterQuestStatusEnum.Finished)
+            if (characterQuest.Status == CharacterQuestStatusEnum.Finished)
             {
                 questLogObject.Mesh.color = ColorUI.Green;
             }
 
-            _questLogObjects.Add(quest.id, questLogObject);
+            _questLogObjects.Add(quest.Id, questLogObject);
         }
 
         public void UpdateProgress(CharacterQuestDto characterQuest)
         {
-            if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
+            if (_questLogObjects.TryGetValue(characterQuest.QuestId, out var questLogObject))
             {
                 var quest = QuestManager.Instance.Quests
-                    .Where(y => y.id == characterQuest.questId)
+                    .Where(y => y.Id == characterQuest.QuestId)
                     .Single();
 
-                questLogObject.Mesh.text = string.Format(quest.statusText, Math.Min(characterQuest.progress, quest.requirement), quest.requirement);
+                questLogObject.Mesh.text = string.Format(quest.StatusText, Math.Min(characterQuest.Progress, quest.Requirement), quest.Requirement);
 
-                if (characterQuest.status == CharacterQuestStatusEnum.Finished)
+                if (characterQuest.Status == CharacterQuestStatusEnum.Finished)
                 {
                     questLogObject.Mesh.color = ColorUI.Green;
                 }
@@ -172,10 +172,10 @@ namespace Assets.Scripts.UI
 
         public void Complete(CharacterQuestDto characterQuest)
         {
-            if (_questLogObjects.TryGetValue(characterQuest.questId, out var questLogObject))
+            if (_questLogObjects.TryGetValue(characterQuest.QuestId, out var questLogObject))
             {
                 _questLogObjectPool.Release(questLogObject);
-                _questLogObjects.Remove(characterQuest.questId);
+                _questLogObjects.Remove(characterQuest.QuestId);
 
                 if (_questLogObjects.Count == 0)
                 {

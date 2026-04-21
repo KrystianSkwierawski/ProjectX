@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.Quests.Queries.GetQuest;
-using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuests;
@@ -58,7 +57,7 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
                     Requirement = x.Requirement,
                     Reward = x.Reward
                 };
-            }).ToList()
+            }).ToArray()
         };
     }
 }

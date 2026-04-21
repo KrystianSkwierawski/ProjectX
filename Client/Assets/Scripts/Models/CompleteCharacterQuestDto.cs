@@ -1,10 +1,7 @@
-﻿using System;
-
-namespace Assets.Scripts.Models
+﻿namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CompleteCharacterQuestDto
     {
-        public int reward;
+        public int Reward { get; set; }
     }
 }

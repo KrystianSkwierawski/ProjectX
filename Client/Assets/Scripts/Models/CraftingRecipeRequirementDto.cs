@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Assets.Scripts.Models
+﻿namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CraftingRecipeRequirementDto
     {
-        public List<InventoryItemDto> items;
+        public InventoryItemDto[] Items { get; set; }
 
-        public int level;
+        public int Level { get; set; }
     }
 }

@@ -1,15 +1,13 @@
-using System;
 using Assets.Scripts.Enums;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class AddCharacterExperienceCommand
     {
-        public int characterId;
+        public int CharacterId { get; set; }
 
-        public int amount;
+        public int Amount { get; set; }
 
-        public ExperienceTypeEnum type;
+        public ExperienceTypeEnum type { get; set; }
     }
 }

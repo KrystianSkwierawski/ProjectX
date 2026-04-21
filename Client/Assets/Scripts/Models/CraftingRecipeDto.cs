@@ -1,15 +1,13 @@
-﻿using System;
-using Assets.Scripts.Enums;
+﻿using Assets.Scripts.Enums;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CraftingRecipeDto
     {
-        public CraftingRecipeEnum id;
+        public CraftingRecipeEnum Id { get; set; }
 
-        public CraftingRecipeRequirementDto requirement;
+        public CraftingRecipeRequirementDto Requirement { get; set; }
 
-        public CraftingRecipeRewardDto reward;
+        public CraftingRecipeRewardDto Reward { get; set; }
     }
 }
