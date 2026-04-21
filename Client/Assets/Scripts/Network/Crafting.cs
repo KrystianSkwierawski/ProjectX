@@ -22,6 +22,8 @@ public class Crafting : NetworkBehaviour
     private bool _isCrafting = false;
     private float _craftingTime = 4f;
     private float _craftingTimer = 0f;
+    private float _sfxTimer;
+    private float _sfxTime;
 
     private void Start()
     {
@@ -39,14 +41,24 @@ public class Crafting : NetworkBehaviour
         if (IsOwner)
         {
             CheckHide();
-            CheckStationClicked();
+            CheckCraftingClicked();
             CheckCrafting();
+            CheckSfx();
         }
     }
 
     private void StartCrafting()
     {
-        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CookingPrepare, 0.5f);
+        _sfxTimer = CraftingUI.Instance.CurrentType switch
+        {
+            CraftingRecipeTypeEnum.Cooking => AudioManager.Instance.AudioClips[AudioTypeEnum.CookingPrepare].length,
+            CraftingRecipeTypeEnum.Blacksmithing => AudioManager.Instance.AudioClips[AudioTypeEnum.Blacksmithing].length + 0.5f,
+            CraftingRecipeTypeEnum.Alchemy => AudioManager.Instance.AudioClips[AudioTypeEnum.Alchemy].length,
+            _ => 0f
+        };
+
+        _sfxTime = _sfxTimer;
+
         _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
         _isCrafting = true;
         _craftingTimer = 0f;
@@ -62,6 +74,7 @@ public class Crafting : NetworkBehaviour
         }
 
         // TODO: interrupt
+        //PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
 
         _craftingTimer += Time.deltaTime;
         PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
@@ -69,7 +82,7 @@ public class Crafting : NetworkBehaviour
         if (_craftingTimer >= _craftingTime)
         {
             StopCrafting();
-            CraftServerRpc(CraftingUI.Instance.CurrentRecipe.id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
+            CraftServerRpc(CraftingUI.Instance.CurrentRecipe.Id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
         }
     }
 
@@ -92,8 +105,8 @@ public class Crafting : NetworkBehaviour
     {
         var dto = await CraftingRecipeManager.Instance.GetAsync(type);
 
-        var recipe = dto.craftingRecipes
-            .Where(x => x.id == id)
+        var recipe = dto.CraftingRecipes
+            .Where(x => x.Id == id)
             .Single();
 
         var key = OwnerClientId.ToString();
@@ -102,23 +115,18 @@ public class Crafting : NetworkBehaviour
         {
             Request = new UpdateCharacterInventoryCommand
             {
-                characterId = 1,
-                add = new List<InventoryItemDto> { recipe.reward.item },
-                remove = recipe.requirement.items
+                CharacterId = 1,
+                Add = new InventoryItemDto[] { recipe.Reward.Item },
+                Remove = recipe.Requirement.Items
             },
-            ClientToken = clientToken,
-        });
-
-        CheckCharacterQuestSubscription.Instance.Invoke(key, new CheckCharacterQuestSubscriptionEvent
-        {
-            Progress = recipe.reward.item.count,
-            GameObjectName = recipe.reward.item.type.ToString(),
             ClientToken = clientToken,
         });
 
         var experienceType = type switch
         {
             CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
+            CraftingRecipeTypeEnum.Blacksmithing => ExperienceTypeEnum.Blacksmithing,
+            CraftingRecipeTypeEnum.Alchemy => ExperienceTypeEnum.Alchemy,
             _ => ExperienceTypeEnum.None,
         };
 
@@ -126,7 +134,7 @@ public class Crafting : NetworkBehaviour
         {
             AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
             {
-                Amount = recipe.reward.experience,
+                Amount = recipe.Reward.Experience,
                 Type = experienceType,
                 ClientToken = clientToken,
             });
@@ -142,7 +150,7 @@ public class Crafting : NetworkBehaviour
         }
     }
 
-    private void CheckStationClicked()
+    private void CheckCraftingClicked()
     {
         var mouse = Mouse.current;
 
@@ -172,7 +180,9 @@ public class Crafting : NetworkBehaviour
 
             var type = hit.transform.gameObject.name switch
             {
-                "CookingStation" => CraftingRecipeTypeEnum.Cooking,
+                "CookingCrafting" => CraftingRecipeTypeEnum.Cooking,
+                "BlacksmithingCrafting" => CraftingRecipeTypeEnum.Blacksmithing,
+                "AlchemyCrafting" => CraftingRecipeTypeEnum.Alchemy,
                 _ => CraftingRecipeTypeEnum.None
             };
 
@@ -190,6 +200,34 @@ public class Crafting : NetworkBehaviour
         var dto = await CraftingRecipeManager.Instance.GetAsync(type);
 
         CraftingUI.Instance.Show(dto, type);
+    }
+
+    private void CheckSfx()
+    {
+        if (!_isCrafting)
+        {
+            return;
+        }
+
+        _sfxTimer += Time.deltaTime;
+
+        if (_sfxTimer >= _sfxTime)
+        {
+            var audioType = CraftingUI.Instance.CurrentType switch
+            {
+                CraftingRecipeTypeEnum.Cooking => AudioTypeEnum.CookingPrepare,
+                CraftingRecipeTypeEnum.Blacksmithing => AudioTypeEnum.Blacksmithing,
+                CraftingRecipeTypeEnum.Alchemy => AudioTypeEnum.Alchemy,
+                _ => AudioTypeEnum.None
+            };
+
+            if (audioType != AudioTypeEnum.None)
+            {
+                AudioManager.Instance.TryPlayOneShot(audioType, 0.5f);
+            }
+
+            _sfxTimer = 0f;
+        }
     }
 
     private void Exit()

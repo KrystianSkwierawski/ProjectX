@@ -88,7 +88,7 @@ public class Mining : NetworkBehaviour
         {
             ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>(), UserManager.Instance.Token);
             StopMining();
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.3f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.1f);
         }
     }
 

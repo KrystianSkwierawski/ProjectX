@@ -68,22 +68,6 @@ public class Herbalism : NetworkBehaviour
         }
     }
 
-    private void CheckSfx()
-    {
-        if (!_isCasting)
-        {
-            return;
-        }
-
-        _sfxTimer += Time.deltaTime;
-
-        if (_sfxTimer >= _sfxTime)
-        {
-            _sfxTimer -= _sfxTime;
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Herbalism, 0.5f);
-        }
-    }
-
     private void CheckInput()
     {
         if (_isCasting)

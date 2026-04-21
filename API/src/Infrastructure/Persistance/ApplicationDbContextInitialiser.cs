@@ -113,7 +113,32 @@ public class ApplicationDbContextInitialiser
                             {
                                 Type = InventoryItemEnum.Fish,
                                 Count = 2
-                            }
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.PurpleOre,
+                                Count = 2
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.WhiteOre,
+                                Count = 2
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.CopperOre,
+                                Count = 2
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.BlackOre,
+                                Count = 2
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Chamomile,
+                                Count = 2
+                            },
                         ]
                     }),
                     ModDate = DateTime.Now,

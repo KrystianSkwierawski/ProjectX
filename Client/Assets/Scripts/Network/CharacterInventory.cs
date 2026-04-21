@@ -197,21 +197,21 @@ namespace Assets.Scripts.Mono
                 if (count > 0)
                 {
                     var loot = _currentLoot
-                        .Where(x => x.type == drop.Type)
+                        .Where(x => x.Type == drop.Type)
                         .FirstOrDefault();
 
                     if (loot == null)
                     {
                         _currentLoot.Add(new InventoryItemDto
                         {
-                            type = drop.Type,
-                            count = count,
+                            Type = drop.Type,
+                            Count = count,
                         });
 
                         continue;
                     }
 
-                    loot.count += count;
+                    loot.Count += count;
                 }
             }
         }
@@ -254,9 +254,9 @@ namespace Assets.Scripts.Mono
 
         private void UpdateInventory(UpdateCharacterInventoryCommand request)
         {
-            if (request.add.Count > 0)
+            if (request.Add.Length > 0)
             {
-                foreach (var item in request.add)
+                foreach (var item in request.Add)
                 {
                     InventoryManager.Instance.Add(item);
                 }
@@ -264,7 +264,7 @@ namespace Assets.Scripts.Mono
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
             }
 
-            foreach (var item in request.remove)
+            foreach (var item in request.Remove)
             {
                 InventoryManager.Instance.Remove(item);
             }
@@ -276,10 +276,10 @@ namespace Assets.Scripts.Mono
         [ServerRpc]
         private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request, string clientToken)
         {
-            var isValid = request.add.All(x =>
+            var isValid = request.Add.All(x =>
             {
                 return _currentLoot
-                    .Where(c => c.type == x.type)
+                    .Where(c => c.Type == x.Type)
                     .Any();
             });
 
@@ -295,12 +295,12 @@ namespace Assets.Scripts.Mono
         {
             await InventoryManager.Instance.UpdateAsync(request, clientToken);
 
-            foreach (var item in request.add)
+            foreach (var item in request.Add)
             {
                 CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
                 {
-                    Progress = item.count,
-                    GameObjectName = item.type.ToString(),
+                    Progress = item.Count,
+                    GameObjectName = item.Type.ToString(),
                     ClientToken = clientToken,
                 });
             }

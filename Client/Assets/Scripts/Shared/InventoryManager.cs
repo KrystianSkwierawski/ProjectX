@@ -20,39 +20,39 @@ namespace Assets.Scripts.Shared
 
         public void Add(InventoryItemDto item)
         {
-            var slot = Dto.inventory.items
-                .Where(x => x.type == item.type)
+            var slot = Dto.Inventory.Items
+                .Where(x => x.Type == item.Type)
                 .FirstOrDefault();
 
             // TODO: out of slots?
 
             if (slot == null)
             {
-                Dto.inventory.items.Add(item);
+                Dto.Inventory.Items.Add(item);
 
                 return;
             }
 
-            slot.count += item.count;
+            slot.Count += item.Count;
         }
 
         public void Remove(InventoryItemDto item)
         {
-            var slot = Dto.inventory.items
-                .Where(x => x.type == item.type)
-                .Where(x => x.count >= item.count)
+            var slot = Dto.Inventory.Items
+                .Where(x => x.Type == item.Type)
+                .Where(x => x.Count >= item.Count)
                 .First();
 
             // TODO: multiple stacks?
 
-            if (slot.count == item.count)
+            if (slot.Count == item.Count)
             {
-                Dto.inventory.items.Remove(slot);
+                Dto.Inventory.Items.Remove(slot);
 
                 return;
             }
 
-            slot.count -= item.count;
+            slot.Count -= item.Count;
         }
     }
 }

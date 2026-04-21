@@ -19,8 +19,8 @@ namespace Assets.Scripts.Network
             {
                 var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterTransformDto>("CharacterTransforms");
 
-                transform.position = new Vector3(result.positionX, result.positionY, result.positionZ);
-                transform.rotation.Set(0, result.rotationY, 0, 0);
+                transform.position = new Vector3(result.PositionX, result.PositionY, result.PositionZ);
+                transform.rotation.Set(0, result.RotationY, 0, 0);
             }
         }
 
@@ -48,11 +48,11 @@ namespace Assets.Scripts.Network
         {
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterTransforms", new CharacterTransformDto
             {
-                positionX = transform.position.x,
-                positionY = transform.position.y,
-                positionZ = transform.position.z,
-                rotationY = transform.rotation.y,
-            }, clientToken)
+                PositionX = transform.position.x,
+                PositionY = transform.position.y,
+                PositionZ = transform.position.z,
+                RotationY = transform.rotation.y,
+            }, clientToken, log: false)
             .Forget();
         }
     }

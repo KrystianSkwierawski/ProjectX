@@ -29,6 +29,8 @@ namespace Assets.Scripts.Enums
         MonsterAttack,
         CookingPrepare,
         CookingComplete,
+        Blacksmithing,
+        Alchemy,
 
         #endregion
 

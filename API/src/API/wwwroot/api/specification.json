@@ -609,7 +609,8 @@
           "Lumberjack",
           "Herbalism",
           "Cooking",
-          "Crafting"
+          "Blacksmithing",
+          "Alchemy"
         ],
         "x-enum-varnames": [
           "None",
@@ -619,7 +620,8 @@
           "Lumberjack",
           "Herbalism",
           "Cooking",
-          "Crafting"
+          "Blacksmithing",
+          "Alchemy"
         ],
         "x-enumNames": [
           "None",
@@ -629,9 +631,11 @@
           "Lumberjack",
           "Herbalism",
           "Cooking",
-          "Crafting"
+          "Blacksmithing",
+          "Alchemy"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -649,6 +653,7 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
@@ -659,7 +664,8 @@
           4,
           5,
           6,
-          7
+          7,
+          8
         ]
       },
       "CharacterInventoryDto": {
@@ -717,8 +723,13 @@
           "WhiteOre",
           "CopperOre",
           "BlackOre",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "Wood",
           "Chamomile",
-          "Wood"
+          "HealthPotion"
         ],
         "x-enum-varnames": [
           "None",
@@ -731,8 +742,13 @@
           "WhiteOre",
           "CopperOre",
           "BlackOre",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "Wood",
           "Chamomile",
-          "Wood"
+          "HealthPotion"
         ],
         "x-enumNames": [
           "None",
@@ -745,10 +761,20 @@
           "WhiteOre",
           "CopperOre",
           "BlackOre",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "Wood",
           "Chamomile",
-          "Wood"
+          "HealthPotion"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -774,6 +800,11 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -788,7 +819,12 @@
           302,
           303,
           304,
-          305
+          305,
+          306,
+          307,
+          400,
+          500,
+          501
         ]
       },
       "UpdateCharacterInventoryCommand": {
@@ -860,7 +896,12 @@
           "Collect2Chamomile",
           "Collect2Woods",
           "Collect2CookedFish",
-          "Collect2Sushi"
+          "Collect2Sushi",
+          "Collect2PurpleBars",
+          "Collect2WhiteBars",
+          "Collect2CopperBars",
+          "Collect2BlackBars",
+          "Collect2HealthPotions"
         ],
         "x-enum-varnames": [
           "None",
@@ -874,7 +915,12 @@
           "Collect2Chamomile",
           "Collect2Woods",
           "Collect2CookedFish",
-          "Collect2Sushi"
+          "Collect2Sushi",
+          "Collect2PurpleBars",
+          "Collect2WhiteBars",
+          "Collect2CopperBars",
+          "Collect2BlackBars",
+          "Collect2HealthPotions"
         ],
         "x-enumNames": [
           "None",
@@ -888,9 +934,19 @@
           "Collect2Chamomile",
           "Collect2Woods",
           "Collect2CookedFish",
-          "Collect2Sushi"
+          "Collect2Sushi",
+          "Collect2PurpleBars",
+          "Collect2WhiteBars",
+          "Collect2CopperBars",
+          "Collect2BlackBars",
+          "Collect2HealthPotions"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -916,6 +972,11 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -930,7 +991,12 @@
           8,
           9,
           10,
-          11
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
         ]
       },
       "CharacterQuestStatusEnum": {
@@ -1075,9 +1141,15 @@
           "name": {
             "type": "string"
           },
-          "mainLevel": {
-            "type": "integer",
-            "format": "byte"
+          "levels": {
+            "type": "object",
+            "x-dictionaryKey": {
+              "$ref": "#/components/schemas/ExperienceTypeEnum"
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "format": "byte"
+            }
           },
           "health": {
             "type": "integer",
@@ -1166,19 +1238,39 @@
         "x-enum-names": [
           "None",
           "CookedFish",
-          "Sushi"
+          "Sushi",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "HealthPotion"
         ],
         "x-enum-varnames": [
           "None",
           "CookedFish",
-          "Sushi"
+          "Sushi",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "HealthPotion"
         ],
         "x-enumNames": [
           "None",
           "CookedFish",
-          "Sushi"
+          "Sushi",
+          "PurpleBar",
+          "WhiteBar",
+          "CopperBar",
+          "BlackBar",
+          "HealthPotion"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null
@@ -1186,12 +1278,22 @@
         "x-enumDescriptions": [
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
         ]
       },
       "CraftingRecipeRequirementDto": {

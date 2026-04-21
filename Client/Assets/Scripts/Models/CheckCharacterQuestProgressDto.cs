@@ -1,15 +1,13 @@
-using System;
 using Assets.Scripts.Enums;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CheckCharacterQuestProgressDto
     {
-        public QuestEnum questId;
+        public QuestEnum QuestId { get; set; }
 
-        public int characterQuestId;
+        public int CharacterQuestId { get; set; }
 
-        public CharacterQuestStatusEnum status;
+        public CharacterQuestStatusEnum Status { get; set; }
     }
 }

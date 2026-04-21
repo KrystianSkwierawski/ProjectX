@@ -1,67 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class UpdateCharacterInventoryCommand : INetworkSerializable
     {
-        public int characterId;
+        public int CharacterId { get; set; }
 
-        public List<InventoryItemDto> add = new List<InventoryItemDto>();
+        public InventoryItemDto[] Add { get; set; }
 
-        public List<InventoryItemDto> remove = new List<InventoryItemDto>();
+        public InventoryItemDto[] Remove { get; set; }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
+            // Serialize CharacterId via a local so we can pass by ref
+            int characterId = CharacterId;
             serializer.SerializeValue(ref characterId);
-
-            // Serialize 'add' list
-            int addCount = add != null ? add.Count : 0;
-            serializer.SerializeValue(ref addCount);
-
             if (serializer.IsReader)
             {
-                add = new List<InventoryItemDto>(addCount);
+                CharacterId = characterId;
             }
 
-            for (int i = 0; i < addCount; i++)
-            {
-                if (serializer.IsReader)
-                {
-                    var element = new InventoryItemDto();
-                    serializer.SerializeValue(ref element);
-                    add.Add(element);
-                }
-                else
-                {
-                    var element = add[i];
-                    serializer.SerializeValue(ref element);
-                }
-            }
-
-            // Serialize 'remove' list
-            int removeCount = remove != null ? remove.Count : 0;
-            serializer.SerializeValue(ref removeCount);
-
+            // Serialize Add array length and elements
+            int addLength = Add?.Length ?? 0;
+            serializer.SerializeValue(ref addLength);
             if (serializer.IsReader)
             {
-                remove = new List<InventoryItemDto>(removeCount);
+                Add = new InventoryItemDto[addLength];
+                for (int i = 0; i < addLength; i++)
+                {
+                    var item = new InventoryItemDto();
+                    item.NetworkSerialize(serializer);
+                    Add[i] = item;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < addLength; i++)
+                {
+                    var item = Add[i];
+                    item.NetworkSerialize(serializer);
+                }
             }
 
-            for (int i = 0; i < removeCount; i++)
+            // Serialize Remove array length and elements
+            int removeLength = Remove?.Length ?? 0;
+            serializer.SerializeValue(ref removeLength);
+            if (serializer.IsReader)
             {
-                if (serializer.IsReader)
+                Remove = new InventoryItemDto[removeLength];
+                for (int i = 0; i < removeLength; i++)
                 {
-                    var element = new InventoryItemDto();
-                    serializer.SerializeValue(ref element);
-                    remove.Add(element);
+                    var item = new InventoryItemDto();
+                    item.NetworkSerialize(serializer);
+                    Remove[i] = item;
                 }
-                else
+            }
+            else
+            {
+                for (int i = 0; i < removeLength; i++)
                 {
-                    var element = remove[i];
-                    serializer.SerializeValue(ref element);
+                    var item = Remove[i];
+                    item.NetworkSerialize(serializer);
                 }
             }
         }

@@ -17,7 +17,7 @@ public class CharacterInventoryDto
 
 public class InventoryDto
 {
-    public IList<InventoryItemDto> Items { get; set; } = [];
+    public required IList<InventoryItemDto> Items { get; set; }
 }
 
 public class InventoryItemDto

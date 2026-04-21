@@ -11,7 +11,7 @@ namespace Assets.Scripts.UI
 
         public void Start()
         {
-            _cursorPointer = Resources.Load<Texture2D>($"Textures/CursorPointer");
+            _cursorPointer = Resources.Load<Texture2D>($"Icons/CursorPointer");
         }
 
         public void ShowPointer([CallerFilePath] string caller = "")

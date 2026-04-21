@@ -12,10 +12,10 @@
     Collect2CansCompleteDescription,
     Collect2CansStatusText,
 
-    Catch2FishTitle,
-    Catch2FishDescription,
-    Catch2FishCompleteDescription,
-    Catch2FishStatusText,
+    Collect2FishTitle,
+    Collect2FishDescription,
+    Collect2FishCompleteDescription,
+    Collect2FishStatusText,
 
     Collect2PurpleOresTitle,
     Collect2PurpleOresDescription,
@@ -56,4 +56,29 @@
     Collect2SushiDescription,
     Collect2SushiCompleteDescription,
     Collect2SushiStatusText,
+
+    Collect2PurpleBarsTitle,
+    Collect2PurpleBarsDescription,
+    Collect2PurpleBarsCompleteDescription,
+    Collect2PurpleBarsStatusText,
+
+    Collect2WhiteBarsTitle,
+    Collect2WhiteBarsDescription,
+    Collect2WhiteBarsCompleteDescription,
+    Collect2WhiteBarsStatusText,
+
+    Collect2CopperBarsTitle,
+    Collect2CopperBarsDescription,
+    Collect2CopperBarsCompleteDescription,
+    Collect2CopperBarsStatusText,
+
+    Collect2BlackBarsTitle,
+    Collect2BlackBarsDescription,
+    Collect2BlackBarsCompleteDescription,
+    Collect2BlackBarsStatusText,
+
+    Collect2HealthPotionsTitle,
+    Collect2HealthPotionsDescription,
+    Collect2HealthPotionsCompleteDescription,
+    Collect2HealthPotionsStatusText,
 }

@@ -66,13 +66,13 @@ namespace Assets.Scripts.UI
 
         public bool HasAllRequirements => HasRequiredItems && HasRequiredLevel;
 
-        public bool HasRequiredItems => CurrentRecipe.requirement.items.All(x =>
+        public bool HasRequiredItems => CurrentRecipe.Requirement.Items.All(x =>
         {
-            var count = InventoryManager.Instance.Dto.inventory.items
-                .Where(i => i.type == x.type)
-                .Sum(i => i.count);
+            var count = InventoryManager.Instance.Dto.Inventory.Items
+                .Where(i => i.Type == x.Type)
+                .Sum(i => i.Count);
 
-            return count >= x.count;
+            return count >= x.Count;
         });
 
         public bool HasRequiredLevel => true; // TODO
@@ -199,13 +199,13 @@ namespace Assets.Scripts.UI
             {
                 if (recipeObject.Value.GameObject.transform.parent == Requirements.transform)
                 {
-                    var count = InventoryManager.Instance.Dto.inventory.items
-                        .Where(x => x.type == recipeObject.Key)
-                        .Sum(x => x.count);
+                    var count = InventoryManager.Instance.Dto.Inventory.Items
+                        .Where(x => x.Type == recipeObject.Key)
+                        .Sum(x => x.Count);
 
-                    var required = CurrentRecipe.requirement.items
-                        .Where(x => x.type == recipeObject.Key)
-                        .Sum(x => x.count);
+                    var required = CurrentRecipe.Requirement.Items
+                        .Where(x => x.Type == recipeObject.Key)
+                        .Sum(x => x.Count);
 
                     recipeObject.Value.Mesh.text = $"{count}/{required}";
                 }
@@ -216,17 +216,17 @@ namespace Assets.Scripts.UI
 
         private void AddRecipes(GetCraftingRecipesDto dto)
         {
-            foreach (var recipe in dto.craftingRecipes)
+            foreach (var recipe in dto.CraftingRecipes)
             {
                 var obj = _recipesObjectPool.Get();
-                obj.Mesh.text = TranslateManager.Instance.GetByKey($"{recipe.reward.item.type}Title");
+                obj.Mesh.text = TranslateManager.Instance.GetByKey($"{recipe.Reward.Item.Type}Title");
 
                 obj.Button.onClick.AddListener(() =>
                 {
                     SetRecipe(recipe);
                 });
 
-                _recipesPoolObjects.Add(recipe.reward.item.type, obj);
+                _recipesPoolObjects.Add(recipe.Reward.Item.Type, obj);
             }
         }
 
@@ -254,7 +254,7 @@ namespace Assets.Scripts.UI
         {
             foreach (var recipeObject in _recipesPoolObjects)
             {
-                recipeObject.Value.Mesh.color = recipeObject.Key == recipe.reward.item.type ? ColorUI.Green : ColorUI.White;
+                recipeObject.Value.Mesh.color = recipeObject.Key == recipe.Reward.Item.Type ? ColorUI.Green : ColorUI.White;
             }
         }
 
@@ -262,15 +262,15 @@ namespace Assets.Scripts.UI
         {
             RewardText.SetActive(true);
 
-            AddInventoryItem(recipe.reward.item, Reward.transform);
+            AddInventoryItem(recipe.Reward.Item, Reward.transform);
         }
 
         private void SetRequirements(CraftingRecipeDto recipe)
         {
             RequirementsText.SetActive(true);
-            RequirementsFlexibleGridLayout.columns = recipe.requirement.items.Count;
+            RequirementsFlexibleGridLayout.columns = recipe.Requirement.Items.Length;
 
-            foreach (var item in recipe.requirement.items)
+            foreach (var item in recipe.Requirement.Items)
             {
                 AddInventoryItem(item, Requirements.transform);
             }
@@ -282,17 +282,17 @@ namespace Assets.Scripts.UI
 
             obj.GameObject.transform.SetParent(parent);
 
-            obj.Image.texture = InventoryUI.Instance.Textures[item.type];
-            obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Title");
-            obj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.type}Description");
+            obj.Image.texture = InventoryUI.Instance.Textures[item.Type];
+            obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
+            obj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
 
-            var count = InventoryManager.Instance.Dto.inventory.items
-                .Where(x => x.type == item.type)
-                .Sum(x => x.count);
+            var count = InventoryManager.Instance.Dto.Inventory.Items
+                .Where(x => x.Type == item.Type)
+                .Sum(x => x.Count);
 
             obj.Mesh.text = parent == Requirements.transform
-                ? $"{count}/{item.count}"
-                : item.count.ToString();
+                ? $"{count}/{item.Count}"
+                : item.Count.ToString();
 
             var key = obj.GameObject.GetInstanceID().ToString();
 
@@ -306,7 +306,7 @@ namespace Assets.Scripts.UI
                 obj.Preview.SetActive(false);
             });
 
-            _recipeObjects.Add(item.type, obj);
+            _recipeObjects.Add(item.Type, obj);
         }
 
         private void ClearRecipes()

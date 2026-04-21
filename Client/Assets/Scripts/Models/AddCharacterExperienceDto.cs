@@ -1,12 +1,9 @@
-using System;
-
 namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class AddCharacterExperienceDto
     {
-        public byte level;
+        public byte Level { get; set; }
 
-        public int experience;
+        public int Experience { get; set; }
     }
 }

@@ -7,8 +7,7 @@ namespace Assets.Scripts.Shared
 {
     public class QuestManager : Singleton<QuestManager>
     {
-        // FIXME: array?
-        public IList<QuestDto> Quests { get; private set; }
+        public QuestDto[] Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
 
@@ -16,21 +15,21 @@ namespace Assets.Scripts.Shared
         {
             var result = await UnityWebRequestHelper.ExecuteGetAsync<GetQuestsDto>("Quests");
 
-            Quests = result.quests;
+            Quests = result.Quests;
         }
 
         public async UniTask LoadAsync(int characterId)
         {
             var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>($"CharacterQuests?CharacterId={characterId}");
 
-            CharacterQuests = result.characterQuests;
+            CharacterQuests = result.CharacterQuests;
         }
 
         public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests/Accept", new AcceptCharacterQuestCommand
             {
-                questId = questId
+                QuestId = questId
             });
         }
 
@@ -38,8 +37,8 @@ namespace Assets.Scripts.Shared
         {
             return await UnityWebRequestHelper.ExecutePostAsync<AddCharacterQuestProgressDto>("CharacterQuests/Progress", new AddCharacterQuestProgressCommand
             {
-                characterQuestId = characterQuestId,
-                progress = progress,
+                CharacterQuestId = characterQuestId,
+                Progress = progress,
             }, clientToken);
         }
 
@@ -47,9 +46,9 @@ namespace Assets.Scripts.Shared
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgressDto>("CharacterQuests/CheckProgress", new CheckCharacterQuestProgressCommand
             {
-                questId = questId,
-                progress = progress,
-                characterId = characterId,
+                QuestId = questId,
+                Progress = progress,
+                CharacterId = characterId,
             }, clientToken);
         }
 
@@ -57,7 +56,7 @@ namespace Assets.Scripts.Shared
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CompleteCharacterQuestDto>("CharacterQuests/Complete", new CompleteCharacterQuestCommand
             {
-                characterQuestId = characterQuestId,
+                CharacterQuestId = characterQuestId,
             }, clientToken);
         }
     }

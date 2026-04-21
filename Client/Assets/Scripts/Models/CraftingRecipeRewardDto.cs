@@ -1,12 +1,9 @@
-﻿using System;
-
-namespace Assets.Scripts.Models
+﻿namespace Assets.Scripts.Models
 {
-    [Serializable]
     public class CraftingRecipeRewardDto
     {
-        public InventoryItemDto item;
+        public InventoryItemDto Item { get; set; }
 
-        public int experience;
+        public int Experience { get; set; }
     }
 }

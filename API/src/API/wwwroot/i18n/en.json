@@ -11,10 +11,10 @@
     "Collect2CansCompleteDescription": "ok, u collected 2 cans",
     "Collect2CansStatusText": "Collected {0}/{1} cans",
 
-    "Collec2FishTitle": "Catch 2 fish",
-    "Collec2FishDescription": "Bla bla bla catch 2 fishes, ok?",
-    "Collec2FishCompleteDescription": "ok, u catched 2 fishes",
-    "Collec2FishStatusText": "Catched {0}/{1} fishes",
+    "Collect2FishTitle": "Catch 2 fish",
+    "Collect2FishDescription": "Bla bla bla catch 2 fishes, ok?",
+    "Collect2FishCompleteDescription": "ok, u catched 2 fishes",
+    "Collect2FishStatusText": "Catched {0}/{1} fishes",
 
     "Collect2PurpleOresTitle": "Collect 2 purple ores",
     "Collect2PurpleOresDescription": "Bla bla bla collect 2 purple ores, ok?",
@@ -54,5 +54,30 @@
     "Collect2SushiTitle": "Collect 2 sushies",
     "Collect2SushiDescription": "Bla bla bla collect 2 sush",
     "Collect2SushiCompleteDescription": "ok, u collected 2 sushies",
-    "Collect2SushiStatusText": "Collected {0}/{1} sushies"
+    "Collect2SushiStatusText": "Collected {0}/{1} sushies",
+
+    "Collect2PurpleBarsTitle": "Collect 2 purple bars",
+    "Collect2PurpleBarsDescription": "Bla bla bla collect 2 purple bars, ok?",
+    "Collect2PurpleBarsCompleteDescription": "ok, u collected 2 purple bars",
+    "Collect2PurpleBarsStatusText": "Collected {0}/{1} purple bars",
+
+    "Collect2WhiteBarsTitle": "Collect 2 white bars",
+    "Collect2WhiteBarsDescription": "Bla bla bla collect 2 white bars, ok?",
+    "Collect2WhiteBarsCompleteDescription": "ok, u collected 2 white bars",
+    "Collect2WhiteBarsStatusText": "Collected {0}/{1} white bars",
+
+    "Collect2CopperBarsTitle": "Collect 2 copper bars",
+    "Collect2CopperBarsDescription": "Bla bla bla collect 2 copper bars, ok?",
+    "Collect2CopperBarsCompleteDescription": "ok, u collected 2 copper bars",
+    "Collect2CopperBarsStatusText": "Collected {0}/{1} copper bars",
+
+    "Collect2BlackBarsTitle": "Collect 2 black bars",
+    "Collect2BlackBarsDescription": "Bla bla bla collect 2 black bars, ok?",
+    "Collect2BlackBarsCompleteDescription": "ok, u collected 2 black bars",
+    "Collect2BlackBarsStatusText": "Collected {0}/{1} black bars",
+
+    "Collect2HealthPotionsTitle": "Collect 2 health potions",
+    "Collect2HealthPotionsDescription": "Bla bla bla collect 2 health potions, ok?",
+    "Collect2HealthPotionsCompleteDescription": "ok, u collected 2 health potions",
+    "Collect2HealthPotionsStatusText": "Collected {0}/{1} health potions"
 }

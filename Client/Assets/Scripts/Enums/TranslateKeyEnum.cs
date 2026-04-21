@@ -2,8 +2,6 @@
 {
     public enum TranslateKeyEnum
     {
-        #region Common
-
         Empty,
 
         Accept,
@@ -14,33 +12,52 @@
         Reward,
         Requirements,
 
-        #endregion
-
-        #region Inventory
-
         CanTitle,
         CanDescription,
+
         FishTitle,
         FishDescription,
+
         CookedFishTitle,
         CookedFishDescription,
+
         PurpleOreTitle,
         PurpleOreDescription,
+
         WhiteOreTitle,
         WhiteOreDescription,
+
         CopperOreTitle,
         CopperOreDescription,
+
         BlackOreTitle,
         BlackOreDescription,
+
         ChamomileTitle,
         ChamomileDescription,
+
         WoodTitle,
         WoodDescription,
+
         RiceTitle,
         RiceDescription,
+
         SushiTitle,
         SushiDescription,
 
-        #endregion
+        PurpleBarTitle,
+        PurpleBarDescription,
+
+        WhiteBarTitle,
+        WhiteBarDescription,
+
+        CopperBarTitle,
+        CopperBarDescription,
+
+        BlackBarTitle,
+        BlackBarDescription,
+
+        HealthPotionTitle,
+        HealthPotionDescription,
     }
 }

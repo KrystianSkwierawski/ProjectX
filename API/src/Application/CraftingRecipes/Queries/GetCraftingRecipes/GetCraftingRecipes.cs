@@ -37,7 +37,7 @@ public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQue
                 Id = x.Id,
                 Requirement = JsonSerializer.Deserialize<CraftingRecipeRequirementDto>(x.Requirement)!,
                 Reward = JsonSerializer.Deserialize<CraftingRecipeRewardDto>(x.Reward)!,
-            }).ToList()
+            }).ToArray()
         };
     }
 }
