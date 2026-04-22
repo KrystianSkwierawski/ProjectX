@@ -92,8 +92,7 @@ namespace Assets.Scripts.Network
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
 
-            // TODO: 18n
-            CharacterUI.Instance.DescriptionText.text = string.Format(CharacterUI.Instance.DescriptionText.text, _character.Levels.Values.Cast<object>().ToArray());
+            CharacterUI.Instance.DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), _character.Levels.Values.Cast<object>().ToArray());
 
             CharacterUI.Instance.Character.SetActive(true);
         }

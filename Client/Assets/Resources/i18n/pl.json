@@ -55,5 +55,8 @@
   "BlackBarDescription": "A black bar is a type of metal bar that is made from black ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
 
   "HealthPotionTitle": "Health Potion",
-  "HealthPotionDescription": "A health potion is a consumable item that can be used"
+  "HealthPotionDescription": "A health potion is a consumable item that can be used",
+
+  "CharacterTitle": "CHARACTER",
+  "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} "
 }
