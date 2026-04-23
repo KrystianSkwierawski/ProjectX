@@ -109,8 +109,10 @@ namespace Assets.Scripts.UI
                 return;
             }
 
+            CharacterUI.Instance.Hide();
             CraftingUI.Instance.Hide();
             Quest.SetActive(true);
+
             QuestTitleText.text = questNpc.Quest.Title;
 
             if (questNpc.CharacterQuest?.Status == CharacterQuestStatusEnum.Finished)
@@ -127,7 +129,10 @@ namespace Assets.Scripts.UI
 
         public void Hide()
         {
-            Quest.SetActive(false);
+            if (Quest.activeSelf)
+            {
+                Quest.SetActive(false);
+            }
         }
 
         public void Accept(CharacterQuestDto characterQuest)

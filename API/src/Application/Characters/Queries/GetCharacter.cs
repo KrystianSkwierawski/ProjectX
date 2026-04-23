@@ -45,9 +45,9 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
         {
             Name = character.Name,
             Health = character.Health,
-            Levels = Enum.GetValues<ExperienceTypeEnum>().ToDictionary(
-                type => type,
-                type => AddCharacterExperienceCommandHandler.GetLevel(character.CharacterExperiences
+            Levels = Enum.GetValues<ExperienceTypeEnum>()
+                .Where(x => x != ExperienceTypeEnum.None)
+                .ToDictionary(type => type, type => AddCharacterExperienceCommandHandler.GetLevel(character.CharacterExperiences
                     .Where(x => x.Type == type)
                     .Sum(x => x.Amount)
                 )

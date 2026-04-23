@@ -59,5 +59,8 @@
 
         HealthPotionTitle,
         HealthPotionDescription,
+
+        CharacterTitle,
+        CharacterDescription,
     }
 }

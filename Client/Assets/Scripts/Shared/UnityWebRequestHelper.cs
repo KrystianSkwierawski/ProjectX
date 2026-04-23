@@ -11,7 +11,7 @@ namespace Assets.Scripts.Shared
 {
     public static class UnityWebRequestHelper
     {
-        private static readonly string _baseUrl = "https://localhost:5001/api";
+        private const string _baseUrl = "https://localhost:5001/api"; // FIXME: config/secret
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
