@@ -160,6 +160,7 @@ namespace Assets.Scripts.UI
             }
 
             QuestUI.Instance.Hide();
+            CharacterUI.Instance.Hide();
             Crafting.SetActive(true);
 
             if (CurrentType == type)
@@ -180,12 +181,10 @@ namespace Assets.Scripts.UI
 
         public void Hide()
         {
-            if (!Crafting.activeSelf)
+            if (Crafting.activeSelf)
             {
-                return;
+                Crafting.SetActive(false);
             }
-
-            Crafting.SetActive(false);
         }
 
         public void UpdateRequirements()

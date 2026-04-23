@@ -94,7 +94,7 @@ namespace Assets.Scripts.Network
 
             CharacterUI.Instance.DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), _character.Levels.Values.Cast<object>().ToArray());
 
-            CharacterUI.Instance.Character.SetActive(true);
+            CharacterUI.Instance.Show();
         }
 
         [ClientRpc]

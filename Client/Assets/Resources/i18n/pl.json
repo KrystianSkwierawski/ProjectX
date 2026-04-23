@@ -57,6 +57,6 @@
   "HealthPotionTitle": "Health Potion",
   "HealthPotionDescription": "A health potion is a consumable item that can be used",
 
-  "CharacterTitle": "CHARACTER",
+  "CharacterTitle": "Character",
   "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} "
 }

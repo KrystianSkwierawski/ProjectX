@@ -25,5 +25,25 @@ namespace Assets.Scripts.UI
             Description = Character.transform.Find("Description").gameObject;
             DescriptionText = Description.GetComponent<TextMeshProUGUI>();
         }
+
+        public void Show()
+        {
+            if (Character.activeSelf)
+            {
+                return;
+            }
+
+            CraftingUI.Instance.Hide();
+            QuestUI.Instance.Hide();
+            Character.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            if (Character.activeSelf)
+            {
+                Character.SetActive(false);
+            }
+        }
     }
 }
