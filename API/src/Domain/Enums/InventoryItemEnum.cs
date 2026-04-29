@@ -7,6 +7,7 @@ public enum InventoryItemEnum
     #region Common
 
     Can = 100,
+    Currency = 101,
 
     #endregion
 

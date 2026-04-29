@@ -62,5 +62,8 @@
 
         CharacterTitle,
         CharacterDescription,
+
+        CurrencyTitle,
+        CurrencyDescription,
     }
 }

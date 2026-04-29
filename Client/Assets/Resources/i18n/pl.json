@@ -58,5 +58,8 @@
   "HealthPotionDescription": "A health potion is a consumable item that can be used",
 
   "CharacterTitle": "Character",
-  "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} "
+  "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} ",
+
+  "CurrencyTitle": "Currency",
+  "CurrencyDescription": "Currency is a medium of exchange that is used to facilitate transactions. It can be in the form of coins, banknotes, or digital currency, and is typically issued by a government or central authority."
 }
