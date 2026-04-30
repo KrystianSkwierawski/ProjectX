@@ -218,7 +218,7 @@ namespace Assets.Scripts.Mono
 
         private void Update()
         {
-            if (IsOwner && Keyboard.current.tabKey.wasPressedThisFrame)
+            if (IsOwner && Keyboard.current.bKey.wasPressedThisFrame)
             {
                 ToggleInventory();
             }
