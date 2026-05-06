@@ -188,14 +188,11 @@ namespace Assets.Scripts.UI
         {
             foreach (var type in Enum.GetValues(typeof(InventoryItemEnum)).Cast<InventoryItemEnum>())
             {
-                var texture = Resources.Load<Texture>($"Icons/{type}");
+                var texture = Resources.Load<Texture>($"Icons/{type}") ?? Resources.Load<Texture>($"Icons/{InventoryItemEnum.None}");
 
-                if (texture != null)
-                {
-                    Debug.Log($"UIManager -> Add texture. Type: {type}");
+                Debug.Log($"UIManager -> Add texture. Type: {type}");
 
-                    Textures.Add(type, texture);
-                }
+                Textures.Add(type, texture);
             }
         }
 
