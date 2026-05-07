@@ -54,9 +54,9 @@ public class ApplicationDbContextInitialiser
         await CreateRoleAsync(Roles.Client);
 
         await CreateUserAsync("server1@localhost", "Server1!", Roles.Server, LanguageEnum.en);
-        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server, LanguageEnum.en);
+        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server, LanguageEnum.pl);
         await CreateUserAsync("user1@localhost", "User1!", Roles.Client, LanguageEnum.en);
-        await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.en);
+        await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.pl);
 
         Log.Information("{0} -> Stop", nameof(InitialiseAsync));
     }

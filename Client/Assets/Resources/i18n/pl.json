@@ -1,65 +1,65 @@
 {
   "Empty": "",
 
-  "Accept": "Accept",
-  "Cancel": "Cancel",
-  "Complete": "Complete",
-  "Exit": "Exit",
-  "Craft": "Craft",
-  "Reward": "Reward:",
-  "Requirements": "Requirements:",
+  "Accept": "Akceptuj",
+  "Cancel": "Anuluj",
+  "Complete": "Ukończ",
+  "Exit": "Wyjdź",
+  "Craft": "Wytwórz",
+  "Reward": "Nagroda:",
+  "Requirements": "Wymagania:",
 
-  "CanTitle": "Can",
-  "CanDescription": "A can is a container that can hold items. It can be used to store and transport various goods.",
+  "CanTitle": "Puszka",
+  "CanDescription": "Wgnieciona puszka z zaułków Strefy 05, zimna w dotyku i pachnąca lekko deszczówką, olejem maszynowym oraz wczorajszą fasolką. Ktoś wydrapał na dnie maleńką mapę, choć prowadzi chyba ze spiżarni do spiżarni przez trzy niemożliwe korytarze. Jest pusta, prawdopodobnie, ale grzechocze, gdy nikt nie patrzy.",
 
-  "FishTitle": "Fish",
-  "FishDescription": "Fish are aquatic animals that live in water. They come in various shapes, sizes, and colors, and are an important part of the ecosystem.",
+  "FishTitle": "Ryba",
+  "FishDescription": "Ryba ze zbiornika lśni srebrno-niebiesko w złym świetle i pachnie zimnym kamieniem, rzecznym zielskiem oraz głębokimi filtrami pod Strefą 05. Jej łuski drgają długo po złowieniu, jakby odtwarzały prywatną kłótnię z nurtem. Miejscowi kucharze przysięgają, że najlepsze smakują czysto i jasno, jeśli zignorować ich rozczarowane spojrzenie.",
 
-  "CookedFishTitle": "Cooked Fish",
-  "CookedFishDescription": "Cooked fish is a delicious and nutritious dish that can",
+  "CookedFishTitle": "Pieczona Ryba",
+  "CookedFishDescription": "Przypieczona na brzegach i parująca spod solnej glazury ryba niesie przytulny zapach dymu, masła i kogoś, kto na chwilę wygrał z głodem. Skórka trzeszczy pod palcem, a mięso rozpada się miękko i biało. Posterunki wartownicze wymieniają przysługi za takie posiłki, zwłaszcza nocą, gdy mgła uprzejmie puka w okna.",
 
-  "PurpleOreTitle": "Purple Ore",
-  "PurpleOreDescription": "purple ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
+  "PurpleOreTitle": "Fioletowa Ruda",
+  "PurpleOreDescription": "Fioletowa ruda wygląda jak kawałek wieczornego nieba, które odmówiło zachodu. W dłoni migocze fioletem, raz ciepła, raz chłodna, i zostawia na rękawicach pieprzny metaliczny zapach. Górnicy ze Strefy 05 twierdzą, że staje się głośniejsza przy sekretach, dlatego ciche bryły są droższe i mniej godne zaufania.",
 
-  "WhiteOreTitle": "White Ores", 
-  "WhiteOreDescription": "white ore is a valuable mineral that can be used in various crafting recipes and is essential for progressing in the game.",
+  "WhiteOreTitle": "Biała Ruda", 
+  "WhiteOreDescription": "Biała ruda jest kredowo blada, księżycowo chłodna i dziwnie czysta bez względu na pył kopalni. Potrzyj ją kciukiem, a zapiszczy jak świeży śnieg pod butem. Biuro Pomiarowe upiera się, że jest całkiem naturalna, po czym zamyka każdą próbkę w szufladach opisanych części latarni, anomalie pogodowe i nie omawiać przy lustrach.",
 
-  "CopperOreTitle": "Copper Ore",
-  "CopperOreDescription": "Copper ore is a valuable mineral used in construction and manufacturing.",
+  "CopperOreTitle": "Miedziana Ruda",
+  "CopperOreDescription": "Surowa bryła miedzianej rudy, poprzecinana zielenią i pomarańczem jak stary dach po deszczu. Po rozłupaniu pachnie ostro i elektrycznie, jak uczciwy materiał, który chce zostać drutem, zawiasem, czajnikiem albo kłopotem z uchwytem. Mechanicy ze Strefy 05 nazywają ją śniadaniem dla maszyn, zwykle pijąc kawę mocną jak mikstura.",
   
-  "BlackOreTitle": "Black Ore",
-  "BlackOreDescription": "black ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
+  "BlackOreTitle": "Czarna Ruda",
+  "BlackOreDescription": "Czarna ruda nie tyle lśni, ile uprzejmie odmawia oświetlenia. Jej powierzchnia jest gładka, ciężka i lekko oleista, choć palce zostają suche. Przyłóż ją do ucha, a możesz usłyszeć odległe kapanie, stare zamki albo własne imię wypowiedziane przez kogoś o nienagannych manierach. Kowale ją cenią; lampy nie.",
 
-  "ChamomileTitle": "Chamomile",
-  "ChamomileDescription": "Chamomile is a herb that is commonly used for its calming properties and is often used in teas and medicinal preparations.",
+  "ChamomileTitle": "Rumianek",
+  "ChamomileDescription": "Mały kwiat rumianku z żółtym sercem, białymi płatkami i ciepłym zapachem miodowej herbaty po fatalnym dniu. Rośnie uparcie na wietrznych parcelach za Strefą 05, tam gdzie mapy twierdzą, że nic nie powinno rosnąć. Uzdrowiciele suszą go do uspokajających naparów, a wyczerpani strażnicy wkładają do hełmów i udają, że to szkolenie medyczne.",
 
-  "WoodTitle": "Wood",
-  "WoodDescription": "Wood is a versatile material that can be used for construction, crafting, and furniture making.",
+  "WoodTitle": "Drewno",
+  "WoodDescription": "Solidny kawał drewna wycięty z rzadkiego lasu na wschód od perymetru, wciąż lepki od żywicy i zielony w środku. Pachnie żywicą, mokrą korą i odległą burzą. Stuknij, a odpowie pewnie, tak jak lubią cieśle i szanują płoty. Jeden sęk wygląda jak oko, ale dzisiaj jeszcze nie mrugnął.",
 
-  "RiceTitle": "Rice",
-  "RiceDescription": "Rice is a staple food crop that is consumed by billions of people worldwide.",
+  "RiceTitle": "Ryż",
+  "RiceDescription": "Woreczek polerowanego ryżu, jasnego jak małe księżyce i tak suchego, że szepcze przy przesypywaniu. Załogi zaopatrzenia pilnują worków jak skarbów, bo ryż zmienia cienką zupę w kolację, a kolację w morale. Ziarna niosą delikatny trawiasty zapach z hydroponicznych tarasów, gdzie rolnicy kłócą się z lampami, pompami i jedną bardzo osądzającą miarką.",
 
   "SushiTitle": "Sushi",
-  "SushiDescription": "Sushi is a traditional Japanese dish that typically consists of vinegared rice, seafood, and vegetables, often wrapped in seaweed.",
+  "SushiDescription": "Zgrabna rolka octowanego ryżu, ryby i wodorostu, chłodna pod palcami i jasna od soli, sezamu oraz pewnej ręki noża. Wygląda zbyt elegancko jak na miejsce, gdzie większość posiłków przychodzi w wgniecionych puszkach. Archiwista Pell twierdzi, że sushi poprawia koncentrację; kucharze twierdzą, że po prostu lubi przekąski, dzięki którym papierkowa robota wygląda ceremonialnie.",
 
-  "PurpleBarTitle": "Purple Bar",
-  "PurpleBarDescription": "A purple bar is a type of metal bar that is made from purple ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+  "PurpleBarTitle": "Fioletowa Sztaba",
+  "PurpleBarDescription": "Ta fioletowa sztaba została wytopiona z rudy barwy zmierzchu, aż osiadła w gładki odlew z miękkim wewnętrznym blaskiem. Po stuknięciu dzwoni nisko i trochę zawstydzenie, a pachnie gorącym kamieniem oraz ozonem. Rzemieślnicy używają jej do urządzeń, które muszą wytrwać, gdy rzeczywistość ma inne plany, co zdarza się częściej, niż przyznają instrukcje.",
 
-  "WhiteBarTitle": "White Bar",
-  "WhiteBarDescription": "A white bar is a type of metal bar that is made from white ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+  "WhiteBarTitle": "Biała Sztaba",
+  "WhiteBarDescription": "Biała sztaba leży w dłoni chłodna i jasna, wypolerowana do czystego połysku, który prawie nie rzuca cienia. Wykuta z bladej rudy, ceniona jest w ramach latarni, precyzyjnych narzędziach i wszystkim, co ma zachowywać spokój w głębokich tunelach. Pachnie śniegiem na metalu, co imponuje, bo nikt nie widział tu śniegu od lat.",
 
-  "CopperBarTitle": "Copper Bar",
-  "CopperBarDescription": "A copper bar is a type of metal bar that is made from copper ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+  "CopperBarTitle": "Miedziana Sztaba",
+  "CopperBarDescription": "Miedziana sztaba o zachodnim połysku i cieple wystarczającym, by po wyjściu z kuźni wydawała się żywa. Niesie uczciwy zapach monet, gorącego kurzu i pracujących maszyn. Inżynierowie ją kochają, bo miedź słucha, kiedy prąd mówi. Kupcy też ją kochają, bo inżynierowie panikują bardzo dochodowo, gdy jej zabraknie.",
   
-  "BlackBarTitle": "Black Bar",
-  "BlackBarDescription": "A black bar is a type of metal bar that is made from black ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
+  "BlackBarTitle": "Czarna Sztaba",
+  "BlackBarDescription": "Czarna sztaba, ciężka jak złe wieści i wypolerowana tak, że nie odbija niczego. Krawędzie ma ostre, powierzchnię nieprzyjemnie gładką, a powietrze wokół niej wydaje się cichsze, niż powinno. Płatnerze odkładają takie sztaby na zamki, tarcze i kontrakty podpisywane w pokojach bez okien. Jest cenna, owszem, ale zapieczętowane ostrzeżenia też bywają cenne.",
 
-  "HealthPotionTitle": "Health Potion",
-  "HealthPotionDescription": "A health potion is a consumable item that can be used",
+  "HealthPotionTitle": "Mikstura Zdrowia",
+  "HealthPotionDescription": "Czerwona mikstura zdrowia zamknięta w grubym szkle, ciepła przy szyjce i chłodna u podstawy, jakby nie mogła zdecydować się na temperaturę. Pachnie miętą, żelazem, cukrem i lekkomyślną pewnością siebie. Potrząśnij nią, a musowanie zabrzmi jak maleńkie oklaski. Wypij po zranieniu, przed paniką albo w krótkiej przerwie edukacyjnej między jednym a drugim.",
 
   "CharacterTitle": "Character",
   "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} ",
 
-  "CurrencyTitle": "Currency",
-  "CurrencyDescription": "Currency is a medium of exchange that is used to facilitate transactions. It can be in the form of coins, banknotes, or digital currency, and is typically issued by a government or central authority."
+  "CurrencyTitle": "Waluta",
+  "CurrencyDescription": "Bita waluta ze Strefy 05, starta przez kieszenie, stragany i spory o to, czy dodatek za zagrożenie obejmuje zagrożenia emocjonalne. Każda moneta pachnie lekko mosiądzem i starymi dłońmi, a na rancie ma nacięcie, by kupcy mogli liczyć ją dotykiem podczas awarii prądu. Kupisz za nią narzędzia, posiłki, przysługi i czasem milczenie."
 }
