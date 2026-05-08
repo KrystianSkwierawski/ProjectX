@@ -20,6 +20,7 @@ namespace Assets.Scripts.Network
         {
             if (IsOwner)
             {
+                UserManager.Instance.OwnerClientId = OwnerClientId;
                 SetCharacterServerRpc(UserManager.Instance.Token);
             }
 
