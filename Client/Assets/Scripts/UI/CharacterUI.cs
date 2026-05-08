@@ -33,8 +33,10 @@ namespace Assets.Scripts.UI
                 return;
             }
 
+            // FIXME: array
             CraftingUI.Instance.Hide();
             QuestUI.Instance.Hide();
+            MerchantUI.Instance.Hide();
             Character.SetActive(true);
         }
 

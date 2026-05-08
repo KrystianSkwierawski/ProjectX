@@ -6250,12 +6250,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1562293976}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb097141f8b3c224999031c812f6590e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _key: 40
+  _key: 45
 --- !u!114 &1562293979
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6276,7 +6276,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: MERCHANT
+  m_text: Merchant
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6de9b13f52a23714f93d7027d02d8c6d, type: 2}
   m_sharedMaterial: {fileID: 3009210527161008930, guid: 6de9b13f52a23714f93d7027d02d8c6d, type: 2}

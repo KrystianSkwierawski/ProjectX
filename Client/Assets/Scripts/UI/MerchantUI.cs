@@ -86,6 +86,7 @@ namespace Assets.Scripts.UI
                 return;
             }
 
+            // FIXME: array
             QuestUI.Instance.Hide();
             CharacterUI.Instance.Hide();
             CraftingUI.Instance.Hide();
@@ -122,6 +123,7 @@ namespace Assets.Scripts.UI
 
                 itemObj.Button.onClick.AddListener(() =>
                 {
+                    // TODO: server rpc validation
                     if (InventoryManager.Instance.Currency < offer.price)
                     {
                         Debug.Log("Not enough currency");
