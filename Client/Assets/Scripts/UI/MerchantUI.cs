@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Assets.Scripts.Shared;
@@ -68,9 +69,11 @@ namespace Assets.Scripts.UI
                 },
                 actionOnRelease: (ItemPoolObject obj) =>
                 {
+                    obj.Item = null;
                     obj.GameObject.SetActive(false);
                     obj.Mesh.gameObject.SetActive(false);
                     obj.Mesh.text = string.Empty;
+                    obj.Mesh.color = ColorUI.White;
                     obj.Image.color = ColorUI.Black;
                     obj.Image.texture = null;
                     obj.HoverUI.enabled = false;
@@ -108,17 +111,32 @@ namespace Assets.Scripts.UI
 
         public void AddOffers(MerchantOffer[] offers)
         {
+            var currency = InventoryManager.Instance.Currency;
+
             foreach (var offer in offers)
             {
                 var itemObj = _itemPool.Get();
                 var currencyObj = _itemPool.Get();
+
+                itemObj.Item = new InventoryItemDto
+                {
+                    Type = offer.type,
+                    Count = offer.quantity
+                };
 
                 itemObj.Mesh.text = offer.quantity.ToString();
                 itemObj.Image.texture = InventoryUI.Instance.Textures[offer.type];
                 itemObj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{offer.type}Title");
                 itemObj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{offer.type}Description");
 
+                currencyObj.Item = new InventoryItemDto
+                {
+                    Type = InventoryItemEnum.Currency,
+                    Count = offer.price
+                };
+
                 currencyObj.Mesh.text = offer.price > 1000 ? $"~{offer.price / 1000}k" : offer.price.ToString();
+                currencyObj.Mesh.color = currency < offer.price ? ColorUI.Red : ColorUI.White;
                 currencyObj.Image.texture = InventoryUI.Instance.Textures[InventoryItemEnum.Currency];
 
                 itemObj.Button.onClick.AddListener(() =>
@@ -135,25 +153,13 @@ namespace Assets.Scripts.UI
                     {
                         Request = new UpdateCharacterInventoryCommand
                         {
-                            Add = new InventoryItemDto[]
-                            {
-                                new InventoryItemDto
-                                {
-                                    Type = offer.type,
-                                    Count = offer.quantity,
-                                }
-                            },
-                            Remove = new InventoryItemDto[]
-                            {
-                                new InventoryItemDto
-                                {
-                                    Type = InventoryItemEnum.Currency,
-                                    Count = offer.price,
-                                }
-                            }
+                            Add = new InventoryItemDto[] { itemObj.Item },
+                            Remove = new InventoryItemDto[] { currencyObj.Item }
                         },
                         ClientToken = UserManager.Instance.Token
                     });
+
+                    UpdatePriceValidation();
                 });
 
                 var key = itemObj.GameObject.GetInstanceID().ToString();
@@ -170,6 +176,16 @@ namespace Assets.Scripts.UI
 
                 _itemObjects.Add(itemObj);
                 _itemObjects.Add(currencyObj);
+            }
+        }
+
+        private void UpdatePriceValidation()
+        {
+            var currency = InventoryManager.Instance.Currency;
+
+            foreach (var itemObject in _itemObjects.Where(x => x.Item.Type == InventoryItemEnum.Currency))
+            {
+                itemObject.Mesh.color = currency < itemObject.Item.Count ? ColorUI.Red : ColorUI.White;
             }
         }
 
@@ -198,6 +214,8 @@ namespace Assets.Scripts.UI
             public TextMeshProUGUI PreviewTitleMesh { get; set; }
 
             public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
+
+            public InventoryItemDto Item { get; set; }
         }
     }
 }
