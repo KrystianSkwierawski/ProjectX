@@ -138,6 +138,7 @@ namespace Assets.Scripts.Mono
 
                 InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
+                // TODO: only server rpc?
                 UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
                     UpdateInventory(e.Request);
@@ -269,8 +270,10 @@ namespace Assets.Scripts.Mono
                 InventoryManager.Instance.Remove(item);
             }
 
+            // TODO: UpdatedInventorySubscription?
             InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
             CraftingUI.Instance.UpdateRequirements();
+            MerchantUI.Instance.UpdatePriceValidation();
         }
 
         [ServerRpc]
@@ -280,8 +283,11 @@ namespace Assets.Scripts.Mono
             {
                 return _currentLoot
                     .Where(c => c.Type == x.Type)
+                    // TODO: count?
                     .Any();
             });
+
+            Debug.Log($"UpdateInventoryServerRpc -> IsValid: {isValid}");
 
             if (isValid)
             {

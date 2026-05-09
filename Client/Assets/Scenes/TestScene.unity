@@ -1065,11 +1065,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _offers.Array.data[1].price
-      value: 100
+      value: 2000
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _offers.Array.data[2].price
-      value: 100
+      value: 20000
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _offers.Array.data[3].price

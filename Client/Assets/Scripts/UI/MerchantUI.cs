@@ -82,7 +82,7 @@ namespace Assets.Scripts.UI
             );
         }
 
-        public void Show(MerchantOffer[] offers)
+        public void Show(UpdateCharacterInventoryCommand[] offers)
         {
             if (offers.Length == 0 || Merchant.activeSelf)
             {
@@ -109,57 +109,33 @@ namespace Assets.Scripts.UI
             _itemObjects.Clear();
         }
 
-        public void AddOffers(MerchantOffer[] offers)
+        public void AddOffers(UpdateCharacterInventoryCommand[] offers)
         {
             var currency = InventoryManager.Instance.Currency;
 
             foreach (var offer in offers)
             {
                 var itemObj = _itemPool.Get();
+
+                itemObj.Item = offer.Add[0];
+                itemObj.Mesh.text = itemObj.Item.Count.ToString();
+                itemObj.Image.texture = InventoryUI.Instance.Textures[itemObj.Item.Type];
+                itemObj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{itemObj.Item.Type}Title");
+                itemObj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{itemObj.Item.Type}Description");
+
                 var currencyObj = _itemPool.Get();
 
-                itemObj.Item = new InventoryItemDto
-                {
-                    Type = offer.type,
-                    Count = offer.quantity
-                };
-
-                itemObj.Mesh.text = offer.quantity.ToString();
-                itemObj.Image.texture = InventoryUI.Instance.Textures[offer.type];
-                itemObj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{offer.type}Title");
-                itemObj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{offer.type}Description");
-
-                currencyObj.Item = new InventoryItemDto
-                {
-                    Type = InventoryItemEnum.Currency,
-                    Count = offer.price
-                };
-
-                currencyObj.Mesh.text = offer.price > 1000 ? $"~{offer.price / 1000}k" : offer.price.ToString();
-                currencyObj.Mesh.color = currency < offer.price ? ColorUI.Red : ColorUI.White;
+                currencyObj.Item = offer.Remove[0];
+                currencyObj.Mesh.text = currencyObj.Item.Count > 1000 ? $"~{currencyObj.Item.Count / 1000}k" : currencyObj.Item.Count.ToString();
+                currencyObj.Mesh.color = currency < currencyObj.Item.Count ? ColorUI.Red : ColorUI.White;
                 currencyObj.Image.texture = InventoryUI.Instance.Textures[InventoryItemEnum.Currency];
 
                 itemObj.Button.onClick.AddListener(() =>
                 {
-                    // TODO: server rpc validation
-                    if (InventoryManager.Instance.Currency < offer.price)
+                    PurchaseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new PurchaseItemSubscribtionEvent
                     {
-                        Debug.Log("Not enough currency");
-
-                        return;
-                    }
-
-                    UpdateInventorySubscription.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
-                    {
-                        Request = new UpdateCharacterInventoryCommand
-                        {
-                            Add = new InventoryItemDto[] { itemObj.Item },
-                            Remove = new InventoryItemDto[] { currencyObj.Item }
-                        },
-                        ClientToken = UserManager.Instance.Token
+                        Offer = offer
                     });
-
-                    UpdatePriceValidation();
                 });
 
                 var key = itemObj.GameObject.GetInstanceID().ToString();
@@ -179,7 +155,7 @@ namespace Assets.Scripts.UI
             }
         }
 
-        private void UpdatePriceValidation()
+        public void UpdatePriceValidation()
         {
             var currency = InventoryManager.Instance.Currency;
 

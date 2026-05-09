@@ -1,11 +1,10 @@
-using Assets.Scripts.Models;
-using Assets.Scripts.UI;
+using Assets.Scripts.Enums;
 using UnityEngine;
 
 public class MerchantNpc : MonoBehaviour
 {
-    // TODO: get;set;?
-    public MerchantOffer[] Offers;
+    // TODO: get;set;
+    public MerchantTypeEnum Type;
 
     private void Start()
     {
