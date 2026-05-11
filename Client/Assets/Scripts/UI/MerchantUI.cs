@@ -82,9 +82,9 @@ namespace Assets.Scripts.UI
             );
         }
 
-        public void Show(UpdateCharacterInventoryCommand[] offers)
+        public void Show(InventoryItemDto[] items)
         {
-            if (offers.Length == 0 || Merchant.activeSelf)
+            if (items.Length == 0 || Merchant.activeSelf)
             {
                 return;
             }
@@ -96,7 +96,7 @@ namespace Assets.Scripts.UI
             Merchant.SetActive(true);
 
             ClearOffers();
-            AddOffers(offers);
+            AddOffers(items);
         }
 
         public void ClearOffers()
@@ -109,15 +109,15 @@ namespace Assets.Scripts.UI
             _itemObjects.Clear();
         }
 
-        public void AddOffers(UpdateCharacterInventoryCommand[] offers)
+        public void AddOffers(InventoryItemDto[] items)
         {
-            var currency = InventoryManager.Instance.Currency;
+            var currency = MerchantManager.Instance.GetCurrency();
 
-            foreach (var offer in offers)
+            foreach (var item in items)
             {
                 var itemObj = _itemPool.Get();
 
-                itemObj.Item = offer.Add[0];
+                itemObj.Item = item;
                 itemObj.Mesh.text = itemObj.Item.Count.ToString();
                 itemObj.Image.texture = InventoryUI.Instance.Textures[itemObj.Item.Type];
                 itemObj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{itemObj.Item.Type}Title");
@@ -125,7 +125,11 @@ namespace Assets.Scripts.UI
 
                 var currencyObj = _itemPool.Get();
 
-                currencyObj.Item = offer.Remove[0];
+                currencyObj.Item = new InventoryItemDto
+                {
+                    Type = InventoryItemEnum.Currency,
+                    Count = MerchantManager.Instance.GetPurchasePrice(item)
+                };
                 currencyObj.Mesh.text = currencyObj.Item.Count > 1000 ? $"~{currencyObj.Item.Count / 1000}k" : currencyObj.Item.Count.ToString();
                 currencyObj.Mesh.color = currency < currencyObj.Item.Count ? ColorUI.Red : ColorUI.White;
                 currencyObj.Image.texture = InventoryUI.Instance.Textures[InventoryItemEnum.Currency];
@@ -134,7 +138,7 @@ namespace Assets.Scripts.UI
                 {
                     PurchaseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new PurchaseItemSubscribtionEvent
                     {
-                        Offer = offer
+                        item = itemObj.Item
                     });
                 });
 
@@ -157,7 +161,7 @@ namespace Assets.Scripts.UI
 
         public void UpdatePriceValidation()
         {
-            var currency = InventoryManager.Instance.Currency;
+            var currency = MerchantManager.Instance.GetCurrency();
 
             foreach (var itemObject in _itemObjects.Where(x => x.Item.Type == InventoryItemEnum.Currency))
             {

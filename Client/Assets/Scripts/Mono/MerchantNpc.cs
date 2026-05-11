@@ -1,10 +1,18 @@
-using Assets.Scripts.Enums;
+using Assets.Scripts.Models;
 using UnityEngine;
 
 public class MerchantNpc : MonoBehaviour
 {
-    // TODO: get;set;
-    public MerchantTypeEnum Type;
+    [SerializeField]
+    private InventoryItemDto[] _items;
+
+    public InventoryItemDto[] Items
+    {
+        get
+        {
+            return _items;
+        }
+    }
 
     private void Start()
     {

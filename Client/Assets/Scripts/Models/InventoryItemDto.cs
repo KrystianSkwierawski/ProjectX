@@ -1,13 +1,42 @@
+using System;
 using Assets.Scripts.Enums;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace Assets.Scripts.Models
 {
+    [Serializable]
     public class InventoryItemDto : INetworkSerializable
     {
-        public InventoryItemEnum Type { get; set; }
+        [SerializeField]
+        private InventoryItemEnum _type;
 
-        public int Count { get; set; }
+        public InventoryItemEnum Type
+        {
+            get
+            {
+                return _type;
+            }
+            set
+            {
+                _type = value;
+            }
+        }
+
+        [SerializeField]
+        private int _count;
+
+        public int Count
+        {
+            get
+            {
+                return _count;
+            }
+            set
+            {
+                _count = value;
+            }
+        }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {

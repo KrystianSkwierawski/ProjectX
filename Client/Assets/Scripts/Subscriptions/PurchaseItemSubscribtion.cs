@@ -9,6 +9,6 @@ namespace Assets.Scripts.Subscriptions
 
     public class PurchaseItemSubscribtionEvent
     {
-        public UpdateCharacterInventoryCommand Offer { get; set; }
+        public InventoryItemDto item { get; set; }
     }
 }

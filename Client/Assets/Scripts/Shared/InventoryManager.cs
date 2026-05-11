@@ -10,11 +10,6 @@ namespace Assets.Scripts.Shared
     {
         public CharacterInventoryDto Dto { get; private set; }
 
-        public int Currency => Dto.Inventory.Items
-            .Where(x => x.Type == InventoryItemEnum.Currency)
-            .Select(x => x.Count)
-            .Sum();
-
         public async UniTask LoadAsync()
         {
             Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");

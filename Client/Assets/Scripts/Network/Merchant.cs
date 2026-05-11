@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.Models;
@@ -11,35 +10,6 @@ using UnityEngine.InputSystem;
 
 public class Merchant : NetworkBehaviour
 {
-    private IDictionary<MerchantTypeEnum, UpdateCharacterInventoryCommand[]> _merchants = new Dictionary<MerchantTypeEnum, UpdateCharacterInventoryCommand[]>
-    {
-        {
-            MerchantTypeEnum.Common, new[]
-            {
-                new UpdateCharacterInventoryCommand
-                {
-                    Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 1 } },
-                    Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 100 } }
-                },
-                new UpdateCharacterInventoryCommand
-                {
-                    Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.Fish, Count = 1 } },
-                    Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 200 } }
-                },
-                new UpdateCharacterInventoryCommand
-                {
-                    Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.Can, Count = 1 } },
-                    Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 2000 } }
-                },
-                new UpdateCharacterInventoryCommand
-                {
-                    Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.CopperOre, Count = 1 } },
-                    Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 100000 } }
-                },
-            }
-        }
-    };
-
     private const float _npcMaxDistance = 5f;
     private MerchantNpc _merchantNpc;
 
@@ -49,14 +19,14 @@ public class Merchant : NetworkBehaviour
         {
             PurchaseItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
             {
-                if (InventoryManager.Instance.Currency < e.Offer.Remove[0].Count)
+                if (MerchantManager.Instance.HasCurrency(e.item))
                 {
-                    Debug.Log("Not enough currency");
+                    PurchaseItemServerRpc(e.item, UserManager.Instance.Token);
 
                     return;
                 }
 
-                PurchaseItemServerRpc(e.Offer, UserManager.Instance.Token);
+                Debug.Log("Not enough currency");
             });
         }
     }
@@ -103,18 +73,23 @@ public class Merchant : NetworkBehaviour
 
         if (mouse.rightButton.wasPressedThisFrame)
         {
-            MerchantUI.Instance.Show(_merchants[_merchantNpc.Type]);
+            MerchantUI.Instance.Show(_merchantNpc.Items);
         }
     }
 
     [ServerRpc]
-    private void PurchaseItemServerRpc(UpdateCharacterInventoryCommand offer, string clientToken)
+    private void PurchaseItemServerRpc(InventoryItemDto item, string clientToken)
     {
-        // TODO: validate InventoryManager.Instance.Currency
-        // TODO: validate merchant offer/type
+        // TODO: validate npc position
+        // TODO: validate currency
         UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
         {
-            Request = offer,
+            Request = new UpdateCharacterInventoryCommand
+            {
+                CharacterId = 1,
+                Add = new[] { item },
+                Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetPurchasePrice(item) } },
+            },
             ClientToken = clientToken
         });
     }
