@@ -43,7 +43,6 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
             {
                 var parameters = x.Id.GetParameters();
 
-                // TODO: translate service
                 return new QuestDto
                 {
                     Id = x.Id,

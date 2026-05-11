@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
 using Cysharp.Threading.Tasks;
 
@@ -38,16 +40,34 @@ namespace Assets.Scripts.Shared
 
         public void Remove(InventoryItemDto item)
         {
+            var sum = Dto.Inventory.Items
+                .Where(x => x.Type == item.Type)
+                .Select(x => x.Count)
+                .Sum();
+
+            if (sum < item.Count)
+            {
+                throw new Exception($"Not enough items of type {item.Type} to remove. Current count: {sum}, requested count: {item.Count}");
+            }
+
             var slot = Dto.Inventory.Items
                 .Where(x => x.Type == item.Type)
-                .Where(x => x.Count >= item.Count)
                 .First();
 
-            // TODO: multiple stacks?
+            var diff = slot.Count - item.Count;
 
-            if (slot.Count == item.Count)
+            if (diff <= 0)
             {
                 Dto.Inventory.Items.Remove(slot);
+
+                if (diff < 0)
+                {
+                    Remove(new InventoryItemDto
+                    {
+                        Count = Math.Abs(diff),
+                        Type = item.Type
+                    });
+                }
 
                 return;
             }

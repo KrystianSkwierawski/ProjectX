@@ -7,6 +7,7 @@ namespace Assets.Scripts.Enums
         #region Common
 
         Can = 100,
+        Currency = 101,
 
         #endregion
 

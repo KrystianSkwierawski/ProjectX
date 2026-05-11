@@ -20,6 +20,7 @@ namespace Assets.Scripts.Network
         {
             if (IsOwner)
             {
+                UserManager.Instance.OwnerClientId = OwnerClientId;
                 SetCharacterServerRpc(UserManager.Instance.Token);
             }
 
@@ -80,7 +81,6 @@ namespace Assets.Scripts.Network
 
         private void ToggleCharacter()
         {
-            // TODO: exid recipe, quest etc.
             if (CharacterUI.Instance.Character.activeSelf)
             {
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);

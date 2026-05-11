@@ -37,7 +37,6 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
         var parameters = quest.Id.GetParameters();
         var language = _currentUserService.Language;
 
-        // TODO: translate service
         return new QuestDto
         {
             Id = quest.Id,

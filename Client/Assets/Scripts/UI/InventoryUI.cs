@@ -103,7 +103,7 @@ namespace Assets.Scripts.UI
                 }
 
                 slot.Mesh.gameObject.SetActive(true);
-                slot.Mesh.text = item.Count.ToString();
+                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
@@ -188,14 +188,11 @@ namespace Assets.Scripts.UI
         {
             foreach (var type in Enum.GetValues(typeof(InventoryItemEnum)).Cast<InventoryItemEnum>())
             {
-                var texture = Resources.Load<Texture>($"Icons/{type}");
+                var texture = Resources.Load<Texture>($"Icons/{type}") ?? Resources.Load<Texture>($"Icons/{InventoryItemEnum.None}");
 
-                if (texture != null)
-                {
-                    Debug.Log($"UIManager -> Add texture. Type: {type}");
+                Debug.Log($"UIManager -> Add texture. Type: {type}");
 
-                    Textures.Add(type, texture);
-                }
+                Textures.Add(type, texture);
             }
         }
 

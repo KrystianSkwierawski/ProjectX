@@ -1,6 +1,5 @@
 {
   "Empty": "",
-
   "Accept": "Accept",
   "Cancel": "Cancel",
   "Complete": "Complete",
@@ -8,55 +7,41 @@
   "Craft": "Craft",
   "Reward": "Reward:",
   "Requirements": "Requirements:",
-
   "CanTitle": "Can",
-  "CanDescription": "A can is a container that can hold items. It can be used to store and transport various goods.",
-
+  "CanDescription": "A dented can from the alleys of Area 05, cold to the touch and smelling faintly of rainwater, machine oil, and yesterday's beans. Someone scratched a tiny map into the bottom, though it appears to lead from the pantry to the pantry by way of three impossible corridors. It is empty, probably, but it rattles when nobody is looking.",
   "FishTitle": "Fish",
-  "FishDescription": "Fish are aquatic animals that live in water. They come in various shapes, sizes, and colors, and are an important part of the ecosystem.",
-
+  "FishDescription": "This reservoir fish shines silver-blue under bad light and smells of cold stone, river weeds, and the deep filters beneath Area 05. Its scales twitch long after being caught, as if replaying a private argument with the current. Local cooks swear the best ones taste clean and bright, provided you ignore the way they seem disappointed in your choices.",
   "CookedFishTitle": "Cooked Fish",
-  "CookedFishDescription": "Cooked fish is a delicious and nutritious dish that can",
-
+  "CookedFishDescription": "Crisped at the edges and steaming through a glaze of salt, this cooked fish carries the cozy smell of smoke, butter, and someone briefly winning against hunger. The skin crackles when pressed, while the flesh flakes apart soft and white. Guard posts trade favors for meals like this, especially on nights when the fog taps politely at the windows.",
   "PurpleOreTitle": "Purple Ore",
-  "PurpleOreDescription": "purple ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
-
+  "PurpleOreDescription": "Purple ore looks like a chunk of evening sky that refused to finish setting. It glimmers in the hand with a violet pulse, warm one moment and cool the next, and leaves a peppery metallic scent on your gloves. Miners in Area 05 claim it grows louder near secrets, which is why the quiet pieces are worth more and trusted less.",
   "WhiteOreTitle": "White Ores", 
-  "WhiteOreDescription": "white ore is a valuable mineral that can be used in various crafting recipes and is essential for progressing in the game.",
-
+  "WhiteOreDescription": "White ore is chalk-pale, moon-cold, and oddly clean no matter how much mine dust surrounds it. Rub a thumb across its surface and it squeaks like fresh snow under a boot. The Survey Office insists it is perfectly natural, then stores every sample in locked drawers labeled lantern parts, weather anomalies, and do not discuss near mirrors.",
   "CopperOreTitle": "Copper Ore",
-  "CopperOreDescription": "Copper ore is a valuable mineral used in construction and manufacturing.",
-  
+  "CopperOreDescription": "A rough nugget of copper ore, streaked green and orange like an old roof after rain. It smells sharp and electric when cracked, the sort of honest material that wants to become wire, hinges, kettles, or trouble with a handle. Mechanics around Area 05 call it breakfast for machines, usually while drinking coffee strong enough to qualify as a potion.",
   "BlackOreTitle": "Black Ore",
-  "BlackOreDescription": "black ore is a rare and valuable mineral that can be used to create powerful weapons and armor.",
-
+  "BlackOreDescription": "Black ore does not shine so much as politely refuse illumination. Its surface feels smooth, dense, and faintly oily, though your fingers come away dry. Hold it near your ear and you may hear distant dripping, old locks, or your own name spoken by someone with excellent manners. Smiths prize it; lamps do not.",
   "ChamomileTitle": "Chamomile",
-  "ChamomileDescription": "Chamomile is a herb that is commonly used for its calming properties and is often used in teas and medicinal preparations.",
-
+  "ChamomileDescription": "A small chamomile blossom with a yellow heart, white petals, and the warm scent of honeyed tea after a terrible day. It grows stubbornly in the windy lots beyond Area 05, thriving where maps say nothing should be thriving. Healers dry it for calming brews, while exhausted guards tuck it into helmets and pretend that counts as medical training.",
   "WoodTitle": "Wood",
-  "WoodDescription": "Wood is a versatile material that can be used for construction, crafting, and furniture making.",
-
+  "WoodDescription": "A sturdy length of wood cut from the scrub forest east of the perimeter, still sticky with sap and green at the heart. It smells of resin, damp bark, and distant thunderstorms. Tap it and you get a solid answer, the kind carpenters like and fences respect. There is one knot shaped like an eye, but it has not blinked today.",
   "RiceTitle": "Rice",
-  "RiceDescription": "Rice is a staple food crop that is consumed by billions of people worldwide.",
-
+  "RiceDescription": "A pouch of polished rice, pale as little moons and dry enough to whisper when poured. Supply crews guard sacks like treasure because rice turns thin soup into dinner and dinner into morale. The grains carry a faint grassy scent from the hydroponic terraces, where farmers argue with lamps, pumps, and one extremely judgmental measuring cup.",
   "SushiTitle": "Sushi",
-  "SushiDescription": "Sushi is a traditional Japanese dish that typically consists of vinegared rice, seafood, and vegetables, often wrapped in seaweed.",
-
+  "SushiDescription": "A neat roll of vinegared rice, fish, and seaweed, cool against the fingers and bright with salt, sesame, and clean knife work. It looks too elegant for a place where most meals arrive in dented tins. Archivist Pell claims sushi improves concentration; the cooks claim he just likes snacks that make paperwork feel ceremonial.",
   "PurpleBarTitle": "Purple Bar",
-  "PurpleBarDescription": "A purple bar is a type of metal bar that is made from purple ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
-
+  "PurpleBarDescription": "This purple bar was smelted from twilight-colored ore until it settled into a smooth ingot with a soft inner glow. It rings with a low, embarrassed chime when tapped and smells faintly of hot stone and ozone. Crafters use it for devices that must hold steady when reality has other plans, which is more often than the manuals admit.",
   "WhiteBarTitle": "White Bar",
-  "WhiteBarDescription": "A white bar is a type of metal bar that is made from white ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
-
+  "WhiteBarDescription": "A white bar lies cool and bright in the hand, polished to a clean sheen that somehow casts almost no shadow. Forged from pale ore, it is favored for lantern frames, precision tools, and anything meant to behave calmly in deep tunnels. It smells like snow on metal, which is impressive considering nobody has seen snow here for years.",
   "CopperBarTitle": "Copper Bar",
-  "CopperBarDescription": "A copper bar is a type of metal bar that is made from copper ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
-  
+  "CopperBarDescription": "A copper bar with a sunset gleam and enough warmth to feel alive after leaving the forge. It carries the honest smell of pennies, hot dust, and working machines. Engineers love it because copper listens when current speaks. Merchants love it because engineers panic attractively when they run out.",
   "BlackBarTitle": "Black Bar",
-  "BlackBarDescription": "A black bar is a type of metal bar that is made from black ore. It is a valuable resource that can be used in various crafting recipes and is essential for progressing in the game.",
-
+  "BlackBarDescription": "A black bar, heavy as bad news and polished until it reflects nothing at all. The edges are crisp, the surface unpleasantly smooth, and the air around it seems quieter than necessary. Armorers reserve bars like this for locks, shields, and contracts signed in rooms without windows. It is valuable, yes, but so are sealed warnings.",
   "HealthPotionTitle": "Health Potion",
-  "HealthPotionDescription": "A health potion is a consumable item that can be used",
-
+  "HealthPotionDescription": "A red health potion sealed in thick glass, warm near the neck and cool at the base as if it cannot agree on a temperature. It smells of mint, iron, sugar, and reckless confidence. Shake it and the fizz sounds like tiny applause. Drink it after injury, before panic, or during the brief educational pause between the two.",
   "CharacterTitle": "Character",
-  "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} "
+  "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} ",
+  "CurrencyTitle": "Currency",
+  "CurrencyDescription": "Stamped currency from Area 05, scuffed by pockets, market stalls, and arguments over whether hazard pay includes emotional hazards. Each coin smells faintly of brass and old hands, with a little notch on the rim so traders can count it by touch during power cuts. It buys tools, meals, favors, and occasionally silence.",
+  "Merchant": "Merchant"
 }

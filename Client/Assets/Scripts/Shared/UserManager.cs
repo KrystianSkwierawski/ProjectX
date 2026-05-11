@@ -11,6 +11,8 @@ namespace Assets.Scripts.Shared
 
         public LanguageEnum Language { get; private set; }
 
+        public ulong OwnerClientId { get; set; } // TODO: replace all references
+
         public async UniTask LoginAsync(string userName, string password)
         {
             var result = await UnityWebRequestHelper.ExecutePostAsync<LoginApplicationUserDto>("ApplicationUsers", new LoginApplicationUserCommand

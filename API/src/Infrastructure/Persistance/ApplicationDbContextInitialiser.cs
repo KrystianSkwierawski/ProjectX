@@ -53,10 +53,10 @@ public class ApplicationDbContextInitialiser
         await CreateRoleAsync(Roles.Server);
         await CreateRoleAsync(Roles.Client);
 
-        await CreateUserAsync("server1@localhost", "Server1!", Roles.Server, LanguageEnum.pl);
-        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server, LanguageEnum.en);
-        await CreateUserAsync("user1@localhost", "User1!", Roles.Client, LanguageEnum.pl);
-        await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.en);
+        await CreateUserAsync("server1@localhost", "Server1!", Roles.Server, LanguageEnum.en);
+        await CreateUserAsync("server2@localhost", "Server2!", Roles.Server, LanguageEnum.pl);
+        await CreateUserAsync("user1@localhost", "User1!", Roles.Client, LanguageEnum.en);
+        await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.pl);
 
         Log.Information("{0} -> Stop", nameof(InitialiseAsync));
     }
@@ -139,6 +139,26 @@ public class ApplicationDbContextInitialiser
                                 Type = InventoryItemEnum.Chamomile,
                                 Count = 2
                             },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Currency,
+                                Count = 5000
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Currency,
+                                Count = 50000
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Currency,
+                                Count = 1000
+                            },
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Currency,
+                                Count = 500
+                            }
                         ]
                     }),
                     ModDate = DateTime.Now,

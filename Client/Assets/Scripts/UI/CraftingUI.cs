@@ -102,7 +102,7 @@ namespace Assets.Scripts.UI
                         GameObject = obj,
                         Mesh = obj.GetComponent<TextMeshProUGUI>(),
                         Button = obj.GetComponent<Button>()
-                    };
+                    };  
                 },
                 actionOnGet: (RecipesPoolObject obj) => obj.GameObject.SetActive(true),
                 actionOnRelease: (RecipesPoolObject obj) =>
@@ -147,7 +147,6 @@ namespace Assets.Scripts.UI
                     obj.Image.color = ColorUI.Black;
                     obj.Image.texture = null;
                     obj.HoverUI.enabled = false;
-                    //obj.Button.onClick.RemoveAllListeners();
                 }
             );
         }
@@ -159,8 +158,10 @@ namespace Assets.Scripts.UI
                 return;
             }
 
+            // FIXME: array
             QuestUI.Instance.Hide();
             CharacterUI.Instance.Hide();
+            MerchantUI.Instance.Hide();
             Crafting.SetActive(true);
 
             if (CurrentType == type)

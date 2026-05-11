@@ -715,6 +715,7 @@
         "x-enum-names": [
           "None",
           "Can",
+          "Currency",
           "Fish",
           "CookedFish",
           "Rice",
@@ -734,6 +735,7 @@
         "x-enum-varnames": [
           "None",
           "Can",
+          "Currency",
           "Fish",
           "CookedFish",
           "Rice",
@@ -753,6 +755,7 @@
         "x-enumNames": [
           "None",
           "Can",
+          "Currency",
           "Fish",
           "CookedFish",
           "Rice",
@@ -770,6 +773,7 @@
           "HealthPotion"
         ],
         "x-enum-descriptions": [
+          null,
           null,
           null,
           null,
@@ -805,11 +809,13 @@
           null,
           null,
           null,
+          null,
           null
         ],
         "enum": [
           0,
           100,
+          101,
           200,
           201,
           202,

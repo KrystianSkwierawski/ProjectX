@@ -109,8 +109,10 @@ namespace Assets.Scripts.UI
                 return;
             }
 
+            // FIXME: array
             CharacterUI.Instance.Hide();
             CraftingUI.Instance.Hide();
+            MerchantUI.Instance.Hide();
             Quest.SetActive(true);
 
             QuestTitleText.text = questNpc.Quest.Title;

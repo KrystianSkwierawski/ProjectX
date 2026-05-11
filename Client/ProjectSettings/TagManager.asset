@@ -15,6 +15,7 @@ TagManager:
   - Herbalism
   - Tree
   - Crafting
+  - MerchantNpc
   layers:
   - Default
   - TransparentFX
