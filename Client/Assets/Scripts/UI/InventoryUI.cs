@@ -98,6 +98,7 @@ namespace Assets.Scripts.UI
                     slot.Image.texture = null;
                     slot.Type = InventoryItemEnum.None;
                     slot.HoverUI.enabled = false;
+                    slot.Button.onClick.RemoveAllListeners();
 
                     continue;
                 }
@@ -108,6 +109,12 @@ namespace Assets.Scripts.UI
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
                 slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+
+                if (item.Type != InventoryItemEnum.Currency)
+                {
+                    slot.PreviewDescriptionMesh.text += $"\r\n\r\n{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}";
+                }
+
                 slot.Type = item.Type;
                 slot.HoverUI.enabled = true;
 
@@ -121,6 +128,18 @@ namespace Assets.Scripts.UI
                 OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
                 {
                     slot.Preview.SetActive(false);
+                });
+
+                slot.Button.onClick.RemoveAllListeners();
+                slot.Button.onClick.AddListener(() =>
+                {
+                    if (slot.Type != InventoryItemEnum.Currency && MerchantUI.Instance.Merchant)
+                    {
+                        SellItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new SellItemSubscribtionEvent
+                        {
+                            item = item
+                        });
+                    }
                 });
             }
         }
@@ -213,6 +232,7 @@ namespace Assets.Scripts.UI
                     Preview = preview,
                     PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                     PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
+                    Button = slot.GetComponent<Button>(),
                 };
             }
         }

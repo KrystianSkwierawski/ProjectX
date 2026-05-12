@@ -190,6 +190,7 @@ namespace Assets.Scripts.UI
 
         public void UpdateRequirements()
         {
+            // TODO: only if activeSelf?
             if (_recipeObjects.Count == 0)
             {
                 return;

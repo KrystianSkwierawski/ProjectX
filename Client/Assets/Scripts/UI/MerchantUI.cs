@@ -82,6 +82,7 @@ namespace Assets.Scripts.UI
             );
         }
 
+        // FIXME: fix random order
         public void Show(InventoryItemDto[] items)
         {
             if (items.Length == 0 || Merchant.activeSelf)
@@ -161,6 +162,11 @@ namespace Assets.Scripts.UI
 
         public void UpdatePriceValidation()
         {
+            if (!Merchant.activeSelf)
+            {
+                return;
+            }
+
             var currency = MerchantManager.Instance.GetCurrency();
 
             foreach (var itemObject in _itemObjects.Where(x => x.Item.Type == InventoryItemEnum.Currency))

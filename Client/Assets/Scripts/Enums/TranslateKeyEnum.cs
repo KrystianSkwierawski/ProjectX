@@ -48,5 +48,8 @@
         CurrencyDescription,
         Character,
         Merchant,
+        Purchase,
+        Sell,
+        Price
     }
 }

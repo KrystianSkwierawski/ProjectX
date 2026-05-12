@@ -1,3 +1,4 @@
+using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Extensions;
 using Assets.Scripts.Models;
@@ -19,14 +20,37 @@ public class Merchant : NetworkBehaviour
         {
             PurchaseItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
             {
-                if (MerchantManager.Instance.HasCurrency(e.item))
+                if (!MerchantManager.Instance.HasCurrency(e.item))
                 {
-                    PurchaseItemServerRpc(e.item, UserManager.Instance.Token);
+                    Debug.Log("Not enough currency");
 
                     return;
                 }
 
-                Debug.Log("Not enough currency");
+                var itemToRemove = _merchantNpc.SoldItems
+                    .Where(x => x.Type == e.item.Type)
+                    .Where(x => x.Count == e.item.Count)
+                    .FirstOrDefault();
+
+                if (itemToRemove != null)
+                {
+                    _merchantNpc.SoldItems.Remove(itemToRemove);
+
+                    MerchantUI.Instance.ClearOffers();
+                    MerchantUI.Instance.AddOffers(_merchantNpc.Items);
+                }
+
+                PurchaseItemServerRpc(e.item, UserManager.Instance.Token);
+            });
+
+            SellItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+            {
+                _merchantNpc.SoldItems.Add(e.item);
+
+                MerchantUI.Instance.ClearOffers();
+                MerchantUI.Instance.AddOffers(_merchantNpc.Items);
+
+                SellItemServerRpc(e.item, UserManager.Instance.Token);
             });
         }
     }
@@ -89,6 +113,23 @@ public class Merchant : NetworkBehaviour
                 CharacterId = 1,
                 Add = new[] { item },
                 Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetPurchasePrice(item) } },
+            },
+            ClientToken = clientToken
+        });
+    }
+
+    [ServerRpc]
+    private void SellItemServerRpc(InventoryItemDto item, string clientToken)
+    {
+        // TODO: validate npc position
+        // TODO: validate item ownership
+        UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+        {
+            Request = new UpdateCharacterInventoryCommand
+            {
+                CharacterId = 1,
+                Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetSellPrice(item) } },
+                Remove = new[] { item },
             },
             ClientToken = clientToken
         });

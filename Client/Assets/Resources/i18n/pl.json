@@ -42,5 +42,8 @@
   "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} ",
   "CurrencyTitle": "Waluta",
   "CurrencyDescription": "Bita waluta ze Strefy 05, starta przez kieszenie, stragany i spory o to, czy dodatek za zagrożenie obejmuje zagrożenia emocjonalne. Każda moneta pachnie lekko mosiądzem i starymi dłońmi, a na rancie ma nacięcie, by kupcy mogli liczyć ją dotykiem podczas awarii prądu. Kupisz za nią narzędzia, posiłki, przysługi i czasem milczenie.",
-  "Merchant": "Merchant"
+  "Merchant": "Merchant",
+  "Purchase": "Kup",
+  "Sell": "Sprzedaj",
+  "Price": " Cena"
 }

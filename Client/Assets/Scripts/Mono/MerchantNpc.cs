@@ -1,3 +1,6 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts.Models;
 using UnityEngine;
 
@@ -10,15 +13,13 @@ public class MerchantNpc : MonoBehaviour
     {
         get
         {
-            return _items;
+            return _items.Union(SoldItems).ToArray();
+        }
+        private set
+        {
+            _items = value;
         }
     }
 
-    private void Start()
-    {
-    }
-
-    private void Update()
-    {
-    }
+    public IList<InventoryItemDto> SoldItems { get; set; } = new List<InventoryItemDto>();
 }

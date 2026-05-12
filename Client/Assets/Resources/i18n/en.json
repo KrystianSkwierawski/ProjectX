@@ -43,5 +43,8 @@
   "CharacterDescription": "Character Lv. {0} \r\nFishing Lv. {1} \r\nMining Lv. {2} \r\nLumberjack Lv. {3} \r\nHerbalism Lv. {4} \r\nCooking Lv. {5} \r\nBlacksmithing Lv. {6} \r\nAlchemy Lv. {7} ",
   "CurrencyTitle": "Currency",
   "CurrencyDescription": "Stamped currency from Area 05, scuffed by pockets, market stalls, and arguments over whether hazard pay includes emotional hazards. Each coin smells faintly of brass and old hands, with a little notch on the rim so traders can count it by touch during power cuts. It buys tools, meals, favors, and occasionally silence.",
-  "Merchant": "Merchant"
+  "Merchant": "Merchant",
+  "Purchase": "Purchase",
+  "Sell": "Sell",
+  "Price": " Price"
 }
