@@ -36,6 +36,7 @@ public class Merchant : NetworkBehaviour
                 {
                     _merchantNpc.SoldItems.Remove(itemToRemove);
 
+                    // TODO: update one item and update prices?
                     MerchantUI.Instance.ClearOffers();
                     MerchantUI.Instance.AddOffers(_merchantNpc.Items);
                 }
@@ -47,6 +48,7 @@ public class Merchant : NetworkBehaviour
             {
                 _merchantNpc.SoldItems.Add(e.item);
 
+                // TODO: update one item and update prices?
                 MerchantUI.Instance.ClearOffers();
                 MerchantUI.Instance.AddOffers(_merchantNpc.Items);
 

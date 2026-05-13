@@ -66,6 +66,7 @@ namespace Assets.Scripts.UI
                     obj.Image.color = ColorUI.White;
                     obj.Mesh.gameObject.SetActive(true);
                     obj.HoverUI.enabled = true;
+                    obj.GameObject.transform.SetAsLastSibling();
                 },
                 actionOnRelease: (ItemPoolObject obj) =>
                 {

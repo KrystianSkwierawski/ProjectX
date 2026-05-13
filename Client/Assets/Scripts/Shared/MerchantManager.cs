@@ -9,11 +9,23 @@ namespace Assets.Scripts.Shared
     {
         private readonly IDictionary<InventoryItemEnum, int> _prices = new Dictionary<InventoryItemEnum, int>
         {
-            { InventoryItemEnum.Can, 100 },
-            { InventoryItemEnum.Fish, 200 },
-            { InventoryItemEnum.CookedFish, 2000 },
-            { InventoryItemEnum.Rice, 100000 }
-            // TODO: add more items and balance prices
+            { InventoryItemEnum.Can, 10 },
+            { InventoryItemEnum.Currency, 1 },
+            { InventoryItemEnum.Fish, 20 },
+            { InventoryItemEnum.CookedFish, 50 },
+            { InventoryItemEnum.Rice, 15 },
+            { InventoryItemEnum.Sushi, 80 },
+            { InventoryItemEnum.PurpleOre, 100 },
+            { InventoryItemEnum.WhiteOre, 60 },
+            { InventoryItemEnum.CopperOre, 40 },
+            { InventoryItemEnum.BlackOre, 120 },
+            { InventoryItemEnum.PurpleBar, 300 },
+            { InventoryItemEnum.WhiteBar, 180 },
+            { InventoryItemEnum.CopperBar, 120 },
+            { InventoryItemEnum.BlackBar, 360 },
+            { InventoryItemEnum.Wood, 8 },
+            { InventoryItemEnum.Chamomile, 25 },
+            { InventoryItemEnum.HealthPotion, 150 }
         };
 
         public bool HasCurrency(InventoryItemDto item) => HasCurrency(GetPurchasePrice(item));
