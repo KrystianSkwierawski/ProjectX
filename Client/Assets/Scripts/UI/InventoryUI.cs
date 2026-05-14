@@ -65,7 +65,7 @@ namespace Assets.Scripts.UI
                        GameObject = obj,
                        Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                        Mesh = mesh,
-                       Button = obj.GetComponent<Button>(),
+                       Button = obj.GetComponent<ButtonUI>(),
                        Preview = preview,
                        PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                        PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
@@ -74,7 +74,7 @@ namespace Assets.Scripts.UI
                actionOnGet: (InventorySlot obj) => obj.GameObject.SetActive(true),
                actionOnRelease: (InventorySlot obj) =>
                {
-                   obj.Button.onClick.RemoveAllListeners();
+                   obj.Button.OnRightClick.RemoveAllListeners();
 
                    obj.GameObject.SetActive(false);
                }
@@ -98,7 +98,7 @@ namespace Assets.Scripts.UI
                     slot.Image.texture = null;
                     slot.Type = InventoryItemEnum.None;
                     slot.HoverUI.enabled = false;
-                    slot.Button.onClick.RemoveAllListeners();
+                    slot.Button.OnRightClick.RemoveAllListeners();
 
                     continue;
                 }
@@ -130,10 +130,10 @@ namespace Assets.Scripts.UI
                     slot.Preview.SetActive(false);
                 });
 
-                slot.Button.onClick.RemoveAllListeners();
-                slot.Button.onClick.AddListener(() =>
+                slot.Button.OnRightClick.RemoveAllListeners();
+                slot.Button.OnRightClick.AddListener(() =>
                 {
-                    if (slot.Type != InventoryItemEnum.Currency && MerchantUI.Instance.Merchant)
+                    if (slot.Type != InventoryItemEnum.Currency && MerchantUI.Instance.Merchant.activeSelf)
                     {
                         SellItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new SellItemSubscribtionEvent
                         {
@@ -166,7 +166,7 @@ namespace Assets.Scripts.UI
                 slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
                 slot.Type = item.Type;
 
-                slot.Button.onClick.AddListener(() =>
+                slot.Button.OnRightClick.AddListener(() =>
                 {
                     UpdateInventorySubscription.Instance.Invoke(clientId.ToString(), new UpdateInventorySubscriptionEvent
                     {
@@ -232,7 +232,7 @@ namespace Assets.Scripts.UI
                     Preview = preview,
                     PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                     PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
-                    Button = slot.GetComponent<Button>(),
+                    Button = slot.GetComponent<ButtonUI>(),
                 };
             }
         }
@@ -247,7 +247,7 @@ namespace Assets.Scripts.UI
 
             public HoverUI HoverUI { get; set; }
 
-            public Button Button { get; set; }
+            public ButtonUI Button { get; set; }
 
             public GameObject Preview { get; set; }
 

@@ -152,8 +152,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7698494475161437689}
-  - component: {fileID: 6120391018162268864}
   - component: {fileID: -1059122412390234434}
+  - component: {fileID: -9129272560549220896}
   m_Layer: 5
   m_Name: InventorySlot
   m_TagString: InventorySlot
@@ -184,7 +184,7 @@ RectTransform:
   m_AnchoredPosition: {x: -124.099976, y: 315.6079}
   m_SizeDelta: {x: -1433, y: 157.765}
   m_Pivot: {x: 0.5, y: 0}
---- !u!114 &6120391018162268864
+--- !u!114 &-1059122412390234434
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -193,7 +193,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 2896474591842914507}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: e8e204ad3fff5ed4b8c5187bf0549109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-9129272560549220896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2896474591842914507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a2929540d00a942b6577c2e80efbe8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -228,18 +240,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &-1059122412390234434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2896474591842914507}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8e204ad3fff5ed4b8c5187bf0549109, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &3973651755133712521
 GameObject:
   m_ObjectHideFlags: 0

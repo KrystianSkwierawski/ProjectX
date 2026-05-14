@@ -64,6 +64,7 @@ public class Merchant : NetworkBehaviour
             // TODO: cancel button
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
+                _merchantNpc = null;
                 MerchantUI.Instance.Hide();
             }
 

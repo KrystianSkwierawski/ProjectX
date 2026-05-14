@@ -189,10 +189,10 @@ namespace Assets.Scripts.Mono
                 return;
             }
 
-            if (_questNpc != null && _input.Move != Vector2.zero && _questNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance))
+            if (_questNpc != null && _input.Move != Vector2.zero && _questNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance) || Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 _questNpc = null;
-                QuestUI.Instance.Quest.SetActive(false);
+                QuestUI.Instance.Hide();
 
                 return;
             }

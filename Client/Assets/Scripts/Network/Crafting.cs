@@ -40,6 +40,11 @@ public class Crafting : NetworkBehaviour
     {
         if (IsOwner)
         {
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                CraftingUI.Instance.Hide();
+            }
+
             CheckHide();
             CheckCraftingClicked();
             CheckCrafting();

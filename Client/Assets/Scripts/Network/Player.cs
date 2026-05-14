@@ -73,7 +73,17 @@ namespace Assets.Scripts.Network
 
         private void Update()
         {
-            if (IsOwner && Keyboard.current.cKey.wasPressedThisFrame)
+            if (!IsOwner)
+            {
+                return;
+            }
+
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                CharacterUI.Instance.Hide();
+            }
+
+            if (Keyboard.current.cKey.wasPressedThisFrame)
             {
                 ToggleCharacter();
             }
@@ -85,7 +95,7 @@ namespace Assets.Scripts.Network
             {
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
 
-                CharacterUI.Instance.Character.SetActive(false);
+                CharacterUI.Instance.Hide();
 
                 return;
             }

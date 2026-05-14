@@ -53,7 +53,7 @@ namespace Assets.Scripts.UI
                         GameObject = obj,
                         Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                         Mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
-                        Button = obj.GetComponent<Button>(),
+                        Button = obj.GetComponent<ButtonUI>(),
                         HoverUI = obj.GetComponent<HoverUI>(),
                         Preview = preview,
                         PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
@@ -78,7 +78,7 @@ namespace Assets.Scripts.UI
                     obj.Image.color = ColorUI.Black;
                     obj.Image.texture = null;
                     obj.HoverUI.enabled = false;
-                    obj.Button.onClick.RemoveAllListeners();
+                    obj.Button.OnRightClick.RemoveAllListeners();
                 }
             );
         }
@@ -136,7 +136,7 @@ namespace Assets.Scripts.UI
                 currencyObj.Mesh.color = currency < currencyObj.Item.Count ? ColorUI.Red : ColorUI.White;
                 currencyObj.Image.texture = InventoryUI.Instance.Textures[InventoryItemEnum.Currency];
 
-                itemObj.Button.onClick.AddListener(() =>
+                itemObj.Button.OnRightClick.AddListener(() =>
                 {
                     PurchaseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new PurchaseItemSubscribtionEvent
                     {
@@ -196,7 +196,7 @@ namespace Assets.Scripts.UI
 
             public GameObject Preview { get; set; }
 
-            public Button Button { get; set; }
+            public ButtonUI Button { get; set; }
 
             public TextMeshProUGUI PreviewTitleMesh { get; set; }
 
