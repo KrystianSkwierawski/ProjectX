@@ -10,7 +10,7 @@ namespace Assets.Scripts.Shared
         where J : class
 
     {
-        protected readonly IDictionary<string, UnityAction<J>> Subscriptions = new Dictionary<string, UnityAction<J>>();
+        protected IList<(string, UnityAction<J>)> Subscriptions = new List<(string, UnityAction<J>)>();
 
         public void Subscribe(int key, UnityAction<J> action)
         {
@@ -19,22 +19,16 @@ namespace Assets.Scripts.Shared
 
         public virtual void Subscribe(string key, UnityAction<J> action)
         {
-            if (!Subscriptions.ContainsKey(key))
-            {
-                Debug.Log($"Subscribe -> Type: {typeof(J)}, Key: {key}");
+            Debug.Log($"Subscribe -> Type: {typeof(J)}, Key: {key}");
 
-                Subscriptions.Add(key, action);
-            }
+            Subscriptions.Add((key, action));
         }
 
         public virtual void Unsubscribe(string key)
         {
-            if (Subscriptions.ContainsKey(key))
-            {
-                Debug.Log($"Unsubscribe -> Type: {typeof(J)}, Key: {key}");
+            Debug.Log($"Unsubscribe -> Type: {typeof(J)}, Key: {key}");
 
-                Subscriptions.Remove(key);
-            }
+            Subscriptions = Subscriptions.Where(x => x.Item1 != key).ToList();
         }
 
         public virtual void UnsubscribeAll()
@@ -49,10 +43,13 @@ namespace Assets.Scripts.Shared
 
         public virtual void Invoke(string key, J e)
         {
-            if (Subscriptions.TryGetValue(key, out var action))
+            Debug.Log($"Invoke -> Type: {typeof(J)}, Key: {key}");
+
+            var actions = Subscriptions.Where(x => x.Item1 == key);
+
+            foreach (var action in actions)
             {
-                Debug.Log($"Invoke -> Type: {typeof(J)}, Key: {key}");
-                action.Invoke(e);
+                action.Item2.Invoke(e);
             }
         }
 

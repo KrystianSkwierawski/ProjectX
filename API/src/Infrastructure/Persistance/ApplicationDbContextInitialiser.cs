@@ -101,6 +101,11 @@ public class ApplicationDbContextInitialiser
                         [
                             new InventoryItemDto
                             {
+                                Type = InventoryItemEnum.HealthPotion,
+                                Count = 4
+                            },
+                            new InventoryItemDto
+                            {
                                 Type = InventoryItemEnum.Can,
                                 Count = 2
                             },

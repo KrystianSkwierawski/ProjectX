@@ -31,6 +31,7 @@ namespace Assets.Scripts.Enums
         CookingComplete,
         Blacksmithing,
         Alchemy,
+        Currency,
 
         #endregion
 

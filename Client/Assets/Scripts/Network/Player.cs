@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
@@ -14,7 +15,7 @@ namespace Assets.Scripts.Network
 {
     public class Player : NetworkBehaviour
     {
-        private CharacterDto _character;
+        public CharacterDto Character { get; private set; }
 
         private void Start()
         {
@@ -35,9 +36,9 @@ namespace Assets.Scripts.Network
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (result.Level > _character.Levels[e.Type])
+                    if (result.Level > Character.Levels[e.Type])
                     {
-                        _character.Levels[e.Type] = result.Level;
+                        Character.Levels[e.Type] = result.Level;
 
                         UpdateLevelClientRpc(e.Type, result.Level, new ClientRpcParams
                         {
@@ -51,14 +52,9 @@ namespace Assets.Scripts.Network
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    _character.Health -= _character.Health <= 0 ? 0 : e.Value;
+                    Character.Health = Math.Max(Character.Health - e.Value, 0);
 
-                    if (_character.Health <= 0)
-                    {
-                        _character.Health = 0;
-                    }
-
-                    AttackPlayerClientRpc(_character.Health, new ClientRpcParams
+                    AttackPlayerClientRpc(Character.Health, new ClientRpcParams
                     {
                         Send = new ClientRpcSendParams
                         {
@@ -102,7 +98,7 @@ namespace Assets.Scripts.Network
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
 
-            CharacterUI.Instance.DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), _character.Levels.Values.Cast<object>().ToArray());
+            CharacterUI.Instance.DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), Character.Levels.Values.Cast<object>().ToArray());
 
             CharacterUI.Instance.Show();
         }
@@ -110,7 +106,7 @@ namespace Assets.Scripts.Network
         [ClientRpc]
         private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
-            _character.Health = health;
+            Character.Health = health;
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 
@@ -122,7 +118,7 @@ namespace Assets.Scripts.Network
                 transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
             }
 
-            PlayerUI.Instance.SetHealth(_character.Health);
+            PlayerUI.Instance.SetHealth(Character.Health);
         }
 
         [ServerRpc]
@@ -133,9 +129,9 @@ namespace Assets.Scripts.Network
 
         private async UniTask SetCharacterAsync(string clientToken)
         {
-            _character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+            Character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
 
-            UpdatePlayerClientRpc(_character, new ClientRpcParams
+            UpdatePlayerClientRpc(Character, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
@@ -147,14 +143,14 @@ namespace Assets.Scripts.Network
         [ClientRpc]
         public void UpdatePlayerClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
         {
-            _character = character;
-            PlayerUI.Instance.SetPlayer(_character);
+            Character = character;
+            PlayerUI.Instance.SetPlayer(Character);
         }
 
         [ClientRpc]
         public void UpdateLevelClientRpc(ExperienceTypeEnum type, byte level, ClientRpcParams rpcParams = default)
         {
-            _character.Levels[type] = level;
+            Character.Levels[type] = level;
 
             if (type == ExperienceTypeEnum.Main)
             {

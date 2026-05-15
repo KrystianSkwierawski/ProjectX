@@ -44,15 +44,18 @@ public class Merchant : NetworkBehaviour
                 PurchaseItemServerRpc(e.item, UserManager.Instance.Token);
             });
 
-            SellItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+            UseItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
             {
-                _merchantNpc.SoldItems.Add(e.item);
+                if (e.Item.Type != InventoryItemEnum.Currency && MerchantUI.Instance.Merchant.activeSelf)
+                {
+                    _merchantNpc.SoldItems.Add(e.Item);
 
-                // TODO: update one item and update prices?
-                MerchantUI.Instance.ClearOffers();
-                MerchantUI.Instance.AddOffers(_merchantNpc.Items);
+                    // TODO: update one item and update prices?
+                    MerchantUI.Instance.ClearOffers();
+                    MerchantUI.Instance.AddOffers(_merchantNpc.Items);
 
-                SellItemServerRpc(e.item, UserManager.Instance.Token);
+                    SellItemServerRpc(e.Item, UserManager.Instance.Token);
+                }
             });
         }
     }

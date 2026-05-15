@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Models;
+using Assets.Scripts.Network;
 using Assets.Scripts.Shared;
 using Assets.Scripts.Subscriptions;
 using Assets.Scripts.UI;
@@ -144,6 +146,18 @@ namespace Assets.Scripts.Mono
                     UpdateInventory(e.Request);
 
                     UpdateInventoryServerRpc(e.Request, e.ClientToken);
+                });
+
+                UseItemSubscribtion.Instance.Subscribe(key, (e) =>
+                {
+                    if (MerchantUI.Instance.Merchant.activeSelf)
+                    {
+                        return;
+                    }
+
+                    UseItem(e.Item, UserManager.Instance.Token);
+
+                    UseItemServerRpc(e.Item, UserManager.Instance.Token);
                 });
             }
 
@@ -309,6 +323,132 @@ namespace Assets.Scripts.Mono
                     GameObjectName = item.Type.ToString(),
                     ClientToken = clientToken,
                 });
+            }
+        }
+
+        [ServerRpc]
+        private void UseItemServerRpc(InventoryItemDto item, string clientToken)
+        {
+            UseItem(item, clientToken);
+        }
+
+        private void UseItem(InventoryItemDto item, string clientToken)
+        {
+            IUsableItem usableItem = item.Type switch
+            {
+                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem()
+                    .WithClientToken(clientToken)
+                    .WithOwnerClientId(OwnerClientId)
+                    .WithCharacter(gameObject.GetComponent<Player>().Character),
+
+                InventoryItemEnum.Currency => new CurrencyUsableItem(),
+
+                _ => null
+            };
+
+            if (usableItem != null)
+            {
+                usableItem?.Use();
+            }
+        }
+
+        public interface IUsableItem
+        {
+            InventoryItemEnum Type { get; }
+
+            void Use();
+
+            IUsableItem WithClientToken(string clientToken);
+
+            IUsableItem WithOwnerClientId(ulong ownerClientId);
+
+            IUsableItem WithCharacter(CharacterDto character);
+        }
+
+        public abstract class AbstractUsableItem : IUsableItem
+        {
+            public abstract InventoryItemEnum Type { get; }
+
+            protected string ClientToken { get; private set; }
+
+            protected ulong OwnerClientId { get; private set; }
+
+            protected CharacterDto Character { get; private set; }
+
+            public virtual void Use()
+            {
+#if UNITY_SERVER && !UNITY_EDITOR
+                UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+                {
+                    Request = new UpdateCharacterInventoryCommand
+                    {
+                        Remove = new InventoryItemDto[]
+                        {
+                            new InventoryItemDto
+                            {
+                                Type = Type,
+                                Count = 1,
+                            }
+                        },
+                    },
+                    ClientToken = ClientToken,
+                });
+#endif
+            }
+
+            public IUsableItem WithClientToken(string clientToken)
+            {
+                ClientToken = clientToken;
+
+                return this;
+            }
+
+            public IUsableItem WithOwnerClientId(ulong ownerClientId)
+            {
+                OwnerClientId = ownerClientId;
+
+                return this;
+            }
+
+            public IUsableItem WithCharacter(CharacterDto character)
+            {
+                Character = character;
+
+                return this;
+            }
+        }
+
+        public class HealthPotionUsableItem : AbstractUsableItem
+        {
+            public override InventoryItemEnum Type { get; } = InventoryItemEnum.HealthPotion;
+
+            public override void Use()
+            {
+                if (Character.Health >= 100)
+                {
+                    return;
+                }
+
+                // TODO: set on api
+                Character.Health = Math.Min(Character.Health + 20, 100);
+
+#if UNITY_EDITOR
+                PlayerUI.Instance.SetHealth(Character.Health);
+#endif
+
+                base.Use();
+            }
+        }
+
+        public class CurrencyUsableItem : AbstractUsableItem
+        {
+            public override InventoryItemEnum Type { get; } = InventoryItemEnum.Currency;
+
+            public override void Use()
+            {
+#if UNITY_EDITOR
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Currency, 0.5f);
+#endif
             }
         }
 

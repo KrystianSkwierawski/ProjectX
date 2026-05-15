@@ -133,13 +133,10 @@ namespace Assets.Scripts.UI
                 slot.Button.OnRightClick.RemoveAllListeners();
                 slot.Button.OnRightClick.AddListener(() =>
                 {
-                    if (slot.Type != InventoryItemEnum.Currency && MerchantUI.Instance.Merchant.activeSelf)
+                    UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
                     {
-                        SellItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new SellItemSubscribtionEvent
-                        {
-                            item = item
-                        });
-                    }
+                        Item = item
+                    });
                 });
             }
         }

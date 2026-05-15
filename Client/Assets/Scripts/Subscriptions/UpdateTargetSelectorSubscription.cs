@@ -8,11 +8,11 @@ namespace Assets.Scripts.Subscriptions
     {
         public override void Invoke(string key, UpdateTargetSelectorSubscriptionsEvent e)
         {
-            foreach (var subscription in Subscriptions.Where(x => x.Key.StartsWith($"{key}_")))
+            foreach (var subscription in Subscriptions.Where(x => x.Item1.StartsWith($"{key}_")))
             {
-                Debug.Log($"Invoke -> Type: TargetSelectorSubscriptionsEvent, Id: Key: {subscription.Key}");
+                Debug.Log($"Invoke -> Type: TargetSelectorSubscriptionsEvent, Id: Key: {subscription.Item1}");
 
-                subscription.Value.Invoke(e);
+                subscription.Item2.Invoke(e);
             }
         }
     }
