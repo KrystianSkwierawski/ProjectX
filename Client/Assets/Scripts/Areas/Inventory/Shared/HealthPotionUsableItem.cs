@@ -1,6 +1,8 @@
 ﻿using System;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Mono;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
@@ -20,6 +22,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
 #if UNITY_EDITOR
             PlayerUI.Instance.SetHealth(Character.Health);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);  
 #endif
 
             base.Use();

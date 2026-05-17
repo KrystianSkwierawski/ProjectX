@@ -33,6 +33,7 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Blacksmithing,
         Alchemy,
         Currency,
+        Drinking,
 
         #endregion
 
