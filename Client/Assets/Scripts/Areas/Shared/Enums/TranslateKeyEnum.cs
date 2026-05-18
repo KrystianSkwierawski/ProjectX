@@ -51,6 +51,7 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Merchant,
         Purchase,
         Sell,
-        Price
+        Price,
+        LevelUp
     }
 }

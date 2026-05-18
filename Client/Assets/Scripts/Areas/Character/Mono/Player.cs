@@ -6,6 +6,7 @@ using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
+using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -156,6 +157,10 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 PlayerUI.Instance.SetMainLevel(level);
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
+
+                var message = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.LevelUp), level);
+
+                LogUI.Instance.Show(message).Forget();
             }
         }
 

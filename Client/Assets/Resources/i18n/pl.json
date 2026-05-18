@@ -45,5 +45,6 @@
   "Merchant": "Merchant",
   "Purchase": "Kup",
   "Sell": "Sprzedaj",
-  "Price": " Cena"
+  "Price": " Cena",
+  "LevelUp": "Osiągnąłeś {0} Poziom"
 }

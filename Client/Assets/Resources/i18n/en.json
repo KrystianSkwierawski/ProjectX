@@ -46,5 +46,6 @@
   "Merchant": "Merchant",
   "Purchase": "Purchase",
   "Sell": "Sell",
-  "Price": " Price"
+  "Price": " Price",
+  "LevelUp": "You've reached {0} Level"
 }
