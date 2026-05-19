@@ -1,5 +1,5 @@
-﻿using Assets.Scripts.Mono;
-using Assets.Scripts.Network;
+﻿using Assets.Scripts.Areas.Character.Mono;
+using Assets.Scripts.Areas.Shared.Mono;
 using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;

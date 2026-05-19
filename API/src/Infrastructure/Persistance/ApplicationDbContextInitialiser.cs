@@ -101,6 +101,11 @@ public class ApplicationDbContextInitialiser
                         [
                             new InventoryItemDto
                             {
+                                Type = InventoryItemEnum.HealthPotion,
+                                Count = 4
+                            },
+                            new InventoryItemDto
+                            {
                                 Type = InventoryItemEnum.Can,
                                 Count = 2
                             },
@@ -142,23 +147,23 @@ public class ApplicationDbContextInitialiser
                             new InventoryItemDto
                             {
                                 Type = InventoryItemEnum.Currency,
-                                Count = 5000
+                                Count = 200
                             },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Currency,
-                                Count = 50000
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Currency,
-                                Count = 1000
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Currency,
-                                Count = 500
-                            }
+                            //new InventoryItemDto
+                            //{
+                            //    Type = InventoryItemEnum.Currency,
+                            //    Count = 50000
+                            //},
+                            //new InventoryItemDto
+                            //{
+                            //    Type = InventoryItemEnum.Currency,
+                            //    Count = 1000
+                            //},
+                            //new InventoryItemDto
+                            //{
+                            //    Type = InventoryItemEnum.Currency,
+                            //    Count = 500
+                            //}
                         ]
                     }),
                     ModDate = DateTime.Now,
