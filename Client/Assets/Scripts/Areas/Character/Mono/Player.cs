@@ -160,7 +160,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 var message = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.LevelUp), level);
 
-                LogUI.Instance.Show(message).Forget();
+                LogUI.Instance.ShowAsync(message).Forget();
             }
         }
 

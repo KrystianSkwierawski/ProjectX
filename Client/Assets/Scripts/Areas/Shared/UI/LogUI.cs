@@ -38,7 +38,8 @@ namespace Assets.Scripts.Areas.Shared.UI
                     var obj = Instantiate(_textPrefab, LogContent.transform);
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
 
-                    mesh.fontSize = 24;
+                    mesh.fontSize = 36;
+                    mesh.alignment = TextAlignmentOptions.Center;
 
                     return new LogPoolObject
                     {
@@ -58,10 +59,10 @@ namespace Assets.Scripts.Areas.Shared.UI
                 }
             );
 
-            Show("test").Forget();
+            ShowAsync("Hello, World!").Forget();
         }
 
-        public async UniTask Show(string message, int delay = 2000)
+        public async UniTask ShowAsync(string message, int delay = 2000)
         {
             if (!Log.activeSelf)
             {
@@ -73,7 +74,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             await UniTask.Delay(delay);
 
-            //_textPool.Release(obj);
+            _textPool.Release(obj);
 
             if (LogContent.transform.childCount == 0)
             {
