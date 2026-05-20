@@ -35,7 +35,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             _textPool = new ObjectPool<LogPoolObject>(
                 createFunc: () =>
                 {
-                    var obj = Instantiate(_textPrefab, LogContent.transform);
+                    var obj = Instantiate(_textPrefab);
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
 
                     mesh.fontSize = 36;
@@ -49,17 +49,19 @@ namespace Assets.Scripts.Areas.Shared.UI
                 },
                 actionOnGet: obj =>
                 {
+                    obj.GameObject.transform.SetParent(LogContent.transform);
                     obj.GameObject.SetActive(true);
                     obj.GameObject.transform.SetAsLastSibling();
                 },
                 actionOnRelease: obj =>
                 {
+                    obj.GameObject.transform.SetParent(null);
                     obj.GameObject.SetActive(false);
                     obj.Mesh.text = string.Empty;
                 }
             );
 
-            ShowAsync("Hello, World!").Forget();
+            ShowAsync("Hello, World!", 5000).Forget();
         }
 
         public async UniTask ShowAsync(string message, int delay = 2000)
