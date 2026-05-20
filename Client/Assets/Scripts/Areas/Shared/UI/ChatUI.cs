@@ -1,12 +1,12 @@
-﻿using Assets.Scripts.Areas.Shared.Mono;
-using Cysharp.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Assets.Scripts.Areas.Shared.Mono;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Assets.Scripts.Areas.Shared.UI
 {
-    public class LogUI : MonoSingleton<LogUI>
+    public class ChatUI : MonoSingleton<ChatUI>
     {
         #region Prefab
 
@@ -18,19 +18,20 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public GameObject Canvas { get; private set; }
 
-        public GameObject Log { get; private set; }
+        public GameObject Chat { get; private set; }
 
-        public GameObject LogContent { get; private set; }
+        public GameObject ChatContent { get; private set; }
 
         #endregion
 
         private ObjectPool<LogPoolObject> _pool;
+        private Queue<LogPoolObject> _queue = new Queue<LogPoolObject>();
 
-        private void Start()
+        public void Start()
         {
-            Canvas = GameObject.Find("LogCanvas");
-            Log = Canvas.transform.Find("Log").gameObject;
-            LogContent = Log.transform.Find("Viewport/Content").gameObject;
+            Canvas = GameObject.Find("ChatCanvas");
+            Chat = Canvas.transform.Find("Chat").gameObject;
+            ChatContent = Chat.transform.Find("Viewport/Content").gameObject;
 
             _pool = new ObjectPool<LogPoolObject>(
                 createFunc: () =>
@@ -38,8 +39,8 @@ namespace Assets.Scripts.Areas.Shared.UI
                     var obj = Instantiate(_textPrefab);
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
 
-                    mesh.fontSize = 36;
-                    mesh.alignment = TextAlignmentOptions.Center;
+                    mesh.fontSize = 14;
+                    mesh.alignment = TextAlignmentOptions.TopLeft;
 
                     return new LogPoolObject
                     {
@@ -49,7 +50,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                 },
                 actionOnGet: obj =>
                 {
-                    obj.GameObject.transform.SetParent(LogContent.transform);
+                    obj.GameObject.transform.SetParent(ChatContent.transform, false);
                     obj.GameObject.SetActive(true);
                     obj.GameObject.transform.SetAsLastSibling();
                 },
@@ -61,26 +62,27 @@ namespace Assets.Scripts.Areas.Shared.UI
                 }
             );
 
-            ShowAsync("Hello, World!", 5000).Forget();
+            Add("Welcome to the chat!");
         }
 
-        public async UniTask ShowAsync(string message, int delay = 2000)
+        public void Add(string message, string sender = "SYSTEM")
         {
-            if (!Log.activeSelf)
-            {
-                Log.SetActive(true);
-            }
-
             var obj = _pool.Get();
-            obj.Mesh.text = message;
 
-            await UniTask.Delay(delay);
+            obj.Mesh.text = $"{sender}: {message}";
 
-            _pool.Release(obj);
+            _queue.Enqueue(obj);
 
-            if (LogContent.transform.childCount == 0)
+            CheckRetention();
+        }
+
+        private void CheckRetention()
+        {
+            if (_queue.Count > 10)
             {
-                Log.SetActive(false);
+                var obj = _queue.Dequeue();
+
+                _pool.Release(obj);
             }
         }
 
