@@ -3,6 +3,7 @@ using Assets.Scripts.Areas.Shared.Mono;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Shared.UI
 {
@@ -18,20 +19,32 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public GameObject Canvas { get; private set; }
 
+        public GameObject Container { get; private set; }
+
+        public TMP_InputField InputField { get; private set; }
+
         public GameObject Chat { get; private set; }
 
         public GameObject ChatContent { get; private set; }
+
+        private ScrollRect _scrollRect;
+        private RectTransform _chatContentRect;
 
         #endregion
 
         private ObjectPool<LogPoolObject> _pool;
         private Queue<LogPoolObject> _queue = new Queue<LogPoolObject>();
 
-        public void Start()
+
+        private void Start()
         {
             Canvas = GameObject.Find("ChatCanvas");
-            Chat = Canvas.transform.Find("Chat").gameObject;
+            Container = Canvas.transform.Find("Container").gameObject;
+            InputField = Container.transform.Find("InputField").GetComponent<TMP_InputField>();
+            Chat = Container.transform.Find("Chat").gameObject;
             ChatContent = Chat.transform.Find("Viewport/Content").gameObject;
+            _scrollRect = Chat.GetComponent<ScrollRect>() ?? Chat.GetComponentInChildren<ScrollRect>();
+            _chatContentRect = ChatContent.GetComponent<RectTransform>();
 
             _pool = new ObjectPool<LogPoolObject>(
                 createFunc: () =>
@@ -74,11 +87,19 @@ namespace Assets.Scripts.Areas.Shared.UI
             _queue.Enqueue(obj);
 
             CheckRetention();
+
+            ScrollToBottom();
+        }
+
+        public void ScrollToBottom()
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_chatContentRect);
+            _scrollRect.verticalNormalizedPosition = 0f;
         }
 
         private void CheckRetention()
         {
-            if (_queue.Count > 10)
+            if (_queue.Count > 100)
             {
                 var obj = _queue.Dequeue();
 

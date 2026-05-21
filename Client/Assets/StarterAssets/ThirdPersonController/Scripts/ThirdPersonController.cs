@@ -7,6 +7,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Areas.Shared.UI;
+
 
 
 #if ENABLE_INPUT_SYSTEM
@@ -199,7 +201,7 @@ namespace StarterAssets
 
         private void Update()
         {
-            if (IsOwner)
+            if (IsOwner && !ChatUI.Instance.InputField.isFocused)
             {
                 JumpAndGravity();
                 GroundedCheck();
