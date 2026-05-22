@@ -88,7 +88,10 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             CheckRetention();
 
-            ScrollToBottom();
+            if (!InputField.isFocused)
+            {
+                ScrollToBottom();
+            }
         }
 
         public void ScrollToBottom()
