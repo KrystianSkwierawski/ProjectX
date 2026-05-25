@@ -23,6 +23,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 CheckEnter();
                 CheckEsc();
+                CheckToggle();
             }
         }
 
@@ -56,6 +57,14 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 ChatUI.Instance.InputField.text = string.Empty;
                 ChatUI.Instance.InputField.DeactivateInputField();
+            }
+        }
+
+        private void CheckToggle()
+        {
+            if (Keyboard.current.zKey.wasPressedThisFrame)
+            {
+                ChatUI.Instance.Toggle();
             }
         }
 

@@ -100,6 +100,11 @@ namespace Assets.Scripts.Areas.Shared.UI
             _scrollRect.verticalNormalizedPosition = 0f;
         }
 
+        public void Toggle()
+        {
+            Container.SetActive(!Container.activeSelf);
+        }
+
         private void CheckRetention()
         {
             if (_queue.Count > 100)
