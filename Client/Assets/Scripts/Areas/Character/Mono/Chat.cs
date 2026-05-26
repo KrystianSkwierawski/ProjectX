@@ -45,7 +45,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void CheckEnter()
         {
-            if (!ChatUI.Instance.InputField.isFocused && Keyboard.current.enterKey.wasPressedThisFrame)
+            if (!ChatUI.Instance.InputField.isFocused && ChatUI.Instance.Container.activeSelf && Keyboard.current.enterKey.wasPressedThisFrame)
             {
                 ChatUI.Instance.InputField.ActivateInputField();
             }
