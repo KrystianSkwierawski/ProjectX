@@ -64,7 +64,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             ShowAsync("Hello, World!", 5000).Forget();
         }
 
-        public async UniTask ShowAsync(string message, int delay = 2000)
+        public async UniTask ShowAsync(string message, int delay = 2000, Color? color = null)
         {
             if (!Log.activeSelf)
             {
@@ -73,6 +73,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             var obj = _pool.Get();
             obj.Mesh.text = message;
+            obj.Mesh.color = color ?? ColorUI.White;
 
             await UniTask.Delay(delay);
 
