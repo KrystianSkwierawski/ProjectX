@@ -1,6 +1,8 @@
-﻿using Assets.Scripts.Areas.Shared.Mono;
+﻿using System.Collections.Generic;
+using Assets.Scripts.Areas.Shared.Mono;
 using Cysharp.Threading.Tasks;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -25,6 +27,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         #endregion
 
         private ObjectPool<LogPoolObject> _pool;
+        private readonly IDictionary<string, LogPoolObject> _objects = new Dictionary<string, LogPoolObject>();
 
         private void Start()
         {
@@ -66,20 +69,28 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public async UniTask ShowAsync(string message, int delay = 2000, Color? color = null)
         {
+            if (_objects.ContainsKey(message))
+            {
+                return;
+            }
+
             if (!Log.activeSelf)
             {
                 Log.SetActive(true);
             }
 
             var obj = _pool.Get();
+            _objects.Add(message, obj);
+
             obj.Mesh.text = message;
             obj.Mesh.color = color ?? ColorUI.White;
 
             await UniTask.Delay(delay);
 
             _pool.Release(obj);
+            _objects.Remove(message);
 
-            if (LogContent.transform.childCount == 0)
+            if (_objects.Count == 0)
             {
                 Log.SetActive(false);
             }

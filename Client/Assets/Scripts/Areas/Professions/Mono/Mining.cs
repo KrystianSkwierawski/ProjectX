@@ -1,19 +1,18 @@
-using Cysharp.Threading.Tasks;
-using StarterAssets;
-using Unity.Netcode;
-using UnityEngine;
-using UnityEngine.InputSystem;
+using System.Collections.Generic;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
+using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
-using Assets.Scripts.Areas.Character.Mono;
-using System.Collections;
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using StarterAssets;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Assets.Scripts.Areas.Professions.Mono
 {
@@ -274,6 +273,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 {
 #if UNITY_EDITOR
                     LogUI.Instance.ShowAsync($"{objectName} requires {requiredLevel} level. CurrentLevel: {level}", color: ColorUI.Red).Forget();
+                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 #else
             Debug.Log($"{objectName} requires {requiredLevel} level. CurrentLevel: {level}");
 #endif
