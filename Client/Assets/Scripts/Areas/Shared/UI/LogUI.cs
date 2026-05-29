@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Cysharp.Threading.Tasks;
 using TMPro;
@@ -64,7 +65,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                 }
             );
 
-            ShowAsync("Hello, World!", 5000).Forget();
+            ShowAsync(TranslateManager.Instance.GetByKey(TranslateKeyEnum.LogWelcome), 5000).Forget();
         }
 
         public async UniTask ShowAsync(string message, int delay = 2000, Color? color = null)

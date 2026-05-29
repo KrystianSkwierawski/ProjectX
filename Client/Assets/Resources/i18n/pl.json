@@ -46,5 +46,7 @@
   "Purchase": "Kup",
   "Sell": "Sprzedaj",
   "Price": " Cena",
+  "LogWelcome": "Witaj ponownie w Strefie 05.",
+  "ProfessionLevelRequired": "Masz zbyt niski poziom, aby zebra\u0107 ten zas\u00f3b. Wymagany: {0}, obecny: {1}.",
   "LevelUp": "Osiągnąłeś {0} Poziom"
 }

@@ -271,12 +271,16 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
                 if (level < requiredLevel)
                 {
-#if UNITY_EDITOR
-                    LogUI.Instance.ShowAsync($"{objectName} requires {requiredLevel} level. CurrentLevel: {level}", color: ColorUI.Red).Forget();
-                    AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
-#else
-            Debug.Log($"{objectName} requires {requiredLevel} level. CurrentLevel: {level}");
-#endif
+                    var message = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.ProfessionLevelRequired), requiredLevel, level);
+
+                    if (IsOwner)
+                    {
+                        LogUI.Instance.ShowAsync(message, color: ColorUI.Red).Forget();
+
+                        AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+                    }
+
+                    Debug.Log(message);
 
                     return false;
                 }

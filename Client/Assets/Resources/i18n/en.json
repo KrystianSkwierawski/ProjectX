@@ -47,5 +47,7 @@
   "Purchase": "Purchase",
   "Sell": "Sell",
   "Price": " Price",
+  "LogWelcome": "Welcome back to Area 05.",
+  "ProfessionLevelRequired": "Your level is too low to gather this resource. Required: {0}, current: {1}.",
   "LevelUp": "You've reached {0} Level"
 }
