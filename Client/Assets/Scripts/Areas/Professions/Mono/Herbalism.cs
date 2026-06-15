@@ -196,9 +196,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             if (_requiredLevels.TryGetValue(objectName, out byte requiredLevel))
             {
-                var player = gameObject.GetComponent<Player>();
-
-                var level = player.Character.Levels[ExperienceTypeEnum.Herbalism];
+                var level = UserManager.Instance.Character.Levels[ExperienceTypeEnum.Herbalism];
 
                 if (level < requiredLevel)
                 {

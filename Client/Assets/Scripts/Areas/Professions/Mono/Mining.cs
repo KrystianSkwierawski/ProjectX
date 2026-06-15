@@ -265,9 +265,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             if (_requiredLevels.TryGetValue(objectName, out byte requiredLevel))
             {
-                var player = gameObject.GetComponent<Player>();
-
-                var level = player.Character.Levels[ExperienceTypeEnum.Mining];
+                var level = UserManager.Instance.Character.Levels[ExperienceTypeEnum.Mining];
 
                 if (level < requiredLevel)
                 {

@@ -54,6 +54,8 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Price,
         LogWelcome,
         ProfessionLevelRequired,
-        LevelUp
+        LevelUp,
+        XpTitle,
+        XpDescription,
     }
 }

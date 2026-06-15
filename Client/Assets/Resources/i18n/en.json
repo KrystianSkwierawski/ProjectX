@@ -49,5 +49,7 @@
   "Price": " Price",
   "LogWelcome": "Welcome back to Area 05.",
   "ProfessionLevelRequired": "Your level is too low to gather this resource. Required: {0}, current: {1}.",
-  "LevelUp": "You've reached {0} Level"
+  "LevelUp": "You've reached {0} Level",
+  "XpTitle": "Experience",
+  "XpDescription": "Experience is gained through completing tasks, gathering resources, and crafting items. Gained experience contributes to skill level growth, allowing access to more advanced actions and better rewards."
 }

@@ -48,5 +48,7 @@
   "Price": " Cena",
   "LogWelcome": "Witaj ponownie w Strefie 05.",
   "ProfessionLevelRequired": "Masz zbyt niski poziom, aby zebra\u0107 ten zas\u00f3b. Wymagany: {0}, obecny: {1}.",
-  "LevelUp": "Osiągnąłeś {0} Poziom"
+  "LevelUp": "Osiągnąłeś {0} Poziom",
+  "XpTitle": "Doświadczenie",
+  "XpDescription": "Doświadczenie zdobywa się poprzez wykonywanie zadań, zbieranie zasobów i wytwarzanie przedmiotów. Zdobyte doświadczenie przyczynia się do wzrostu poziomu umiejętności, co pozwala na dostęp do bardziej zaawansowanych działań i lepszych nagród."
 }

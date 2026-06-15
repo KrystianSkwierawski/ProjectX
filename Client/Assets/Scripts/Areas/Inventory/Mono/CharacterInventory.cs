@@ -345,7 +345,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 InventoryItemEnum.HealthPotion => new HealthPotionUsableItem()
                     .WithClientToken(clientToken)
                     .WithOwnerClientId(OwnerClientId)
-                    .WithCharacter(gameObject.GetComponent<Player>().Character),
+                    .WithCharacter(UserManager.Instance.Character),
 
                 InventoryItemEnum.Currency => new CurrencyUsableItem(),
 
@@ -357,9 +357,6 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 usableItem.Use();
             }
         }
-
-
-
 
         public override void OnNetworkDespawn()
         {

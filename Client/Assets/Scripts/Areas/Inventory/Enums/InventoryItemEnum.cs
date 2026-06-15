@@ -9,6 +9,7 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         Can = 100,
         Currency = 101,
+        Xp = 102,
 
         #endregion
 
