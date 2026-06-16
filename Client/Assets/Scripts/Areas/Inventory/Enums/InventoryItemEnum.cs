@@ -47,5 +47,14 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         HealthPotion = 501,
 
         #endregion
+
+        #region Gear
+
+        Helmet = 600,
+        Chest = 601,
+        Boots = 602,
+        Weapon = 603,
+
+        #endregion
     }
 }

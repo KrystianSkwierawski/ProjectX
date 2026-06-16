@@ -75,14 +75,20 @@ namespace Assets.Scripts.Areas.Character.Mono
                 return;
             }
 
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                CharacterUI.Instance.Hide();
-            }
+            // TODOL: close panels
+            //if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            //{
+            //    CharacterUI.Instance.Hide();
+            //}
 
             if (Keyboard.current.cKey.wasPressedThisFrame)
             {
                 ToggleCharacter();
+            }
+
+            if (Keyboard.current.tabKey.wasPressedThisFrame)
+            {
+                GearUI.Instance.Toggle();
             }
         }
 

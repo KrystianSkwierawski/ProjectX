@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using Unity.Netcode;
 using Assets.Scripts.Areas.Character.Enums;
+using Assets.Scripts.Areas.Inventory.Enums;
+using Unity.Netcode;
 
 namespace Assets.Scripts.Areas.Character.Models
 {
@@ -11,6 +12,26 @@ namespace Assets.Scripts.Areas.Character.Models
         public IDictionary<ExperienceTypeEnum, byte> Levels { get; set; }
 
         public int Health { get; set; }
+
+        public short Strength { get; set; } = 15;
+
+        public short Agility { get; set; } = 15;
+
+        public short Stamina { get; set; } = 5;
+
+        public short Intelligence { get; set; } = 5;
+
+        public short Spirit { get; set; } = 5;
+
+        public short Arrmor { get; set; } = 20;
+
+        public InventoryItemEnum Helmet { get; set; } = InventoryItemEnum.Helmet;
+
+        public InventoryItemEnum Chest { get; set; } = InventoryItemEnum.Chest;
+
+        public InventoryItemEnum Boots { get; set; } = InventoryItemEnum.Boots;
+
+        public InventoryItemEnum Weapon { get; set; } = InventoryItemEnum.Weapon;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {

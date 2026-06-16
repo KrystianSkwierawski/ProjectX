@@ -101,6 +101,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             QuestUI.Instance.Hide();
             CharacterUI.Instance.Hide();
             CraftingUI.Instance.Hide();
+            GearUI.Instance.Hide();
             Merchant.SetActive(true);
 
             ClearOffers();

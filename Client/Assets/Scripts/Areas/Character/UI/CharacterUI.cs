@@ -9,7 +9,7 @@ namespace Assets.Scripts.Areas.Character.UI
 {
     public class CharacterUI : MonoSingleton<CharacterUI>
     {
-        #region
+        #region GameObject
 
         public GameObject CharacterCanvas { get; private set; }
 
@@ -40,6 +40,7 @@ namespace Assets.Scripts.Areas.Character.UI
             CraftingUI.Instance.Hide();
             QuestUI.Instance.Hide();
             MerchantUI.Instance.Hide();
+            GearUI.Instance.Hide();
             Character.SetActive(true);
         }
 

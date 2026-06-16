@@ -118,6 +118,7 @@ namespace Assets.Scripts.Areas.Quest.UI
             CharacterUI.Instance.Hide();
             CraftingUI.Instance.Hide();
             MerchantUI.Instance.Hide();
+            GearUI.Instance.Hide();
             Quest.SetActive(true);
 
             QuestTitleText.text = questNpc.Quest.Title;

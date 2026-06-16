@@ -51,5 +51,21 @@
   "ProfessionLevelRequired": "Your level is too low to gather this resource. Required: {0}, current: {1}.",
   "LevelUp": "You've reached {0} Level",
   "XpTitle": "Experience",
-  "XpDescription": "Experience is gained through completing tasks, gathering resources, and crafting items. Gained experience contributes to skill level growth, allowing access to more advanced actions and better rewards."
+  "XpDescription": "Experience is gained through completing tasks, gathering resources, and crafting items. Gained experience contributes to skill level growth, allowing access to more advanced actions and better rewards.",
+  "Gear": "Gear",
+  "GearRightPanelDescription": "Strength: {0}\r\nAgility: {1}\r\nStamina: {2}\r\nIntellect: {3}\r\nSpirit: {4}\r\nArmor: {5}",
+  "Strength": "Strength",
+  "Agility": "Agility",
+  "Stamina": "Stamina",
+  "Intellect": "Intellect",
+  "Spirit": "Spirit",
+  "Armor": "Armor",
+  "HelmetTemplateTitle": "Helmet",
+  "HelmetTemplateDescription": "A helmet is a piece of protective gear worn on the head. It provides defense against physical attacks and environmental hazards. Helmets can be crafted from various materials, each offering different levels of protection and durability.",
+  "ChestTemplateTitle": "Chestplate",
+  "ChestTemplateDescription": "A chestplate is a piece of protective gear worn on the torso. It provides defense against physical attacks and environmental hazards. Chestplates can be crafted from various materials, each offering different levels of protection and durability.",
+  "BootsTemplateTitle": "Boots",
+  "BootsTemplateDescription": "Boots are a piece of protective gear worn on the feet. They provide defense against physical attacks and environmental hazards. Boots can be crafted from various materials, each offering different levels of protection and durability.",
+  "WeaponTemplateTitle": "Weapon",
+  "WeaponTemplateDescription": "A weapon is a tool used to inflict damage on opponents. Weapons can be crafted from various materials and come in different types, each with unique attributes and effects. They are essential for combat and survival in hostile environments."
 }

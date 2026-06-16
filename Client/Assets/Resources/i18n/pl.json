@@ -50,5 +50,21 @@
   "ProfessionLevelRequired": "Masz zbyt niski poziom, aby zebra\u0107 ten zas\u00f3b. Wymagany: {0}, obecny: {1}.",
   "LevelUp": "Osiągnąłeś {0} Poziom",
   "XpTitle": "Doświadczenie",
-  "XpDescription": "Doświadczenie zdobywa się poprzez wykonywanie zadań, zbieranie zasobów i wytwarzanie przedmiotów. Zdobyte doświadczenie przyczynia się do wzrostu poziomu umiejętności, co pozwala na dostęp do bardziej zaawansowanych działań i lepszych nagród."
+  "XpDescription": "Doświadczenie zdobywa się poprzez wykonywanie zadań, zbieranie zasobów i wytwarzanie przedmiotów. Zdobyte doświadczenie przyczynia się do wzrostu poziomu umiejętności, co pozwala na dostęp do bardziej zaawansowanych działań i lepszych nagród.",
+  "Gear": "Sprzęt",
+  "GearRightPanelDescription": "Siła: {0}\r\nZręczność: {1}\r\nWytrzymałość: {2}\r\nIntelekt: {3}\r\nDuch: {4}\r\nPancerz: {5}",
+  "Strength": "Siła",
+  "Agility": "Zręczność",
+  "Stamina": "Wytrzymałość",
+  "Intellect": "Intelekt",
+  "Spirit": "Duch",
+  "Armor": "Pancerz",
+  "HelmetTemplateTitle": "Hełm",
+  "HelmetTemplateDescription": "Hełm to element ochronnego wyposażenia noszony na głowie. Zapewnia obronę przed atakami fizycznymi i zagrożeniami środowiskowymi. Hełmy mogą być wykonane z różnych materiałów, z których każdy oferuje różne poziomy ochrony i trwałości.",
+  "ChestTemplateTitle": "Napierśnik",
+  "ChestTemplateDescription": "Napierśnik to element ochronnego wyposażenia noszony na klatce piersiowej. Zapewnia obronę przed atakami fizycznymi i zagrożeniami środowiskowymi. Napierśniki mogą być wykonane z różnych materiałów, z których każdy oferuje różne poziomy ochrony i trwałości.",
+  "BootsTemplateTitle": "Buty",
+  "BootsTemplateDescription": "Buty to element ochronnego wyposażenia noszony na nogach. Zapewniają obronę przed atakami fizycznymi i zagrożeniami środowiskowymi. Buty mogą być wykonane z różnych materiałów, z których każdy oferuje różne poziomy ochrony i trwałości.",
+  "WeaponTemplateTitle": "Broń",
+  "WeaponTemplateDescription": "Broń to narzędzie używane do zadawania obrażeń przeciwnikom. Broń może być wyprodukowana z różnych materiałów i występuje w różnych typach, każdy z unikalnymi atrybutami i efektami. Jest niezbędna do walki i przetrwania w wrogim środowisku."
 }

@@ -170,6 +170,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             QuestUI.Instance.Hide();
             CharacterUI.Instance.Hide();
             MerchantUI.Instance.Hide();
+            GearUI.Instance.Hide();
             Crafting.SetActive(true);
 
             if (CurrentType == type)
