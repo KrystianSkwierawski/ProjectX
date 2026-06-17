@@ -59,13 +59,5 @@
   "Stamina": "Stamina",
   "Intellect": "Intellect",
   "Spirit": "Spirit",
-  "Armor": "Armor",
-  "HelmetTemplateTitle": "Helmet",
-  "HelmetTemplateDescription": "A helmet is a piece of protective gear worn on the head. It provides defense against physical attacks and environmental hazards. Helmets can be crafted from various materials, each offering different levels of protection and durability.",
-  "ChestTemplateTitle": "Chestplate",
-  "ChestTemplateDescription": "A chestplate is a piece of protective gear worn on the torso. It provides defense against physical attacks and environmental hazards. Chestplates can be crafted from various materials, each offering different levels of protection and durability.",
-  "BootsTemplateTitle": "Boots",
-  "BootsTemplateDescription": "Boots are a piece of protective gear worn on the feet. They provide defense against physical attacks and environmental hazards. Boots can be crafted from various materials, each offering different levels of protection and durability.",
-  "WeaponTemplateTitle": "Weapon",
-  "WeaponTemplateDescription": "A weapon is a tool used to inflict damage on opponents. Weapons can be crafted from various materials and come in different types, each with unique attributes and effects. They are essential for combat and survival in hostile environments."
+  "Armor": "Armor"
 }

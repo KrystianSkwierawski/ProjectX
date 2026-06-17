@@ -64,14 +64,6 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Stamina,
         Intelligence,
         Spirit,
-        Arrmor,
-        HelmetTemplateTitle,
-        HelmetTemplateDescription,
-        ChestTemplateTitle,
-        ChestTemplateDescription,
-        BootsTemplateTitle,
-        BootsTemplateDescription,
-        WeaponTemplateTitle,
-        WeaponTemplateDescription,
+        Arrmor
     }
 }

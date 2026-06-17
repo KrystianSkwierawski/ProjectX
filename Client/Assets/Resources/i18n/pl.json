@@ -58,13 +58,5 @@
   "Stamina": "Wytrzymałość",
   "Intellect": "Intelekt",
   "Spirit": "Duch",
-  "Armor": "Pancerz",
-  "HelmetTemplateTitle": "Hełm",
-  "HelmetTemplateDescription": "Hełm to element ochronnego wyposażenia noszony na głowie. Zapewnia obronę przed atakami fizycznymi i zagrożeniami środowiskowymi. Hełmy mogą być wykonane z różnych materiałów, z których każdy oferuje różne poziomy ochrony i trwałości.",
-  "ChestTemplateTitle": "Napierśnik",
-  "ChestTemplateDescription": "Napierśnik to element ochronnego wyposażenia noszony na klatce piersiowej. Zapewnia obronę przed atakami fizycznymi i zagrożeniami środowiskowymi. Napierśniki mogą być wykonane z różnych materiałów, z których każdy oferuje różne poziomy ochrony i trwałości.",
-  "BootsTemplateTitle": "Buty",
-  "BootsTemplateDescription": "Buty to element ochronnego wyposażenia noszony na nogach. Zapewniają obronę przed atakami fizycznymi i zagrożeniami środowiskowymi. Buty mogą być wykonane z różnych materiałów, z których każdy oferuje różne poziomy ochrony i trwałości.",
-  "WeaponTemplateTitle": "Broń",
-  "WeaponTemplateDescription": "Broń to narzędzie używane do zadawania obrażeń przeciwnikom. Broń może być wyprodukowana z różnych materiałów i występuje w różnych typach, każdy z unikalnymi atrybutami i efektami. Jest niezbędna do walki i przetrwania w wrogim środowisku."
+  "Armor": "Pancerz"
 }

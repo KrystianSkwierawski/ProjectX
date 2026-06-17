@@ -50,10 +50,10 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         #region Gear
 
-        Helmet = 600,
-        Chest = 601,
-        Boots = 602,
-        Weapon = 603,
+        HelmetTemplate = 600,
+        ChestTemplate = 601,
+        BootsTemplate = 602,
+        WeaponTemplate = 603,
 
         #endregion
     }

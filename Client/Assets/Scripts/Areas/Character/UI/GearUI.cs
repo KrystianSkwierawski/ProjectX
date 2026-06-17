@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.UI;
 using Assets.Scripts.Areas.Professions.UI;
@@ -15,6 +16,14 @@ namespace Assets.Scripts.Areas.Character.UI
 {
     public class GearUI : MonoSingleton<GearUI>
     {
+        private readonly static InventoryItemEnum[] _templates = new InventoryItemEnum[]
+        {
+            InventoryItemEnum.HelmetTemplate,
+            InventoryItemEnum.ChestTemplate,
+            InventoryItemEnum.BootsTemplate,
+            InventoryItemEnum.WeaponTemplate
+        };
+
         #region GameObject
 
         public GameObject GearCanvas { get; private set; }
@@ -67,17 +76,31 @@ namespace Assets.Scripts.Areas.Character.UI
 
         private void UpdateLeftPanel()
         {
-            Wear(Helmet);
-            Wear(Chest);
-            Wear(Boots);
-            Wear(Weapon);
+            Wear(Helmet, UserManager.Instance.Character.Helmet);
+            Wear(Chest, UserManager.Instance.Character.Chest);
+            Wear(Boots, UserManager.Instance.Character.Boots);
+            Wear(Weapon, UserManager.Instance.Character.Weapon);
         }
 
-        private void Wear(GearSlot slot)
+        private void Wear(GearSlot slot, InventoryItemEnum type)
         {
-            slot.Image.texture = InventoryUI.Instance.Textures[slot.Type];
-            slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{slot.Type}Title");
-            slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{slot.Type}Description");
+            slot.Image.color = ColorUI.White;
+            slot.Image.texture = InventoryUI.Instance.Textures[type];
+
+            if (_templates.Contains(type))
+            {
+                slot.Button.interactable = false;
+                slot.HoverUI.enabled = false;
+
+                return;
+            }
+
+            slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
+            slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{type}Description");
+
+            // TODO: right button
+            slot.Button.interactable = true;
+            slot.HoverUI.enabled = true;
 
             var key = slot.GameObject.GetInstanceID().ToString();
 
@@ -115,12 +138,12 @@ namespace Assets.Scripts.Areas.Character.UI
             {
                 GameObject = obj,
                 Image = obj.transform.Find("Background").GetComponent<RawImage>(),
-                //Mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                Mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                HoverUI = obj.GetComponent<HoverUI>(),
                 Button = obj.GetComponent<ButtonUI>(),
                 Preview = preview,
                 PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                 PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
-                Type = Enum.TryParse(n, out InventoryItemEnum type) ? type : InventoryItemEnum.None
             };
         }
 
@@ -155,12 +178,12 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public ButtonUI Button { get; set; }
 
+        public HoverUI HoverUI { get; set; }
+
         public GameObject Preview { get; set; }
 
         public TextMeshProUGUI PreviewTitleMesh { get; set; }
 
         public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
-
-        public InventoryItemEnum Type { get; set; }
     }
 }
