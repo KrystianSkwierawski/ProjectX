@@ -16,14 +16,6 @@ namespace Assets.Scripts.Areas.Character.UI
 {
     public class GearUI : MonoSingleton<GearUI>
     {
-        private readonly static InventoryItemEnum[] _templates = new InventoryItemEnum[]
-        {
-            InventoryItemEnum.HelmetTemplate,
-            InventoryItemEnum.ChestTemplate,
-            InventoryItemEnum.BootsTemplate,
-            InventoryItemEnum.WeaponTemplate
-        };
-
         #region GameObject
 
         public GameObject GearCanvas { get; private set; }
@@ -84,10 +76,7 @@ namespace Assets.Scripts.Areas.Character.UI
 
         private void Wear(GearSlot slot, InventoryItemEnum type)
         {
-            slot.Image.color = ColorUI.White;
-            slot.Image.texture = InventoryUI.Instance.Textures[type];
-
-            if (_templates.Contains(type))
+            if (type == InventoryItemEnum.None)
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;
@@ -95,6 +84,7 @@ namespace Assets.Scripts.Areas.Character.UI
                 return;
             }
 
+            slot.Image.texture = InventoryUI.Instance.Textures[type];
             slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
             slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{type}Description");
 
