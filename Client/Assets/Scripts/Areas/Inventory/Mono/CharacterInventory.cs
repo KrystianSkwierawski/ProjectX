@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
@@ -342,13 +343,12 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             IUsableItem usableItem = item.Type switch
             {
-                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem()
-                    .WithClientToken(clientToken)
-                    .WithOwnerClientId(OwnerClientId)
-                    .WithCharacter(UserManager.Instance.Character),
-
-                InventoryItemEnum.Currency => new CurrencyUsableItem(),
-
+                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(clientToken, OwnerClientId),
+                InventoryItemEnum.Currency => new CurrencyUsableItem(clientToken, OwnerClientId),
+                InventoryItemEnum.IronHelmet => new GearUsableItem(GearTypeEnum.Helmet, item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronChest => new GearUsableItem(GearTypeEnum.Chest, item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronBoots => new GearUsableItem(GearTypeEnum.Boots, item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronSword => new GearUsableItem(GearTypeEnum.Weapon, item.Type, clientToken, OwnerClientId),
                 _ => null
             };
 

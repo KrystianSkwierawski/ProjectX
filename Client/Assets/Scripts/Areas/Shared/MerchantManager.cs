@@ -26,7 +26,12 @@ namespace Assets.Scripts.Areas.Shared.Mono
             { InventoryItemEnum.BlackBar, 360 },
             { InventoryItemEnum.Wood, 8 },
             { InventoryItemEnum.Chamomile, 25 },
-            { InventoryItemEnum.HealthPotion, 150 }
+            { InventoryItemEnum.HealthPotion, 150 },
+            { InventoryItemEnum.IronHelmet, 20 },
+            { InventoryItemEnum.IronChest, 30 },
+            { InventoryItemEnum.IronBoots, 10 },
+            { InventoryItemEnum.IronSword, 40 },
+
         };
 
         public bool HasCurrency(InventoryItemDto item) => HasCurrency(GetPurchasePrice(item));

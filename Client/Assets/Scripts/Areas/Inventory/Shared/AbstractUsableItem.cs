@@ -7,13 +7,18 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public abstract class AbstractUsableItem : IUsableItem
     {
-        public abstract InventoryItemEnum Type { get; }
+        protected AbstractUsableItem(InventoryItemEnum type, string clientToken, ulong ownerClientId)
+        {
+            Type = type;
+            ClientToken = clientToken;
+            OwnerClientId = ownerClientId;
+        }
+
+        protected InventoryItemEnum Type { get; }
 
         protected string ClientToken { get; private set; }
 
         protected ulong OwnerClientId { get; private set; }
-
-        protected CharacterDto Character { get; private set; }
 
         public virtual void Use()
         {
@@ -34,27 +39,6 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                     ClientToken = ClientToken,
                 });
 #endif
-        }
-
-        public IUsableItem WithClientToken(string clientToken)
-        {
-            ClientToken = clientToken;
-
-            return this;
-        }
-
-        public IUsableItem WithOwnerClientId(ulong ownerClientId)
-        {
-            OwnerClientId = ownerClientId;
-
-            return this;
-        }
-
-        public IUsableItem WithCharacter(CharacterDto character)
-        {
-            Character = character;
-
-            return this;
         }
     }
 }

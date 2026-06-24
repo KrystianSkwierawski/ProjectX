@@ -35,6 +35,7 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Currency,
         Drinking,
         SendMessage,
+        Wear,
 
         #endregion
 

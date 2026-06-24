@@ -730,7 +730,11 @@
           "BlackBar",
           "Wood",
           "Chamomile",
-          "HealthPotion"
+          "HealthPotion",
+          "IronHelmet",
+          "IronChest",
+          "IronBoots",
+          "IronSword"
         ],
         "x-enum-varnames": [
           "None",
@@ -750,7 +754,11 @@
           "BlackBar",
           "Wood",
           "Chamomile",
-          "HealthPotion"
+          "HealthPotion",
+          "IronHelmet",
+          "IronChest",
+          "IronBoots",
+          "IronSword"
         ],
         "x-enumNames": [
           "None",
@@ -770,9 +778,17 @@
           "BlackBar",
           "Wood",
           "Chamomile",
-          "HealthPotion"
+          "HealthPotion",
+          "IronHelmet",
+          "IronChest",
+          "IronBoots",
+          "IronSword"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -810,6 +826,10 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -830,7 +850,11 @@
           307,
           400,
           500,
-          501
+          501,
+          1000,
+          1001,
+          1002,
+          1003
         ]
       },
       "UpdateCharacterInventoryCommand": {

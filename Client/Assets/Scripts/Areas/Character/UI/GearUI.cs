@@ -1,6 +1,6 @@
-﻿using System;
-using System.Linq;
-using Assets.Scripts.Areas.Inventory.Enums;
+﻿using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.Models;
+using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Inventory.UI;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Quest.UI;
@@ -66,7 +66,7 @@ namespace Assets.Scripts.Areas.Character.UI
             UpdateRightPanel();
         }
 
-        private void UpdateLeftPanel()
+        public void UpdateLeftPanel()
         {
             Wear(Helmet, UserManager.Instance.Character.Helmet);
             Wear(Chest, UserManager.Instance.Character.Chest);
@@ -74,9 +74,12 @@ namespace Assets.Scripts.Areas.Character.UI
             Wear(Weapon, UserManager.Instance.Character.Weapon);
         }
 
-        private void Wear(GearSlot slot, InventoryItemEnum type)
+        public void Wear(GearSlot slot, InventoryItemEnum type)
         {
-            if (type == InventoryItemEnum.None)
+            slot.Button.OnRightClick.RemoveAllListeners();
+            slot.Image.texture = InventoryUI.Instance.Textures[type];
+
+            if (type == InventoryItemEnum.None || type == InventoryItemEnum.HelmetTemplate || type == InventoryItemEnum.ChestTemplate || type == InventoryItemEnum.BootsTemplate || type == InventoryItemEnum.WeaponTemplate)
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;
@@ -84,11 +87,9 @@ namespace Assets.Scripts.Areas.Character.UI
                 return;
             }
 
-            slot.Image.texture = InventoryUI.Instance.Textures[type];
             slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
             slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{type}Description");
 
-            // TODO: right button
             slot.Button.interactable = true;
             slot.HoverUI.enabled = true;
 
@@ -102,6 +103,18 @@ namespace Assets.Scripts.Areas.Character.UI
             OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
             {
                 slot.Preview.SetActive(false);
+            });
+
+            slot.Button.OnRightClick.AddListener(() =>
+            {
+                UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
+                {
+                    Item = new InventoryItemDto
+                    {
+                        Type = type,
+                        Count = 1
+                    }
+                });
             });
         }
 

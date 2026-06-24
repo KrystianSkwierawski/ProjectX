@@ -25,13 +25,13 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short Arrmor { get; set; } = 20;
 
-        public InventoryItemEnum Helmet { get; set; }
+        public InventoryItemEnum Helmet { get; set; } = InventoryItemEnum.HelmetTemplate;
 
-        public InventoryItemEnum Chest { get; set; }
+        public InventoryItemEnum Chest { get; set; } = InventoryItemEnum.ChestTemplate;
 
-        public InventoryItemEnum Boots { get; set; }
+        public InventoryItemEnum Boots { get; set; } = InventoryItemEnum.BootsTemplate;
 
-        public InventoryItemEnum Weapon { get; set; }
+        public InventoryItemEnum Weapon { get; set; } = InventoryItemEnum.WeaponTemplate;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {

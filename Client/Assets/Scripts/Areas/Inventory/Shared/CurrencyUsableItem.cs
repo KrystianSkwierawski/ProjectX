@@ -6,7 +6,10 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class CurrencyUsableItem : AbstractUsableItem
     {
-        public override InventoryItemEnum Type { get; } = InventoryItemEnum.Currency;
+        public CurrencyUsableItem(string clientToken, ulong ownerClientId) : base(InventoryItemEnum.Currency, clientToken: clientToken, ownerClientId: ownerClientId)
+        {
+
+        }
 
         public override void Use()
         {
