@@ -345,10 +345,10 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             {
                 InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(clientToken, OwnerClientId),
                 InventoryItemEnum.Currency => new CurrencyUsableItem(clientToken, OwnerClientId),
-                InventoryItemEnum.IronHelmet => new GearUsableItem(GearTypeEnum.Helmet, item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.IronChest => new GearUsableItem(GearTypeEnum.Chest, item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.IronBoots => new GearUsableItem(GearTypeEnum.Boots, item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.IronSword => new GearUsableItem(GearTypeEnum.Weapon, item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronChest => new ChestUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronBoots => new BootsUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronSword => new WeaponUsableItem(item.Type, clientToken, OwnerClientId),
                 _ => null
             };
 
