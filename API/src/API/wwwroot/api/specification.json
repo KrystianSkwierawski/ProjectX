@@ -362,6 +362,36 @@
         ]
       }
     },
+    "/api/Characters": {
+      "post": {
+        "tags": [
+          "Characters"
+        ],
+        "operationId": "UpdateCharacter",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCharacterCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterTransforms": {
       "get": {
         "tags": [
@@ -731,6 +761,10 @@
           "Wood",
           "Chamomile",
           "HealthPotion",
+          "HelmetTemplate",
+          "ChestTemplate",
+          "BootsTemplate",
+          "WeaponTemplate",
           "IronHelmet",
           "IronChest",
           "IronBoots",
@@ -755,6 +789,10 @@
           "Wood",
           "Chamomile",
           "HealthPotion",
+          "HelmetTemplate",
+          "ChestTemplate",
+          "BootsTemplate",
+          "WeaponTemplate",
           "IronHelmet",
           "IronChest",
           "IronBoots",
@@ -779,12 +817,20 @@
           "Wood",
           "Chamomile",
           "HealthPotion",
+          "HelmetTemplate",
+          "ChestTemplate",
+          "BootsTemplate",
+          "WeaponTemplate",
           "IronHelmet",
           "IronChest",
           "IronBoots",
           "IronSword"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -830,6 +876,10 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -854,7 +904,11 @@
           1000,
           1001,
           1002,
-          1003
+          1003,
+          1004,
+          1005,
+          1006,
+          1007
         ]
       },
       "UpdateCharacterInventoryCommand": {
@@ -1184,6 +1238,107 @@
           "health": {
             "type": "integer",
             "format": "int32"
+          },
+          "strength": {
+            "type": "integer"
+          },
+          "agility": {
+            "type": "integer"
+          },
+          "stamina": {
+            "type": "integer"
+          },
+          "intelligence": {
+            "type": "integer"
+          },
+          "spirit": {
+            "type": "integer"
+          },
+          "arrmor": {
+            "type": "integer"
+          },
+          "helmet": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "chest": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "boots": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "weapon": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          }
+        }
+      },
+      "UpdateCharacterCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "health": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "strength": {
+            "type": "integer",
+            "nullable": true
+          },
+          "agility": {
+            "type": "integer",
+            "nullable": true
+          },
+          "stamina": {
+            "type": "integer",
+            "nullable": true
+          },
+          "intelligence": {
+            "type": "integer",
+            "nullable": true
+          },
+          "spirit": {
+            "type": "integer",
+            "nullable": true
+          },
+          "arrmor": {
+            "type": "integer",
+            "nullable": true
+          },
+          "helmet": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InventoryItemEnum"
+              }
+            ]
+          },
+          "chest": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InventoryItemEnum"
+              }
+            ]
+          },
+          "boots": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InventoryItemEnum"
+              }
+            ]
+          },
+          "weapon": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InventoryItemEnum"
+              }
+            ]
           }
         }
       },

@@ -1,4 +1,7 @@
-﻿using Assets.Scripts.Areas.Inventory.Enums;
+﻿using System;
+using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.Models;
+using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 

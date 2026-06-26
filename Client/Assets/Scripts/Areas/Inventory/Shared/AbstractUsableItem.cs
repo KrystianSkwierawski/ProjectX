@@ -1,7 +1,10 @@
-﻿using Assets.Scripts.Areas.Character.Models;
+﻿using System.Threading.Tasks;
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
+using Assets.Scripts.Areas.Shared.Mono;
+using UnityEngine.Networking;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
@@ -23,21 +26,21 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         public virtual void Use()
         {
 #if UNITY_SERVER && !UNITY_EDITOR
-                UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+            UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+            {
+                Request = new UpdateCharacterInventoryCommand
                 {
-                    Request = new UpdateCharacterInventoryCommand
+                    Remove = new InventoryItemDto[]
                     {
-                        Remove = new InventoryItemDto[]
-                        {
                             new InventoryItemDto
                             {
                                 Type = Type,
                                 Count = 1,
                             }
-                        },
                     },
-                    ClientToken = ClientToken,
-                });
+                },
+                ClientToken = ClientToken,
+            });
 #endif
         }
     }

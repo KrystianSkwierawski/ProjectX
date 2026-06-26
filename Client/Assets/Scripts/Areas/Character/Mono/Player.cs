@@ -151,7 +151,10 @@ namespace Assets.Scripts.Areas.Character.Mono
         public void UpdatePlayerClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
         {
             UserManager.Instance.Character = character;
-            PlayerUI.Instance.SetPlayer(UserManager.Instance.Character);
+
+            PlayerUI.Instance.SetPlayer();
+
+            GearUI.Instance.UpdateLeftPanel();
         }
 
         [ClientRpc]
