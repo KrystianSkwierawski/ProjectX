@@ -7,6 +7,7 @@ using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
@@ -63,7 +64,12 @@ namespace Assets.Scripts.Areas.Character.Mono
                         }
                     });
 
-                    // TODO: call api
+                    UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                    {
+                        CharacterId = 1,
+                        Health = UserManager.Instance.Character.Health
+                    }, e.ClientToken)
+                    .Forget();
                 });
             }
         }
