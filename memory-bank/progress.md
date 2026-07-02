@@ -32,3 +32,4 @@
 ## Evolution Notes
 - 2026-05-07: Initial memory bank created from repo inspection.
 - 2026-07-02: Added Unity/API dev stack run automation, moved scripts under `Client/Automation/`, renamed from `serve` to `run`, and exposed Unity menu entries for `Run And Build` and `Run`.
+- 2026-07-02: Added a scene-backed bottom-right Unity quick-access bar that reuses `InventorySlot` hover previews, loads quick-access icons from `Resources/Icons`, and toggles gear, inventory, character, and chat UI by mouse click.

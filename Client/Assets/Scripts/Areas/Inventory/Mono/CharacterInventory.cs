@@ -242,24 +242,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             if (IsOwner && Keyboard.current.bKey.wasPressedThisFrame)
             {
-                ToggleInventory();
+                InventoryUI.Instance.Toggle();
             }
-        }
-
-        private static void ToggleInventory()
-        {
-            if (InventoryUI.Instance.Inventory.activeSelf)
-            {
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
-
-                InventoryUI.Instance.Inventory.SetActive(false);
-
-                return;
-            }
-
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
-
-            InventoryUI.Instance.Inventory.SetActive(true);
         }
 
         [ClientRpc]

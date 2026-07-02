@@ -59,7 +59,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         public void TryPlayOneShot(AudioTypeEnum type, float volume = 1f)
         {
-            TryPlayOneShot(_mainAudioSource, type);
+            TryPlayOneShot(_mainAudioSource, type, volume);
         }
 
         public void TryPlayOneShot(AudioSource audioSource, AudioTypeEnum type, float volume = 1f)

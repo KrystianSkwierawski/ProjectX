@@ -16,6 +16,7 @@
   - `Client/Automation/run.bat`
   - `Client/Automation/run.ps1`
   - `Client/Assets/Editor/ProjectXDevAutomation.cs`
+- 2026-07-02: Added a scene-backed bottom-right quick-access UI bar in `UIScene`, using the existing `InventorySlot` prefab and `Resources/Icons/QuickAccess*.png` icons for gear, inventory, character, and chat shortcuts.
 
 ## Active Decisions
 - Treat the repository as two cooperating applications:

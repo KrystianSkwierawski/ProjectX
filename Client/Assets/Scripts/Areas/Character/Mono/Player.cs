@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
@@ -89,31 +88,13 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             if (Keyboard.current.cKey.wasPressedThisFrame)
             {
-                ToggleCharacter();
+                CharacterUI.Instance.Toggle();
             }
 
             if (Keyboard.current.tabKey.wasPressedThisFrame)
             {
                 GearUI.Instance.Toggle();
             }
-        }
-
-        private void ToggleCharacter()
-        {
-            if (CharacterUI.Instance.Character.activeSelf)
-            {
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
-
-                CharacterUI.Instance.Hide();
-
-                return;
-            }
-
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
-
-            CharacterUI.Instance.DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), UserManager.Instance.Character.Levels.Values.Cast<object>().ToArray());
-
-            CharacterUI.Instance.Show();
         }
 
         [ClientRpc]
