@@ -24,6 +24,8 @@
 
 ## Client Architecture
 - Unity scenes under `Client/Assets/Scenes`, including Bootstrap, Main, Server, UI, Environment, Audio, and Test scenes.
+- Unity Editor automation lives in `Client/Assets/Editor/ProjectXDevAutomation.cs`.
+- Local run scripts live in `Client/Automation/` so they are grouped with the Unity client without being imported as Unity assets.
 - Runtime scripts under `Client/Assets/Scripts` are grouped by concern:
   - `Network`: player, enemy, resource gathering, health, crafting, transforms, Netcode behavior.
   - `UI`: inventory, quests, crafting, character, target, cursor, hover, translation UI.
@@ -36,3 +38,8 @@
 - Client DTO/model names closely mirror backend DTOs and commands.
 - Localization resources exist in both API and Unity client paths.
 - Generated/build artifacts are present in the workspace; avoid touching `bin/`, `obj/`, Unity `Library/`, and log/cache outputs unless specifically needed.
+- Dev startup flow:
+  - PowerShell starts/restarts the API executable and auto-builds it if missing.
+  - PowerShell builds or reuses the Unity dedicated server executable.
+  - If Unity Editor is already open, PowerShell drops request files under `Client/Temp/ProjectXAutomation/`; `ProjectXDevAutomation` handles server build and client Play Mode requests from the open editor.
+  - Dedicated server build scenes are read from `Assets/Settings/Build Profiles/DedicatedServer.asset`, with a fallback list matching the current profile order.

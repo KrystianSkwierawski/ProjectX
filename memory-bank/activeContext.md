@@ -12,6 +12,10 @@
   - `systemPatterns.md`
   - `techContext.md`
   - `progress.md`
+- 2026-07-02: Added local run automation for the Unity/API dev stack:
+  - `Client/Automation/run.bat`
+  - `Client/Automation/run.ps1`
+  - `Client/Assets/Editor/ProjectXDevAutomation.cs`
 
 ## Active Decisions
 - Treat the repository as two cooperating applications:
@@ -19,11 +23,14 @@
   - `API/`: ASP.NET Core API using clean/layered architecture.
 - Preserve existing project organization and naming patterns when making future changes.
 - Read all memory bank files at the start of every task, per `.Codexrules`.
+- Local dev startup automation lives inside the Unity project under `Client/Automation/`, not at repository root.
+- Unity menu entries under `ProjectX > Automation` should remain aligned with `Client/Automation/run.bat`.
 
 ## Next Steps
 - For future implementation tasks, first refresh this file with the current working focus.
 - Confirm product-level goals with the user when changes require design or gameplay decisions not already implied by code.
 - Keep `progress.md` updated after meaningful changes.
+- When changing startup/build behavior, update both `Client/Automation/run.ps1` and `Client/Assets/Editor/ProjectXDevAutomation.cs`.
 
 ## Important Local Notes
 - `git status` at initialization showed `.Codexrules` and `.gitignore` as untracked; these appear pre-existing and were not modified by this initialization.

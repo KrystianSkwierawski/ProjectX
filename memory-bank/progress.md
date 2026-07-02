@@ -12,6 +12,10 @@
 - Domain entities exist for users, characters, transforms, inventory, quests, crafting recipes, and experience.
 - API endpoints exist for users, application users, characters, transforms, inventories, quests, character quests, crafting recipes, and character experience.
 - Unity client contains scenes, prefabs, networking scripts, UI scripts, shared managers, API models, and localization resources.
+- Local one-command/dev-menu startup automation exists:
+  - `Client/Automation/run.bat`
+  - `Client/Automation/run.ps1`
+  - Unity menu entries `ProjectX > Automation > Run And Build` and `ProjectX > Automation > Run`.
 
 ## What's Left / Unknown
 - Exact gameplay roadmap and release target are not documented.
@@ -23,6 +27,8 @@
 - Secrets or development keys appear in `API/src/API/appsettings.json`; treat as local development values unless the user confirms otherwise.
 - Generated Unity and .NET artifacts are present in the workspace, so future searches and edits should avoid build/cache directories.
 - `.Codexrules` and `.gitignore` were untracked at initialization.
+- Full runtime automation has not been end-to-end verified after the final rename to `run`; only no-op script wiring was smoke-tested.
 
 ## Evolution Notes
 - 2026-05-07: Initial memory bank created from repo inspection.
+- 2026-07-02: Added Unity/API dev stack run automation, moved scripts under `Client/Automation/`, renamed from `serve` to `run`, and exposed Unity menu entries for `Run And Build` and `Run`.

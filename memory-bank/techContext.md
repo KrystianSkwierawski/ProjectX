@@ -28,6 +28,13 @@
 - Backend build/test:
   - `dotnet build API/ProjectX.sln`
   - `dotnet test API/ProjectX.sln`
+- Local dev stack automation:
+  - `Client/Automation/run.bat` runs the API, Unity dedicated server, and Unity client Play Mode.
+  - `Client/Automation/run.bat -SkipServerBuild` runs using the existing server build.
+  - `Client/Automation/run.bat -SkipApi -SkipServerBuild -SkipServerRun -SkipClientPlay` is a safe no-op smoke test for script wiring.
+- Unity Editor menu:
+  - `ProjectX > Automation > Run And Build` invokes `Client/Automation/run.bat`.
+  - `ProjectX > Automation > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
 - Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
 
 ## Constraints And Preferences
@@ -35,3 +42,5 @@
 - Avoid editing generated artifacts and caches such as `Client/Library`, `Client/obj`, `API/**/bin`, `API/**/obj`, and log files.
 - Keep API contract changes synchronized with Unity client models and request code.
 - Validate JSON localization files when editing i18n resources.
+- `run.ps1` auto-builds `API/src/API/API.csproj` in `Debug` when `ProjectX.API.exe` is missing.
+- Unity dedicated server builds are generated under `Client/Builds/Server/ProjectXServer.exe`.
