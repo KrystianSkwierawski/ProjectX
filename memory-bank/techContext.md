@@ -44,3 +44,4 @@
 - Validate JSON localization files when editing i18n resources.
 - `run.ps1` auto-builds `API/src/API/API.csproj` in `Debug` when `ProjectX.API.exe` is missing.
 - Unity dedicated server builds are generated under `Client/Builds/Server/ProjectXServer.exe`.
+- `.claude/settings.local.json` is an untracked local tool configuration file and may contain secrets; do not commit or quote its values.

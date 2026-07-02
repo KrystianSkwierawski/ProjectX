@@ -3,7 +3,7 @@
 ## Repository Layout
 - `Client/`: Unity project and generated C# solution files.
 - `API/`: .NET solution with layered projects.
-- `.Codexrules`: Memory bank rules for Codex sessions.
+- `.Codexrules` and `CLAUDE.md`: memory bank and agent workflow instructions.
 
 ## Backend Architecture
 - `API/src/API`: ASP.NET Core entrypoint, endpoint mapping, OpenAPI/Swagger, web services.
@@ -17,6 +17,7 @@
 - MediatR for application commands/queries.
 - FluentValidation wired through a MediatR validation behavior.
 - Logging behavior registered in the MediatR pipeline.
+- Character state mutations use `UpdateCharacterCommand` for optional partial updates of health, stats, and equipped gear.
 - Entity Framework Core through `ApplicationDbContext`, with SQL Server by default and in-memory database support through configuration.
 - ASP.NET Core Identity with roles and JWT bearer authentication.
 - Authorization policies for server/client roles.
@@ -28,7 +29,7 @@
 - Local run scripts live in `Client/Automation/` so they are grouped with the Unity client without being imported as Unity assets.
 - Runtime scripts under `Client/Assets/Scripts` are grouped by concern:
   - `Network`: player, enemy, resource gathering, health, crafting, transforms, Netcode behavior.
-  - `UI`: inventory, quests, crafting, character, target, cursor, hover, translation UI.
+  - `UI`: inventory, gear, quests, crafting, character, quick access, chat, target, cursor, hover, translation UI.
   - `Shared`: managers, singleton helpers, web request helper, grid layout.
   - `Subscriptions`: event/subscription handlers for gameplay state changes.
   - `Models`: DTOs and API command/query payloads mirrored from backend contracts.
@@ -37,6 +38,9 @@
 ## Cross-Cutting Patterns
 - Client DTO/model names closely mirror backend DTOs and commands.
 - Localization resources exist in both API and Unity client paths.
+- Gear item use is modeled through `AbstractUsableItem` / `AbstractGearUsableItem` with concrete helmet, chest, boots, and weapon implementations; server builds update API character gear and inventory through subscriptions/API calls.
+- Character health is synchronized from server-side attack handling through `AttackPlayerSubscription`, a targeted client RPC, and `UpdateCharacterCommand`.
+- Bottom-right quick-access UI is scene-backed in `UIScene` and configured by `QuickAccessUI`, reusing existing slot/preview behavior and icon resources.
 - Generated/build artifacts are present in the workspace; avoid touching `bin/`, `obj/`, Unity `Library/`, and log/cache outputs unless specifically needed.
 - Dev startup flow:
   - PowerShell starts/restarts the API executable and auto-builds it if missing.
