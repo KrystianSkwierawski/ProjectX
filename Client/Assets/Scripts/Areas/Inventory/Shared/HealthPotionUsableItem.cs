@@ -16,13 +16,13 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         public override void Use()
         {
-            if (UserManager.Instance.Character.Health >= 100)
+            if (UserManager.Instance.Character.Health >= UserManager.Instance.Character.MaxHealth)
             {
                 return;
             }
 
             // TODO: set on api
-            UserManager.Instance.Character.Health = Math.Min(UserManager.Instance.Character.Health + 20, 100);
+            UserManager.Instance.Character.Health = Math.Min(UserManager.Instance.Character.Health + 20, UserManager.Instance.Character.MaxHealth);
 
 #if UNITY_EDITOR
             PlayerUI.Instance.SetHealth(UserManager.Instance.Character.Health);

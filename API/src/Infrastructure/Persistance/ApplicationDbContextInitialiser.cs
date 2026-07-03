@@ -92,6 +92,7 @@ public class ApplicationDbContextInitialiser
                 Name = userName.Split('@')[0],
                 Status = StatusEnum.Active,
                 Health = 100,
+                MaxHealth = 100,
                 ModDate = DateTime.Now,
                 Strength = 15,
                 Agility = 15,

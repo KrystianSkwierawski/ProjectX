@@ -13,6 +13,8 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public int Health { get; set; }
 
+        public int MaxHealth { get; set; }
+
         public short Strength { get; set; }
 
         public short Agility { get; set; }
@@ -46,6 +48,10 @@ namespace Assets.Scripts.Areas.Character.Models
                 int health = default;
                 serializer.SerializeValue(ref health);
                 Health = health;
+
+                int maxHealth = default;
+                serializer.SerializeValue(ref maxHealth);
+                MaxHealth = maxHealth;
 
                 short strength = default;
                 serializer.SerializeValue(ref strength);
@@ -114,6 +120,9 @@ namespace Assets.Scripts.Areas.Character.Models
                 // Write Health
                 int health = Health;
                 serializer.SerializeValue(ref health);
+
+                int maxHealth = MaxHealth;
+                serializer.SerializeValue(ref maxHealth);
 
                 short strength = Strength;
                 serializer.SerializeValue(ref strength);

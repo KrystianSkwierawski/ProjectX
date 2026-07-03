@@ -11,6 +11,8 @@ public class UpdateCharacterCommand : IRequest
 
     public int? Health { get; init; }
 
+    public int? MaxHealth { get; init; }
+
     public short? Strength { get; init; }
 
     public short? Agility { get; init; }
@@ -61,6 +63,13 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
             Log.Debug("Update {0} from {1} to {2}", nameof(character.Health), character.Health, request.Health.Value);
 
             character.Health = request.Health.Value;
+        }
+
+        if (request.MaxHealth is not null)
+        {
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.MaxHealth), character.MaxHealth, request.MaxHealth.Value);
+
+            character.MaxHealth = request.MaxHealth.Value;
         }
 
         if (request.Strength is not null)

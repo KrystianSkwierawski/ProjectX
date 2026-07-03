@@ -1239,6 +1239,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "maxHealth": {
+            "type": "integer",
+            "format": "int32"
+          },
           "strength": {
             "type": "integer"
           },
@@ -1280,6 +1284,11 @@
             "format": "int32"
           },
           "health": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "maxHealth": {
             "type": "integer",
             "format": "int32",
             "nullable": true

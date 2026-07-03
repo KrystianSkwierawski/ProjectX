@@ -9,6 +9,8 @@ public class CharacterDto
 
     public int Health { get; set; }
 
+    public int MaxHealth { get; set; }
+
     public short Strength { get; set; }
 
     public short Agility { get; set; }
@@ -31,6 +33,6 @@ public class CharacterDto
 
     public override string ToString()
     {
-        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intelligence = {Intelligence}, Spirit = {Spirit}, Arrmor = {Arrmor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon} }}";
+        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intelligence = {Intelligence}, Spirit = {Spirit}, Arrmor = {Arrmor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon} }}";
     }   
 }

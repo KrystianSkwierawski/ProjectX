@@ -31,6 +31,7 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
             {
                 x.Id,
                 x.Health,
+                x.MaxHealth,
                 x.Strength,
                 x.Agility,
                 x.Stamina,
@@ -55,6 +56,7 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
         {
             Name = character.Name,
             Health = character.Health,
+            MaxHealth = character.MaxHealth,
             Strength = character.Strength,
             Agility = character.Agility,
             Stamina = character.Stamina,

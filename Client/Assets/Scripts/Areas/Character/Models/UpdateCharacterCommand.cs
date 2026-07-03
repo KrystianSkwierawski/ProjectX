@@ -8,6 +8,8 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public int? Health { get; set; }
 
+        public int? MaxHealth { get; set; }
+
         public short? Strength { get; set; }
 
         public short? Agility { get; set; }
