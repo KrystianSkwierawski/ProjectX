@@ -85,6 +85,22 @@ namespace Assets.Scripts.Areas.Inventory.UI
             );
         }
 
+        public void Toggle()
+        {
+            if (Inventory.activeSelf)
+            {
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
+
+                Inventory.SetActive(false);
+
+                return;
+            }
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
+
+            Inventory.SetActive(true);
+        }
+
         public void UpdateInventory(CharacterInventoryDto dto)
         {
             _inventorySlots ??= InstantiateInventorySlots(dto.Count).ToArray();
@@ -258,5 +274,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             public InventoryItemEnum Type { get; set; }
         }
+
     }
 }

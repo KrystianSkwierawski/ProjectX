@@ -4,7 +4,7 @@ using ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.Characters.Queries;
+namespace ProjectX.Application.Characters.Queries.GetCharacter;
 
 public record GetCharacterQuery(int CharacterId) : IRequest<CharacterDto>;
 
@@ -29,9 +29,19 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
             .OrderByDescending(x => x.ModDate)
             .Select(x => new
             {
-                Id = x.Id,
-                Health = x.Health,
-                Name = x.Name,
+                x.Id,
+                x.Health,
+                x.Strength,
+                x.Agility,
+                x.Stamina,
+                x.Intelligence,
+                x.Spirit,
+                x.Arrmor,
+                x.Helmet,
+                x.Chest,
+                x.Boots,
+                x.Weapon,
+                x.Name,
                 CharacterExperiences = x.CharacterExperiences
                     .Select(x => new
                     {
@@ -45,6 +55,16 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
         {
             Name = character.Name,
             Health = character.Health,
+            Strength = character.Strength,
+            Agility = character.Agility,
+            Stamina = character.Stamina,
+            Intelligence = character.Intelligence,
+            Spirit = character.Spirit,
+            Arrmor = character.Arrmor,
+            Helmet = character.Helmet,
+            Chest = character.Chest,
+            Boots = character.Boots,
+            Weapon = character.Weapon,
             Levels = Enum.GetValues<ExperienceTypeEnum>()
                 .Where(x => x != ExperienceTypeEnum.None)
                 .ToDictionary(type => type, type => AddCharacterExperienceCommandHandler.GetLevel(character.CharacterExperiences

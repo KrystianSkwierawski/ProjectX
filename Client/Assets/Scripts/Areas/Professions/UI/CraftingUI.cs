@@ -1,9 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.Pool;
-using UnityEngine.UI;
+using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory;
 using Assets.Scripts.Areas.Inventory.Enums;
@@ -15,6 +12,10 @@ using Assets.Scripts.Areas.Quest.UI;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Pool;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Professions.UI
 {
@@ -82,7 +83,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             return count >= x.Count;
         });
 
-        public bool HasRequiredLevel => true; // TODO
+        public bool HasRequiredLevel => UserManager.Instance.GetLevelByRecipeType(CurrentType) >= CurrentRecipe.Requirement.Level;
 
         private void Start()
         {
@@ -109,7 +110,7 @@ namespace Assets.Scripts.Areas.Professions.UI
                         GameObject = obj,
                         Mesh = obj.GetComponent<TextMeshProUGUI>(),
                         Button = obj.GetComponent<Button>()
-                    };  
+                    };
                 },
                 actionOnGet: (RecipesPoolObject obj) => obj.GameObject.SetActive(true),
                 actionOnRelease: (RecipesPoolObject obj) =>
@@ -169,6 +170,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             QuestUI.Instance.Hide();
             CharacterUI.Instance.Hide();
             MerchantUI.Instance.Hide();
+            GearUI.Instance.Hide();
             Crafting.SetActive(true);
 
             if (CurrentType == type)
@@ -195,7 +197,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             }
         }
 
-        public void UpdateRequirements()
+        public void UpdateRequirements(InventoryItemEnum? type = null)
         {
             // TODO: only if activeSelf?
             if (_recipeObjects.Count == 0)
@@ -203,20 +205,24 @@ namespace Assets.Scripts.Areas.Professions.UI
                 return;
             }
 
-            foreach (var recipeObject in _recipeObjects)
+            foreach (var recipeObject in _recipeObjects
+                .Where(x => x.Value.GameObject.transform.parent == Requirements.transform)
+                .Where(x => type.HasValue ? x.Key == type.Value : true))
             {
-                if (recipeObject.Value.GameObject.transform.parent == Requirements.transform)
-                {
-                    var count = InventoryManager.Instance.Dto.Inventory.Items
+                var count = recipeObject.Key == InventoryItemEnum.Xp
+                    ? UserManager.Instance.GetLevelByRecipeType(CurrentType)
+                    : InventoryManager.Instance.Dto.Inventory.Items
                         .Where(x => x.Type == recipeObject.Key)
                         .Sum(x => x.Count);
 
-                    var required = CurrentRecipe.Requirement.Items
+                var required = recipeObject.Key == InventoryItemEnum.Xp 
+                    ? CurrentRecipe.Requirement.Level
+                    : CurrentRecipe.Requirement.Items
                         .Where(x => x.Type == recipeObject.Key)
                         .Sum(x => x.Count);
 
-                    recipeObject.Value.Mesh.text = $"{count}/{required}";
-                }
+                recipeObject.Value.Mesh.text = $"{count}/{required}";
+                recipeObject.Value.Mesh.color = count >= required ? ColorUI.Green: ColorUI.Red;
             }
 
             CraftButton.interactable = HasAllRequirements;
@@ -276,12 +282,18 @@ namespace Assets.Scripts.Areas.Professions.UI
         private void SetRequirements(CraftingRecipeDto recipe)
         {
             RequirementsText.SetActive(true);
-            RequirementsFlexibleGridLayout.columns = recipe.Requirement.Items.Length;
+            RequirementsFlexibleGridLayout.columns = recipe.Requirement.Items.Length + 1;
 
             foreach (var item in recipe.Requirement.Items)
             {
                 AddInventoryItem(item, Requirements.transform);
             }
+
+            AddInventoryItem(new InventoryItemDto
+            {
+                Type = InventoryItemEnum.Xp,
+                Count = recipe.Requirement.Level
+            }, Requirements.transform);
         }
 
         private void AddInventoryItem(InventoryItemDto item, Transform parent)
@@ -289,18 +301,27 @@ namespace Assets.Scripts.Areas.Professions.UI
             var obj = _recipeObjectPool.Get();
 
             obj.GameObject.transform.SetParent(parent);
+            obj.GameObject.transform.SetAsLastSibling();
 
             obj.Image.texture = InventoryUI.Instance.Textures[item.Type];
             obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
             obj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
 
-            var count = InventoryManager.Instance.Dto.Inventory.Items
-                .Where(x => x.Type == item.Type)
-                .Sum(x => x.Count);
+            var count = item.Type == InventoryItemEnum.Xp
+                ? UserManager.Instance.GetLevelByRecipeType(CurrentType)
+                : InventoryManager.Instance.Dto.Inventory.Items
+                    .Where(x => x.Type == item.Type)
+                    .Sum(x => x.Count);
 
             obj.Mesh.text = parent == Requirements.transform
                 ? $"{count}/{item.Count}"
                 : item.Count.ToString();
+
+            obj.Mesh.color = parent == Reward.transform
+                ? ColorUI.White
+                : count >= item.Count
+                    ? ColorUI.Green
+                    : ColorUI.Red;
 
             var key = obj.GameObject.GetInstanceID().ToString();
 

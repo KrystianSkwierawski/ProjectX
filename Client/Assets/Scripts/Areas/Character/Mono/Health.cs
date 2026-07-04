@@ -58,7 +58,8 @@ namespace Assets.Scripts.Areas.Character.Mono
                     EnemyAggroSubscription.Instance.Invoke(gameObjectKey, new EnemyAggroSubscriptionEvent
                     {
                         ClientId = e.ClientId,
-                        Target = targetSelectorSubscriptionsEvent.Killed ? null : e.Player
+                        Target = targetSelectorSubscriptionsEvent.Killed ? null : e.Player,
+                        ClientToken = e.ClientToken,
                     });
 
                     UpdateTargetSelectorSubscription.Instance.Invoke(gameObjectKey, targetSelectorSubscriptionsEvent);

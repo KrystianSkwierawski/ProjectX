@@ -52,6 +52,26 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Purchase,
         Sell,
         Price,
-        LevelUp
+        LogWelcome,
+        ProfessionLevelRequired,
+        LevelUp,
+        XpTitle,
+        XpDescription,
+        Gear,
+        GearRightPanelDescription,
+        Strength,
+        Agility,
+        Stamina,
+        Intelligence,
+        Spirit,
+        Arrmor,
+        IronHelmetTitle,
+        IronHelmetDescription,
+        IronChestTitle,
+        IronChestDescription,
+        IronBootsTitle,
+        IronBootsDescription,
+        IronSwordTitle,
+        IronSwordDescription
     }
 }

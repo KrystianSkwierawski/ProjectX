@@ -93,6 +93,16 @@ public class ApplicationDbContextInitialiser
                 Status = StatusEnum.Active,
                 Health = 100,
                 ModDate = DateTime.Now,
+                Strength = 15,
+                Agility = 15,
+                Stamina = 5,
+                Intelligence = 5,
+                Spirit = 5,
+                Arrmor = 20,
+                Helmet = InventoryItemEnum.HelmetTemplate,
+                Chest = InventoryItemEnum.ChestTemplate,
+                Boots = InventoryItemEnum.BootsTemplate,
+                Weapon = InventoryItemEnum.WeaponTemplate,
                 CharacterInventory = new CharacterInventory
                 {
                     Inventory = JsonSerializer.Serialize(new InventoryDto

@@ -51,7 +51,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
                 .Include(x => x.CharacterExperiences.Where(x => x.Type == request.Type))
                 //.Where(x => x.Id == request.CharacterId)
                 .Where(x => x.ApplicationUserId == userId)
-                .FirstAsync(cancellationToken);
+                .SingleAsync(cancellationToken);
 
         Log.Debug("Found character. CharacterId {0}, UserId: {1}", character.Id, userId);
 

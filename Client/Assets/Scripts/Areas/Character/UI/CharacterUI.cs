@@ -1,7 +1,10 @@
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Quest.UI;
+using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 
@@ -9,7 +12,7 @@ namespace Assets.Scripts.Areas.Character.UI
 {
     public class CharacterUI : MonoSingleton<CharacterUI>
     {
-        #region
+        #region GameObject
 
         public GameObject CharacterCanvas { get; private set; }
 
@@ -40,6 +43,7 @@ namespace Assets.Scripts.Areas.Character.UI
             CraftingUI.Instance.Hide();
             QuestUI.Instance.Hide();
             MerchantUI.Instance.Hide();
+            GearUI.Instance.Hide();
             Character.SetActive(true);
         }
 
@@ -49,6 +53,29 @@ namespace Assets.Scripts.Areas.Character.UI
             {
                 Character.SetActive(false);
             }
+        }
+
+        public void Toggle()
+        {
+            if (Character.activeSelf)
+            {
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
+
+                Hide();
+
+                return;
+            }
+
+            if (UserManager.Instance.Character?.Levels == null)
+            {
+                return;
+            }
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
+
+            DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), UserManager.Instance.Character.Levels.Values.Cast<object>().ToArray());
+
+            Show();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Enums;
@@ -8,20 +9,23 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class HealthPotionUsableItem : AbstractUsableItem
     {
-        public override InventoryItemEnum Type { get; } = InventoryItemEnum.HealthPotion;
+        public HealthPotionUsableItem(string clientToken, ulong ownerClientId) : base(InventoryItemEnum.HealthPotion, clientToken, ownerClientId)
+        {
+            
+        }
 
         public override void Use()
         {
-            if (Character.Health >= 100)
+            if (UserManager.Instance.Character.Health >= 100)
             {
                 return;
             }
 
             // TODO: set on api
-            Character.Health = Math.Min(Character.Health + 20, 100);
+            UserManager.Instance.Character.Health = Math.Min(UserManager.Instance.Character.Health + 20, 100);
 
 #if UNITY_EDITOR
-            PlayerUI.Instance.SetHealth(Character.Health);
+            PlayerUI.Instance.SetHealth(UserManager.Instance.Character.Health);
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);  
 #endif
 

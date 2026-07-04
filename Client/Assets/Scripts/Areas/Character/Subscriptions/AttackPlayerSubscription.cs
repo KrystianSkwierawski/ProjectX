@@ -1,4 +1,3 @@
-using UnityEngine;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 
 namespace Assets.Scripts.Areas.Character.Subscriptions
@@ -11,6 +10,6 @@ namespace Assets.Scripts.Areas.Character.Subscriptions
     {
         public int Value { get; set; }
 
-        public GameObject Monster { get; set; }
+        public string ClientToken { get; set; }
     }
 }

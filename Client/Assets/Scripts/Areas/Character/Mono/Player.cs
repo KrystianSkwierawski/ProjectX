@@ -1,10 +1,12 @@
 using System;
-using System.Linq;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
@@ -16,8 +18,6 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class Player : NetworkBehaviour
     {
-        public CharacterDto Character { get; private set; }
-
         private void Start()
         {
             if (IsOwner)
@@ -37,9 +37,9 @@ namespace Assets.Scripts.Areas.Character.Mono
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (result.Level > Character.Levels[e.Type])
+                    if (result.Level > UserManager.Instance.Character.Levels[e.Type])
                     {
-                        Character.Levels[e.Type] = result.Level;
+                        UserManager.Instance.Character.Levels[e.Type] = result.Level;
 
                         UpdateLevelClientRpc(e.Type, result.Level, new ClientRpcParams
                         {
@@ -53,9 +53,9 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    Character.Health = Math.Max(Character.Health - e.Value, 0);
+                    UserManager.Instance.Character.Health = Math.Max(UserManager.Instance.Character.Health - e.Value, 0);
 
-                    AttackPlayerClientRpc(Character.Health, new ClientRpcParams
+                    AttackPlayerClientRpc(UserManager.Instance.Character.Health, new ClientRpcParams
                     {
                         Send = new ClientRpcSendParams
                         {
@@ -63,7 +63,12 @@ namespace Assets.Scripts.Areas.Character.Mono
                         }
                     });
 
-                    // TODO: call api
+                    UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                    {
+                        CharacterId = 1,
+                        Health = UserManager.Instance.Character.Health
+                    }, e.ClientToken)
+                    .Forget();
                 });
             }
         }
@@ -75,39 +80,27 @@ namespace Assets.Scripts.Areas.Character.Mono
                 return;
             }
 
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                CharacterUI.Instance.Hide();
-            }
+            // TODOL: close panels
+            //if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            //{
+            //    CharacterUI.Instance.Hide();
+            //}
 
             if (Keyboard.current.cKey.wasPressedThisFrame)
             {
-                ToggleCharacter();
+                CharacterUI.Instance.Toggle();
             }
-        }
 
-        private void ToggleCharacter()
-        {
-            if (CharacterUI.Instance.Character.activeSelf)
+            if (Keyboard.current.tabKey.wasPressedThisFrame)
             {
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
-
-                CharacterUI.Instance.Hide();
-
-                return;
+                GearUI.Instance.Toggle();
             }
-
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
-
-            CharacterUI.Instance.DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), Character.Levels.Values.Cast<object>().ToArray());
-
-            CharacterUI.Instance.Show();
         }
 
         [ClientRpc]
         private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
-            Character.Health = health;
+            UserManager.Instance.Character.Health = health;
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 
@@ -119,7 +112,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
             }
 
-            PlayerUI.Instance.SetHealth(Character.Health);
+            PlayerUI.Instance.SetHealth(UserManager.Instance.Character.Health);
         }
 
         [ServerRpc]
@@ -130,9 +123,9 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private async UniTask SetCharacterAsync(string clientToken)
         {
-            Character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+            UserManager.Instance.Character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
 
-            UpdatePlayerClientRpc(Character, new ClientRpcParams
+            UpdatePlayerClientRpc(UserManager.Instance.Character, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
@@ -144,14 +137,17 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         public void UpdatePlayerClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
         {
-            Character = character;
-            PlayerUI.Instance.SetPlayer(Character);
+            UserManager.Instance.Character = character;
+
+            PlayerUI.Instance.SetPlayer();
+
+            GearUI.Instance.UpdateLeftPanel();
         }
 
         [ClientRpc]
         public void UpdateLevelClientRpc(ExperienceTypeEnum type, byte level, ClientRpcParams rpcParams = default)
         {
-            Character.Levels[type] = level;
+            UserManager.Instance.Character.Levels[type] = level;
 
             if (type == ExperienceTypeEnum.Main)
             {
@@ -162,6 +158,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 LogUI.Instance.ShowAsync(message).Forget();
             }
+
+            CraftingUI.Instance.UpdateRequirements(InventoryItemEnum.Xp);
         }
 
         public override void OnNetworkDespawn()

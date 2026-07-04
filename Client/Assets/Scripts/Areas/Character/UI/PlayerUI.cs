@@ -71,11 +71,11 @@ namespace Assets.Scripts.Areas.Character.UI
             }
         }
 
-        public void SetPlayer(CharacterDto character)
+        public void SetPlayer()
         {
-            SetName(character.Name);
-            SetHealth(character.Health);
-            SetMainLevel(character.Levels[ExperienceTypeEnum.Main]);
+            SetName(UserManager.Instance.Character.Name);
+            SetHealth(UserManager.Instance.Character.Health);
+            SetMainLevel(UserManager.Instance.Character.Levels[ExperienceTypeEnum.Main]);
         }
 
         public void SetName(string name)

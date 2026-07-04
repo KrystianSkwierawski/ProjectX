@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
@@ -241,24 +242,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             if (IsOwner && Keyboard.current.bKey.wasPressedThisFrame)
             {
-                ToggleInventory();
+                InventoryUI.Instance.Toggle();
             }
-        }
-
-        private static void ToggleInventory()
-        {
-            if (InventoryUI.Instance.Inventory.activeSelf)
-            {
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
-
-                InventoryUI.Instance.Inventory.SetActive(false);
-
-                return;
-            }
-
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
-
-            InventoryUI.Instance.Inventory.SetActive(true);
         }
 
         [ClientRpc]
@@ -342,13 +327,12 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             IUsableItem usableItem = item.Type switch
             {
-                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem()
-                    .WithClientToken(clientToken)
-                    .WithOwnerClientId(OwnerClientId)
-                    .WithCharacter(gameObject.GetComponent<Player>().Character),
-
-                InventoryItemEnum.Currency => new CurrencyUsableItem(),
-
+                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(clientToken, OwnerClientId),
+                InventoryItemEnum.Currency => new CurrencyUsableItem(clientToken, OwnerClientId),
+                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronChest => new ChestUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronBoots => new BootsUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.IronSword => new WeaponUsableItem(item.Type, clientToken, OwnerClientId),
                 _ => null
             };
 
@@ -357,9 +341,6 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 usableItem.Use();
             }
         }
-
-
-
 
         public override void OnNetworkDespawn()
         {

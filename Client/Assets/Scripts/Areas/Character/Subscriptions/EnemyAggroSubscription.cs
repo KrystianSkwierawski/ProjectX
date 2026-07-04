@@ -12,5 +12,7 @@ namespace Assets.Scripts.Areas.Character.Subscriptions
         public ulong ClientId { get; set; }
 
         public GameObject Target { get; set; }
+
+        public string ClientToken { get; set; }
     }
 }

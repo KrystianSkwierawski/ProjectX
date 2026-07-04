@@ -1,6 +1,9 @@
-﻿using Assets.Scripts.Areas.Shared.Mono;
+﻿using System.Collections.Generic;
+using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Mono;
 using Cysharp.Threading.Tasks;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -24,7 +27,8 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         #endregion
 
-        private ObjectPool<LogPoolObject> _textPool;
+        private ObjectPool<LogPoolObject> _pool;
+        private readonly IDictionary<string, LogPoolObject> _objects = new Dictionary<string, LogPoolObject>();
 
         private void Start()
         {
@@ -32,10 +36,10 @@ namespace Assets.Scripts.Areas.Shared.UI
             Log = Canvas.transform.Find("Log").gameObject;
             LogContent = Log.transform.Find("Viewport/Content").gameObject;
 
-            _textPool = new ObjectPool<LogPoolObject>(
+            _pool = new ObjectPool<LogPoolObject>(
                 createFunc: () =>
                 {
-                    var obj = Instantiate(_textPrefab, LogContent.transform);
+                    var obj = Instantiate(_textPrefab);
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
 
                     mesh.fontSize = 36;
@@ -49,34 +53,45 @@ namespace Assets.Scripts.Areas.Shared.UI
                 },
                 actionOnGet: obj =>
                 {
+                    obj.GameObject.transform.SetParent(LogContent.transform);
                     obj.GameObject.SetActive(true);
                     obj.GameObject.transform.SetAsLastSibling();
                 },
                 actionOnRelease: obj =>
                 {
+                    obj.GameObject.transform.SetParent(null);
                     obj.GameObject.SetActive(false);
                     obj.Mesh.text = string.Empty;
                 }
             );
 
-            ShowAsync("Hello, World!").Forget();
+            ShowAsync(TranslateManager.Instance.GetByKey(TranslateKeyEnum.LogWelcome), 5000).Forget();
         }
 
-        public async UniTask ShowAsync(string message, int delay = 2000)
+        public async UniTask ShowAsync(string message, int delay = 2000, Color? color = null)
         {
+            if (_objects.ContainsKey(message))
+            {
+                return;
+            }
+
             if (!Log.activeSelf)
             {
                 Log.SetActive(true);
             }
 
-            var obj = _textPool.Get();
+            var obj = _pool.Get();
+            _objects.Add(message, obj);
+
             obj.Mesh.text = message;
+            obj.Mesh.color = color ?? ColorUI.White;
 
             await UniTask.Delay(delay);
 
-            _textPool.Release(obj);
+            _pool.Release(obj);
+            _objects.Remove(message);
 
-            if (LogContent.transform.childCount == 0)
+            if (_objects.Count == 0)
             {
                 Log.SetActive(false);
             }

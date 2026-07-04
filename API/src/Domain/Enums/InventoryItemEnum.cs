@@ -45,4 +45,17 @@ public enum InventoryItemEnum
     HealthPotion = 501,
 
     #endregion
+
+    #region Gear
+
+    HelmetTemplate = 1000,
+    ChestTemplate = 1001,
+    BootsTemplate = 1002,
+    WeaponTemplate = 1003,
+    IronHelmet = 1004,
+    IronChest = 1005,
+    IronBoots = 1006,
+    IronSword = 1007,
+
+    #endregion
 }
