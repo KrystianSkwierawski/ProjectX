@@ -30,7 +30,7 @@
 - Preserve existing project organization and naming patterns when making future changes.
 - Read all memory bank files at the start of every task, per `.Codexrules` / `CLAUDE.md`.
 - Local dev startup automation lives inside the Unity project under `Client/Automation/`, not at repository root.
-- Unity menu entries under `ProjectX > Automation` should remain aligned with `Client/Automation/run.bat`.
+- Unity menu entries under `ProjectX` should remain aligned with `Client/Automation/run.bat`.
 - Treat `.claude/settings.local.json` as local-only secret configuration.
 
 ## Next Steps

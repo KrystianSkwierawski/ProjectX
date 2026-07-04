@@ -33,8 +33,8 @@
   - `Client/Automation/run.bat -SkipServerBuild` runs using the existing server build.
   - `Client/Automation/run.bat -SkipApi -SkipServerBuild -SkipServerRun -SkipClientPlay` is a safe no-op smoke test for script wiring.
 - Unity Editor menu:
-  - `ProjectX > Automation > Run And Build` invokes `Client/Automation/run.bat`.
-  - `ProjectX > Automation > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
+  - `ProjectX > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
+  - `ProjectX > Build And Run` invokes `Client/Automation/run.bat`.
 - Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
 
 ## Constraints And Preferences

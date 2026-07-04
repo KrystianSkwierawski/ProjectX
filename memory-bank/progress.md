@@ -19,7 +19,7 @@
 - Local one-command/dev-menu startup automation exists:
   - `Client/Automation/run.bat`
   - `Client/Automation/run.ps1`
-  - Unity menu entries `ProjectX > Automation > Run And Build` and `ProjectX > Automation > Run`.
+  - Unity menu entries `ProjectX > Run` and `ProjectX > Build And Run`.
 - Scene-backed quick-access bar exists for gear, inventory, character, and chat shortcuts using `QuickAccessUI` and `Resources/Icons/QuickAccess*.png`.
 
 ## What's Left / Unknown
@@ -40,6 +40,6 @@
 
 ## Evolution Notes
 - 2026-05-07: Initial memory bank created from repo inspection.
-- 2026-07-02: Added Unity/API dev stack run automation, moved scripts under `Client/Automation/`, renamed from `serve` to `run`, and exposed Unity menu entries for `Run And Build` and `Run`.
+- 2026-07-02: Added Unity/API dev stack run automation, moved scripts under `Client/Automation/`, renamed from `serve` to `run`, and exposed Unity menu entries for `Run` and `Build And Run`.
 - 2026-07-02: Added a scene-backed bottom-right Unity quick-access bar that reuses `InventorySlot` hover previews, loads quick-access icons from `Resources/Icons`, and toggles gear, inventory, character, and chat UI by mouse click.
 - 2026-07-02: Refreshed memory bank to document current health, character update, gear usable item, quick-access, automation, and local-secret status.
