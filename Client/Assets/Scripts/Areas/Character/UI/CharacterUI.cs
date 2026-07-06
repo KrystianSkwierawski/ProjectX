@@ -1,12 +1,11 @@
 using System.Linq;
-using TMPro;
-using UnityEngine;
-using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Quest.UI;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using TMPro;
+using UnityEngine;
 
 namespace Assets.Scripts.Areas.Character.UI
 {

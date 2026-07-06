@@ -16,7 +16,7 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short? Stamina { get; set; }
 
-        public short? Intelligence { get; set; }
+        public short? Intellect { get; set; }
 
         public short? Spirit { get; set; }
 

@@ -393,7 +393,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("Helmet")
                         .HasColumnType("int");
 
-                    b.Property<short>("Intelligence")
+                    b.Property<short>("Intellect")
                         .HasColumnType("smallint");
 
                     b.Property<int>("MaxHealth")

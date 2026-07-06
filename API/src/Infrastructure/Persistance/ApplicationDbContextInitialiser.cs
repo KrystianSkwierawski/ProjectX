@@ -97,7 +97,7 @@ public class ApplicationDbContextInitialiser
                 Strength = 15,
                 Agility = 15,
                 Stamina = 5,
-                Intelligence = 5,
+                Intellect = 5,
                 Spirit = 5,
                 Arrmor = 20,
                 Helmet = InventoryItemEnum.HelmetTemplate,

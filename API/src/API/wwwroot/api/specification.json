@@ -1252,7 +1252,7 @@
           "stamina": {
             "type": "integer"
           },
-          "intelligence": {
+          "intellect": {
             "type": "integer"
           },
           "spirit": {
@@ -1305,7 +1305,7 @@
             "type": "integer",
             "nullable": true
           },
-          "intelligence": {
+          "intellect": {
             "type": "integer",
             "nullable": true
           },

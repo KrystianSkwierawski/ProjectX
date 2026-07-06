@@ -12,8 +12,8 @@ using ProjectX.Infrastructure.Persistance;
 namespace ProjectX.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260219161257_UpdateCharacterExperience")]
-    partial class UpdateCharacterExperience
+    [Migration("20260706184932_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -374,11 +374,32 @@ namespace ProjectX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<short>("Agility")
+                        .HasColumnType("smallint");
+
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<short>("Arrmor")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("Boots")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Chest")
+                        .HasColumnType("int");
+
                     b.Property<int>("Health")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Helmet")
+                        .HasColumnType("int");
+
+                    b.Property<short>("Intellect")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("MaxHealth")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModDate")
@@ -389,8 +410,20 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<short>("Spirit")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("Stamina")
+                        .HasColumnType("smallint");
+
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
+
+                    b.Property<short>("Strength")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("Weapon")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -517,6 +550,60 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("CharacterTransforms");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CraftingRecipe", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("ModDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Requirement")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reward")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type", "Status")
+                        .HasDatabaseName("IX.CraftingRecipe.Type.Status");
+
+                    b.ToTable("CraftingRecipes");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("MaxCount")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("ModDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InventoryItems");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
                 {
                     b.Property<short>("Id")
@@ -550,6 +637,9 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasColumnType("tinyint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX.Quests.Status");
 
                     b.ToTable("Quests");
                 });

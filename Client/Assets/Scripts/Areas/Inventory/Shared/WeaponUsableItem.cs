@@ -18,17 +18,23 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         {
             var isWearing = UserManager.Instance.Character.Weapon == Type;
 
+            var parameters = Type.GetInventoryItemParametersAttribute();
+
+            UserManager.Instance.Character.Strength += isWearing ? (short)(-parameters.Strength) : parameters.Strength;
+
             UserManager.Instance.Character.Weapon = isWearing ? InventoryItemEnum.WeaponTemplate : Type;
 
 #if UNITY_EDITOR
             GearUI.Instance.Wear(GearUI.Instance.Weapon, UserManager.Instance.Character.Weapon);
+            GearUI.Instance.UpdateRightPanel();
 #endif
 
 #if UNITY_SERVER && !UNITY_EDITOR
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 CharacterId = 1,
-                Weapon = UserManager.Instance.Character.Weapon
+                Weapon = UserManager.Instance.Character.Weapon,
+                Strength = UserManager.Instance.Character.Strength,
             }, ClientToken)
             .Forget();
 #endif

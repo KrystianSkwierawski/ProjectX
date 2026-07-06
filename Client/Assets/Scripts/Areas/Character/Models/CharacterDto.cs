@@ -21,7 +21,7 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short Stamina { get; set; }
 
-        public short Intelligence { get; set; }
+        public short Intellect { get; set; }
 
         public short Spirit { get; set; }
 
@@ -65,9 +65,9 @@ namespace Assets.Scripts.Areas.Character.Models
                 serializer.SerializeValue(ref stamina);
                 Stamina = stamina;
 
-                short intelligence = default;
-                serializer.SerializeValue(ref intelligence);
-                Intelligence = intelligence;
+                short intellect = default;
+                serializer.SerializeValue(ref intellect);
+                Intellect = intellect;
 
                 short spirit = default;
                 serializer.SerializeValue(ref spirit);
@@ -133,8 +133,8 @@ namespace Assets.Scripts.Areas.Character.Models
                 short stamina = Stamina;
                 serializer.SerializeValue(ref stamina);
 
-                short intelligence = Intelligence;
-                serializer.SerializeValue(ref intelligence);
+                short intellect = Intellect;
+                serializer.SerializeValue(ref intellect);
 
                 short spirit = Spirit;
                 serializer.SerializeValue(ref spirit);

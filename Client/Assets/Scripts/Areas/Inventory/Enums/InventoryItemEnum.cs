@@ -1,4 +1,9 @@
 
+using System;
+using System.Linq;
+using System.Reflection;
+using Assets.Scripts.Areas.Shared.Attributes;
+
 namespace Assets.Scripts.Areas.Inventory.Enums
 {
     public enum InventoryItemEnum
@@ -54,11 +59,33 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         ChestTemplate = 1001,
         BootsTemplate = 1002,
         WeaponTemplate = 1003,
+
+        [InventoryItemParameters(MaxHealth = 10, Arrmor = 10)]
         IronHelmet = 1004,
+
+        [InventoryItemParameters(MaxHealth = 20, Arrmor = 20)]     
         IronChest = 1005,
+
+        [InventoryItemParameters(MaxHealth = 5, Agility = 5, Stamina = 5, Arrmor = 5)]
         IronBoots = 1006,
+
+        [InventoryItemParameters(Strength = 20)]
         IronSword = 1007,
 
         #endregion
     }
+
+    public static class InventoryItemEnumExtensions
+    {
+        public static InventoryItemParametersAttribute GetInventoryItemParametersAttribute(this InventoryItemEnum value)
+        {
+            var member = value
+                .GetType()
+                .GetMember(value.ToString())
+                .First();
+
+            return member.GetCustomAttribute<InventoryItemParametersAttribute>();
+        }
+    }
+
 }

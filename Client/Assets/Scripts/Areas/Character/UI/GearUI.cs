@@ -88,7 +88,7 @@ namespace Assets.Scripts.Areas.Character.UI
             }
 
             slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
-            slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{type}Description");
+            slot.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(type).ToString();
 
             slot.Button.interactable = true;
             slot.HoverUI.enabled = true;
@@ -118,17 +118,21 @@ namespace Assets.Scripts.Areas.Character.UI
             });
         }
 
-        private void UpdateRightPanel()
+        public void UpdateRightPanel()
         {
-            RightPanel.GetComponent<TextMeshProUGUI>().text = string.Format(
-                TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
-                UserManager.Instance.Character.Strength,
-                UserManager.Instance.Character.Agility,
-                UserManager.Instance.Character.Stamina,
-                UserManager.Instance.Character.Intelligence,
-                UserManager.Instance.Character.Spirit,
-                UserManager.Instance.Character.Arrmor
-            );
+            if (Gear.activeSelf)
+            {
+                RightPanel.GetComponent<TextMeshProUGUI>().text = string.Format(
+                    TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
+                    UserManager.Instance.Character.MaxHealth,
+                    UserManager.Instance.Character.Strength,
+                    UserManager.Instance.Character.Agility,
+                    UserManager.Instance.Character.Stamina,
+                    UserManager.Instance.Character.Intellect,
+                    UserManager.Instance.Character.Spirit,
+                    UserManager.Instance.Character.Arrmor
+                );
+            }
         }
 
         private GearSlot GetGearSlot(string n)

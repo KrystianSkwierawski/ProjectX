@@ -75,6 +75,7 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             SetName(UserManager.Instance.Character.Name);
             SetHealth(UserManager.Instance.Character.Health);
+            SetMaxHealth(UserManager.Instance.Character.MaxHealth);
             SetMainLevel(UserManager.Instance.Character.Levels[ExperienceTypeEnum.Main]);
         }
 
@@ -86,6 +87,11 @@ namespace Assets.Scripts.Areas.Character.UI
         public void SetHealth(int health)
         {
             PlayerHealthPointsText.text = health.ToString();
+        }
+
+        public void SetMaxHealth(int maxHealth)
+        {
+            PlayerHealthPointsText.text = maxHealth.ToString();
         }
 
         public void SetMainLevel(int level)

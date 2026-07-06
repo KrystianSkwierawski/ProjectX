@@ -19,7 +19,7 @@ public class UpdateCharacterCommand : IRequest
 
     public short? Stamina { get; init; }
 
-    public short? Intelligence { get; init; }
+    public short? Intellect { get; init; }
 
     public short? Spirit { get; init; }
 
@@ -92,11 +92,11 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
             character.Stamina = request.Stamina.Value;
         }
 
-        if (request.Intelligence is not null)
+        if (request.Intellect is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Intelligence), character.Intelligence, request.Intelligence.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.Intellect), character.Intellect, request.Intellect.Value);
 
-            character.Intelligence = request.Intelligence.Value;
+            character.Intellect = request.Intellect.Value;
         }
 
         if (request.Spirit is not null)

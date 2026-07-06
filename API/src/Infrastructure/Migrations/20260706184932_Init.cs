@@ -30,6 +30,7 @@ namespace ProjectX.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Language = table.Column<byte>(type: "tinyint", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -51,6 +52,23 @@ namespace ProjectX.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CraftingRecipes",
+                columns: table => new
+                {
+                    Id = table.Column<short>(type: "smallint", nullable: false),
+                    Type = table.Column<byte>(type: "tinyint", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Requirement = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Reward = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CraftingRecipes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DeviceCodes",
                 columns: table => new
                 {
@@ -67,6 +85,20 @@ namespace ProjectX.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DeviceCodes", x => x.UserCode);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaxCount = table.Column<byte>(type: "tinyint", nullable: false),
+                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryItems", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -105,6 +137,25 @@ namespace ProjectX.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PersistedGrants", x => x.Key);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Quests",
+                columns: table => new
+                {
+                    Id = table.Column<short>(type: "smallint", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PreviousQuestId = table.Column<short>(type: "smallint", nullable: false),
+                    Type = table.Column<byte>(type: "tinyint", nullable: false),
+                    GameObjectName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Requirement = table.Column<int>(type: "int", nullable: false),
+                    Reward = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Quests", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -220,6 +271,20 @@ namespace ProjectX.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Health = table.Column<int>(type: "int", nullable: false),
+                    MaxHealth = table.Column<int>(type: "int", nullable: false),
+                    Strength = table.Column<short>(type: "smallint", nullable: false),
+                    Agility = table.Column<short>(type: "smallint", nullable: false),
+                    Stamina = table.Column<short>(type: "smallint", nullable: false),
+                    Intellect = table.Column<short>(type: "smallint", nullable: false),
+                    Spirit = table.Column<short>(type: "smallint", nullable: false),
+                    Arrmor = table.Column<short>(type: "smallint", nullable: false),
+                    Helmet = table.Column<int>(type: "int", nullable: false),
+                    Chest = table.Column<int>(type: "int", nullable: false),
+                    Boots = table.Column<int>(type: "int", nullable: false),
+                    Weapon = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<byte>(type: "tinyint", nullable: false),
                     ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -229,6 +294,79 @@ namespace ProjectX.Infrastructure.Migrations
                         name: "FK_Characters_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CharacterExperiences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CharacterId = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<byte>(type: "tinyint", nullable: false),
+                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CharacterExperiences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CharacterExperiences_Characters_CharacterId",
+                        column: x => x.CharacterId,
+                        principalTable: "Characters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CharacterInventories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Inventory = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Count = table.Column<short>(type: "smallint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CharacterInventories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CharacterInventories_Characters_Id",
+                        column: x => x.Id,
+                        principalTable: "Characters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CharacterQuests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    QuestId = table.Column<short>(type: "smallint", nullable: false),
+                    CharacterId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    Progress = table.Column<int>(type: "int", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CharacterQuests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CharacterQuests_Characters_CharacterId",
+                        column: x => x.CharacterId,
+                        principalTable: "Characters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CharacterQuests_Quests_QuestId",
+                        column: x => x.QuestId,
+                        principalTable: "Quests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -297,6 +435,21 @@ namespace ProjectX.Infrastructure.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CharacterExperiences_CharacterId",
+                table: "CharacterExperiences",
+                column: "CharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterQuests_CharacterId",
+                table: "CharacterQuests",
+                column: "CharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterQuests_QuestId",
+                table: "CharacterQuests",
+                column: "QuestId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Characters_ApplicationUserId",
                 table: "Characters",
                 column: "ApplicationUserId");
@@ -305,6 +458,11 @@ namespace ProjectX.Infrastructure.Migrations
                 name: "IX_CharacterTransforms_CharacterId",
                 table: "CharacterTransforms",
                 column: "CharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX.CraftingRecipe.Type.Status",
+                table: "CraftingRecipes",
+                columns: new[] { "Type", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeviceCodes_DeviceCode",
@@ -341,6 +499,11 @@ namespace ProjectX.Infrastructure.Migrations
                 name: "IX_PersistedGrants_SubjectId_SessionId_Type",
                 table: "PersistedGrants",
                 columns: new[] { "SubjectId", "SessionId", "Type" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX.Quests.Status",
+                table: "Quests",
+                column: "Status");
         }
 
         /// <inheritdoc />
@@ -362,10 +525,25 @@ namespace ProjectX.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CharacterExperiences");
+
+            migrationBuilder.DropTable(
+                name: "CharacterInventories");
+
+            migrationBuilder.DropTable(
+                name: "CharacterQuests");
+
+            migrationBuilder.DropTable(
                 name: "CharacterTransforms");
 
             migrationBuilder.DropTable(
+                name: "CraftingRecipes");
+
+            migrationBuilder.DropTable(
                 name: "DeviceCodes");
+
+            migrationBuilder.DropTable(
+                name: "InventoryItems");
 
             migrationBuilder.DropTable(
                 name: "Keys");
@@ -375,6 +553,9 @@ namespace ProjectX.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Quests");
 
             migrationBuilder.DropTable(
                 name: "Characters");

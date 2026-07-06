@@ -26,7 +26,7 @@ public class Character
 
     public short Stamina { get; set; }
 
-    public short Intelligence { get; set; }
+    public short Intellect { get; set; }
 
     public short Spirit { get; set; }
 

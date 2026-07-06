@@ -13,6 +13,7 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using System.Text;
 
 namespace Assets.Scripts.Areas.Inventory.UI
 {
@@ -128,12 +129,15 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+
+                var description = PrepareDescription(item.Type);
 
                 if (item.Type != InventoryItemEnum.Currency)
                 {
-                    slot.PreviewDescriptionMesh.text += $"\r\n\r\n{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}";
+                    description.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}");
                 }
+
+                slot.PreviewDescriptionMesh.text = description.ToString();
 
                 slot.Type = item.Type;
                 slot.HoverUI.enabled = true;
@@ -161,6 +165,56 @@ namespace Assets.Scripts.Areas.Inventory.UI
             }
         }
 
+        public StringBuilder PrepareDescription(InventoryItemEnum type)
+        {
+            var sb = new StringBuilder(TranslateManager.Instance.GetByKey($"{type}Description"));
+
+            var parameters = type.GetInventoryItemParametersAttribute();
+
+            if (parameters != null)
+            {
+                sb.Append("\r\n");
+                sb.Append("\r\n");
+
+                if (parameters.MaxHealth > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.MaxHealth)}: {parameters.MaxHealth}");
+                }
+
+                if (parameters.Strength > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Strength)}: {parameters.Strength}");
+                }
+
+                if (parameters.Agility > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Agility)}: {parameters.Agility}");
+                }
+
+                if (parameters.Stamina > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Stamina)}: {parameters.Stamina}");
+                }
+
+                if (parameters.Intellect > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Intellect)}: {parameters.Intellect}");
+                }
+
+                if (parameters.Spirit > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Spirit)}: {parameters.Spirit}");
+                }
+
+                if (parameters.Arrmor > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Arrmor)}: {parameters.Arrmor}");
+                }
+            }
+
+            return sb;
+        }
+
         public void UpdateLoot(InventoryItemDto[] items, ulong clientId, string clientToken)
         {
             Loot.SetActive(true);
@@ -180,7 +234,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+                slot.PreviewDescriptionMesh.text = PrepareDescription(item.Type).ToString();
                 slot.Type = item.Type;
 
                 slot.Button.OnRightClick.AddListener(() =>
