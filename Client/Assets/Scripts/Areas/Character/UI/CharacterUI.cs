@@ -47,6 +47,16 @@ namespace Assets.Scripts.Areas.Character.UI
             Character.SetActive(true);
         }
 
+        public void RefreshDescription()
+        {
+            if (UserManager.Instance.Character?.Levels == null)
+            {
+                return;
+            }
+
+            DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), UserManager.Instance.Character.Levels.Values.Cast<object>().ToArray());
+        }
+
         public void Hide()
         {
             if (Character.activeSelf)
@@ -73,7 +83,7 @@ namespace Assets.Scripts.Areas.Character.UI
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
 
-            DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), UserManager.Instance.Character.Levels.Values.Cast<object>().ToArray());
+            RefreshDescription();
 
             Show();
         }

@@ -148,6 +148,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         public void UpdateLevelClientRpc(ExperienceTypeEnum type, byte level, ClientRpcParams rpcParams = default)
         {
             UserManager.Instance.Character.Levels[type] = level;
+            CharacterUI.Instance.RefreshDescription();
 
             if (type == ExperienceTypeEnum.Main)
             {
