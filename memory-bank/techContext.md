@@ -17,6 +17,8 @@
 - Kestrel HTTPS endpoint is configured for `https://localhost:5001`.
 - Swagger/OpenAPI UI is enabled by `API:SwaggerEnabled` and mounted at `/api`.
 - Serilog writes to console and daily rolling file logs.
+- API startup currently calls database initialization unconditionally; the initializer intentionally deletes and recreates the database before seeding development data as a temporary developer workflow.
+- Current EF Core migration history is squashed to `20260706184932_Init` plus `ApplicationDbContextModelSnapshot.cs`.
 
 ## Client
 - Unity project under `Client/`.
@@ -37,6 +39,11 @@
   - `ProjectX > Build And Run` invokes `Client/Automation/run.bat`.
 - Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
 
+## Current Repo Notes
+- Current branch during the 2026-07-07 amendment: `dev`.
+- `git status -sb` reports `dev...origin/dev` with staged `.gitignore` and memory-bank file changes.
+- Git status commands emit permission warnings for `C:\Users\pc/.config/git/ignore`.
+
 ## Constraints And Preferences
 - Preserve Unity `.meta` files when moving or adding Unity assets.
 - Avoid editing generated artifacts and caches such as `Client/Library`, `Client/obj`, `API/**/bin`, `API/**/obj`, and log files.
@@ -44,4 +51,6 @@
 - Validate JSON localization files when editing i18n resources.
 - `run.ps1` auto-builds `API/src/API/API.csproj` in `Debug` when `ProjectX.API.exe` is missing.
 - Unity dedicated server builds are generated under `Client/Builds/Server/ProjectXServer.exe`.
-- `.claude/settings.local.json` is an untracked local tool configuration file and may contain secrets; do not commit or quote its values.
+- If `.claude/settings.local.json` reappears, treat it as local-only secret configuration and do not commit or quote its values.
+- `.Codexrules` is the active memory-bank/agent instruction file; `CLAUDE.md` and `.claude` were not present during the 2026-07-07 amendment.
+- Client `pl.json` currently uses English item/UI text intentionally as a temporary development fallback; do not treat this as an accidental localization bug.
