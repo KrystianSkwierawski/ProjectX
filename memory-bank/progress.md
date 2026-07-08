@@ -18,6 +18,7 @@
 - Character update flow can persist health, max health, stats, armor, and equipped helmet/chest/boots/weapon values.
 - Server-side player attack handling reduces health, sends a targeted client RPC, updates player UI/audio/death response, and persists health through the API.
 - Gear equip/unequip flow uses concrete usable item classes for helmet, chest, boots, and weapon slots and updates Gear UI plus backend character gear/stat totals in server builds.
+- Ammo/special gear slot support exists as an equip-only character slot across API and Unity client; ammo items can currently be equipped and sold by the merchant, but do not yet affect attacks or get consumed.
 - Gear stat bonuses are declared on Unity inventory enum values with `InventoryItemParametersAttribute`; inventory, merchant, crafting, and gear previews display those bonuses through `InventoryUI.PrepareDescription()`.
 - Character UI has a `RefreshDescription()` path used when opening the character panel and when level changes arrive from the server.
 - API migrations are currently consolidated to a single `20260706184932_Init` migration plus the snapshot.
@@ -35,6 +36,7 @@
 - Client/server contract drift risk should be checked before API or DTO changes.
 - Consumable item persistence needs review: `HealthPotionUsableItem` updates health locally and has a TODO for API persistence, while normal inventory consumption still goes through the usable item base flow.
 - Base-stat versus gear-derived-stat ownership is not documented; current gear use mutates persisted totals directly.
+- Ammo item attack effects and stack consumption are future work; current implementation only adds the gear slot and equip flow.
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
 
 ## Known Issues / Risks
@@ -56,3 +58,4 @@
 - 2026-07-06: Refreshed memory bank to document `.Codexrules`, consolidated migrations, max health, gear stat attributes/previews, character description refresh, database reset behavior, and current localization/UI risks.
 - 2026-07-07: User clarified that database reset on startup and English text in client `pl.json` are intentional temporary development choices.
 - 2026-07-08: Confirmed and documented that player animation/locomotion uses Animator root motion OFF, with movement driven by `ThirdPersonController`/`CharacterController`.
+- 2026-07-08: Added equip-only ammo/special gear slot support and documented translate ordering convention: new `TranslateKeyEnum` values and matching `en.json`/`pl.json` entries should be appended at the end in enum order to avoid renumbering or localization-order drift.

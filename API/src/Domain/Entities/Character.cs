@@ -40,6 +40,8 @@ public class Character
 
     public InventoryItemEnum Weapon { get; set; }
 
+    public InventoryItemEnum Ammo { get; set; }
+
     public StatusEnum Status { get; set; }
 
     public DateTime ModDate { get; set; }

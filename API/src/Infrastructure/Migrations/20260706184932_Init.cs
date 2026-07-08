@@ -284,6 +284,7 @@ namespace ProjectX.Infrastructure.Migrations
                     Chest = table.Column<int>(type: "int", nullable: false),
                     Boots = table.Column<int>(type: "int", nullable: false),
                     Weapon = table.Column<int>(type: "int", nullable: false),
+                    Ammo = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
                     ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

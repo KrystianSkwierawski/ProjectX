@@ -73,6 +73,16 @@ namespace Assets.Scripts.Areas.Shared.Enums
         IronBootsTitle,
         IronBootsDescription,
         IronSwordTitle,
-        IronSwordDescription
+        IronSwordDescription,
+        AmmoTemplateTitle,
+        AmmoTemplateDescription,
+        AmmoArrowTitle,
+        AmmoArrowDescription,
+        AmmoRuneTitle,
+        AmmoRuneDescription,
+        AmmoFeatherTitle,
+        AmmoFeatherDescription,
+        AmmoOilTitle,
+        AmmoOilDescription
     }
 }

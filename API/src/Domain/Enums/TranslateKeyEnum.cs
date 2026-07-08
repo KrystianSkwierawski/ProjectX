@@ -81,4 +81,15 @@
     Collect2HealthPotionsDescription,
     Collect2HealthPotionsCompleteDescription,
     Collect2HealthPotionsStatusText,
+
+    AmmoTemplateTitle,
+    AmmoTemplateDescription,
+    AmmoArrowTitle,
+    AmmoArrowDescription,
+    AmmoRuneTitle,
+    AmmoRuneDescription,
+    AmmoFeatherTitle,
+    AmmoFeatherDescription,
+    AmmoOilTitle,
+    AmmoOilDescription,
 }

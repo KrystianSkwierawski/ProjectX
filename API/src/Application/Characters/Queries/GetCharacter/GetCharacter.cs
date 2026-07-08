@@ -42,6 +42,7 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
                 x.Chest,
                 x.Boots,
                 x.Weapon,
+                x.Ammo,
                 x.Name,
                 CharacterExperiences = x.CharacterExperiences
                     .Select(x => new
@@ -67,6 +68,7 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
             Chest = character.Chest,
             Boots = character.Boots,
             Weapon = character.Weapon,
+            Ammo = character.Ammo,
             Levels = Enum.GetValues<ExperienceTypeEnum>()
                 .Where(x => x != ExperienceTypeEnum.None)
                 .ToDictionary(type => type, type => AddCharacterExperienceCommandHandler.GetLevel(character.CharacterExperiences

@@ -79,5 +79,16 @@
     "Collect2HealthPotionsTitle": "Collect 2 Health Potions",
     "Collect2HealthPotionsDescription": "The training yard has produced three bruised recruits, one dented helmet, and a heroic misunderstanding of the word dodge. Bring two health potions to the instructor before pride becomes the only remaining medicine. A proper potion smells of mint, iron, and optimism, with a fizz that sounds like tiny applause.",
     "Collect2HealthPotionsCompleteDescription": "The instructor takes the potions and calls the recruits back into formation. The potions look more prepared than the recruits do.",
-    "Collect2HealthPotionsStatusText": "Collected {0}/{1} health potions"
+    "Collect2HealthPotionsStatusText": "Collected {0}/{1} health potions",
+
+    "AmmoTemplateTitle": "Ammo Slot",
+    "AmmoTemplateDescription": "An empty special gear slot for weapon support items.",
+    "AmmoArrowTitle": "Arrow",
+    "AmmoArrowDescription": "A bundle of straight arrows ready for a bow. For now it can be equipped in the ammo slot.",
+    "AmmoRuneTitle": "Rune",
+    "AmmoRuneDescription": "A small rune etched with focused magic. For now it can be equipped in the ammo slot.",
+    "AmmoFeatherTitle": "Feather",
+    "AmmoFeatherDescription": "A light feather prepared as a weapon support item. For now it can be equipped in the ammo slot.",
+    "AmmoOilTitle": "Weapon Oil",
+    "AmmoOilDescription": "A vial of weapon oil for coating a blade. For now it can be equipped in the ammo slot."
 }

@@ -44,7 +44,8 @@
 - Client DTO/model names closely mirror backend DTOs and commands.
 - Client and backend inventory enums must stay synchronized for persisted items; the client also has an `Xp` pseudo item for crafting/requirement UI.
 - Localization resources exist in both API and Unity client paths; English content in client `pl.json` is currently an intentional temporary development fallback.
-- Gear item use is modeled through `AbstractUsableItem` / `AbstractGearUsableItem` with concrete helmet, chest, boots, and weapon implementations; server builds update API character gear, gear-derived stat totals, and inventory through subscriptions/API calls.
+- New `TranslateKeyEnum` values are append-only: add them at the end of the enum, and keep matching API/client `en.json`/`pl.json` entries appended in the same order as the enum.
+- Gear item use is modeled through `AbstractUsableItem` / `AbstractGearUsableItem` with concrete helmet, chest, boots, weapon, and ammo implementations; server builds update API character gear, gear-derived stat totals, and inventory through subscriptions/API calls.
 - Gear stat bonuses are defined on Unity `InventoryItemEnum` members via `InventoryItemParametersAttribute`, then reused by inventory, merchant, crafting, and gear previews.
 - Gear UI maintains a left panel for equipped slots and a right panel for max health, strength, agility, stamina, intellect, spirit, and armor totals.
 - Character health is synchronized from server-side attack handling through `AttackPlayerSubscription`, a targeted client RPC, and `UpdateCharacterCommand`; max health is part of the character DTO/update contract.

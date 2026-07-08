@@ -33,6 +33,8 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public GearSlot Weapon { get; private set; }
 
+        public GearSlot Ammo { get; private set; }
+
         public GameObject RightPanel { get; private set; }
 
         #endregion
@@ -46,6 +48,7 @@ namespace Assets.Scripts.Areas.Character.UI
             Chest = GetGearSlot(nameof(Chest));
             Boots = GetGearSlot(nameof(Boots));
             Weapon = GetGearSlot(nameof(Weapon));
+            Ammo = GetGearSlot(nameof(Ammo));
             RightPanel = Gear.transform.Find("RightPanel").gameObject;
         }
 
@@ -75,6 +78,7 @@ namespace Assets.Scripts.Areas.Character.UI
             Wear(Chest, character.Chest);
             Wear(Boots, character.Boots);
             Wear(Weapon, character.Weapon);
+            Wear(Ammo, character.Ammo);
         }
 
         public void Wear(GearSlot slot, InventoryItemEnum type)
@@ -82,7 +86,7 @@ namespace Assets.Scripts.Areas.Character.UI
             slot.Button.OnRightClick.RemoveAllListeners();
             slot.Image.texture = InventoryUI.Instance.Textures[type];
 
-            if (type == InventoryItemEnum.None || type == InventoryItemEnum.HelmetTemplate || type == InventoryItemEnum.ChestTemplate || type == InventoryItemEnum.BootsTemplate || type == InventoryItemEnum.WeaponTemplate)
+            if (type == InventoryItemEnum.None || type == InventoryItemEnum.HelmetTemplate || type == InventoryItemEnum.ChestTemplate || type == InventoryItemEnum.BootsTemplate || type == InventoryItemEnum.WeaponTemplate || type == InventoryItemEnum.AmmoTemplate)
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;

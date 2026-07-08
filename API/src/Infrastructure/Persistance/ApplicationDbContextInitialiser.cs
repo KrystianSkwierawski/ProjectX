@@ -104,6 +104,7 @@ public class ApplicationDbContextInitialiser
                 Chest = InventoryItemEnum.ChestTemplate,
                 Boots = InventoryItemEnum.BootsTemplate,
                 Weapon = InventoryItemEnum.WeaponTemplate,
+                Ammo = InventoryItemEnum.AmmoTemplate,
                 CharacterInventory = new CharacterInventory
                 {
                     Inventory = JsonSerializer.Serialize(new InventoryDto

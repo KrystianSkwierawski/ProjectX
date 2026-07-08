@@ -79,5 +79,16 @@
     "Collect2HealthPotionsTitle": "Zbierz 2 mikstury zdrowia",
     "Collect2HealthPotionsDescription": "Plac treningowy wyprodukował trzech posiniaczonych rekrutów, jeden wgnieciony hełm i bohaterskie nieporozumienie dotyczące słowa unik. Przynieś instruktorowi dwie mikstury zdrowia, zanim duma zostanie jedynym lekarstwem. Porządna mikstura pachnie miętą, żelazem i optymizmem, a jej musowanie brzmi jak maleńkie oklaski.",
     "Collect2HealthPotionsCompleteDescription": "Instruktor bierze mikstury i woła rekrutów z powrotem do szeregu. Mikstury wyglądają na lepiej przygotowane niż oni.",
-    "Collect2HealthPotionsStatusText": "Zebrano {0}/{1} mikstur zdrowia"
+    "Collect2HealthPotionsStatusText": "Zebrano {0}/{1} mikstur zdrowia",
+
+    "AmmoTemplateTitle": "Slot amunicji",
+    "AmmoTemplateDescription": "Pusty specjalny slot ekwipunku na przedmioty wspierające broń.",
+    "AmmoArrowTitle": "Strzała",
+    "AmmoArrowDescription": "Prosta strzała przygotowana do łuku. Na razie można ją założyć w slocie amunicji.",
+    "AmmoRuneTitle": "Runa",
+    "AmmoRuneDescription": "Niewielka runa nasycona skupioną magią. Na razie można ją założyć w slocie amunicji.",
+    "AmmoFeatherTitle": "Pióro",
+    "AmmoFeatherDescription": "Lekkie pióro przygotowane jako wsparcie broni. Na razie można je założyć w slocie amunicji.",
+    "AmmoOilTitle": "Olejek do broni",
+    "AmmoOilDescription": "Fiolka olejku do nacierania ostrza. Na razie można ją założyć w slocie amunicji."
 }

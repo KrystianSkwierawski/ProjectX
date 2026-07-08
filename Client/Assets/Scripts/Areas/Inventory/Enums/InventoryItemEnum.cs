@@ -1,5 +1,3 @@
-
-using System;
 using System.Linq;
 using System.Reflection;
 using Assets.Scripts.Areas.Shared.Attributes;
@@ -63,7 +61,7 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         [InventoryItemParameters(MaxHealth = 10, Armor = 10)]
         IronHelmet = 1004,
 
-        [InventoryItemParameters(MaxHealth = 20, Armor = 20)]     
+        [InventoryItemParameters(MaxHealth = 20, Armor = 20)]
         IronChest = 1005,
 
         [InventoryItemParameters(MaxHealth = 5, Agility = 5, Stamina = 5, Armor = 5)]
@@ -71,6 +69,20 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         [InventoryItemParameters(Strength = 20)]
         IronSword = 1007,
+
+        AmmoTemplate = 1008,
+
+        [InventoryItemParameters(Strength = 5)]
+        AmmoArrow = 1009,
+
+        [InventoryItemParameters(Strength = 5, Intellect = 1)]
+        AmmoRune = 1010,
+
+        [InventoryItemParameters(Armor = 5)]
+        AmmoFeather = 1011,
+
+        [InventoryItemParameters(Strength = 5)]
+        AmmoOil = 1012,
 
         #endregion
     }

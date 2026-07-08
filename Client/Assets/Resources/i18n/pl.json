@@ -68,5 +68,15 @@
     "IronBootsTitle": "Iron Boots",
     "IronBootsDescription": "Heavy iron boots with reinforced toes, scuffed heels, and the steady promise of making every entrance sound intentional. They carry the smell of oiled leather and wet stone, and leave tracks that suggest the wearer has no interest in being moved by popular opinion.",
     "IronSwordTitle": "Iron Sword",
-    "IronSwordDescription": "A dependable iron sword, plain at first glance and persuasive at the second. Its edge has the honest shine of a tool kept ready, while the grip is dark from long practice. It hums faintly when drawn, or perhaps that is just your hand remembering why swords exist."
+    "IronSwordDescription": "A dependable iron sword, plain at first glance and persuasive at the second. Its edge has the honest shine of a tool kept ready, while the grip is dark from long practice. It hums faintly when drawn, or perhaps that is just your hand remembering why swords exist.",
+    "AmmoTemplateTitle": "Slot amunicji",
+    "AmmoTemplateDescription": "Pusty specjalny slot ekwipunku na przedmioty wspierające broń.",
+    "AmmoArrowTitle": "Strzała",
+    "AmmoArrowDescription": "Prosta strzała przygotowana do łuku. Na razie można ją założyć w slocie amunicji.",
+    "AmmoRuneTitle": "Runa",
+    "AmmoRuneDescription": "Niewielka runa nasycona skupioną magią. Na razie można ją założyć w slocie amunicji.",
+    "AmmoFeatherTitle": "Pióro",
+    "AmmoFeatherDescription": "Lekkie pióro przygotowane jako wsparcie broni. Na razie można je założyć w slocie amunicji.",
+    "AmmoOilTitle": "Olejek do broni",
+    "AmmoOilDescription": "Fiolka olejku do nacierania ostrza. Na razie można ją założyć w slocie amunicji."
 }

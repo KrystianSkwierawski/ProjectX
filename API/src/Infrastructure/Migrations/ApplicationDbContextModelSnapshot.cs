@@ -381,6 +381,9 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<short>("Armor")
                         .HasColumnType("smallint");
 
+                    b.Property<int>("Ammo")
+                        .HasColumnType("int");
+
                     b.Property<int>("Boots")
                         .HasColumnType("int");
 
