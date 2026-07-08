@@ -1305,6 +1305,10 @@
           },
           "ammo": {
             "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "ammoCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1389,6 +1393,11 @@
                 "$ref": "#/components/schemas/InventoryItemEnum"
               }
             ]
+          },
+          "ammoCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         }
       },

@@ -37,6 +37,8 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public InventoryItemEnum Ammo { get; set; }
 
+        public int AmmoCount { get; set; }
+
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             if (serializer.IsReader)
@@ -98,6 +100,10 @@ namespace Assets.Scripts.Areas.Character.Models
                 int ammo = default;
                 serializer.SerializeValue(ref ammo);
                 Ammo = (InventoryItemEnum)ammo;
+
+                int ammoCount = default;
+                serializer.SerializeValue(ref ammoCount);
+                AmmoCount = ammoCount;
 
                 // Read Levels dictionary
                 int count = default;
@@ -162,6 +168,9 @@ namespace Assets.Scripts.Areas.Character.Models
 
                 int ammo = (int)Ammo;
                 serializer.SerializeValue(ref ammo);
+
+                int ammoCount = AmmoCount;
+                serializer.SerializeValue(ref ammoCount);
 
                 // Write Levels dictionary
                 int count = Levels != null ? Levels.Count : 0;

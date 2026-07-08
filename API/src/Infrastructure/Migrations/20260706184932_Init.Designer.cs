@@ -385,6 +385,10 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasColumnType("smallint");
 
                     b.Property<int>("Ammo")
+                        .HasDefaultValue(1008)
+                        .HasColumnType("int");
+
+                    b.Property<int>("AmmoCount")
                         .HasColumnType("int");
 
                     b.Property<int>("Boots")

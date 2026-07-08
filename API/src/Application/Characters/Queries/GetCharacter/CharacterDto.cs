@@ -33,8 +33,10 @@ public class CharacterDto
 
     public InventoryItemEnum Ammo { get; set; }
 
+    public int AmmoCount { get; set; }
+
     public override string ToString()
     {
-        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intellect = {Intellect}, Spirit = {Spirit}, Armor = {Armor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon}, Ammo = {Ammo} }}";
+        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intellect = {Intellect}, Spirit = {Spirit}, Armor = {Armor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon}, Ammo = {Ammo}, AmmoCount = {AmmoCount} }}";
     }   
 }

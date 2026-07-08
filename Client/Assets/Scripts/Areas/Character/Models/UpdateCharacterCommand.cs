@@ -31,5 +31,7 @@ namespace Assets.Scripts.Areas.Character.Models
         public InventoryItemEnum? Weapon { get; set; }
 
         public InventoryItemEnum? Ammo { get; set; }
+
+        public int? AmmoCount { get; set; }
     }
 }

@@ -37,7 +37,7 @@
 - 2026-07-07: User clarified that English text in `Client/Assets/Resources/i18n/pl.json` is an intentional, temporary development fallback, not an accidental localization bug.
 - 2026-07-07: Observed a staged repo-level `.gitignore` with Visual Studio/.NET style ignore rules; treat it as an existing working-tree/index change and do not modify it unless asked.
 - 2026-07-08: Confirmed player animation/locomotion root motion is OFF: `Client/Assets/StarterAssets/ThirdPersonController/Prefabs/PlayerArmature.prefab` has Animator `m_ApplyRootMotion: 0`, and `ThirdPersonController` moves the character through `CharacterController.Move(...)`.
-- 2026-07-08: Added equip-only ammo/special gear slot support across API and Unity client, including merchant ammo items; attack consumption/effects are intentionally not implemented yet.
+- 2026-07-08: Added stackable ammo/special gear slot support across API and Unity client, including merchant ammo items; attack consumption/effects are intentionally not implemented yet.
 - 2026-07-08: User clarified that new `TranslateKeyEnum` values and matching `en.json`/`pl.json` entries must be appended at the end in enum order to preserve existing numeric ordering.
 
 ## Active Decisions
@@ -50,6 +50,7 @@
 - Unity menu entries under `ProjectX` should remain aligned with `Client/Automation/run.bat`.
 - If `.claude/settings.local.json` reappears, treat it as local-only secret configuration and do not commit or quote it.
 - Treat current character stat totals as persisted mutable values until the user clarifies whether stats should be recomputed from base stats plus gear bonuses.
+- Treat the ammo gear slot as `Ammo` plus `AmmoCount`; inventory right-click equips the clicked ammo stack, adds matching ammo stacks into the slot, and gear-slot right-click returns the equipped ammo stack to inventory.
 - Keep the current API database reset behavior for developer work unless the user asks to prepare a non-destructive persistence flow.
 - Do not replace the English client `pl.json` fallback unless the user explicitly asks for proper Polish client localization.
 - Keep player locomotion code-driven with Animator root motion disabled unless the user explicitly asks for a root-motion movement model.

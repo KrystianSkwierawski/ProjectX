@@ -34,6 +34,8 @@ public class UpdateCharacterCommand : IRequest
     public InventoryItemEnum? Weapon { get; init; }
 
     public InventoryItemEnum? Ammo { get; init; }
+
+    public int? AmmoCount { get; init; }
 }
 
 public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterCommand>
@@ -148,6 +150,13 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
             Log.Debug("Update {0} from {1} to {2}", nameof(character.Ammo), character.Ammo, request.Ammo.Value);
 
             character.Ammo = request.Ammo.Value;
+        }
+
+        if (request.AmmoCount is not null)
+        {
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.AmmoCount), character.AmmoCount, request.AmmoCount.Value);
+
+            character.AmmoCount = request.AmmoCount.Value;
         }
 
         await _context.SaveChangesAsync(cancellationToken);
