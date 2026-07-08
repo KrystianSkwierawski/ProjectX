@@ -20,7 +20,7 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short? Spirit { get; set; }
 
-        public short? Arrmor { get; set; }
+        public short? Armor { get; set; }
 
         public InventoryItemEnum? Helmet { get; set; }
 

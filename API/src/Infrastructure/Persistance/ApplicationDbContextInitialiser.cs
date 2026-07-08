@@ -99,7 +99,7 @@ public class ApplicationDbContextInitialiser
                 Stamina = 5,
                 Intellect = 5,
                 Spirit = 5,
-                Arrmor = 20,
+                Armor = 20,
                 Helmet = InventoryItemEnum.HelmetTemplate,
                 Chest = InventoryItemEnum.ChestTemplate,
                 Boots = InventoryItemEnum.BootsTemplate,

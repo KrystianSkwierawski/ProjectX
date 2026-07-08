@@ -1258,7 +1258,7 @@
           "spirit": {
             "type": "integer"
           },
-          "arrmor": {
+          "armor": {
             "type": "integer"
           },
           "helmet": {
@@ -1313,7 +1313,7 @@
             "type": "integer",
             "nullable": true
           },
-          "arrmor": {
+          "armor": {
             "type": "integer",
             "nullable": true
           },

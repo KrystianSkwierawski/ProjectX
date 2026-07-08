@@ -21,7 +21,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             var parameters = Type.GetInventoryItemParametersAttribute();
 
             UserManager.Instance.Character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
-            UserManager.Instance.Character.Arrmor += isWearing ? (short)(-parameters.Arrmor) : parameters.Arrmor;
+            UserManager.Instance.Character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
             UserManager.Instance.Character.Agility += isWearing ? (short)(-parameters.Agility) : parameters.Agility;
             UserManager.Instance.Character.Stamina += isWearing ? (short)(-parameters.Stamina) : parameters.Stamina;
 
@@ -39,7 +39,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 CharacterId = 1,
                 Boots = UserManager.Instance.Character.Boots,
                 MaxHealth = UserManager.Instance.Character.MaxHealth,
-                Arrmor = UserManager.Instance.Character.Arrmor,
+                Armor = UserManager.Instance.Character.Armor,
                 Agility = UserManager.Instance.Character.Agility,
                 Stamina = UserManager.Instance.Character.Stamina,
             }, ClientToken)

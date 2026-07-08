@@ -21,7 +21,7 @@ public class CharacterDto
 
     public short Spirit { get; set; }
 
-    public short Arrmor { get; set; }
+    public short Armor { get; set; }
 
     public InventoryItemEnum Helmet { get; set; }
 
@@ -33,6 +33,6 @@ public class CharacterDto
 
     public override string ToString()
     {
-        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intellect = {Intellect}, Spirit = {Spirit}, Arrmor = {Arrmor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon} }}";
+        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intellect = {Intellect}, Spirit = {Spirit}, Armor = {Armor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon} }}";
     }   
 }

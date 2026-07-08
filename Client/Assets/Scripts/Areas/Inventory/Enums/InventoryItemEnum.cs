@@ -60,13 +60,13 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         BootsTemplate = 1002,
         WeaponTemplate = 1003,
 
-        [InventoryItemParameters(MaxHealth = 10, Arrmor = 10)]
+        [InventoryItemParameters(MaxHealth = 10, Armor = 10)]
         IronHelmet = 1004,
 
-        [InventoryItemParameters(MaxHealth = 20, Arrmor = 20)]     
+        [InventoryItemParameters(MaxHealth = 20, Armor = 20)]     
         IronChest = 1005,
 
-        [InventoryItemParameters(MaxHealth = 5, Agility = 5, Stamina = 5, Arrmor = 5)]
+        [InventoryItemParameters(MaxHealth = 5, Agility = 5, Stamina = 5, Armor = 5)]
         IronBoots = 1006,
 
         [InventoryItemParameters(Strength = 20)]

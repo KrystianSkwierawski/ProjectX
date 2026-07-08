@@ -206,9 +206,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Spirit)}: {parameters.Spirit}");
                 }
 
-                if (parameters.Arrmor > 0)
+                if (parameters.Armor > 0)
                 {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Arrmor)}: {parameters.Arrmor}");
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Armor)}: {parameters.Armor}");
                 }
             }
 

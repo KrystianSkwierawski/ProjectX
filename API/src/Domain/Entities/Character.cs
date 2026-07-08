@@ -30,7 +30,7 @@ public class Character
 
     public short Spirit { get; set; }
 
-    public short Arrmor { get; set; }
+    public short Armor { get; set; }
 
     public InventoryItemEnum Helmet { get; set; }
 

@@ -25,7 +25,7 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short Spirit { get; set; }
 
-        public short Arrmor { get; set; }
+        public short Armor { get; set; }
 
         public InventoryItemEnum Helmet { get; set; }
 
@@ -73,9 +73,9 @@ namespace Assets.Scripts.Areas.Character.Models
                 serializer.SerializeValue(ref spirit);
                 Spirit = spirit;
 
-                short arrmor = default;
-                serializer.SerializeValue(ref arrmor);
-                Arrmor = arrmor;
+                short armor = default;
+                serializer.SerializeValue(ref armor);
+                Armor = armor;
 
                 int helmet = default;
                 serializer.SerializeValue(ref helmet);
@@ -139,8 +139,8 @@ namespace Assets.Scripts.Areas.Character.Models
                 short spirit = Spirit;
                 serializer.SerializeValue(ref spirit);
 
-                short arrmor = Arrmor;
-                serializer.SerializeValue(ref arrmor);
+                short armor = Armor;
+                serializer.SerializeValue(ref armor);
 
                 int helmet = (int)Helmet;
                 serializer.SerializeValue(ref helmet);

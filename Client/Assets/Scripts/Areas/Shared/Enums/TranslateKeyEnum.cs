@@ -65,7 +65,7 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Stamina,
         Intellect,
         Spirit,
-        Arrmor,
+        Armor,
         IronHelmetTitle,
         IronHelmetDescription,
         IronChestTitle,

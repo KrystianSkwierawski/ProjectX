@@ -23,7 +23,7 @@ public class UpdateCharacterCommand : IRequest
 
     public short? Spirit { get; init; }
 
-    public short? Arrmor { get; init; }
+    public short? Armor { get; init; }
 
     public InventoryItemEnum? Helmet { get; init; }
 
@@ -106,11 +106,11 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
             character.Spirit = request.Spirit.Value;
         }
 
-        if (request.Arrmor is not null)
+        if (request.Armor is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Arrmor), character.Arrmor, request.Arrmor.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.Armor), character.Armor, request.Armor.Value);
 
-            character.Arrmor = request.Arrmor.Value;
+            character.Armor = request.Armor.Value;
         }
 
         if (request.Helmet is not null)

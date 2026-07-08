@@ -378,7 +378,7 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<short>("Arrmor")
+                    b.Property<short>("Armor")
                         .HasColumnType("smallint");
 
                     b.Property<int>("Boots")

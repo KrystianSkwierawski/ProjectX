@@ -130,7 +130,7 @@ namespace Assets.Scripts.Areas.Character.UI
                     UserManager.Instance.Character.Stamina,
                     UserManager.Instance.Character.Intellect,
                     UserManager.Instance.Character.Spirit,
-                    UserManager.Instance.Character.Arrmor
+                    UserManager.Instance.Character.Armor
                 );
             }
         }

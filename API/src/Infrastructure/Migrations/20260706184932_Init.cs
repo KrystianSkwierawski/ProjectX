@@ -279,7 +279,7 @@ namespace ProjectX.Infrastructure.Migrations
                     Stamina = table.Column<short>(type: "smallint", nullable: false),
                     Intellect = table.Column<short>(type: "smallint", nullable: false),
                     Spirit = table.Column<short>(type: "smallint", nullable: false),
-                    Arrmor = table.Column<short>(type: "smallint", nullable: false),
+                    Armor = table.Column<short>(type: "smallint", nullable: false),
                     Helmet = table.Column<int>(type: "int", nullable: false),
                     Chest = table.Column<int>(type: "int", nullable: false),
                     Boots = table.Column<int>(type: "int", nullable: false),

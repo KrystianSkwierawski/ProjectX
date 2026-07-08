@@ -17,6 +17,6 @@ namespace Assets.Scripts.Areas.Shared.Attributes
 
         public short Spirit { get; set; }
 
-        public short Arrmor { get; set; }
+        public short Armor { get; set; }
     }
 }
