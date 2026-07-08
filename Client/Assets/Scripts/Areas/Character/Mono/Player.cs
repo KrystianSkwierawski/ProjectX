@@ -53,9 +53,20 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    UserManager.Instance.Character.Health = Math.Max(UserManager.Instance.Character.Health - e.Value, 0);
+                    var character = UserManager.Instance.Character;
 
-                    AttackPlayerClientRpc(UserManager.Instance.Character.Health, new ClientRpcParams
+                    if (CharacterStatsCalculator.IsAttackDodged(character.Agility))
+                    {
+                        Debug.Log($"Player dodged attack. Agility: {character.Agility}");
+
+                        return;
+                    }
+
+                    var damage = CharacterStatsCalculator.ApplyArmor(e.Value, character.Armor);
+
+                    character.Health = Math.Max(character.Health - damage, 0);
+
+                    AttackPlayerClientRpc(character.Health, new ClientRpcParams
                     {
                         Send = new ClientRpcSendParams
                         {
@@ -66,7 +77,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                     {
                         CharacterId = 1,
-                        Health = UserManager.Instance.Character.Health
+                        Health = character.Health
                     }, e.ClientToken)
                     .Forget();
                 });

@@ -112,10 +112,12 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 _hit = true;
 
+                var damage = CharacterStatsCalculator.ApplyStrength(50f, UserManager.Instance.Character.Strength);
+
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
-                    Value = 50f,
+                    Value = damage,
                     ClientToken = _clientToken,
                     Player = _caster
                 });

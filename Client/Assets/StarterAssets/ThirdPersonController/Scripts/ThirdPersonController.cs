@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Areas.Character.Mono;
+using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Shared.Mono;
 using Cinemachine;
 using Unity.Netcode;
@@ -385,7 +386,8 @@ namespace StarterAssets
         private void Move()
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed = _input.Sprint ? SprintSpeed : LockSpeed;
+            var baseSpeed = _input.Sprint ? SprintSpeed : LockSpeed;
+            var targetSpeed = CharacterStatsCalculator.ApplyStamina(baseSpeed, UserManager.Instance.Character?.Stamina ?? 0);
 
             // if there is no input, set the target speed to 0
             if (_input.Move == Vector2.zero)
