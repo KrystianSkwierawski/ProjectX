@@ -50,6 +50,7 @@
 - Character health is synchronized from server-side attack handling through `AttackPlayerSubscription`, a targeted client RPC, and `UpdateCharacterCommand`; max health is part of the character DTO/update contract.
 - Character description refresh now runs when opening Character UI and after level-up RPCs.
 - Bottom-right quick-access UI is scene-backed in `UIScene` and configured by `QuickAccessUI`, reusing existing slot/preview behavior and icon resources.
+- Player locomotion follows the Starter Assets code-driven pattern: `PlayerArmature.prefab` has Animator root motion disabled (`m_ApplyRootMotion: 0`), while `ThirdPersonController` applies movement via `CharacterController.Move(...)` and feeds Animator parameters such as `Speed`, `Grounded`, `Jump`, `FreeFall`, and `MotionSpeed`.
 - Generated/build artifacts are present in the workspace; avoid touching `bin/`, `obj/`, Unity `Library/`, and log/cache outputs unless specifically needed.
 - Dev startup flow:
   - PowerShell starts/restarts the API executable and auto-builds it if missing.

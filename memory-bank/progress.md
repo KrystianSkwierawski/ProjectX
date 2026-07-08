@@ -2,7 +2,7 @@
 
 ## Current Status
 - Memory bank initialized on 2026-05-07.
-- Memory bank refreshed on 2026-07-06 and amended on 2026-07-07.
+- Memory bank refreshed on 2026-07-06 and amended on 2026-07-07 and 2026-07-08.
 - Repository contains an existing Unity client and ASP.NET Core backend with major gameplay support areas already scaffolded or implemented.
 - Current local branch is `dev`, one commit ahead of `origin/dev` before this memory-bank edit.
 
@@ -26,6 +26,7 @@
   - `Client/Automation/run.ps1`
   - Unity menu entries `ProjectX > Run` and `ProjectX > Build And Run`.
 - Scene-backed quick-access bar exists for gear, inventory, character, and chat shortcuts using `QuickAccessUI` and `Resources/Icons/QuickAccess*.png`.
+- Player locomotion is currently code-driven/root-motion OFF: `PlayerArmature.prefab` stores Animator `m_ApplyRootMotion: 0`, and movement is applied in `ThirdPersonController` through `CharacterController.Move(...)`.
 
 ## What's Left / Unknown
 - Exact gameplay roadmap and release target are not documented.
@@ -54,3 +55,4 @@
 - 2026-07-02: Refreshed memory bank to document current health, character update, gear usable item, quick-access, automation, and local-secret status.
 - 2026-07-06: Refreshed memory bank to document `.Codexrules`, consolidated migrations, max health, gear stat attributes/previews, character description refresh, database reset behavior, and current localization/UI risks.
 - 2026-07-07: User clarified that database reset on startup and English text in client `pl.json` are intentional temporary development choices.
+- 2026-07-08: Confirmed and documented that player animation/locomotion uses Animator root motion OFF, with movement driven by `ThirdPersonController`/`CharacterController`.

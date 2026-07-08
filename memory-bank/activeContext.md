@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Focus
-- Memory bank refreshed on 2026-07-06 and amended on 2026-07-07 after user clarification.
+- Memory bank refreshed on 2026-07-06, amended on 2026-07-07 after user clarification, and amended on 2026-07-08 with player root-motion context.
 - No feature implementation task is currently active after this documentation refresh.
 - Current branch is `dev`; before this memory-bank edit it was clean and one commit ahead of `origin/dev` with `f8c25b2 add .codexrules`.
 
@@ -36,6 +36,7 @@
 - 2026-07-07: User clarified that the API startup database reset via `EnsureDeletedAsync()` / `EnsureCreatedAsync()` is an intentional, temporary development workflow.
 - 2026-07-07: User clarified that English text in `Client/Assets/Resources/i18n/pl.json` is an intentional, temporary development fallback, not an accidental localization bug.
 - 2026-07-07: Observed a staged repo-level `.gitignore` with Visual Studio/.NET style ignore rules; treat it as an existing working-tree/index change and do not modify it unless asked.
+- 2026-07-08: Confirmed player animation/locomotion root motion is OFF: `Client/Assets/StarterAssets/ThirdPersonController/Prefabs/PlayerArmature.prefab` has Animator `m_ApplyRootMotion: 0`, and `ThirdPersonController` moves the character through `CharacterController.Move(...)`.
 
 ## Active Decisions
 - Treat the repository as two cooperating applications:
@@ -49,6 +50,7 @@
 - Treat current character stat totals as persisted mutable values until the user clarifies whether stats should be recomputed from base stats plus gear bonuses.
 - Keep the current API database reset behavior for developer work unless the user asks to prepare a non-destructive persistence flow.
 - Do not replace the English client `pl.json` fallback unless the user explicitly asks for proper Polish client localization.
+- Keep player locomotion code-driven with Animator root motion disabled unless the user explicitly asks for a root-motion movement model.
 
 ## Next Steps
 - For future implementation tasks, first refresh this file with the current working focus.
