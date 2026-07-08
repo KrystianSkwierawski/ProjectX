@@ -9,6 +9,7 @@ using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -68,10 +69,12 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public void UpdateLeftPanel()
         {
-            Wear(Helmet, UserManager.Instance.Character.Helmet);
-            Wear(Chest, UserManager.Instance.Character.Chest);
-            Wear(Boots, UserManager.Instance.Character.Boots);
-            Wear(Weapon, UserManager.Instance.Character.Weapon);
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            Wear(Helmet, character.Helmet);
+            Wear(Chest, character.Chest);
+            Wear(Boots, character.Boots);
+            Wear(Weapon, character.Weapon);
         }
 
         public void Wear(GearSlot slot, InventoryItemEnum type)
@@ -122,15 +125,17 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             if (Gear.activeSelf)
             {
+                var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
                 RightPanel.GetComponent<TextMeshProUGUI>().text = string.Format(
                     TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
-                    UserManager.Instance.Character.MaxHealth,
-                    UserManager.Instance.Character.Strength,
-                    UserManager.Instance.Character.Agility,
-                    UserManager.Instance.Character.Stamina,
-                    UserManager.Instance.Character.Intellect,
-                    UserManager.Instance.Character.Spirit,
-                    UserManager.Instance.Character.Armor
+                    character.MaxHealth,
+                    character.Strength,
+                    character.Agility,
+                    character.Stamina,
+                    character.Intellect,
+                    character.Spirit,
+                    character.Armor
                 );
             }
         }

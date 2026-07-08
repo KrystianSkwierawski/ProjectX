@@ -16,28 +16,29 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         protected override bool Wear()
         {
-            var isWearing = UserManager.Instance.Character.Chest == Type;
+            var character = UserManager.Instance.Characters[OwnerClientId];
+            var isWearing = character.Chest == Type;
 
             var parameters = Type.GetInventoryItemParametersAttribute();
 
-            UserManager.Instance.Character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
-            UserManager.Instance.Character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
+            character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
+            character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
 
-            UserManager.Instance.Character.Chest = isWearing ? InventoryItemEnum.ChestTemplate : Type;
+            character.Chest = isWearing ? InventoryItemEnum.ChestTemplate : Type;
 
 #if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Chest, UserManager.Instance.Character.Chest);
+            GearUI.Instance.Wear(GearUI.Instance.Chest, character.Chest);
             GearUI.Instance.UpdateRightPanel();
-            PlayerUI.Instance.SetMaxHealth(UserManager.Instance.Character.MaxHealth);
+            PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
 #endif
 
 #if UNITY_SERVER && !UNITY_EDITOR
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 CharacterId = 1,
-                Chest = UserManager.Instance.Character.Chest,
-                MaxHealth = UserManager.Instance.Character.MaxHealth,
-                Armor = UserManager.Instance.Character.Armor,
+                Chest = character.Chest,
+                MaxHealth = character.MaxHealth,
+                Armor = character.Armor,
             }, ClientToken)
             .Forget();
 #endif

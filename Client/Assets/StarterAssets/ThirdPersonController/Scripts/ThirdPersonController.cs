@@ -387,7 +387,7 @@ namespace StarterAssets
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
             var baseSpeed = _input.Sprint ? SprintSpeed : LockSpeed;
-            var targetSpeed = CharacterStatsCalculator.ApplyStamina(baseSpeed, UserManager.Instance.Character?.Stamina ?? 0);
+            var targetSpeed = CharacterStatsCalculator.ApplyStamina(baseSpeed, UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].Stamina);
 
             // if there is no input, set the target speed to 0
             if (_input.Move == Vector2.zero)

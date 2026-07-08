@@ -16,16 +16,18 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         public override void Use()
         {
-            if (UserManager.Instance.Character.Health >= UserManager.Instance.Character.MaxHealth)
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (character.Health >= character.MaxHealth)
             {
                 return;
             }
 
             // TODO: set on api
-            UserManager.Instance.Character.Health = Math.Min(UserManager.Instance.Character.Health + 20, UserManager.Instance.Character.MaxHealth);
+            character.Health = Math.Min(character.Health + 20, character.MaxHealth);
 
 #if UNITY_EDITOR
-            PlayerUI.Instance.SetHealth(UserManager.Instance.Character.Health);
+            PlayerUI.Instance.SetHealth(character.Health);
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);  
 #endif
 

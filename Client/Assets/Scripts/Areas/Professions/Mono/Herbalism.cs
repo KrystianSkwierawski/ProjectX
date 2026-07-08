@@ -196,7 +196,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             if (_requiredLevels.TryGetValue(objectName, out byte requiredLevel))
             {
-                var level = UserManager.Instance.Character.Levels[ExperienceTypeEnum.Herbalism];
+                var level = UserManager.Instance.Characters[OwnerClientId].Levels[ExperienceTypeEnum.Herbalism];
 
                 if (level < requiredLevel)
                 {

@@ -16,32 +16,33 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         protected override bool Wear()
         {
-            var isWearing = UserManager.Instance.Character.Boots == Type;
+            var character = UserManager.Instance.Characters[OwnerClientId];
+            var isWearing = character.Boots == Type;
 
             var parameters = Type.GetInventoryItemParametersAttribute();
 
-            UserManager.Instance.Character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
-            UserManager.Instance.Character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
-            UserManager.Instance.Character.Agility += isWearing ? (short)(-parameters.Agility) : parameters.Agility;
-            UserManager.Instance.Character.Stamina += isWearing ? (short)(-parameters.Stamina) : parameters.Stamina;
+            character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
+            character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
+            character.Agility += isWearing ? (short)(-parameters.Agility) : parameters.Agility;
+            character.Stamina += isWearing ? (short)(-parameters.Stamina) : parameters.Stamina;
 
-            UserManager.Instance.Character.Boots = isWearing ? InventoryItemEnum.BootsTemplate : Type;
+            character.Boots = isWearing ? InventoryItemEnum.BootsTemplate : Type;
 
 #if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Boots, UserManager.Instance.Character.Boots);
+            GearUI.Instance.Wear(GearUI.Instance.Boots, character.Boots);
             GearUI.Instance.UpdateRightPanel();
-            PlayerUI.Instance.SetMaxHealth(UserManager.Instance.Character.MaxHealth);
+            PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
 #endif
 
 #if UNITY_SERVER && !UNITY_EDITOR
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 CharacterId = 1,
-                Boots = UserManager.Instance.Character.Boots,
-                MaxHealth = UserManager.Instance.Character.MaxHealth,
-                Armor = UserManager.Instance.Character.Armor,
-                Agility = UserManager.Instance.Character.Agility,
-                Stamina = UserManager.Instance.Character.Stamina,
+                Boots = character.Boots,
+                MaxHealth = character.MaxHealth,
+                Armor = character.Armor,
+                Agility = character.Agility,
+                Stamina = character.Stamina,
             }, ClientToken)
             .Forget();
 #endif

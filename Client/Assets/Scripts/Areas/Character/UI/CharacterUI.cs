@@ -5,6 +5,7 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Assets.Scripts.Areas.Character.UI
@@ -48,12 +49,14 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public void RefreshDescription()
         {
-            if (UserManager.Instance.Character?.Levels == null)
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            if (character?.Levels == null)
             {
                 return;
             }
 
-            DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), UserManager.Instance.Character.Levels.Values.Cast<object>().ToArray());
+            DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), character.Levels.Values.Cast<object>().ToArray());
         }
 
         public void Hide()
@@ -75,7 +78,9 @@ namespace Assets.Scripts.Areas.Character.UI
                 return;
             }
 
-            if (UserManager.Instance.Character?.Levels == null)
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            if (character?.Levels == null)
             {
                 return;
             }

@@ -1,16 +1,18 @@
+using System.Collections.Generic;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Professions.Enums;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Cysharp.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Assets.Scripts.Areas.Character
 {
     public class UserManager : Singleton<UserManager>
     {
-        public CharacterDto Character { get; set; }
+        public IDictionary<ulong, CharacterDto> Characters { get; } = new Dictionary<ulong, CharacterDto>();
 
         public string Token { get; private set; }
 
@@ -34,6 +36,11 @@ namespace Assets.Scripts.Areas.Character
 
         public byte GetLevelByRecipeType(CraftingRecipeTypeEnum craftingRecipeType)
         {
+            return GetLevelByRecipeType(craftingRecipeType, NetworkManager.Singleton.LocalClientId);
+        }
+
+        public byte GetLevelByRecipeType(CraftingRecipeTypeEnum craftingRecipeType, ulong clientId)
+        {
             var type = craftingRecipeType switch
             {
                 CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
@@ -47,7 +54,7 @@ namespace Assets.Scripts.Areas.Character
                 return 0;
             }
 
-            return Character.Levels[type];
+            return Characters[clientId].Levels[type];
         }
     }
 }
