@@ -9,13 +9,11 @@ namespace Assets.Scripts.Areas.Shared.Attributes
 
         public short Strength { get; set; }
 
-        public short Agility { get; set; }
+        public short Dexterity { get; set; }
 
-        public short Stamina { get; set; }
+        public short Speed { get; set; }
 
         public short Intellect { get; set; }
-
-        public short Spirit { get; set; }
 
         public short Armor { get; set; }
     }

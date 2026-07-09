@@ -5246,16 +5246,13 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Strength: {0}
 
-    Agility: {1}
+    Dexterity: {1}
 
-    Stamina: {2}
+    Speed: {2}
 
     Intellect: {3}
 
-    Spirit:
-    {4}
-
-    Armor: {5}
+    Armor: {4}
 
 
 '

@@ -9,14 +9,14 @@ namespace Assets.Scripts.Areas.Character
             return Mathf.Max(0f, damage) * GetIncreaseMultiplier(strength);
         }
 
-        public static bool IsAttackDodged(short agility)
+        public static bool IsAttackDodged(short dexterity)
         {
-            return Random.Range(0f, 100f) < GetLimitedPercent(agility);
+            return Random.Range(0f, 100f) < GetLimitedPercent(dexterity);
         }
 
-        public static float ApplyStamina(float speed, short stamina)
+        public static float ApplySpeed(float speed, short speedStat)
         {
-            return Mathf.Max(0f, speed) * GetIncreaseMultiplier(stamina);
+            return Mathf.Max(0f, speed) * GetIncreaseMultiplier(speedStat);
         }
 
         public static int ApplyArmor(int damage, short armor)

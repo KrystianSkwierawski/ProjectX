@@ -374,9 +374,6 @@ namespace ProjectX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<short>("Agility")
-                        .HasColumnType("smallint");
-
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -384,23 +381,26 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<short>("Armor")
                         .HasColumnType("smallint");
 
-                    b.Property<int>("Ammo")
+                    b.Property<int>("AmmoType")
                         .HasDefaultValue(1008)
                         .HasColumnType("int");
 
                     b.Property<int>("AmmoCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("Boots")
+                    b.Property<int>("BootsType")
                         .HasColumnType("int");
 
-                    b.Property<int>("Chest")
+                    b.Property<int>("ChestType")
                         .HasColumnType("int");
+
+                    b.Property<short>("Dexterity")
+                        .HasColumnType("smallint");
 
                     b.Property<int>("Health")
                         .HasColumnType("int");
 
-                    b.Property<int>("Helmet")
+                    b.Property<int>("HelmetType")
                         .HasColumnType("int");
 
                     b.Property<short>("Intellect")
@@ -417,10 +417,7 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<short>("Spirit")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("Stamina")
+                    b.Property<short>("Speed")
                         .HasColumnType("smallint");
 
                     b.Property<byte>("Status")
@@ -429,7 +426,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<short>("Strength")
                         .HasColumnType("smallint");
 
-                    b.Property<int>("Weapon")
+                    b.Property<int>("WeaponType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

@@ -17,17 +17,17 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         protected override bool Wear()
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
-            var isWearing = character.Chest == Type;
+            var isWearing = character.ChestType == Type;
 
             var parameters = Type.GetInventoryItemParametersAttribute();
 
             character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
             character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
 
-            character.Chest = isWearing ? InventoryItemEnum.ChestTemplate : Type;
+            character.ChestType = isWearing ? InventoryItemEnum.ChestTemplate : Type;
 
 #if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Chest, character.Chest);
+            GearUI.Instance.Wear(GearUI.Instance.Chest, character.ChestType);
             GearUI.Instance.UpdateRightPanel();
             PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
 #endif
@@ -36,7 +36,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 CharacterId = 1,
-                Chest = character.Chest,
+                ChestType = character.ChestType,
                 MaxHealth = character.MaxHealth,
                 Armor = character.Armor,
             }, ClientToken)

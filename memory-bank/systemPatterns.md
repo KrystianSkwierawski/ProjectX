@@ -48,7 +48,7 @@
 - Gear item use is modeled through `AbstractUsableItem` / `AbstractGearUsableItem` with concrete helmet, chest, boots, weapon, and ammo implementations; server builds update API character gear, gear-derived stat totals, ammo count, and inventory through subscriptions/API calls.
 - The ammo gear slot is represented by `Character.Ammo` plus `Character.AmmoCount`; right-clicking ammo in inventory moves the clicked stack into the slot, adds to the slot when the type matches, and returns the previous ammo stack to inventory when switching ammo type.
 - Gear stat bonuses are defined on Unity `InventoryItemEnum` members via `InventoryItemParametersAttribute`, then reused by inventory, merchant, crafting, and gear previews.
-- Gear UI maintains a left panel for equipped slots and a right panel for max health, strength, agility, stamina, intellect, spirit, and armor totals.
+- Gear UI maintains a left panel for equipped slots and a right panel for max health, strength, dexterity, speed, intellect, and armor totals.
 - Character health is synchronized from server-side attack handling through `AttackPlayerSubscription`, a targeted client RPC, and `UpdateCharacterCommand`; max health is part of the character DTO/update contract.
 - Character description refresh now runs when opening Character UI and after level-up RPCs.
 - Bottom-right quick-access UI is scene-backed in `UIScene` and configured by `QuickAccessUI`, reusing existing slot/preview behavior and icon resources.

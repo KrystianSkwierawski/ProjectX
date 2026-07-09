@@ -13,30 +13,28 @@ public class CharacterDto
 
     public short Strength { get; set; }
 
-    public short Agility { get; set; }
+    public short Dexterity { get; set; }
 
-    public short Stamina { get; set; }
+    public short Speed { get; set; }
 
     public short Intellect { get; set; }
 
-    public short Spirit { get; set; }
-
     public short Armor { get; set; }
 
-    public InventoryItemEnum Helmet { get; set; }
+    public InventoryItemEnum HelmetType { get; set; }
 
-    public InventoryItemEnum Chest { get; set; }
+    public InventoryItemEnum ChestType { get; set; }
 
-    public InventoryItemEnum Boots { get; set; }
+    public InventoryItemEnum BootsType { get; set; }
 
-    public InventoryItemEnum Weapon { get; set; }
+    public InventoryItemEnum WeaponType { get; set; }
 
-    public InventoryItemEnum Ammo { get; set; }
+    public InventoryItemEnum AmmoType { get; set; }
 
     public int AmmoCount { get; set; }
 
     public override string ToString()
     {
-        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Agility = {Agility}, Stamina = {Stamina}, Intellect = {Intellect}, Spirit = {Spirit}, Armor = {Armor}, Helmet = {Helmet}, Chest = {Chest}, Boots = {Boots}, Weapon = {Weapon}, Ammo = {Ammo}, AmmoCount = {AmmoCount} }}";
+        return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Dexterity = {Dexterity}, Speed = {Speed}, Intellect = {Intellect}, Armor = {Armor}, HelmetType = {HelmetType}, ChestType = {ChestType}, BootsType = {BootsType}, WeaponType = {WeaponType}, AmmoType = {AmmoType}, AmmoCount = {AmmoCount} }}";
     }   
 }

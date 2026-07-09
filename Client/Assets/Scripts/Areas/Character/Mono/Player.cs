@@ -57,9 +57,9 @@ namespace Assets.Scripts.Areas.Character.Mono
                 {
                     var character = UserManager.Instance.Characters[OwnerClientId];
 
-                    if (CharacterStatsCalculator.IsAttackDodged(character.Agility))
+                    if (CharacterStatsCalculator.IsAttackDodged(character.Dexterity))
                     {
-                        Debug.Log($"Player dodged attack. Agility: {character.Agility}");
+                        Debug.Log($"Player dodged attack. Dexterity: {character.Dexterity}");
 
                         return;
                     }

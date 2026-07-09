@@ -74,11 +74,11 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
 
-            Wear(Helmet, character.Helmet);
-            Wear(Chest, character.Chest);
-            Wear(Boots, character.Boots);
-            Wear(Weapon, character.Weapon);
-            Wear(Ammo, character.Ammo);
+            Wear(Helmet, character.HelmetType);
+            Wear(Chest, character.ChestType);
+            Wear(Boots, character.BootsType);
+            Wear(Weapon, character.WeaponType);
+            Wear(Ammo, character.AmmoType);
         }
 
         public void Wear(GearSlot slot, InventoryItemEnum type)
@@ -135,10 +135,9 @@ namespace Assets.Scripts.Areas.Character.UI
                     TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
                     character.MaxHealth,
                     character.Strength,
-                    character.Agility,
-                    character.Stamina,
+                    character.Dexterity,
+                    character.Speed,
                     character.Intellect,
-                    character.Spirit,
                     character.Armor
                 );
             }

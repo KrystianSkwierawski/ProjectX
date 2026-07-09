@@ -17,25 +17,23 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short Strength { get; set; }
 
-        public short Agility { get; set; }
+        public short Dexterity { get; set; }
 
-        public short Stamina { get; set; }
+        public short Speed { get; set; }
 
         public short Intellect { get; set; }
 
-        public short Spirit { get; set; }
-
         public short Armor { get; set; }
 
-        public InventoryItemEnum Helmet { get; set; }
+        public InventoryItemEnum HelmetType { get; set; }
 
-        public InventoryItemEnum Chest { get; set; }
+        public InventoryItemEnum ChestType { get; set; }
 
-        public InventoryItemEnum Boots { get; set; }
+        public InventoryItemEnum BootsType { get; set; }
 
-        public InventoryItemEnum Weapon { get; set; }
+        public InventoryItemEnum WeaponType { get; set; }
 
-        public InventoryItemEnum Ammo { get; set; }
+        public InventoryItemEnum AmmoType { get; set; }
 
         public int AmmoCount { get; set; }
 
@@ -61,21 +59,17 @@ namespace Assets.Scripts.Areas.Character.Models
                 serializer.SerializeValue(ref strength);
                 Strength = strength;
 
-                short agility = default;
-                serializer.SerializeValue(ref agility);
-                Agility = agility;
+                short dexterity = default;
+                serializer.SerializeValue(ref dexterity);
+                Dexterity = dexterity;
 
-                short stamina = default;
-                serializer.SerializeValue(ref stamina);
-                Stamina = stamina;
+                short speed = default;
+                serializer.SerializeValue(ref speed);
+                Speed = speed;
 
                 short intellect = default;
                 serializer.SerializeValue(ref intellect);
                 Intellect = intellect;
-
-                short spirit = default;
-                serializer.SerializeValue(ref spirit);
-                Spirit = spirit;
 
                 short armor = default;
                 serializer.SerializeValue(ref armor);
@@ -83,23 +77,23 @@ namespace Assets.Scripts.Areas.Character.Models
 
                 int helmet = default;
                 serializer.SerializeValue(ref helmet);
-                Helmet = (InventoryItemEnum)helmet;
+                HelmetType = (InventoryItemEnum)helmet;
 
                 int chest = default;
                 serializer.SerializeValue(ref chest);
-                Chest = (InventoryItemEnum)chest;
+                ChestType = (InventoryItemEnum)chest;
 
                 int boots = default;
                 serializer.SerializeValue(ref boots);
-                Boots = (InventoryItemEnum)boots;
+                BootsType = (InventoryItemEnum)boots;
 
                 int weapon = default;
                 serializer.SerializeValue(ref weapon);
-                Weapon = (InventoryItemEnum)weapon;
+                WeaponType = (InventoryItemEnum)weapon;
 
-                int ammo = default;
-                serializer.SerializeValue(ref ammo);
-                Ammo = (InventoryItemEnum)ammo;
+                int ammoType = default;
+                serializer.SerializeValue(ref ammoType);
+                AmmoType = (InventoryItemEnum)ammoType;
 
                 int ammoCount = default;
                 serializer.SerializeValue(ref ammoCount);
@@ -139,35 +133,32 @@ namespace Assets.Scripts.Areas.Character.Models
                 short strength = Strength;
                 serializer.SerializeValue(ref strength);
 
-                short agility = Agility;
-                serializer.SerializeValue(ref agility);
+                short dexterity = Dexterity;
+                serializer.SerializeValue(ref dexterity);
 
-                short stamina = Stamina;
-                serializer.SerializeValue(ref stamina);
+                short speed = Speed;
+                serializer.SerializeValue(ref speed);
 
                 short intellect = Intellect;
                 serializer.SerializeValue(ref intellect);
 
-                short spirit = Spirit;
-                serializer.SerializeValue(ref spirit);
-
                 short armor = Armor;
                 serializer.SerializeValue(ref armor);
 
-                int helmet = (int)Helmet;
+                int helmet = (int)HelmetType;
                 serializer.SerializeValue(ref helmet);
 
-                int chest = (int)Chest;
+                int chest = (int)ChestType;
                 serializer.SerializeValue(ref chest);
 
-                int boots = (int)Boots;
+                int boots = (int)BootsType;
                 serializer.SerializeValue(ref boots);
 
-                int weapon = (int)Weapon;
+                int weapon = (int)WeaponType;
                 serializer.SerializeValue(ref weapon);
 
-                int ammo = (int)Ammo;
-                serializer.SerializeValue(ref ammo);
+                int ammoType = (int)AmmoType;
+                serializer.SerializeValue(ref ammoType);
 
                 int ammoCount = AmmoCount;
                 serializer.SerializeValue(ref ammoCount);

@@ -186,24 +186,19 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Strength)}: {parameters.Strength}");
                 }
 
-                if (parameters.Agility > 0)
+                if (parameters.Dexterity > 0)
                 {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Agility)}: {parameters.Agility}");
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Dexterity)}: {parameters.Dexterity}");
                 }
 
-                if (parameters.Stamina > 0)
+                if (parameters.Speed > 0)
                 {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Stamina)}: {parameters.Stamina}");
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Speed)}: {parameters.Speed}");
                 }
 
                 if (parameters.Intellect > 0)
                 {
                     sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Intellect)}: {parameters.Intellect}");
-                }
-
-                if (parameters.Spirit > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Spirit)}: {parameters.Spirit}");
                 }
 
                 if (parameters.Armor > 0)

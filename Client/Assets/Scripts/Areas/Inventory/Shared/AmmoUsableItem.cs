@@ -21,7 +21,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         protected override bool Wear()
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
-            var isWearing = character.Ammo == Type;
+            var isWearing = character.AmmoType == Type;
 
             var parameters = Type.GetInventoryItemParametersAttribute();
 
@@ -29,10 +29,10 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             character.Intellect += isWearing ? (short)(-parameters.Intellect) : parameters.Intellect;
             character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
 
-            character.Ammo = isWearing ? InventoryItemEnum.AmmoTemplate : Type;
+            character.AmmoType = isWearing ? InventoryItemEnum.AmmoTemplate : Type;
 
 #if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Ammo, character.Ammo);
+            GearUI.Instance.Wear(GearUI.Instance.Ammo, character.AmmoType);
             GearUI.Instance.UpdateRightPanel();
 #endif
 
@@ -40,7 +40,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 CharacterId = 1,
-                Ammo = character.Ammo,
+                AmmoType = character.AmmoType,
                 Strength = character.Strength,
                 Intellect = character.Intellect,
                 Armor = character.Armor

@@ -17,19 +17,19 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         protected override bool Wear()
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
-            var isWearing = character.Boots == Type;
+            var isWearing = character.BootsType == Type;
 
             var parameters = Type.GetInventoryItemParametersAttribute();
 
             character.MaxHealth += isWearing ? -parameters.MaxHealth : parameters.MaxHealth;
             character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
-            character.Agility += isWearing ? (short)(-parameters.Agility) : parameters.Agility;
-            character.Stamina += isWearing ? (short)(-parameters.Stamina) : parameters.Stamina;
+            character.Dexterity += isWearing ? (short)(-parameters.Dexterity) : parameters.Dexterity;
+            character.Speed += isWearing ? (short)(-parameters.Speed) : parameters.Speed;
 
-            character.Boots = isWearing ? InventoryItemEnum.BootsTemplate : Type;
+            character.BootsType = isWearing ? InventoryItemEnum.BootsTemplate : Type;
 
 #if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Boots, character.Boots);
+            GearUI.Instance.Wear(GearUI.Instance.Boots, character.BootsType);
             GearUI.Instance.UpdateRightPanel();
             PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
 #endif
@@ -38,11 +38,11 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 CharacterId = 1,
-                Boots = character.Boots,
+                BootsType = character.BootsType,
                 MaxHealth = character.MaxHealth,
                 Armor = character.Armor,
-                Agility = character.Agility,
-                Stamina = character.Stamina,
+                Dexterity = character.Dexterity,
+                Speed = character.Speed,
             }, ClientToken)
             .Forget();
 #endif

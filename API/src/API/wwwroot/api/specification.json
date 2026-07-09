@@ -1276,34 +1276,31 @@
           "strength": {
             "type": "integer"
           },
-          "agility": {
+          "dexterity": {
             "type": "integer"
           },
-          "stamina": {
+          "speed": {
             "type": "integer"
           },
           "intellect": {
             "type": "integer"
           },
-          "spirit": {
-            "type": "integer"
-          },
           "armor": {
             "type": "integer"
           },
-          "helmet": {
+          "helmetType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "chest": {
+          "chestType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "boots": {
+          "bootsType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "weapon": {
+          "weaponType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "ammo": {
+          "ammoType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "ammoCount": {
@@ -1334,11 +1331,11 @@
             "type": "integer",
             "nullable": true
           },
-          "agility": {
+          "dexterity": {
             "type": "integer",
             "nullable": true
           },
-          "stamina": {
+          "speed": {
             "type": "integer",
             "nullable": true
           },
@@ -1346,15 +1343,11 @@
             "type": "integer",
             "nullable": true
           },
-          "spirit": {
-            "type": "integer",
-            "nullable": true
-          },
           "armor": {
             "type": "integer",
             "nullable": true
           },
-          "helmet": {
+          "helmetType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1362,7 +1355,7 @@
               }
             ]
           },
-          "chest": {
+          "chestType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1370,7 +1363,7 @@
               }
             ]
           },
-          "boots": {
+          "bootsType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1378,7 +1371,7 @@
               }
             ]
           },
-          "weapon": {
+          "weaponType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1386,7 +1379,7 @@
               }
             ]
           },
-          "ammo": {
+          "ammoType": {
             "nullable": true,
             "oneOf": [
               {

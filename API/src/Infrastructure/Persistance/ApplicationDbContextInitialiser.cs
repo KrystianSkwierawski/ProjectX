@@ -95,16 +95,15 @@ public class ApplicationDbContextInitialiser
                 MaxHealth = 100,
                 ModDate = DateTime.Now,
                 Strength = 1,
-                Agility = 1,
-                Stamina = 1,
+                Dexterity = 1,
+                Speed = 1,
                 Intellect = 1,
-                Spirit = 1,
                 Armor = 1,
-                Helmet = InventoryItemEnum.HelmetTemplate,
-                Chest = InventoryItemEnum.ChestTemplate,
-                Boots = InventoryItemEnum.BootsTemplate,
-                Weapon = InventoryItemEnum.WeaponTemplate,
-                Ammo = InventoryItemEnum.AmmoTemplate,
+                HelmetType = InventoryItemEnum.HelmetTemplate,
+                ChestType = InventoryItemEnum.ChestTemplate,
+                BootsType = InventoryItemEnum.BootsTemplate,
+                WeaponType = InventoryItemEnum.WeaponTemplate,
+                AmmoType = InventoryItemEnum.AmmoTemplate,
                 CharacterInventory = new CharacterInventory
                 {
                     Inventory = JsonSerializer.Serialize(new InventoryDto
