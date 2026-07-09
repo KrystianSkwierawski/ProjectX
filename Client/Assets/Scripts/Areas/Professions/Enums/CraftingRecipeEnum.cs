@@ -9,6 +9,18 @@ namespace Assets.Scripts.Areas.Professions.Enums
         WhiteBar,
         CopperBar,
         BlackBar,
-        HealthPotion
+        HealthPotion,
+        AmmoArrow1,
+        AmmoArrow2,
+        AmmoArrow3,
+        AmmoRune1,
+        AmmoRune2,
+        AmmoRune3,
+        AmmoFeather1,
+        AmmoFeather2,
+        AmmoFeather3,
+        AmmoOil1,
+        AmmoOil2,
+        AmmoOil3
     }
 }

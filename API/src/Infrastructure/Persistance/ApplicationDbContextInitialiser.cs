@@ -117,48 +117,8 @@ public class ApplicationDbContextInitialiser
                             },
                             new InventoryItemDto
                             {
-                                Type = InventoryItemEnum.Can,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Rice,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Fish,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.PurpleOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.WhiteOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.CopperOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.BlackOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Chamomile,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
                                 Type = InventoryItemEnum.Currency,
-                                Count = 200
+                                Count = 9999
                             },
                             //new InventoryItemDto
                             //{

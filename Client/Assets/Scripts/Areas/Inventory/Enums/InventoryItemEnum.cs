@@ -64,7 +64,7 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         [InventoryItemParameters(MaxHealth = 20, Armor = 20)]
         IronChest = 1005,
 
-        [InventoryItemParameters(MaxHealth = 5, Dexterity = 5, Speed = 5, Armor = 5)]
+        [InventoryItemParameters(MaxHealth = 5, Speed = 15, Armor = 5)]
         IronBoots = 1006,
 
         [InventoryItemParameters(Strength = 20)]
@@ -72,13 +72,13 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         AmmoTemplate = 1008,
 
-        [InventoryItemParameters(Strength = 5)]
+        [InventoryItemParameters(Dexterity = 5)]
         AmmoArrow1 = 1009,
 
-        [InventoryItemParameters(Strength = 10)]
+        [InventoryItemParameters(Dexterity = 10)]
         AmmoArrow2 = 1010,
 
-        [InventoryItemParameters(Strength = 15)]
+        [InventoryItemParameters(Dexterity = 15)]
         AmmoArrow3 = 1011,
 
         [InventoryItemParameters(Intellect = 5)]
