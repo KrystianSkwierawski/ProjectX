@@ -112,7 +112,11 @@ namespace Assets.Scripts.Areas.Professions.UI
                         Button = obj.GetComponent<Button>()
                     };
                 },
-                actionOnGet: (RecipesPoolObject obj) => obj.GameObject.SetActive(true),
+                actionOnGet: (RecipesPoolObject obj) =>
+                {
+                    obj.GameObject.SetActive(true);
+                    obj.GameObject.transform.SetAsLastSibling();
+                },
                 actionOnRelease: (RecipesPoolObject obj) =>
                 {
                     obj.GameObject.SetActive(false);
