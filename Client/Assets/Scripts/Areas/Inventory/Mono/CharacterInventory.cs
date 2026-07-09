@@ -325,6 +325,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private void UseItem(InventoryItemDto item, string clientToken)
         {
+            if (item.Type.IsAmmo())
+            {
+                new AmmoUsableItem(item.Type, clientToken, OwnerClientId).Use();
+
+                return;
+            }
+
             IUsableItem usableItem = item.Type switch
             {
                 InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(clientToken, OwnerClientId),
@@ -333,7 +340,6 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 InventoryItemEnum.IronChest => new ChestUsableItem(item.Type, clientToken, OwnerClientId),
                 InventoryItemEnum.IronBoots => new BootsUsableItem(item.Type, clientToken, OwnerClientId),
                 InventoryItemEnum.IronSword => new WeaponUsableItem(item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.AmmoArrow or InventoryItemEnum.AmmoRune or InventoryItemEnum.AmmoFeather or InventoryItemEnum.AmmoOil => new AmmoUsableItem(item.Type, clientToken, OwnerClientId),
                 _ => null
             };
 

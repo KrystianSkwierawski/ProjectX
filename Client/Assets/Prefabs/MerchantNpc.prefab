@@ -273,6 +273,22 @@ MonoBehaviour:
     _count: 10
   - _type: 1012
     _count: 10
+  - _type: 1013
+    _count: 10
+  - _type: 1014
+    _count: 10
+  - _type: 1015
+    _count: 10
+  - _type: 1016
+    _count: 10
+  - _type: 1017
+    _count: 10
+  - _type: 1018
+    _count: 10
+  - _type: 1019
+    _count: 10
+  - _type: 1020
+    _count: 10
 --- !u!4 &4247905422096701610 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ade63e7fd92c26342a35feb67fcc8d9a, type: 3}

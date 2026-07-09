@@ -73,16 +73,40 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         AmmoTemplate = 1008,
 
         [InventoryItemParameters(Strength = 5)]
-        AmmoArrow = 1009,
+        AmmoArrow1 = 1009,
 
-        [InventoryItemParameters(Strength = 5, Intellect = 1)]
-        AmmoRune = 1010,
+        [InventoryItemParameters(Strength = 10)]
+        AmmoArrow2 = 1010,
+
+        [InventoryItemParameters(Strength = 15)]
+        AmmoArrow3 = 1011,
+
+        [InventoryItemParameters(Intellect = 5)]
+        AmmoRune1 = 1012,
+
+        [InventoryItemParameters(Intellect = 10)]
+        AmmoRune2 = 1013,
+
+        [InventoryItemParameters(Intellect = 15)]
+        AmmoRune3 = 1014,
 
         [InventoryItemParameters(Armor = 5)]
-        AmmoFeather = 1011,
+        AmmoFeather1 = 1015,
+
+        [InventoryItemParameters(Armor = 10)]
+        AmmoFeather2 = 1016,
+
+        [InventoryItemParameters(Armor = 15)]
+        AmmoFeather3 = 1017,
 
         [InventoryItemParameters(Strength = 5)]
-        AmmoOil = 1012,
+        AmmoOil1 = 1018,
+
+        [InventoryItemParameters(Strength = 10)]
+        AmmoOil2 = 1019,
+
+        [InventoryItemParameters(Strength = 15)]
+        AmmoOil3 = 1020,
 
         #endregion
     }
@@ -97,6 +121,22 @@ namespace Assets.Scripts.Areas.Inventory.Enums
                 .First();
 
             return member.GetCustomAttribute<InventoryItemParametersAttribute>();
+        }
+
+        public static bool IsAmmo(this InventoryItemEnum value)
+        {
+            return value is InventoryItemEnum.AmmoArrow1
+                or InventoryItemEnum.AmmoArrow2
+                or InventoryItemEnum.AmmoArrow3
+                or InventoryItemEnum.AmmoRune1
+                or InventoryItemEnum.AmmoRune2
+                or InventoryItemEnum.AmmoRune3
+                or InventoryItemEnum.AmmoFeather1
+                or InventoryItemEnum.AmmoFeather2
+                or InventoryItemEnum.AmmoFeather3
+                or InventoryItemEnum.AmmoOil1
+                or InventoryItemEnum.AmmoOil2
+                or InventoryItemEnum.AmmoOil3;
         }
     }
 
