@@ -99,6 +99,7 @@ public class ApplicationDbContextInitialiser
                 Speed = 1,
                 Intellect = 1,
                 Armor = 1,
+                AmmoCount = 1,
                 HelmetType = InventoryItemEnum.HelmetTemplate,
                 ChestType = InventoryItemEnum.ChestTemplate,
                 BootsType = InventoryItemEnum.BootsTemplate,

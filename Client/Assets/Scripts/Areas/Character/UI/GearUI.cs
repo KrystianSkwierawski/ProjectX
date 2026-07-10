@@ -95,7 +95,12 @@ namespace Assets.Scripts.Areas.Character.UI
             }
 
             slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
-            slot.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(type).ToString();
+
+            slot.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(new InventoryItemDto
+            {
+                Type = type,
+                Count = slot == Ammo ? UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].AmmoCount : 1
+            });
 
             slot.Button.interactable = true;
             slot.HoverUI.enabled = true;

@@ -309,7 +309,7 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             obj.Image.texture = InventoryUI.Instance.Textures[item.Type];
             obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-            obj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(item.Type).ToString();
+            obj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(item);
 
             var count = item.Type == InventoryItemEnum.Xp
                 ? UserManager.Instance.GetLevelByRecipeType(CurrentType)

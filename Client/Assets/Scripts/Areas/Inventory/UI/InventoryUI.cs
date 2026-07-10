@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.Pool;
-using UnityEngine.UI;
+using System.Text;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -13,7 +10,11 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
-using System.Text;
+using TMPro;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.Pool;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Inventory.UI
 {
@@ -130,12 +131,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
 
-                var description = PrepareDescription(item.Type);
-
-                if (item.Type != InventoryItemEnum.Currency)
-                {
-                    description.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}");
-                }
+                var description = PrepareDescription(item);
 
                 slot.PreviewDescriptionMesh.text = description.ToString();
 
@@ -165,17 +161,20 @@ namespace Assets.Scripts.Areas.Inventory.UI
             }
         }
 
-        public StringBuilder PrepareDescription(InventoryItemEnum type)
+        public string PrepareDescription(InventoryItemDto item)
         {
-            var sb = new StringBuilder(TranslateManager.Instance.GetByKey($"{type}Description"));
+            var sb = new StringBuilder(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
 
-            var parameters = type.GetInventoryItemParametersAttribute();
+            if (item.Type is not InventoryItemEnum.Currency and not InventoryItemEnum.Xp)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}");
+            }
+
+            var parameters = item.Type.GetInventoryItemParametersAttribute();
 
             if (parameters != null)
             {
-                sb.Append("\r\n");
-                sb.Append("\r\n");
-
                 if (parameters.MaxHealth > 0)
                 {
                     sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.MaxHealth)}: {parameters.MaxHealth}");
@@ -207,7 +206,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 }
             }
 
-            return sb;
+            return sb.ToString();
         }
 
         public void UpdateLoot(InventoryItemDto[] items, ulong clientId, string clientToken)
@@ -229,7 +228,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-                slot.PreviewDescriptionMesh.text = PrepareDescription(item.Type).ToString();
+                slot.PreviewDescriptionMesh.text = PrepareDescription(item).ToString();
                 slot.Type = item.Type;
 
                 slot.Button.OnRightClick.AddListener(() =>

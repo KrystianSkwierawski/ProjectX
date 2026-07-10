@@ -130,7 +130,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                 itemObj.Mesh.text = itemObj.Item.Count.ToString();
                 itemObj.Image.texture = InventoryUI.Instance.Textures[itemObj.Item.Type];
                 itemObj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{itemObj.Item.Type}Title");
-                itemObj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(itemObj.Item.Type).ToString();
+                itemObj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(itemObj.Item);
 
                 var currencyObj = _itemPool.Get();
 
