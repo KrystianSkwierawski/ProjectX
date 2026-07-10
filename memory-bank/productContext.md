@@ -9,6 +9,8 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - Provides a foundation for server-authoritative or server-backed gameplay loops.
 - Persists character health, max health, stats, and equipped gear through the character update API.
 - Lets gear items apply stat bonuses and expose those bonuses in inventory, merchant, crafting, and gear UI previews.
+- Applies early runtime stat behavior: Strength scales fireball damage, Dexterity provides dodge chance, Speed scales movement, and Armor reduces incoming damage.
+- Exposes tiered ammo items through merchant stock and Blacksmithing/Alchemy recipes, while the final ammo equip/consumption loop remains unfinished.
 - Supports multiple languages through i18n resources and translation services.
 
 ## User Experience Goals
@@ -20,5 +22,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - The exact genre, target platform, multiplayer session model, and release goals are not documented yet.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.
+- The intended gameplay effect for Intellect is not documented or implemented yet.
+- Ammo semantics need clarification and implementation: `AmmoCount` is persisted but not mutated by the client equip path, ammo is not consumed by attacks, and switching ammo types does not currently perform a complete old-bonus/old-stack transition.
 - Health-potion behavior currently has a local/client-side health update path; persistence expectations should be confirmed before expanding consumable item behavior.
 - Full Polish client localization remains a future product task; current English content in client `pl.json` is an intentional temporary fallback for development.
