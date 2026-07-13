@@ -56,6 +56,19 @@ public enum InventoryItemEnum
     IronChest = 1005,
     IronBoots = 1006,
     IronSword = 1007,
+    AmmoTemplate = 1008,
+    AmmoArrow1 = 1009,
+    AmmoArrow2 = 1010,
+    AmmoArrow3 = 1011,
+    AmmoRune1 = 1012,
+    AmmoRune2 = 1013,
+    AmmoRune3 = 1014,
+    AmmoFeather1 = 1015,
+    AmmoFeather2 = 1016,
+    AmmoFeather3 = 1017,
+    AmmoOil1 = 1018,
+    AmmoOil2 = 1019,
+    AmmoOil3 = 1020,
 
     #endregion
 }

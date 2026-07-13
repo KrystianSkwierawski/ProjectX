@@ -1,10 +1,10 @@
-using Unity.Netcode;
-using UnityEngine;
-using UnityEngine.VFX;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Mono;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.VFX;
 
 namespace Assets.Scripts.Areas.Character.Mono
 {
@@ -112,10 +112,13 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 _hit = true;
 
+                var character = UserManager.Instance.Characters[OwnerClientId];
+                var damage = CharacterStatsCalculator.ApplyStrength(50f, character.Strength);
+
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
-                    Value = 50f,
+                    Value = damage,
                     ClientToken = _clientToken,
                     Player = _caster
                 });

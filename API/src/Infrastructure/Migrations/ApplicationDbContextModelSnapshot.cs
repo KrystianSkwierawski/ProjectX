@@ -375,7 +375,35 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<short>("Armor")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("AmmoType")
+                        .HasDefaultValue(1008)
+                        .HasColumnType("int");
+
+                    b.Property<int>("AmmoCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BootsType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChestType")
+                        .HasColumnType("int");
+
+                    b.Property<short>("Dexterity")
+                        .HasColumnType("smallint");
+
                     b.Property<int>("Health")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HelmetType")
+                        .HasColumnType("int");
+
+                    b.Property<short>("Intellect")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("MaxHealth")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModDate")
@@ -386,8 +414,17 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<short>("Speed")
+                        .HasColumnType("smallint");
+
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
+
+                    b.Property<short>("Strength")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("WeaponType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

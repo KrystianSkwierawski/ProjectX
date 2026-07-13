@@ -23,7 +23,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 UserManager.Instance.OwnerClientId = OwnerClientId;
-                SetCharacterServerRpc(UserManager.Instance.Token);
+                LoadCharacterServerRpc(UserManager.Instance.Token);
             }
 
             if (IsServer)
@@ -37,9 +37,11 @@ namespace Assets.Scripts.Areas.Character.Mono
                         type = e.Type,
                     }, e.ClientToken);
 
-                    if (result.Level > UserManager.Instance.Character.Levels[e.Type])
+                    var character = UserManager.Instance.Characters[OwnerClientId];
+
+                    if (result.Level > character.Levels[e.Type])
                     {
-                        UserManager.Instance.Character.Levels[e.Type] = result.Level;
+                        character.Levels[e.Type] = result.Level;
 
                         UpdateLevelClientRpc(e.Type, result.Level, new ClientRpcParams
                         {
@@ -53,9 +55,20 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
-                    UserManager.Instance.Character.Health = Math.Max(UserManager.Instance.Character.Health - e.Value, 0);
+                    var character = UserManager.Instance.Characters[OwnerClientId];
 
-                    AttackPlayerClientRpc(UserManager.Instance.Character.Health, new ClientRpcParams
+                    if (CharacterStatsCalculator.IsAttackDodged(character.Dexterity))
+                    {
+                        Debug.Log($"Player dodged attack. Dexterity: {character.Dexterity}");
+
+                        return;
+                    }
+
+                    var damage = CharacterStatsCalculator.ApplyArmor(e.Value, character.Armor);
+
+                    character.Health = Math.Max(character.Health - damage, 0);
+
+                    AttackPlayerClientRpc(character.Health, new ClientRpcParams
                     {
                         Send = new ClientRpcSendParams
                         {
@@ -66,7 +79,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                     {
                         CharacterId = 1,
-                        Health = UserManager.Instance.Character.Health
+                        Health = character.Health
                     }, e.ClientToken)
                     .Forget();
                 });
@@ -100,7 +113,8 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
-            UserManager.Instance.Character.Health = health;
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+            character.Health = health;
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 
@@ -112,20 +126,21 @@ namespace Assets.Scripts.Areas.Character.Mono
                 transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
             }
 
-            PlayerUI.Instance.SetHealth(UserManager.Instance.Character.Health);
+            PlayerUI.Instance.SetHealth(character.Health);
         }
 
         [ServerRpc]
-        private void SetCharacterServerRpc(string clientToken)
+        private void LoadCharacterServerRpc(string clientToken)
         {
-            SetCharacterAsync(clientToken).Forget();
+            LoadCharacterAsync(clientToken).Forget();
         }
 
-        private async UniTask SetCharacterAsync(string clientToken)
+        private async UniTask LoadCharacterAsync(string clientToken)
         {
-            UserManager.Instance.Character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+            UserManager.Instance.Characters[OwnerClientId] = character;
 
-            UpdatePlayerClientRpc(UserManager.Instance.Character, new ClientRpcParams
+            UpdatePlayerClientRpc(character, new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
@@ -137,7 +152,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         public void UpdatePlayerClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
         {
-            UserManager.Instance.Character = character;
+            UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId] = character;
 
             PlayerUI.Instance.SetPlayer();
 
@@ -147,7 +162,8 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         public void UpdateLevelClientRpc(ExperienceTypeEnum type, byte level, ClientRpcParams rpcParams = default)
         {
-            UserManager.Instance.Character.Levels[type] = level;
+            UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].Levels[type] = level;
+            CharacterUI.Instance.RefreshDescription();
 
             if (type == ExperienceTypeEnum.Main)
             {
@@ -164,6 +180,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
+            UserManager.Instance.Characters.Remove(OwnerClientId);
+
             if (IsServer)
             {
                 var key = OwnerClientId.ToString();
@@ -176,6 +194,8 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
         public override void OnDestroy()
         {
+            UserManager.Instance.Characters.Remove(OwnerClientId);
+
             if (IsServer)
             {
                 var key = OwnerClientId.ToString();

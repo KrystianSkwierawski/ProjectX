@@ -1,38 +1,52 @@
 ﻿using Assets.Scripts.Areas.Character;
-using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
-using Assets.Scripts.Areas.Shared.Models;
-using Assets.Scripts.Areas.Shared.Mono;
-using Cysharp.Threading.Tasks;
+using Assets.Scripts.Areas.Inventory.Models;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class WeaponUsableItem : AbstractGearUsableItem
     {
-        public WeaponUsableItem(InventoryItemEnum type, string clientToken, ulong ownerClientId) : base(type, clientToken, ownerClientId)
+        protected override InventoryItemDto CharacterItem => new InventoryItemDto
+        {
+            Type = UserManager.Instance.Characters[OwnerClientId].WeaponType,
+            Count = 1
+        };
+
+        protected override GearSlot Slot => GearUI.Instance.Weapon;
+
+        protected override InventoryItemEnum TemplateType => InventoryItemEnum.WeaponTemplate;
+
+        public WeaponUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
         {
         }
 
         protected override bool Wear()
         {
-            var isWearing = UserManager.Instance.Character.Weapon == Type;
+            var character = UserManager.Instance.Characters[OwnerClientId];
 
-            UserManager.Instance.Character.Weapon = isWearing ? InventoryItemEnum.WeaponTemplate : Type;
-
-#if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Weapon, UserManager.Instance.Character.Weapon);
-#endif
-
-#if UNITY_SERVER && !UNITY_EDITOR
-            UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+            if (character.WeaponType == Item.Type)
             {
-                CharacterId = 1,
-                Weapon = UserManager.Instance.Character.Weapon
-            }, ClientToken)
-            .Forget();
-#endif
-            return isWearing;
+                return false;
+            }
+
+            character.WeaponType = Item.Type;
+
+            return true;
+        }
+
+        protected override bool Unwear()
+        {
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (character.WeaponType != Item.Type)
+            {
+                return false;
+            }
+
+            character.WeaponType = TemplateType;
+
+            return true;
         }
     }
 }

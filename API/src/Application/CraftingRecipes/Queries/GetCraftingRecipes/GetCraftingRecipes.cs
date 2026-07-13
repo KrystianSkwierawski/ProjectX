@@ -22,6 +22,7 @@ public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQue
         var craftingRecipes = await _context.CraftingRecipes
             .Where(x => x.Type == request.type)
             .Where(x => x.Status == StatusEnum.Active)
+            .OrderBy(x => x.Id)
             .Select(x => new
             {
                 x.Id,

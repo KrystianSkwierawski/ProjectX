@@ -768,7 +768,20 @@
           "IronHelmet",
           "IronChest",
           "IronBoots",
-          "IronSword"
+          "IronSword",
+          "AmmoTemplate",
+          "AmmoArrow1",
+          "AmmoArrow2",
+          "AmmoArrow3",
+          "AmmoRune1",
+          "AmmoRune2",
+          "AmmoRune3",
+          "AmmoFeather1",
+          "AmmoFeather2",
+          "AmmoFeather3",
+          "AmmoOil1",
+          "AmmoOil2",
+          "AmmoOil3"
         ],
         "x-enum-varnames": [
           "None",
@@ -796,7 +809,20 @@
           "IronHelmet",
           "IronChest",
           "IronBoots",
-          "IronSword"
+          "IronSword",
+          "AmmoTemplate",
+          "AmmoArrow1",
+          "AmmoArrow2",
+          "AmmoArrow3",
+          "AmmoRune1",
+          "AmmoRune2",
+          "AmmoRune3",
+          "AmmoFeather1",
+          "AmmoFeather2",
+          "AmmoFeather3",
+          "AmmoOil1",
+          "AmmoOil2",
+          "AmmoOil3"
         ],
         "x-enumNames": [
           "None",
@@ -824,9 +850,35 @@
           "IronHelmet",
           "IronChest",
           "IronBoots",
-          "IronSword"
+          "IronSword",
+          "AmmoTemplate",
+          "AmmoArrow1",
+          "AmmoArrow2",
+          "AmmoArrow3",
+          "AmmoRune1",
+          "AmmoRune2",
+          "AmmoRune3",
+          "AmmoFeather1",
+          "AmmoFeather2",
+          "AmmoFeather3",
+          "AmmoOil1",
+          "AmmoOil2",
+          "AmmoOil3"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -880,6 +932,19 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -908,7 +973,20 @@
           1004,
           1005,
           1006,
-          1007
+          1007,
+          1008,
+          1009,
+          1010,
+          1011,
+          1012,
+          1013,
+          1014,
+          1015,
+          1016,
+          1017,
+          1018,
+          1019,
+          1020
         ]
       },
       "UpdateCharacterInventoryCommand": {
@@ -1239,35 +1317,43 @@
             "type": "integer",
             "format": "int32"
           },
+          "maxHealth": {
+            "type": "integer",
+            "format": "int32"
+          },
           "strength": {
             "type": "integer"
           },
-          "agility": {
+          "dexterity": {
             "type": "integer"
           },
-          "stamina": {
+          "speed": {
             "type": "integer"
           },
-          "intelligence": {
+          "intellect": {
             "type": "integer"
           },
-          "spirit": {
+          "armor": {
             "type": "integer"
           },
-          "arrmor": {
-            "type": "integer"
-          },
-          "helmet": {
+          "helmetType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "chest": {
+          "chestType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "boots": {
+          "bootsType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
-          "weapon": {
+          "weaponType": {
             "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "ammoType": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "ammoCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1284,31 +1370,32 @@
             "format": "int32",
             "nullable": true
           },
+          "maxHealth": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "strength": {
             "type": "integer",
             "nullable": true
           },
-          "agility": {
+          "dexterity": {
             "type": "integer",
             "nullable": true
           },
-          "stamina": {
+          "speed": {
             "type": "integer",
             "nullable": true
           },
-          "intelligence": {
+          "intellect": {
             "type": "integer",
             "nullable": true
           },
-          "spirit": {
+          "armor": {
             "type": "integer",
             "nullable": true
           },
-          "arrmor": {
-            "type": "integer",
-            "nullable": true
-          },
-          "helmet": {
+          "helmetType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1316,7 +1403,7 @@
               }
             ]
           },
-          "chest": {
+          "chestType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1324,7 +1411,7 @@
               }
             ]
           },
-          "boots": {
+          "bootsType": {
             "nullable": true,
             "oneOf": [
               {
@@ -1332,13 +1419,26 @@
               }
             ]
           },
-          "weapon": {
+          "weaponType": {
             "nullable": true,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
               }
             ]
+          },
+          "ammoType": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InventoryItemEnum"
+              }
+            ]
+          },
+          "ammoCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         }
       },
@@ -1428,7 +1528,19 @@
           "WhiteBar",
           "CopperBar",
           "BlackBar",
-          "HealthPotion"
+          "HealthPotion",
+          "AmmoArrow1",
+          "AmmoArrow2",
+          "AmmoArrow3",
+          "AmmoRune1",
+          "AmmoRune2",
+          "AmmoRune3",
+          "AmmoFeather1",
+          "AmmoFeather2",
+          "AmmoFeather3",
+          "AmmoOil1",
+          "AmmoOil2",
+          "AmmoOil3"
         ],
         "x-enum-varnames": [
           "None",
@@ -1438,7 +1550,19 @@
           "WhiteBar",
           "CopperBar",
           "BlackBar",
-          "HealthPotion"
+          "HealthPotion",
+          "AmmoArrow1",
+          "AmmoArrow2",
+          "AmmoArrow3",
+          "AmmoRune1",
+          "AmmoRune2",
+          "AmmoRune3",
+          "AmmoFeather1",
+          "AmmoFeather2",
+          "AmmoFeather3",
+          "AmmoOil1",
+          "AmmoOil2",
+          "AmmoOil3"
         ],
         "x-enumNames": [
           "None",
@@ -1448,9 +1572,33 @@
           "WhiteBar",
           "CopperBar",
           "BlackBar",
-          "HealthPotion"
+          "HealthPotion",
+          "AmmoArrow1",
+          "AmmoArrow2",
+          "AmmoArrow3",
+          "AmmoRune1",
+          "AmmoRune2",
+          "AmmoRune3",
+          "AmmoFeather1",
+          "AmmoFeather2",
+          "AmmoFeather3",
+          "AmmoOil1",
+          "AmmoOil2",
+          "AmmoOil3"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -1468,6 +1616,18 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -1478,7 +1638,19 @@
           4,
           5,
           6,
-          7
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
         ]
       },
       "CraftingRecipeRequirementDto": {

@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
-using UnityEngine;
-using UnityEngine.Pool;
-using UnityEngine.UI;
+using System.Text;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -13,6 +10,10 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Pool;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Inventory.UI
 {
@@ -128,12 +129,10 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
 
-                if (item.Type != InventoryItemEnum.Currency)
-                {
-                    slot.PreviewDescriptionMesh.text += $"\r\n\r\n{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}";
-                }
+                var description = PrepareDescription(item);
+
+                slot.PreviewDescriptionMesh.text = description.ToString();
 
                 slot.Type = item.Type;
                 slot.HoverUI.enabled = true;
@@ -155,10 +154,63 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 {
                     UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
                     {
-                        Item = item
+                        Item = new InventoryItemDto
+                        {
+                            Type = item.Type,
+                            Count = item.Type.IsAmmo() ? item.Count : 1
+                        },
+                        From = UsableItemFromEnum.Inventory,
                     });
                 });
             }
+        }
+
+        public string PrepareDescription(InventoryItemDto item)
+        {
+            var sb = new StringBuilder(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
+
+            if (item.Type is not InventoryItemEnum.Currency and not InventoryItemEnum.Xp)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}");
+            }
+
+            var parameters = item.Type.GetInventoryItemParametersAttribute();
+
+            if (parameters != null)
+            {
+                if (parameters.MaxHealth > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.MaxHealth)}: {parameters.MaxHealth}");
+                }
+
+                if (parameters.Strength > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Strength)}: {parameters.Strength}");
+                }
+
+                if (parameters.Dexterity > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Dexterity)}: {parameters.Dexterity}");
+                }
+
+                if (parameters.Speed > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Speed)}: {parameters.Speed}");
+                }
+
+                if (parameters.Intellect > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Intellect)}: {parameters.Intellect}");
+                }
+
+                if (parameters.Armor > 0)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Armor)}: {parameters.Armor}");
+                }
+            }
+
+            return sb.ToString();
         }
 
         public void UpdateLoot(InventoryItemDto[] items, ulong clientId, string clientToken)
@@ -180,7 +232,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-                slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+                slot.PreviewDescriptionMesh.text = PrepareDescription(item).ToString();
                 slot.Type = item.Type;
 
                 slot.Button.OnRightClick.AddListener(() =>

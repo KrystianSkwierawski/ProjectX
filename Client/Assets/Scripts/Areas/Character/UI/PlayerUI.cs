@@ -5,6 +5,7 @@ using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using Unity.Netcode;
 
 namespace Assets.Scripts.Areas.Character.UI
 {
@@ -73,9 +74,12 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public void SetPlayer()
         {
-            SetName(UserManager.Instance.Character.Name);
-            SetHealth(UserManager.Instance.Character.Health);
-            SetMainLevel(UserManager.Instance.Character.Levels[ExperienceTypeEnum.Main]);
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            SetName(character.Name);
+            SetHealth(character.Health);
+            SetMaxHealth(character.MaxHealth);
+            SetMainLevel(character.Levels[ExperienceTypeEnum.Main]);
         }
 
         public void SetName(string name)
@@ -86,6 +90,11 @@ namespace Assets.Scripts.Areas.Character.UI
         public void SetHealth(int health)
         {
             PlayerHealthPointsText.text = health.ToString();
+        }
+
+        public void SetMaxHealth(int maxHealth)
+        {
+            PlayerHealthPointsText.text = maxHealth.ToString();
         }
 
         public void SetMainLevel(int level)

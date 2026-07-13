@@ -112,7 +112,11 @@ namespace Assets.Scripts.Areas.Professions.UI
                         Button = obj.GetComponent<Button>()
                     };
                 },
-                actionOnGet: (RecipesPoolObject obj) => obj.GameObject.SetActive(true),
+                actionOnGet: (RecipesPoolObject obj) =>
+                {
+                    obj.GameObject.SetActive(true);
+                    obj.GameObject.transform.SetAsLastSibling();
+                },
                 actionOnRelease: (RecipesPoolObject obj) =>
                 {
                     obj.GameObject.SetActive(false);
@@ -305,7 +309,7 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             obj.Image.texture = InventoryUI.Instance.Textures[item.Type];
             obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-            obj.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Description");
+            obj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(item);
 
             var count = item.Type == InventoryItemEnum.Xp
                 ? UserManager.Instance.GetLevelByRecipeType(CurrentType)

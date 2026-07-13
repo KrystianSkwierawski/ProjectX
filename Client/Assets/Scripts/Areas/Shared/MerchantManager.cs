@@ -31,6 +31,18 @@ namespace Assets.Scripts.Areas.Shared.Mono
             { InventoryItemEnum.IronChest, 30 },
             { InventoryItemEnum.IronBoots, 10 },
             { InventoryItemEnum.IronSword, 40 },
+            { InventoryItemEnum.AmmoArrow1, 5 },
+            { InventoryItemEnum.AmmoArrow2, 10 },
+            { InventoryItemEnum.AmmoArrow3, 15 },
+            { InventoryItemEnum.AmmoRune1, 5 },
+            { InventoryItemEnum.AmmoRune2, 10 },
+            { InventoryItemEnum.AmmoRune3, 15 },
+            { InventoryItemEnum.AmmoFeather1, 5 },
+            { InventoryItemEnum.AmmoFeather2, 10 },
+            { InventoryItemEnum.AmmoFeather3, 15 },
+            { InventoryItemEnum.AmmoOil1, 5 },
+            { InventoryItemEnum.AmmoOil2, 10 },
+            { InventoryItemEnum.AmmoOil3, 15 },
 
         };
 

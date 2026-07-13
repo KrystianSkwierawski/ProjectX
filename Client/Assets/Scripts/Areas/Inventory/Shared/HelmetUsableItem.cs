@@ -1,38 +1,52 @@
 ﻿using Assets.Scripts.Areas.Character;
-using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
-using Assets.Scripts.Areas.Shared.Models;
-using Assets.Scripts.Areas.Shared.Mono;
-using Cysharp.Threading.Tasks;
+using Assets.Scripts.Areas.Inventory.Models;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class HelmetUsableItem : AbstractGearUsableItem
     {
-        public HelmetUsableItem(InventoryItemEnum type, string clientToken, ulong ownerClientId) : base(type, clientToken, ownerClientId)
+        protected override InventoryItemDto CharacterItem => new InventoryItemDto
+        {
+            Type = UserManager.Instance.Characters[OwnerClientId].HelmetType,
+            Count = 1
+        };
+
+        protected override GearSlot Slot => GearUI.Instance.Helmet;
+
+        protected override InventoryItemEnum TemplateType => InventoryItemEnum.HelmetTemplate;
+
+        public HelmetUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
         {
         }
 
         protected override bool Wear()
         {
-            var isWearing = UserManager.Instance.Character.Helmet == Type;
+            var character = UserManager.Instance.Characters[OwnerClientId];
 
-            UserManager.Instance.Character.Helmet = isWearing ? InventoryItemEnum.HelmetTemplate : Type;
-
-#if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Helmet, UserManager.Instance.Character.Helmet);
-#endif
-
-#if UNITY_SERVER && !UNITY_EDITOR
-            UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+            if (character.HelmetType == Item.Type)
             {
-                CharacterId = 1,
-                Helmet = UserManager.Instance.Character.Helmet
-            }, ClientToken)
-            .Forget();
-#endif
-            return isWearing;
+                return false;
+            }
+
+            character.HelmetType = Item.Type;
+
+            return true;
+        }
+
+        protected override bool Unwear()
+        {
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (character.HelmetType != Item.Type)
+            {
+                return false;
+            }
+
+            character.HelmetType = TemplateType;
+
+            return true;
         }
     }
 }

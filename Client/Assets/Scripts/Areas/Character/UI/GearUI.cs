@@ -9,6 +9,7 @@ using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,6 +33,8 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public GearSlot Weapon { get; private set; }
 
+        public GearSlot Ammo { get; private set; }
+
         public GameObject RightPanel { get; private set; }
 
         #endregion
@@ -45,6 +48,7 @@ namespace Assets.Scripts.Areas.Character.UI
             Chest = GetGearSlot(nameof(Chest));
             Boots = GetGearSlot(nameof(Boots));
             Weapon = GetGearSlot(nameof(Weapon));
+            Ammo = GetGearSlot(nameof(Ammo));
             RightPanel = Gear.transform.Find("RightPanel").gameObject;
         }
 
@@ -68,28 +72,63 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public void UpdateLeftPanel()
         {
-            Wear(Helmet, UserManager.Instance.Character.Helmet);
-            Wear(Chest, UserManager.Instance.Character.Chest);
-            Wear(Boots, UserManager.Instance.Character.Boots);
-            Wear(Weapon, UserManager.Instance.Character.Weapon);
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            Wear(Helmet, new InventoryItemDto
+            {
+                Type = character.HelmetType,
+                Count = 1
+            });
+
+            Wear(Chest, new InventoryItemDto
+            {
+                Type = character.ChestType,
+                Count = 1
+            });
+
+            Wear(Boots, new InventoryItemDto
+            {
+                Type = character.BootsType,
+                Count = 1
+            });
+
+            Wear(Weapon, new InventoryItemDto
+            {
+                Type = character.WeaponType,
+                Count = 1
+            });
+
+            Wear(Ammo, new InventoryItemDto
+            {
+                Type = character.AmmoType,
+                Count = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].AmmoCount
+            });
         }
 
-        public void Wear(GearSlot slot, InventoryItemEnum type)
+        public void Wear(GearSlot slot, InventoryItemDto item)
         {
             slot.Button.OnRightClick.RemoveAllListeners();
-            slot.Image.texture = InventoryUI.Instance.Textures[type];
+            slot.Image.texture = InventoryUI.Instance.Textures[item.Type];
 
-            if (type == InventoryItemEnum.None || type == InventoryItemEnum.HelmetTemplate || type == InventoryItemEnum.ChestTemplate || type == InventoryItemEnum.BootsTemplate || type == InventoryItemEnum.WeaponTemplate)
+            if (item.Type == InventoryItemEnum.None || item.Type == InventoryItemEnum.HelmetTemplate || item.Type == InventoryItemEnum.ChestTemplate || item.Type == InventoryItemEnum.BootsTemplate || item.Type == InventoryItemEnum.WeaponTemplate || item.Type == InventoryItemEnum.AmmoTemplate)
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;
+                slot.Mesh.text = "0";
+                slot.Mesh.enabled = false;
 
                 return;
             }
 
-            slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
-            slot.PreviewDescriptionMesh.text = TranslateManager.Instance.GetByKey($"{type}Description");
+            slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
+            slot.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(item);
 
+            if (item.Type.IsAmmo())
+            {
+                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
+                slot.Mesh.enabled = true;
+            }
+           
             slot.Button.interactable = true;
             slot.HoverUI.enabled = true;
 
@@ -109,26 +148,28 @@ namespace Assets.Scripts.Areas.Character.UI
             {
                 UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
                 {
-                    Item = new InventoryItemDto
-                    {
-                        Type = type,
-                        Count = 1
-                    }
+                    Item = item,
+                    From = UsableItemFromEnum.Gear,
                 });
             });
         }
 
-        private void UpdateRightPanel()
+        public void UpdateRightPanel()
         {
-            RightPanel.GetComponent<TextMeshProUGUI>().text = string.Format(
-                TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
-                UserManager.Instance.Character.Strength,
-                UserManager.Instance.Character.Agility,
-                UserManager.Instance.Character.Stamina,
-                UserManager.Instance.Character.Intelligence,
-                UserManager.Instance.Character.Spirit,
-                UserManager.Instance.Character.Arrmor
-            );
+            if (Gear.activeSelf)
+            {
+                var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+                RightPanel.GetComponent<TextMeshProUGUI>().text = string.Format(
+                    TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
+                    character.MaxHealth,
+                    character.Strength,
+                    character.Dexterity,
+                    character.Speed,
+                    character.Intellect,
+                    character.Armor
+                );
+            }
         }
 
         private GearSlot GetGearSlot(string n)

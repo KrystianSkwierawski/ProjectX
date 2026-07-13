@@ -22,7 +22,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 CheckEnter();
-                CheckEsc();
+                CheckHide();
                 CheckToggle();
             }
         }
@@ -51,7 +51,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
         }
 
-        private void CheckEsc()
+        private void CheckHide()
         {
             if (ChatUI.Instance.InputField.isFocused && Keyboard.current.escapeKey.wasPressedThisFrame)
             {

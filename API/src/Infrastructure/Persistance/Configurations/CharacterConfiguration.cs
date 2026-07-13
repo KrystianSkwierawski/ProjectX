@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProjectX.Domain.Entities;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Infrastructure.Persistance.Configurations;
 public class CharacterConfiguration : IEntityTypeConfiguration<Character>

@@ -11,25 +11,29 @@ public class UpdateCharacterCommand : IRequest
 
     public int? Health { get; init; }
 
+    public int? MaxHealth { get; init; }
+
     public short? Strength { get; init; }
 
-    public short? Agility { get; init; }
+    public short? Dexterity { get; init; }
 
-    public short? Stamina { get; init; }
+    public short? Speed { get; init; }
 
-    public short? Intelligence { get; init; }
+    public short? Intellect { get; init; }
 
-    public short? Spirit { get; init; }
+    public short? Armor { get; init; }
 
-    public short? Arrmor { get; init; }
+    public InventoryItemEnum? HelmetType { get; init; }
 
-    public InventoryItemEnum? Helmet { get; init; }
+    public InventoryItemEnum? ChestType { get; init; }
 
-    public InventoryItemEnum? Chest { get; init; }
+    public InventoryItemEnum? BootsType { get; init; }
 
-    public InventoryItemEnum? Boots { get; init; }
+    public InventoryItemEnum? WeaponType { get; init; }
 
-    public InventoryItemEnum? Weapon { get; init; }
+    public InventoryItemEnum? AmmoType { get; init; }
+
+    public int? AmmoCount { get; init; }
 }
 
 public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterCommand>
@@ -63,73 +67,87 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
             character.Health = request.Health.Value;
         }
 
+        if (request.MaxHealth is not null)
+        {
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.MaxHealth), character.MaxHealth, request.MaxHealth.Value);
+
+            character.MaxHealth = request.MaxHealth.Value;
+        }
+
         if (request.Strength is not null)
         {
             Log.Debug("Update {0} from {1} to {2}", nameof(character.Strength), character.Strength, request.Strength.Value);
             character.Strength = request.Strength.Value;
         }
 
-        if (request.Agility is not null)
+        if (request.Dexterity is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Agility), character.Agility, request.Agility.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.Dexterity), character.Dexterity, request.Dexterity.Value);
 
-            character.Agility = request.Agility.Value;
+            character.Dexterity = request.Dexterity.Value;
         }
 
-        if (request.Stamina is not null)
+        if (request.Speed is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Stamina), character.Stamina, request.Stamina.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.Speed), character.Speed, request.Speed.Value);
 
-            character.Stamina = request.Stamina.Value;
+            character.Speed = request.Speed.Value;
         }
 
-        if (request.Intelligence is not null)
+        if (request.Intellect is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Intelligence), character.Intelligence, request.Intelligence.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.Intellect), character.Intellect, request.Intellect.Value);
 
-            character.Intelligence = request.Intelligence.Value;
+            character.Intellect = request.Intellect.Value;
         }
 
-        if (request.Spirit is not null)
+        if (request.Armor is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Spirit), character.Spirit, request.Spirit.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.Armor), character.Armor, request.Armor.Value);
 
-            character.Spirit = request.Spirit.Value;
+            character.Armor = request.Armor.Value;
         }
 
-        if (request.Arrmor is not null)
+        if (request.HelmetType is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Arrmor), character.Arrmor, request.Arrmor.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.HelmetType), character.HelmetType, request.HelmetType.Value);
 
-            character.Arrmor = request.Arrmor.Value;
+            character.HelmetType = request.HelmetType.Value;
         }
 
-        if (request.Helmet is not null)
+        if (request.ChestType is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Helmet), character.Helmet, request.Helmet.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.ChestType), character.ChestType, request.ChestType.Value);
 
-            character.Helmet = request.Helmet.Value;
+            character.ChestType = request.ChestType.Value;
         }
 
-        if (request.Chest is not null)
+        if (request.BootsType is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Chest), character.Chest, request.Chest.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.BootsType), character.BootsType, request.BootsType.Value);
 
-            character.Chest = request.Chest.Value;
+            character.BootsType = request.BootsType.Value;
         }
 
-        if (request.Boots is not null)
+        if (request.WeaponType is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Boots), character.Boots, request.Boots.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.WeaponType), character.WeaponType, request.WeaponType.Value);
 
-            character.Boots = request.Boots.Value;
+            character.WeaponType = request.WeaponType.Value;
         }
 
-        if (request.Weapon is not null)
+        if (request.AmmoType is not null)
         {
-            Log.Debug("Update {0} from {1} to {2}", nameof(character.Weapon), character.Weapon, request.Weapon.Value);
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.AmmoType), character.AmmoType, request.AmmoType.Value);
 
-            character.Weapon = request.Weapon.Value;
+            character.AmmoType = request.AmmoType.Value;
+        }
+
+        if (request.AmmoCount is not null)
+        {
+            Log.Debug("Update {0} from {1} to {2}", nameof(character.AmmoCount), character.AmmoCount, request.AmmoCount.Value);
+
+            character.AmmoCount = request.AmmoCount.Value;
         }
 
         await _context.SaveChangesAsync(cancellationToken);

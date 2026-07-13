@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
-using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.Subscriptions;
-using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
@@ -162,9 +160,9 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         return;
                     }
 
-                    UseItem(e.Item, UserManager.Instance.Token);
+                    UseItem(e.Item, e.From, UserManager.Instance.Token);
 
-                    UseItemServerRpc(e.Item, UserManager.Instance.Token);
+                    UseItemServerRpc(e.Item, e.From, UserManager.Instance.Token);
                 });
             }
 
@@ -318,27 +316,34 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         }
 
         [ServerRpc]
-        private void UseItemServerRpc(InventoryItemDto item, string clientToken)
+        private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from, string clientToken)
         {
-            UseItem(item, clientToken);
+            UseItem(item, from, clientToken);
         }
 
-        private void UseItem(InventoryItemDto item, string clientToken)
+        private void UseItem(InventoryItemDto item, UsableItemFromEnum from, string clientToken)
         {
+            if (item.Type.IsAmmo())
+            {
+                new AmmoUsableItem(item, clientToken, OwnerClientId).Use(from);
+
+                return;
+            }
+
             IUsableItem usableItem = item.Type switch
             {
-                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(clientToken, OwnerClientId),
-                InventoryItemEnum.Currency => new CurrencyUsableItem(clientToken, OwnerClientId),
-                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.IronChest => new ChestUsableItem(item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.IronBoots => new BootsUsableItem(item.Type, clientToken, OwnerClientId),
-                InventoryItemEnum.IronSword => new WeaponUsableItem(item.Type, clientToken, OwnerClientId),
+                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.Currency => new CurrencyUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.IronChest => new ChestUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.IronBoots => new BootsUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.IronSword => new WeaponUsableItem(item, clientToken, OwnerClientId),
                 _ => null
             };
 
             if (usableItem != null)
             {
-                usableItem.Use();
+                usableItem.Use(from);
             }
         }
 

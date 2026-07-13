@@ -1,29 +1,25 @@
-﻿using System.Threading.Tasks;
-using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
-using Assets.Scripts.Areas.Shared.Mono;
-using UnityEngine.Networking;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public abstract class AbstractUsableItem : IUsableItem
     {
-        protected AbstractUsableItem(InventoryItemEnum type, string clientToken, ulong ownerClientId)
+        protected AbstractUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId)
         {
-            Type = type;
+            Item = item;
             ClientToken = clientToken;
             OwnerClientId = ownerClientId;
         }
 
-        protected InventoryItemEnum Type { get; }
+        protected InventoryItemDto Item { get; }
 
         protected string ClientToken { get; private set; }
 
         protected ulong OwnerClientId { get; private set; }
 
-        public virtual void Use()
+        public virtual void Use(UsableItemFromEnum from)
         {
 #if UNITY_SERVER && !UNITY_EDITOR
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
@@ -32,11 +28,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 {
                     Remove = new InventoryItemDto[]
                     {
-                            new InventoryItemDto
-                            {
-                                Type = Type,
-                                Count = 1,
-                            }
+                        Item
                     },
                 },
                 ClientToken = ClientToken,

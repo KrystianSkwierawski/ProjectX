@@ -92,17 +92,18 @@ public class ApplicationDbContextInitialiser
                 Name = userName.Split('@')[0],
                 Status = StatusEnum.Active,
                 Health = 100,
+                MaxHealth = 100,
                 ModDate = DateTime.Now,
-                Strength = 15,
-                Agility = 15,
-                Stamina = 5,
-                Intelligence = 5,
-                Spirit = 5,
-                Arrmor = 20,
-                Helmet = InventoryItemEnum.HelmetTemplate,
-                Chest = InventoryItemEnum.ChestTemplate,
-                Boots = InventoryItemEnum.BootsTemplate,
-                Weapon = InventoryItemEnum.WeaponTemplate,
+                Strength = 1,
+                Dexterity = 1,
+                Speed = 1,
+                Intellect = 1,
+                Armor = 1,
+                HelmetType = InventoryItemEnum.HelmetTemplate,
+                ChestType = InventoryItemEnum.ChestTemplate,
+                BootsType = InventoryItemEnum.BootsTemplate,
+                WeaponType = InventoryItemEnum.WeaponTemplate,
+                AmmoType = InventoryItemEnum.AmmoTemplate,
                 CharacterInventory = new CharacterInventory
                 {
                     Inventory = JsonSerializer.Serialize(new InventoryDto
@@ -116,48 +117,8 @@ public class ApplicationDbContextInitialiser
                             },
                             new InventoryItemDto
                             {
-                                Type = InventoryItemEnum.Can,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Rice,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Fish,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.PurpleOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.WhiteOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.CopperOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.BlackOre,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
-                                Type = InventoryItemEnum.Chamomile,
-                                Count = 2
-                            },
-                            new InventoryItemDto
-                            {
                                 Type = InventoryItemEnum.Currency,
-                                Count = 200
+                                Count = 9999
                             },
                             //new InventoryItemDto
                             //{

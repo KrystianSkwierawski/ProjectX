@@ -45,31 +45,31 @@ namespace ProjectX.Editor
             EditorApplication.delayCall += ResumeAutomationAfterExitIfNeeded;
         }
 
-        [MenuItem("ProjectX/Automation/Open Bootstrap Scene")]
+        [MenuItem("ProjectX/Open Bootstrap Scene", false, 50)]
         public static void OpenBootstrapSceneMenu()
         {
             OpenBootstrapSceneWithPrompt();
         }
 
-        [MenuItem("ProjectX/Automation/Run And Build")]
-        public static void RunAndBuildFromUnityMenu()
-        {
-            RunAutomationFromUnity();
-        }
-
-        [MenuItem("ProjectX/Automation/Run")]
+        [MenuItem("ProjectX/Run", false, 10)]
         public static void RunFromUnityMenu()
         {
             RunAutomationFromUnity("-SkipServerBuild");
         }
 
-        [MenuItem("ProjectX/Automation/Play Client From Bootstrap")]
+        [MenuItem("ProjectX/Build And Run", false, 11)]
+        public static void BuildAndRunFromUnityMenu()
+        {
+            RunAutomationFromUnity();
+        }
+
+        [MenuItem("ProjectX/Play Client From Bootstrap", false, 51)]
         public static void PlayClientFromBootstrap()
         {
             QueuePlayClient();
         }
 
-        [MenuItem("ProjectX/Automation/Build Dedicated Server")]
+        [MenuItem("ProjectX/Build Dedicated Server", false, 52)]
         public static void BuildDedicatedServerMenu()
         {
             BuildDedicatedServer(GetDefaultServerBuildPath());
@@ -385,7 +385,7 @@ namespace ProjectX.Editor
 
             System.Diagnostics.Process.Start(startInfo);
             Debug.Log(string.IsNullOrWhiteSpace(arguments)
-                ? $"ProjectX run and build started from Unity menu: {runScriptPath}"
+                ? $"ProjectX build and run started from Unity menu: {runScriptPath}"
                 : $"ProjectX run started from Unity menu: {runScriptPath} {arguments}");
         }
 

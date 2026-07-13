@@ -54,7 +54,91 @@ public enum CraftingRecipeEnum : short
         Requirement = """{ "Items": [ { "Type": 500, "Count": 1 } ], "Level": 1 }""",
         Reward = """{ "Item": { "Type": 501, "Count": 1 }, "Experience": 1000 }"""
     )]
-    HealthPotion
+    HealthPotion,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 400, "Count": 1 }, { "Type": 304, "Count": 1 } ], "Level": 1 }""",
+        Reward = """{ "Item": { "Type": 1009, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoArrow1,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 400, "Count": 2 }, { "Type": 305, "Count": 2 } ], "Level": 2 }""",
+        Reward = """{ "Item": { "Type": 1010, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoArrow2,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 400, "Count": 3 }, { "Type": 306, "Count": 3 } ], "Level": 3 }""",
+        Reward = """{ "Item": { "Type": 1011, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoArrow3,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 300, "Count": 1 }, { "Type": 304, "Count": 1 } ], "Level": 1 }""",
+        Reward = """{ "Item": { "Type": 1012, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoRune1,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 301, "Count": 2 }, { "Type": 305, "Count": 2 } ], "Level": 2 }""",
+        Reward = """{ "Item": { "Type": 1013, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoRune2,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 302, "Count": 3 }, { "Type": 306, "Count": 3 } ], "Level": 3 }""",
+        Reward = """{ "Item": { "Type": 1014, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoRune3,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 304, "Count": 1 } ], "Level": 1 }""",
+        Reward = """{ "Item": { "Type": 1015, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoFeather1,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 305, "Count": 2 } ], "Level": 2 }""",
+        Reward = """{ "Item": { "Type": 1016, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoFeather2,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Blacksmithing,
+        Requirement = """{ "Items": [ { "Type": 306, "Count": 3 } ], "Level": 3 }""",
+        Reward = """{ "Item": { "Type": 1017, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoFeather3,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Alchemy,
+        Requirement = """{ "Items": [ { "Type": 500, "Count": 1 } ], "Level": 1 }""",
+        Reward = """{ "Item": { "Type": 1018, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoOil1,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Alchemy,
+        Requirement = """{ "Items": [ { "Type": 500, "Count": 2 } ], "Level": 2 }""",
+        Reward = """{ "Item": { "Type": 1019, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoOil2,
+
+    [CraftingRecipeParameters(
+        Type = CraftingRecipeTypeEnum.Alchemy,
+        Requirement = """{ "Items": [ { "Type": 500, "Count": 3 } ], "Level": 3 }""",
+        Reward = """{ "Item": { "Type": 1020, "Count": 1 }, "Experience": 1000 }"""
+    )]
+    AmmoOil3
 }
 
 public static class CraftingRecipeEnumExtensions
