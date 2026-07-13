@@ -1,20 +1,24 @@
 ﻿using System;
 using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
+using Cysharp.Threading.Tasks;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class HealthPotionUsableItem : AbstractUsableItem
     {
-        public HealthPotionUsableItem(string clientToken, ulong ownerClientId) : base(InventoryItemEnum.HealthPotion, clientToken, ownerClientId)
+        public HealthPotionUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
         {
-            
+
         }
 
-        public override void Use()
+        public override void Use(UsableItemFromEnum from)
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
 
@@ -23,15 +27,24 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 return;
             }
 
-            // TODO: set on api
             character.Health = Math.Min(character.Health + 20, character.MaxHealth);
 
 #if UNITY_EDITOR
             PlayerUI.Instance.SetHealth(character.Health);
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);  
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);
 #endif
 
-            base.Use();
+
+#if UNITY_SERVER && !UNITY_EDITOR
+            UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+            {
+                CharacterId = 1,
+                Health = character.Health
+            }, ClientToken)
+            .Forget();
+#endif
+
+            base.Use(from);
         }
     }
 

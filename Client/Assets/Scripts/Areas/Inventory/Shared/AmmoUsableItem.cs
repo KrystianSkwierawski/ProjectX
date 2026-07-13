@@ -1,53 +1,64 @@
-using System;
 using Assets.Scripts.Areas.Character;
-using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
-using Assets.Scripts.Areas.Inventory.Subscriptions;
-using Assets.Scripts.Areas.Shared.Enums;
-using Assets.Scripts.Areas.Shared.Models;
-using Assets.Scripts.Areas.Shared.Mono;
-using Cysharp.Threading.Tasks;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class AmmoUsableItem : AbstractGearUsableItem
     {
-        public AmmoUsableItem(InventoryItemEnum type, string clientToken, ulong ownerClientId) : base(type, clientToken, ownerClientId)
+        protected override InventoryItemDto CharacterItem
+        {
+            get
+            {
+                var character = UserManager.Instance.Characters[OwnerClientId];
+
+                return new InventoryItemDto
+                {
+                    Type = character.AmmoType,
+                    Count = character.AmmoCount
+                };
+            }
+        }
+
+        protected override GearSlot Slot => GearUI.Instance.Ammo;
+
+        protected override InventoryItemEnum TemplateType => InventoryItemEnum.AmmoTemplate;
+
+        public AmmoUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
         {
         }
 
         protected override bool Wear()
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
-            var isWearing = character.AmmoType == Type;
 
-            var parameters = Type.GetInventoryItemParametersAttribute();
-
-            character.Strength += isWearing ? (short)(-parameters.Strength) : parameters.Strength;
-            character.Intellect += isWearing ? (short)(-parameters.Intellect) : parameters.Intellect;
-            character.Armor += isWearing ? (short)(-parameters.Armor) : parameters.Armor;
-
-            character.AmmoType = isWearing ? InventoryItemEnum.AmmoTemplate : Type;
-
-#if UNITY_EDITOR
-            GearUI.Instance.Wear(GearUI.Instance.Ammo, character.AmmoType);
-            GearUI.Instance.UpdateRightPanel();
-#endif
-
-#if UNITY_SERVER && !UNITY_EDITOR
-            UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+            if (character.AmmoType == Item.Type)
             {
-                CharacterId = 1,
-                AmmoType = character.AmmoType,
-                Strength = character.Strength,
-                Intellect = character.Intellect,
-                Armor = character.Armor
-            }, ClientToken)
-            .Forget();
-#endif
-            return isWearing;
+                character.AmmoCount += Item.Count;
+
+                return true;
+            }
+
+            character.AmmoType = Item.Type;
+            character.AmmoCount = Item.Count;
+
+            return true;
+        }
+
+        protected override bool Unwear()
+        {
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (character.AmmoType != Item.Type)
+            {
+                return false;
+            }
+
+            character.AmmoType = TemplateType;
+            character.AmmoCount = 0;
+
+            return true;
         }
     }
 }

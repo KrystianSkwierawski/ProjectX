@@ -202,7 +202,7 @@ namespace StarterAssets
 
         private void Update()
         {
-            if (IsOwner && !ChatUI.Instance.InputField.isFocused)
+            if (IsOwner && !ChatUI.Instance.InputField.isFocused && UserManager.Instance.Characters.ContainsKey(NetworkManager.Singleton.LocalClientId))
             {
                 JumpAndGravity();
                 GroundedCheck();

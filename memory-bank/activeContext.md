@@ -1,8 +1,8 @@
 # Active Context
 
 ## Current Focus
+- Ammo stack equip/unequip behavior and the `UsableItemFromEnum` source refactor were implemented and compile-verified on 2026-07-10.
 - Memory bank reviewed and refreshed on 2026-07-10 against repository HEAD `518aac4`.
-- No feature implementation task is active after this documentation refresh.
 - At the start of this refresh, branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## Recent Changes
@@ -47,6 +47,7 @@
 - 2026-07-10: Centralized item previews through `InventoryUI.PrepareDescription(InventoryItemDto)`, including count-aware sell prices across inventory, loot, gear, crafting, and merchant UI. Ammo gear preview passes `AmmoCount`.
 - 2026-07-10: Merchant and crafting panels now hide on Escape or when movement carries the player out of interaction range; `UIScene` received broad rounded-corner material/layout serialization changes.
 - 2026-07-10: Iron Boots' Speed bonus changed from `15` to `80`; seeded characters now have `AmmoCount = 1`, and seeded inventory contains four health potions plus 9999 currency.
+- 2026-07-10: Replaced inferred `isWearing` behavior with `UsableItemFromEnum` (`FromInventory` / `FromGear`) across UI, RPC, and usable items. Ammo now transfers whole stacks, combines matching equipped ammo into `AmmoCount`, returns replaced/unequipped stacks, persists count/stat changes, and applies Dexterity bonuses.
 
 ## Active Decisions
 - Treat the repository as two cooperating applications:
@@ -60,7 +61,7 @@
 - Treat current character stat totals as persisted mutable values until the user clarifies whether stats should be recomputed from base stats plus gear bonuses.
 - Resolve character state through `UserManager.Characters[clientId]`; do not reintroduce a process-wide single `Character` reference.
 - Treat current stat mechanics as percentage-based: Strength increases fireball damage, Dexterity is capped dodge chance, Speed increases movement, and Armor is capped damage reduction. Intellect remains data/UI-only.
-- Treat the ammo gear contract as `AmmoType` plus `AmmoCount`, but do not assume stack behavior exists. The current usable-item path moves one item, toggles `AmmoType`, and does not update `AmmoCount` or consume ammo during attacks.
+- Treat the ammo gear contract as `AmmoType` plus `AmmoCount`. Equip/unequip uses whole-stack transfers selected by `UsableItemFromEnum`; attack consumption is still not implemented.
 - Preserve API crafting recipe ordering by `Id` and the pooled client recipe-button sibling ordering.
 - Keep the current API database reset behavior for developer work unless the user asks to prepare a non-destructive persistence flow.
 - Do not replace the English client `pl.json` fallback unless the user explicitly asks for proper Polish client localization.
@@ -72,8 +73,7 @@
 - Confirm product-level goals with the user when changes require design or gameplay decisions not already implied by code.
 - Keep `progress.md` updated after meaningful changes.
 - When changing startup/build behavior, update both `Client/Automation/run.ps1` and `Client/Assets/Editor/ProjectXDevAutomation.cs`.
-- Complete or redesign ammo equip transitions: update/persist `AmmoCount`, transfer whole stacks as intended, return replaced ammo, remove the old bonus before adding a new one, and define attack effects/consumption.
-- Apply/persist Arrow Dexterity bonuses in `AmmoUsableItem` if the metadata is intended to drive equipped stats; currently Arrow previews advertise Dexterity but the equip code omits it.
+- Define and implement per-attack ammo effects/consumption.
 - Define Intellect's gameplay effect and add focused tests for stat calculation, ammo transitions/counts, and crafting ordering; only translation-service unit tests are currently present.
 - Before replacing the intentional database reset with persistent upgrades, create a data-migration plan for ammo IDs `1010`-`1012`, whose meanings were repurposed when tiered ammo was introduced.
 - Fix or narrowly override the repo's `*.meta` ignore rule before adding more Unity assets so their GUIDs/import settings are versioned.

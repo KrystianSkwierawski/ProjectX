@@ -23,6 +23,6 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.
 - The intended gameplay effect for Intellect is not documented or implemented yet.
-- Ammo semantics need clarification and implementation: `AmmoCount` is persisted but not mutated by the client equip path, ammo is not consumed by attacks, and switching ammo types does not currently perform a complete old-bonus/old-stack transition.
+- Ammo equip semantics now use explicit inventory/gear origins and whole-stack transfers. Per-attack ammo effects and consumption still need clarification and implementation.
 - Health-potion behavior currently has a local/client-side health update path; persistence expectations should be confirmed before expanding consumable item behavior.
 - Full Polish client localization remains a future product task; current English content in client `pl.json` is an intentional temporary fallback for development.

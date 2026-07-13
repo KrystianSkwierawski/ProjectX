@@ -74,34 +74,61 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
 
-            Wear(Helmet, character.HelmetType);
-            Wear(Chest, character.ChestType);
-            Wear(Boots, character.BootsType);
-            Wear(Weapon, character.WeaponType);
-            Wear(Ammo, character.AmmoType);
+            Wear(Helmet, new InventoryItemDto
+            {
+                Type = character.HelmetType,
+                Count = 1
+            });
+
+            Wear(Chest, new InventoryItemDto
+            {
+                Type = character.ChestType,
+                Count = 1
+            });
+
+            Wear(Boots, new InventoryItemDto
+            {
+                Type = character.BootsType,
+                Count = 1
+            });
+
+            Wear(Weapon, new InventoryItemDto
+            {
+                Type = character.WeaponType,
+                Count = 1
+            });
+
+            Wear(Ammo, new InventoryItemDto
+            {
+                Type = character.AmmoType,
+                Count = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].AmmoCount
+            });
         }
 
-        public void Wear(GearSlot slot, InventoryItemEnum type)
+        public void Wear(GearSlot slot, InventoryItemDto item)
         {
             slot.Button.OnRightClick.RemoveAllListeners();
-            slot.Image.texture = InventoryUI.Instance.Textures[type];
+            slot.Image.texture = InventoryUI.Instance.Textures[item.Type];
 
-            if (type == InventoryItemEnum.None || type == InventoryItemEnum.HelmetTemplate || type == InventoryItemEnum.ChestTemplate || type == InventoryItemEnum.BootsTemplate || type == InventoryItemEnum.WeaponTemplate || type == InventoryItemEnum.AmmoTemplate)
+            if (item.Type == InventoryItemEnum.None || item.Type == InventoryItemEnum.HelmetTemplate || item.Type == InventoryItemEnum.ChestTemplate || item.Type == InventoryItemEnum.BootsTemplate || item.Type == InventoryItemEnum.WeaponTemplate || item.Type == InventoryItemEnum.AmmoTemplate)
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;
+                slot.Mesh.text = "0";
+                slot.Mesh.enabled = false;
 
                 return;
             }
 
-            slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{type}Title");
+            slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
+            slot.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(item);
 
-            slot.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(new InventoryItemDto
+            if (item.Type.IsAmmo())
             {
-                Type = type,
-                Count = slot == Ammo ? UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].AmmoCount : 1
-            });
-
+                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
+                slot.Mesh.enabled = true;
+            }
+           
             slot.Button.interactable = true;
             slot.HoverUI.enabled = true;
 
@@ -121,11 +148,8 @@ namespace Assets.Scripts.Areas.Character.UI
             {
                 UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
                 {
-                    Item = new InventoryItemDto
-                    {
-                        Type = type,
-                        Count = 1
-                    }
+                    Item = item,
+                    From = UsableItemFromEnum.Gear,
                 });
             });
         }

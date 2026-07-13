@@ -11,7 +11,6 @@ using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.UI;
@@ -155,7 +154,12 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 {
                     UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
                     {
-                        Item = item
+                        Item = new InventoryItemDto
+                        {
+                            Type = item.Type,
+                            Count = item.Type.IsAmmo() ? item.Count : 1
+                        },
+                        From = UsableItemFromEnum.Inventory,
                     });
                 });
             }

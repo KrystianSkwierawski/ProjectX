@@ -20,7 +20,8 @@
 - Server-side player attack handling reduces health, sends a targeted client RPC, updates player UI/audio/death response, and persists health through the API.
 - Runtime stat calculation exists: Strength scales fireball damage, Dexterity controls dodge chance, Speed scales controller movement, and Armor reduces incoming damage.
 - Gear equip/unequip flow uses concrete usable item classes for helmet, chest, boots, and weapon slots and updates Gear UI plus backend character gear/stat totals in server builds.
-- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, seeded, and shown in the ammo gear preview.
+- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, seeded, shown in the ammo gear preview, and transferred as a whole stack between inventory and gear.
+- Usable-item calls carry `UsableItemFromEnum` from inventory/gear UI through RPC. Normal gear ignores repeated inventory use while occupied; ammo of the equipped type stacks into `AmmoCount`, different ammo swaps and returns the old stack, and gear use returns the equipped ammo stack.
 - Twelve tiered ammo items exist (Arrow/Rune/Feather/Oil I-III) with mirrored API/client enum values, icons, translations, merchant offers/prices, and +5/+10/+15 stat metadata.
 - All 12 ammo items have crafting recipes: Arrow/Rune/Feather use Blacksmithing and Oil uses Alchemy. API results are ordered by recipe `Id`, and pooled client recipe buttons preserve that order.
 - Gear stat bonuses are declared on Unity inventory enum values with `InventoryItemParametersAttribute`; inventory, merchant, crafting, and gear previews display those bonuses through `InventoryUI.PrepareDescription(InventoryItemDto)`.
@@ -42,7 +43,7 @@
 - Client/server contract drift risk should be checked before API or DTO changes.
 - Consumable item persistence needs review: `HealthPotionUsableItem` updates health locally and has a TODO for API persistence, while normal inventory consumption still goes through the usable item base flow.
 - Base-stat versus gear-derived-stat ownership is not documented; current gear use mutates persisted totals directly.
-- Ammo stack equip/unequip transitions, `AmmoCount` mutation/persistence, replaced-stack return, per-attack effects, and per-attack consumption remain to be implemented.
+- Per-attack ammo effects and consumption remain to be implemented.
 - Intellect is persisted, displayed, and granted by Rune ammo metadata, but has no runtime gameplay consumer.
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
 
@@ -53,9 +54,7 @@
 - Full runtime automation has not been end-to-end verified after the final rename to `run`; only no-op script wiring was smoke-tested.
 - `.claude/settings.local.json` was not present during the 2026-07-06 refresh; if it reappears, treat it as local-only secret configuration.
 - `UpdateCharacterCommandHandler` currently resolves the current user's character and has the direct `CharacterId` filter commented out; confirm intended multi-character behavior before expanding character update endpoints.
-- `AmmoUsableItem` applies/persists Strength, Intellect, and Armor but omits Dexterity, so Arrow I-III advertise Dexterity bonuses in previews without applying them.
-- Switching directly between different equipped ammo types adds the new ammo bonus without subtracting the previous bonus and removes one new item without returning the previous ammo item; clicking the same ammo toggles it off and returns only one item.
-- `AmmoCount` is not changed by client equip/unequip/attack code, and seeded characters start with `AmmoType = AmmoTemplate` plus `AmmoCount = 1`.
+- Ammo is not consumed by attack code. Seeded characters still start with `AmmoType = AmmoTemplate` plus `AmmoCount = 1`; the first real ammo equip replaces that template count.
 - Tiered ammo repurposed persisted IDs `1010`-`1012` from the former Rune/Feather/Oil meanings. The intentional database recreation masks this during development, but a non-destructive persistence flow will require explicit data migration.
 - `.gitignore` ignores `*.meta`; the 13 ammo icon/template meta files exist locally but are untracked, so their Unity GUIDs/import settings are not versioned.
 - Merchant offer tooltips use the shared sell-price description while the adjacent currency amount is the full purchase price, so the displayed `Price` inside the tooltip can be misleading.
