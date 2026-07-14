@@ -5,7 +5,7 @@
 - `API/`: .NET solution with layered projects.
 - `.Codexrules`: memory bank and agent workflow instructions.
 - `.gitignore`: tracked repo-level Visual Studio/.NET-style ignore file.
-- `CLAUDE.md` and `.claude/` are not present as of the 2026-07-10 refresh.
+- `CLAUDE.md` and `.claude/` are not present as of the 2026-07-13 refresh.
 
 ## Backend Architecture
 - `API/src/API`: ASP.NET Core entrypoint, endpoint mapping, OpenAPI/Swagger, web services.
@@ -46,9 +46,9 @@
 - `UserManager.Characters` stores `CharacterDto` values by Netcode client ID; owner/local-client lookups should use the appropriate dictionary key rather than a global single-character property.
 - Localization resources exist in both API and Unity client paths; English content in client `pl.json` is currently an intentional temporary development fallback.
 - New `TranslateKeyEnum` values are append-only: add them at the end of the enum, and keep matching API/client `en.json`/`pl.json` entries appended in the same order as the enum. The 2026-07-09 removal of `Spirit` shifted later client enum values once; do not repeat mid-enum insertion/removal.
-- Gear item use is modeled through `AbstractUsableItem` / `AbstractGearUsableItem` with concrete helmet, chest, boots, weapon, and ammo implementations. `UsableItemFromEnum` is passed from inventory/gear UI through the use-item RPC, so `FromInventory` equips/removes inventory items and `FromGear` unequips/returns them; server builds update API `*Type` fields, gear-derived stat totals, and inventory through subscriptions/API calls.
+- Gear item use is modeled through `AbstractUsableItem` / `AbstractGearUsableItem` with concrete helmet, chest, boots, weapon, and ammo implementations. `UsableItemFromEnum.Inventory` or `.Gear` is passed from inventory/gear UI through the use-item RPC. The base gear class removes the old item's six declared stat bonuses, applies the incoming bonuses, persists the full gear/stat state, and coordinates inventory transfers; concrete gear classes identify their current item, UI slot, template, and wear/unwear mutation.
 - Runtime stat behavior is centralized in `CharacterStatsCalculator`: each nonnegative Strength point adds 1% fireball damage, each nonnegative Speed point adds 1% code-driven movement speed, Dexterity is dodge chance clamped to 0-100%, and Armor is damage reduction clamped to 0-100% before rounding to integer damage. Intellect is persisted/displayed but has no runtime consumer yet.
-- The ammo slot contract is `Character.AmmoType` plus `Character.AmmoCount`. Inventory use moves the whole selected ammo stack into gear, repeated use of the equipped type adds to `AmmoCount` without reapplying its stat bonus, switching types returns the previous whole stack and replaces its bonus, and gear use returns the whole equipped stack to inventory. Ammo is not yet consumed during attacks.
+- The ammo slot contract is `Character.AmmoType` plus `Character.AmmoCount`. First equip moves the selected stack into gear, switching types returns the previous whole stack and replaces its bonus, and gear use returns the equipped stack. The same-type path increments `AmmoCount` without net bonus change, but the generic transfer then also adds the old equipped stack back to inventory and refreshes Gear UI with only the incoming DTO; this duplicates the old count and leaves the slot count/right-click payload stale. Ammo is not yet consumed during attacks.
 - Ammo content has four tiered families (I/II/III): Arrow applies Dexterity +5/+10/+15, Rune Intellect, Feather Armor, and Oil Strength.
 - Gear stat bonuses are defined on Unity `InventoryItemEnum` members via `InventoryItemParametersAttribute`, then reused by inventory, merchant, crafting, and gear previews.
 - Gear UI maintains a left panel for equipped slots and a right panel for max health, strength, dexterity, speed, intellect, and armor totals.
@@ -57,10 +57,12 @@
 - Merchant and crafting interaction panels close on Escape or after movement carries the player beyond the relevant interaction distance.
 - Character health is synchronized from server-side attack handling through `AttackPlayerSubscription`, a targeted client RPC, and `UpdateCharacterCommand`; max health is part of the character DTO/update contract.
 - Character description refresh now runs when opening Character UI and after level-up RPCs.
+- Health-potion use restores up to 20 health capped at max, returns without consuming at full health, persists `Health` through `UpdateCharacterCommand` in dedicated-server builds, and then consumes one potion through the shared usable-item flow.
 - Bottom-right quick-access UI is scene-backed in `UIScene` and configured by `QuickAccessUI`, reusing existing slot/preview behavior and icon resources.
 - Player locomotion follows the Starter Assets code-driven pattern: `PlayerArmature.prefab` has Animator root motion disabled (`m_ApplyRootMotion: 0`), while `ThirdPersonController` applies movement via `CharacterController.Move(...)` and feeds Animator parameters such as `Speed`, `Grounded`, `Jump`, `FreeFall`, and `MotionSpeed`.
+- `ThirdPersonController.Update()` gates local movement processing until `UserManager.Characters` contains the local client ID, because stat-scaled movement reads that character entry.
 - Generated/build artifacts are present in the workspace; avoid touching `bin/`, `obj/`, Unity `Library/`, and log/cache outputs unless specifically needed.
-- The tracked `.gitignore` currently ignores all `*.meta` files. Existing ammo icon metas are present locally but untracked, so future Unity asset work must ensure required GUID/import-setting metas are explicitly versioned.
+- The tracked `.gitignore` currently ignores all `*.meta` files. The known affected project-owned files as of 2026-07-13 include 13 ammo icon/template metas plus `CharacterStatsCalculator.cs.meta`, `AmmoUsableItem.cs.meta`, and `UsableItemFromEnum.cs.meta`; other ignored package/cache metas also exist locally. Future Unity asset/script work must ensure required GUID/import-setting metas are explicitly versioned.
 - Dev startup flow:
   - PowerShell starts/restarts the API executable and auto-builds it if missing.
   - PowerShell builds or reuses the Unity dedicated server executable.

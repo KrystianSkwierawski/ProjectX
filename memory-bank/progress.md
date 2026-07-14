@@ -2,9 +2,9 @@
 
 ## Current Status
 - Memory bank initialized on 2026-05-07.
-- Memory bank reviewed and refreshed through repository HEAD `518aac4` on 2026-07-10.
+- Memory bank reviewed and refreshed through repository HEAD `8c954ff` on 2026-07-13.
 - Repository contains an existing Unity client and ASP.NET Core backend with major gameplay support areas already scaffolded or implemented.
-- Before this memory-bank edit, local branch `dev` was clean and exactly aligned with `origin/dev`.
+- Before this memory-bank edit, local branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## What Works / Exists
 - Backend solution structure is present.
@@ -20,14 +20,16 @@
 - Server-side player attack handling reduces health, sends a targeted client RPC, updates player UI/audio/death response, and persists health through the API.
 - Runtime stat calculation exists: Strength scales fireball damage, Dexterity controls dodge chance, Speed scales controller movement, and Armor reduces incoming damage.
 - Gear equip/unequip flow uses concrete usable item classes for helmet, chest, boots, and weapon slots and updates Gear UI plus backend character gear/stat totals in server builds.
-- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, seeded, shown in the ammo gear preview, and transferred as a whole stack between inventory and gear.
-- Usable-item calls carry `UsableItemFromEnum` from inventory/gear UI through RPC. Normal gear ignores repeated inventory use while occupied; ammo of the equipped type stacks into `AmmoCount`, different ammo swaps and returns the old stack, and gear use returns the equipped ammo stack.
+- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, defaults to `0` for seeded template ammo, is shown in the ammo gear preview, and is transferred for first equip, different-type swap, and gear unequip.
+- Usable-item calls carry exact `UsableItemFromEnum.Inventory` / `.Gear` origins and a full `InventoryItemDto` from inventory/gear UI through RPC. Normal gear rejects re-equipping the same type; a different item swaps and returns the old item, and a Gear-origin call unequips/returns it.
+- `AbstractGearUsableItem` centralizes removal/addition of all six declared stat bonuses, full character gear/stat/count persistence, editor UI refresh, and inventory add/remove operations; concrete gear classes define current item, slot, template, and wear/unwear mutation.
 - Twelve tiered ammo items exist (Arrow/Rune/Feather/Oil I-III) with mirrored API/client enum values, icons, translations, merchant offers/prices, and +5/+10/+15 stat metadata.
 - All 12 ammo items have crafting recipes: Arrow/Rune/Feather use Blacksmithing and Oil uses Alchemy. API results are ordered by recipe `Id`, and pooled client recipe buttons preserve that order.
 - Gear stat bonuses are declared on Unity inventory enum values with `InventoryItemParametersAttribute`; inventory, merchant, crafting, and gear previews display those bonuses through `InventoryUI.PrepareDescription(InventoryItemDto)`.
 - Shared item previews now accept a full `InventoryItemDto` and display count-aware sell prices in inventory, loot, gear, crafting, and merchant contexts.
 - Merchant and crafting panels close on Escape or after the player moves out of interaction range.
 - Character UI has a `RefreshDescription()` path used when opening the character panel and when level changes arrive from the server.
+- Health potions restore up to 20 health capped at max, persist the resulting `Health` through `UpdateCharacterCommand` in dedicated-server builds, and consume one potion through the shared item flow; use at full health returns without consuming.
 - API migrations are currently consolidated to a single `20260706184932_Init` migration plus the snapshot.
 - Local one-command/dev-menu startup automation exists:
   - `Client/Automation/run.bat`
@@ -35,14 +37,15 @@
   - Unity menu entries `ProjectX > Run` and `ProjectX > Build And Run`.
 - Scene-backed quick-access bar exists for gear, inventory, character, and chat shortcuts using `QuickAccessUI` and `Resources/Icons/QuickAccess*.png`.
 - Player locomotion is currently code-driven/root-motion OFF: `PlayerArmature.prefab` stores Animator `m_ApplyRootMotion: 0`, and movement is applied in `ThirdPersonController` through `CharacterController.Move(...)`.
+- Local movement processing waits until `UserManager.Characters` contains the local client ID, preventing early stat-dependent character access.
 
 ## What's Left / Unknown
 - Exact gameplay roadmap and release target are not documented.
-- Automated coverage is minimal: only `TranslateServiceTests.cs` was found; stat, ammo, crafting, and Unity gameplay paths have no focused tests.
-- Current runtime health of the API and Unity client was not verified during the 2026-07-10 memory-bank refresh.
+- Automated coverage is narrow: only `TranslateServiceTests.cs` was found, although its parameterized cases currently total 182; stat, ammo, gear, potion, crafting, and Unity gameplay paths have no focused tests.
+- Backend and generated Unity client projects compiled with zero errors and all 182 API unit tests passed on 2026-07-13, but the Unity client/dedicated server/API stack was not verified end-to-end at runtime.
 - Client/server contract drift risk should be checked before API or DTO changes.
-- Consumable item persistence needs review: `HealthPotionUsableItem` updates health locally and has a TODO for API persistence, while normal inventory consumption still goes through the usable item base flow.
 - Base-stat versus gear-derived-stat ownership is not documented; current gear use mutates persisted totals directly.
+- Same-type ammo merge inventory transfer and Gear UI payload/count need correction and focused tests.
 - Per-attack ammo effects and consumption remain to be implemented.
 - Intellect is persisted, displayed, and granted by Rune ammo metadata, but has no runtime gameplay consumer.
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
@@ -54,9 +57,10 @@
 - Full runtime automation has not been end-to-end verified after the final rename to `run`; only no-op script wiring was smoke-tested.
 - `.claude/settings.local.json` was not present during the 2026-07-06 refresh; if it reappears, treat it as local-only secret configuration.
 - `UpdateCharacterCommandHandler` currently resolves the current user's character and has the direct `CharacterId` filter commented out; confirm intended multi-character behavior before expanding character update endpoints.
-- Ammo is not consumed by attack code. Seeded characters still start with `AmmoType = AmmoTemplate` plus `AmmoCount = 1`; the first real ammo equip replaces that template count.
+- Ammo is not consumed by attack code. Seeded characters start with `AmmoType = AmmoTemplate` and the default `AmmoCount = 0`.
+- Same-type ammo merge is inconsistent: character state becomes old plus incoming count, but the generic inventory update also re-adds the old equipped stack while removing the incoming stack, duplicating the old count. Gear UI is refreshed with only the incoming DTO, so its displayed count and immediate right-click unequip payload omit the previously equipped count.
 - Tiered ammo repurposed persisted IDs `1010`-`1012` from the former Rune/Feather/Oil meanings. The intentional database recreation masks this during development, but a non-destructive persistence flow will require explicit data migration.
-- `.gitignore` ignores `*.meta`; the 13 ammo icon/template meta files exist locally but are untracked, so their Unity GUIDs/import settings are not versioned.
+- `.gitignore` ignores `*.meta`; the known affected project-owned files include 13 ammo icon/template metas plus `CharacterStatsCalculator.cs.meta`, `AmmoUsableItem.cs.meta`, and `UsableItemFromEnum.cs.meta`, so their Unity GUIDs/import settings are not versioned. Other ignored package/cache metas also exist locally.
 - Merchant offer tooltips use the shared sell-price description while the adjacent currency amount is the full purchase price, so the displayed `Price` inside the tooltip can be misleading.
 - Hiding the crafting panel or walking out of range does not stop an in-progress craft; the timer can finish and invoke the server craft after the UI closes.
 - Git reports permission warnings for `C:\Users\pc/.config/git/ignore` during status checks.
@@ -75,3 +79,5 @@
 - 2026-07-09: Renamed character stats and equipped fields to the current Dexterity/Speed and `*Type` contract, removed Spirit, expanded ammo to 12 tiered variants, and added recipes for every ammo type with deterministic API/client display ordering.
 - 2026-07-10: Refreshed inventory/loot/gear/crafting/merchant previews to use DTO/count-aware descriptions and sell prices; added merchant/crafting distance/Escape close behavior and substantial `UIScene` layout updates.
 - 2026-07-10: Corrected memory-bank ammo claims after static inspection: `AmmoCount` exists in the contract but stack management and attack consumption are not implemented, and Arrow Dexterity bonuses are not applied by the current ammo usable-item path.
+- 2026-07-13: Commit `8c954ff` added explicit Inventory/Gear item-use origins, full-DTO gear handling, centralized stat/slot/inventory transitions, first-equip/swap/unequip ammo stack handling, server-persisted health-potion healing, template ammo count `0`, and a local-character readiness guard for movement.
+- 2026-07-13: Refreshed all memory-bank files, compilation-smoke-tested the backend and generated Unity client projects, passed all 182 API unit tests, and documented the remaining same-type ammo duplication/stale-UI defect plus the lack of end-to-end runtime coverage.
