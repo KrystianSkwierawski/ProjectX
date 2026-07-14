@@ -9,6 +9,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Character.Models;
+
 
 
 
@@ -387,7 +389,7 @@ namespace StarterAssets
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
             var baseSpeed = _input.Sprint ? SprintSpeed : LockSpeed;
-            var targetSpeed = CharacterStatsCalculator.ApplySpeed(baseSpeed, UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].Speed);
+            var targetSpeed = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].ApplySpeed(baseSpeed);
 
             // if there is no input, set the target speed to 0
             if (_input.Move == Vector2.zero)

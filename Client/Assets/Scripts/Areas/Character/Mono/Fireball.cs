@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
@@ -113,7 +114,8 @@ namespace Assets.Scripts.Areas.Character.Mono
                 _hit = true;
 
                 var character = UserManager.Instance.Characters[OwnerClientId];
-                var damage = CharacterStatsCalculator.ApplyStrength(50f, character.Strength);
+
+                var damage = character.ApplyWeaponDamage(50f);
 
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {

@@ -781,7 +781,9 @@
           "AmmoFeather3",
           "AmmoOil1",
           "AmmoOil2",
-          "AmmoOil3"
+          "AmmoOil3",
+          "IronWand",
+          "IronBow"
         ],
         "x-enum-varnames": [
           "None",
@@ -822,7 +824,9 @@
           "AmmoFeather3",
           "AmmoOil1",
           "AmmoOil2",
-          "AmmoOil3"
+          "AmmoOil3",
+          "IronWand",
+          "IronBow"
         ],
         "x-enumNames": [
           "None",
@@ -863,9 +867,13 @@
           "AmmoFeather3",
           "AmmoOil1",
           "AmmoOil2",
-          "AmmoOil3"
+          "AmmoOil3",
+          "IronWand",
+          "IronBow"
         ],
         "x-enum-descriptions": [
+          null,
+          null,
           null,
           null,
           null,
@@ -945,6 +953,8 @@
           null,
           null,
           null,
+          null,
+          null,
           null
         ],
         "enum": [
@@ -986,7 +996,9 @@
           1017,
           1018,
           1019,
-          1020
+          1020,
+          1021,
+          1022
         ]
       },
       "UpdateCharacterInventoryCommand": {

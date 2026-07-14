@@ -330,6 +330,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 return;
             }
 
+            if (item.Type.IsWeapon())
+            {
+                new WeaponUsableItem(item, clientToken, OwnerClientId).Use(from);
+
+                return;
+            }
+
             IUsableItem usableItem = item.Type switch
             {
                 InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, clientToken, OwnerClientId),
@@ -337,7 +344,6 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, clientToken, OwnerClientId),
                 InventoryItemEnum.IronChest => new ChestUsableItem(item, clientToken, OwnerClientId),
                 InventoryItemEnum.IronBoots => new BootsUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronSword => new WeaponUsableItem(item, clientToken, OwnerClientId),
                 _ => null
             };
 

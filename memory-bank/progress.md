@@ -18,8 +18,9 @@
 - Character health and max health exist in backend entities/DTOs and Unity client models/UI.
 - Character update flow can persist health, max health, Strength, Dexterity, Speed, Intellect, Armor, equipped `HelmetType`/`ChestType`/`BootsType`/`WeaponType`/`AmmoType`, and `AmmoCount`.
 - Server-side player attack handling reduces health, sends a targeted client RPC, updates player UI/audio/death response, and persists health through the API.
-- Runtime stat calculation exists: Strength scales fireball damage, Dexterity controls dodge chance, Speed scales controller movement, and Armor reduces incoming damage.
+- Runtime stat calculation exists: Iron Sword/Wand/Bow select Strength/Intellect/Dexterity for outgoing fireball damage, Dexterity controls dodge chance, Speed scales controller movement, and Armor reduces incoming damage.
 - Gear equip/unequip flow uses concrete usable item classes for helmet, chest, boots, and weapon slots and updates Gear UI plus backend character gear/stat totals in server builds.
+- Iron Sword, Wand, and Bow are mirrored API/client items. All route through `InventoryItemEnum.IsWeapon()` to the shared weapon usable-item path, grant +20 Strength, Intellect, and Dexterity respectively, and select that same stat for outgoing fireball damage scaling.
 - Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, defaults to `0` for seeded template ammo, is shown in the ammo gear preview, and is transferred for first equip, different-type swap, and gear unequip.
 - Usable-item calls carry exact `UsableItemFromEnum.Inventory` / `.Gear` origins and a full `InventoryItemDto` from inventory/gear UI through RPC. Normal gear rejects re-equipping the same type; a different item swaps and returns the old item, and a Gear-origin call unequips/returns it.
 - `AbstractGearUsableItem` centralizes removal/addition of all six declared stat bonuses, full character gear/stat/count persistence, editor UI refresh, and inventory add/remove operations; concrete gear classes define current item, slot, template, and wear/unwear mutation.
@@ -47,7 +48,7 @@
 - Base-stat versus gear-derived-stat ownership is not documented; current gear use mutates persisted totals directly.
 - Same-type ammo merge inventory transfer and Gear UI payload/count need correction and focused tests.
 - Per-attack ammo effects and consumption remain to be implemented.
-- Intellect is persisted, displayed, and granted by Rune ammo metadata, but has no runtime gameplay consumer.
+- Intellect is persisted, displayed, granted by Wand/Rune metadata, and used for outgoing fireball damage while Iron Wand is equipped.
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
 
 ## Known Issues / Risks
@@ -81,3 +82,6 @@
 - 2026-07-10: Corrected memory-bank ammo claims after static inspection: `AmmoCount` exists in the contract but stack management and attack consumption are not implemented, and Arrow Dexterity bonuses are not applied by the current ammo usable-item path.
 - 2026-07-13: Commit `8c954ff` added explicit Inventory/Gear item-use origins, full-DTO gear handling, centralized stat/slot/inventory transitions, first-equip/swap/unequip ammo stack handling, server-persisted health-potion healing, template ammo count `0`, and a local-character readiness guard for movement.
 - 2026-07-13: Refreshed all memory-bank files, compilation-smoke-tested the backend and generated Unity client projects, passed all 182 API unit tests, and documented the remaining same-type ammo duplication/stale-UI defect plus the lack of end-to-end runtime coverage.
+- 2026-07-14: Added Iron Wand and Iron Bow content across enums, localization, API specification, icon lookup, pricing, and weapon-equipment dispatch. Introduced `InventoryItemEnum.IsWeapon()`, assigned +20 Intellect to the wand and +20 Dexterity to the bow while retaining +20 Strength on the sword, compiled API/client with zero errors, and passed all 190 translation tests.
+- 2026-07-14: Replaced unconditional Strength-based fireball scaling with weapon-aware `ApplyWeaponDamage`: sword uses Strength, wand Intellect, bow Dexterity, and empty/unknown weapons use base damage. Client compilation passed with zero errors and existing warnings.
+- 2026-07-14: Converted all `CharacterStatsCalculator` operations to `CharacterDto` extensions and their shared private calculations to `short` extensions; updated fireball, damage/dodge, and movement call sites. Client compilation passed with zero errors and existing warnings.

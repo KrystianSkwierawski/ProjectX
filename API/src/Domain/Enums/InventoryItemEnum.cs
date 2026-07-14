@@ -69,6 +69,8 @@ public enum InventoryItemEnum
     AmmoOil1 = 1018,
     AmmoOil2 = 1019,
     AmmoOil3 = 1020,
+    IronWand = 1021,
+    IronBow = 1022,
 
     #endregion
 }

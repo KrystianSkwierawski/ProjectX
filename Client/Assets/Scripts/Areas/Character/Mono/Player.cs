@@ -57,14 +57,14 @@ namespace Assets.Scripts.Areas.Character.Mono
                 {
                     var character = UserManager.Instance.Characters[OwnerClientId];
 
-                    if (CharacterStatsCalculator.IsAttackDodged(character.Dexterity))
+                    if (character.IsAttackDodged())
                     {
                         Debug.Log($"Player dodged attack. Dexterity: {character.Dexterity}");
 
                         return;
                     }
 
-                    var damage = CharacterStatsCalculator.ApplyArmor(e.Value, character.Armor);
+                    var damage = character.ApplyArmor(e.Value);
 
                     character.Health = Math.Max(character.Health - damage, 0);
 

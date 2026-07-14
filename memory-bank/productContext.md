@@ -9,7 +9,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - Provides a foundation for server-authoritative or server-backed gameplay loops.
 - Persists character health, max health, stats, and equipped gear through the character update API.
 - Lets gear items apply stat bonuses and expose those bonuses in inventory, merchant, crafting, and gear UI previews.
-- Applies early runtime stat behavior: Strength scales fireball damage, Dexterity provides dodge chance, Speed scales movement, and Armor reduces incoming damage.
+- Applies early runtime stat behavior: equipped Iron Sword/Wand/Bow select Strength/Intellect/Dexterity for fireball damage scaling, Dexterity provides dodge chance, Speed scales movement, and Armor reduces incoming damage.
 - Exposes tiered ammo items through merchant stock and Blacksmithing/Alchemy recipes, while the final ammo equip/consumption loop remains unfinished.
 - Lets health potions restore up to 20 health, persist the resulting health from dedicated-server builds, and remain unconsumed when the character is already at max health.
 - Supports multiple languages through i18n resources and translation services.
@@ -23,7 +23,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - The exact genre, target platform, multiplayer session model, and release goals are not documented yet.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.
-- The intended gameplay effect for Intellect is not documented or implemented yet.
+- Weapon-specific combat behavior beyond selecting the damage-scaling stat is not documented or implemented yet.
 - Ammo equip semantics now use explicit `Inventory`/`Gear` origins. First equip, different-type swap, and gear unequip transfer whole stacks, but same-type merging currently duplicates the old equipped stack into inventory and leaves the gear UI bound to the incoming rather than combined count. Per-attack ammo effects and consumption still need clarification and implementation.
 - Broader consumable-item behavior beyond the current server-persisted health potion is not yet documented.
 - Full Polish client localization remains a future product task; current English content in client `pl.json` is an intentional temporary fallback for development.

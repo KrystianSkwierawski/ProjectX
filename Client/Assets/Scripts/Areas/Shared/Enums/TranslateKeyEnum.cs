@@ -98,6 +98,10 @@ namespace Assets.Scripts.Areas.Shared.Enums
         AmmoOil2Title,
         AmmoOil2Description,
         AmmoOil3Title,
-        AmmoOil3Description
+        AmmoOil3Description,
+        IronWandTitle,
+        IronWandDescription,
+        IronBowTitle,
+        IronBowDescription
     }
 }

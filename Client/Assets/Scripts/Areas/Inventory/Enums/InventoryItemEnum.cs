@@ -108,6 +108,12 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         [InventoryItemParameters(Strength = 15)]
         AmmoOil3 = 1020,
 
+        [InventoryItemParameters(Intellect = 20)]
+        IronWand = 1021,
+
+        [InventoryItemParameters(Dexterity = 20)]
+        IronBow = 1022,
+
         #endregion
     }
 
@@ -137,6 +143,13 @@ namespace Assets.Scripts.Areas.Inventory.Enums
                 or InventoryItemEnum.AmmoOil1
                 or InventoryItemEnum.AmmoOil2
                 or InventoryItemEnum.AmmoOil3;
+        }
+
+        public static bool IsWeapon(this InventoryItemEnum value)
+        {
+            return value is InventoryItemEnum.IronSword
+                or InventoryItemEnum.IronWand
+                or InventoryItemEnum.IronBow;
         }
     }
 
