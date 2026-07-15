@@ -30,6 +30,11 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 return false;
             }
 
+            if (character.AmmoType != InventoryItemEnum.AmmoTemplate && Item.Type.GetInventoryItemParametersAttribute().WeaponCategory != character.AmmoType.GetInventoryItemParametersAttribute().WeaponCategory)
+            {
+                UnwearAmmo(character);
+            }
+
             character.WeaponType = Item.Type;
 
             return true;
@@ -44,9 +49,34 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 return false;
             }
 
+            if (character.AmmoType != InventoryItemEnum.AmmoTemplate)
+            {
+                UnwearAmmo(character);
+            }
+
             character.WeaponType = TemplateType;
 
             return true;
+        }
+
+        private void UnwearAmmo(Character.Models.CharacterDto character)
+        {
+            UnequipItems.Add(new InventoryItemDto
+            {
+                Type = character.AmmoType,
+                Count = character.AmmoCount
+            });
+
+            character.AmmoType = InventoryItemEnum.AmmoTemplate;
+            character.AmmoCount = 0;
+
+#if UNITY_EDITOR
+            GearUI.Instance.Wear(GearUI.Instance.Ammo, new InventoryItemDto
+            {
+                Type = InventoryItemEnum.AmmoTemplate,
+                Count = 0
+            });
+#endif
         }
     }
 }
