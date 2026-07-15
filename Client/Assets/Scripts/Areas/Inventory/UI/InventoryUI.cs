@@ -208,6 +208,11 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 {
                     sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Armor)}: {parameters.Armor}");
                 }
+
+                if (item.Type.IsAmmo() && parameters.WeaponCategory != WeaponCategoryEnum.None)
+                {
+                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(parameters.WeaponCategory.ToString())}");
+                }
             }
 
             return sb.ToString();

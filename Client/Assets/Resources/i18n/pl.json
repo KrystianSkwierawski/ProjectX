@@ -97,5 +97,9 @@
     "IronWandTitle": "Żelazna różdżka",
     "IronWandDescription": "Okuta żelazem różdżka stworzona do skupiania stabilnego nurtu magii. Drobne runy wokół rękojeści ogrzewają się, gdy jej właściciel zbiera myśli.",
     "IronBowTitle": "Żelazny łuk",
-    "IronBowDescription": "Solidny łuk wzmocniony żelazem w najbardziej narażonych miejscach. Wyważone ramiona nagradzają precyzyjną rękę i strzał oddany we właściwej chwili."
+    "IronBowDescription": "Solidny łuk wzmocniony żelazem w najbardziej narażonych miejscach. Wyważone ramiona nagradzają precyzyjną rękę i strzał oddany we właściwej chwili.",
+    "Required": "Wymagania",
+    "Sword": "Miecz",
+    "Wand": "Różdżka",
+    "Bow": "Łuk"
 }

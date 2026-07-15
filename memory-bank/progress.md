@@ -21,10 +21,10 @@
 - Runtime stat calculation exists: Iron Sword/Wand/Bow select Strength/Intellect/Dexterity for outgoing fireball damage, Dexterity controls dodge chance, Speed scales controller movement, and Armor reduces incoming damage.
 - Gear equip/unequip flow uses concrete usable item classes for helmet, chest, boots, and weapon slots and updates Gear UI plus backend character gear/stat totals in server builds.
 - Iron Sword, Wand, and Bow are mirrored API/client items. All route through `InventoryItemEnum.IsWeapon()` to the shared weapon usable-item path, grant +20 Strength, Intellect, and Dexterity respectively, and select that same stat for outgoing fireball damage scaling.
-- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, defaults to `0` for seeded template ammo, is shown in the ammo gear preview, and is transferred for first equip, different-type swap, and gear unequip.
+- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, defaults to `0` for seeded template ammo, is shown in the ammo gear preview, and is preserved across first equip, same-type merge, different-type swap, explicit unequip, and weapon-triggered auto-unequip.
 - Usable-item calls carry exact `UsableItemFromEnum.Inventory` / `.Gear` origins and a full `InventoryItemDto` from inventory/gear UI through RPC. Normal gear rejects re-equipping the same type; a different item swaps and returns the old item, and a Gear-origin call unequips/returns it.
 - `AbstractGearUsableItem` centralizes removal/addition of all six declared stat bonuses, full character gear/stat/count persistence, editor UI refresh, and inventory add/remove operations; concrete gear classes define current item, slot, template, and wear/unwear mutation.
-- Twelve tiered ammo items exist (Arrow/Rune/Feather/Oil I-III) with mirrored API/client enum values, icons, translations, merchant offers/prices, and +5/+10/+15 stat metadata.
+- Twelve tiered ammo items exist (Arrow/Rune/Feather/Oil I-III) with mirrored API/client enum values, icons, translations, merchant offers/prices, +5/+10/+15 stat metadata, localized required-weapon previews, and enforced compatibility: Arrow/Bow, Rune/Wand, Feather+Oil/Sword.
 - All 12 ammo items have crafting recipes: Arrow/Rune/Feather use Blacksmithing and Oil uses Alchemy. API results are ordered by recipe `Id`, and pooled client recipe buttons preserve that order.
 - Gear stat bonuses are declared on Unity inventory enum values with `InventoryItemParametersAttribute`; inventory, merchant, crafting, and gear previews display those bonuses through `InventoryUI.PrepareDescription(InventoryItemDto)`.
 - Shared item previews now accept a full `InventoryItemDto` and display count-aware sell prices in inventory, loot, gear, crafting, and merchant contexts.
@@ -42,11 +42,11 @@
 
 ## What's Left / Unknown
 - Exact gameplay roadmap and release target are not documented.
-- Automated coverage is narrow: only `TranslateServiceTests.cs` was found, although its parameterized cases currently total 182; stat, ammo, gear, potion, crafting, and Unity gameplay paths have no focused tests.
+- Automated coverage is narrow: only `TranslateServiceTests.cs` was found, although its parameterized cases currently total 190; stat, ammo, gear, potion, crafting, and Unity gameplay paths have no focused tests.
 - Backend and generated Unity client projects compiled with zero errors and all 182 API unit tests passed on 2026-07-13, but the Unity client/dedicated server/API stack was not verified end-to-end at runtime.
 - Client/server contract drift risk should be checked before API or DTO changes.
 - Base-stat versus gear-derived-stat ownership is not documented; current gear use mutates persisted totals directly.
-- Same-type ammo merge inventory transfer and Gear UI payload/count need correction and focused tests.
+- Ammo compatibility, merge, swap, auto-unequip, inventory transfer, and Gear UI payload/count paths need focused tests.
 - Per-attack ammo effects and consumption remain to be implemented.
 - Intellect is persisted, displayed, granted by Wand/Rune metadata, and used for outgoing fireball damage while Iron Wand is equipped.
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
@@ -59,7 +59,6 @@
 - `.claude/settings.local.json` was not present during the 2026-07-06 refresh; if it reappears, treat it as local-only secret configuration.
 - `UpdateCharacterCommandHandler` currently resolves the current user's character and has the direct `CharacterId` filter commented out; confirm intended multi-character behavior before expanding character update endpoints.
 - Ammo is not consumed by attack code. Seeded characters start with `AmmoType = AmmoTemplate` and the default `AmmoCount = 0`.
-- Same-type ammo merge is inconsistent: character state becomes old plus incoming count, but the generic inventory update also re-adds the old equipped stack while removing the incoming stack, duplicating the old count. Gear UI is refreshed with only the incoming DTO, so its displayed count and immediate right-click unequip payload omit the previously equipped count.
 - Tiered ammo repurposed persisted IDs `1010`-`1012` from the former Rune/Feather/Oil meanings. The intentional database recreation masks this during development, but a non-destructive persistence flow will require explicit data migration.
 - `.gitignore` ignores `*.meta`; the known affected project-owned files include 13 ammo icon/template metas plus `CharacterStatsCalculator.cs.meta`, `AmmoUsableItem.cs.meta`, and `UsableItemFromEnum.cs.meta`, so their Unity GUIDs/import settings are not versioned. Other ignored package/cache metas also exist locally.
 - Merchant offer tooltips use the shared sell-price description while the adjacent currency amount is the full purchase price, so the displayed `Price` inside the tooltip can be misleading.
@@ -85,3 +84,5 @@
 - 2026-07-14: Added Iron Wand and Iron Bow content across enums, localization, API specification, icon lookup, pricing, and weapon-equipment dispatch. Introduced `InventoryItemEnum.IsWeapon()`, assigned +20 Intellect to the wand and +20 Dexterity to the bow while retaining +20 Strength on the sword, compiled API/client with zero errors, and passed all 190 translation tests.
 - 2026-07-14: Replaced unconditional Strength-based fireball scaling with weapon-aware `ApplyWeaponDamage`: sword uses Strength, wand Intellect, bow Dexterity, and empty/unknown weapons use base damage. Client compilation passed with zero errors and existing warnings.
 - 2026-07-14: Converted all `CharacterStatsCalculator` operations to `CharacterDto` extensions and their shared private calculations to `short` extensions; updated fireball, damage/dodge, and movement call sites. Client compilation passed with zero errors and existing warnings.
+- 2026-07-14: Enforced ammo/weapon categories (Arrow/Bow, Rune/Wand, Feather+Oil/Sword), added localized required-weapon preview lines, rejected incompatible ammo use, and made weapon changes atomically auto-unequip incompatible ammo with full stack/stat/UI/persistence handling. The shared transition also fixed same-type ammo duplication and stale Gear UI payloads; client compilation and localization JSON validation passed.
+- 2026-07-15: Replaced the weapon/ammo category mapping extensions with `InventoryItemParametersAttribute.WeaponCategory` metadata assigned to all current weapons and ammo. Compatibility validation and required-weapon descriptions now read the same metadata; client compilation passed with zero errors and six existing warnings.

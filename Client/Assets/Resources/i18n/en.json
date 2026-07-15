@@ -97,5 +97,9 @@
     "IronWandTitle": "Iron Wand",
     "IronWandDescription": "An iron-shod wand built to focus a steady current of magic. Fine runes circle its grip, warming as the wielder gathers their thoughts.",
     "IronBowTitle": "Iron Bow",
-    "IronBowDescription": "A sturdy bow reinforced with iron at its most vulnerable points. Its balanced limbs reward a precise hand and a well-timed release."
+    "IronBowDescription": "A sturdy bow reinforced with iron at its most vulnerable points. Its balanced limbs reward a precise hand and a well-timed release.",
+    "Required": "Required",
+    "Sword": "Sword",
+    "Wand": "Wand",
+    "Bow": "Bow"
 }

@@ -16,5 +16,7 @@ namespace Assets.Scripts.Areas.Shared.Attributes
         public short Intellect { get; set; }
 
         public short Armor { get; set; }
+
+        public WeaponCategoryEnum WeaponCategory { get; set; }
     }
 }

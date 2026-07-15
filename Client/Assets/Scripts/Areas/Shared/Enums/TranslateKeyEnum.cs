@@ -102,6 +102,10 @@ namespace Assets.Scripts.Areas.Shared.Enums
         IronWandTitle,
         IronWandDescription,
         IronBowTitle,
-        IronBowDescription
+        IronBowDescription,
+        Required,
+        Sword,
+        Wand,
+        Bow
     }
 }

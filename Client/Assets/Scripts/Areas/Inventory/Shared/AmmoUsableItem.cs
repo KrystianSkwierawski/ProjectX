@@ -2,6 +2,10 @@ using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
+using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Mono;
+using Assets.Scripts.Areas.Shared.UI;
+using Cysharp.Threading.Tasks;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
@@ -32,6 +36,19 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         protected override bool Wear()
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
+
+            var parameters = Item.Type.GetInventoryItemParametersAttribute();
+
+            if (parameters.WeaponCategory != character.WeaponType.GetInventoryItemParametersAttribute()?.WeaponCategory)
+            {
+                LogUI.Instance.ShowAsync
+                (
+                    $"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(parameters.WeaponCategory.ToString())}", 
+                    color: ColorUI.Red
+                ).Forget();
+
+                return false;
+            }
 
             if (character.AmmoType == Item.Type)
             {
