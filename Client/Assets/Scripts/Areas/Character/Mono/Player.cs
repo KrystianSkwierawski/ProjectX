@@ -70,7 +70,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     if (character.AmmoType.IsArmorAmmo())
                     {
-                        ConsumeAmmo();
+                        ConsumeAmmo(e.ClientToken);
                     }
 
                     character.Health = Math.Max(character.Health - damage, 0);
@@ -185,7 +185,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             CraftingUI.Instance.UpdateRequirements(InventoryItemEnum.Xp);
         }
 
-        public void ConsumeAmmo()
+        public void ConsumeAmmo(string clientToken)
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
 
@@ -221,7 +221,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     Armor = character.Armor,
                     AmmoType = character.AmmoType,
                     AmmoCount = character.AmmoCount,
-                }, UserManager.Instance.Token)
+                }, clientToken)
                 .Forget();
             }
         }

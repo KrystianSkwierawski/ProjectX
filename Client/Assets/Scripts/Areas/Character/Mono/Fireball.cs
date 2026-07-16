@@ -120,7 +120,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 if (!character.AmmoType.IsArmorAmmo())
                 {
-                    _caster.GetComponent<Player>().ConsumeAmmo();
+                    _caster.GetComponent<Player>().ConsumeAmmo(_clientToken);
                 }
 
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
