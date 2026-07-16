@@ -1,6 +1,7 @@
 # Active Context
 
 ## Current Focus
+- 2026-07-15: Implemented server-authoritative per-hit ammo consumption. Feather armor ammo is consumed after `ApplyArmor` on a positive, non-dodged incoming attack; Arrow/Rune/Oil damage ammo is consumed after outgoing weapon damage is calculated. The final item contributes to that hit, then its stats are removed, the ammo slot is cleared, API state is persisted, and the owner Gear UI is refreshed.
 - 2026-07-14: Added `IronWand` and `IronBow` as mirrored API/client inventory items. Weapon classification now goes through `InventoryItemEnum.IsWeapon()`, iron weapon bonuses are Strength for sword, Intellect for wand, and Dexterity for bow, and outgoing fireball damage scales from the corresponding equipped-weapon stat.
 - Memory bank reviewed and refreshed on 2026-07-13 against repository HEAD `8c954ff`.
 - The 2026-07-13 gear usable-item refactor now carries a full item DTO plus exact `UsableItemFromEnum.Inventory` / `.Gear` origin through UI, subscription, RPC, and server handling; backend and generated-client compilation smoke checks pass with warnings and zero errors.
@@ -59,6 +60,7 @@
 - 2026-07-14: Refactored `ApplyWeaponDamage`, `IsAttackDodged`, `ApplySpeed`, and `ApplyArmor` into `CharacterDto` extension methods. Runtime call sites now use `character.Method(...)`; `GetIncreaseMultiplier` and `GetLimitedPercent` are private `short` extensions inside `CharacterStatsCalculator`.
 - 2026-07-14: Added weapon-category requirements for ammo: Arrows require Bow, Runes require Wand, and Feathers/Oils require Sword. Incompatible right-click equip attempts are rejected. Equipping or removing a weapon now auto-unequips incompatible ammo, returns its full stack, removes its stats, clears its Gear slot, and persists both slots atomically. Ammo previews show a localized required-weapon line. The same transition refactor also fixed same-type ammo inventory duplication and stale Gear UI counts.
 - 2026-07-15: Moved weapon/ammo category assignment into `InventoryItemParametersAttribute.WeaponCategory`. Compatibility checks and ammo preview requirements now compare item metadata directly; the former `GetWeaponCategory()` and `GetRequiredWeaponCategory()` mapping extensions were removed.
+- 2026-07-15: Added combat ammo consumption across Unity server, owner client, Gear UI, and API persistence. `AmmoCount` decrements once per applicable hit; reaching zero subtracts all item parameters and replaces the equipped ammo with `AmmoTemplate`. The Unity server owns this transition; the API only persists the submitted `AmmoType`, `AmmoCount`, and stat values without deriving or normalizing them.
 
 ## Active Decisions
 - Treat the repository as two cooperating applications:
@@ -70,10 +72,11 @@
 - Unity menu entries under `ProjectX` should remain aligned with `Client/Automation/run.bat`.
 - If `.claude/settings.local.json` reappears, treat it as local-only secret configuration and do not commit or quote it.
 - Treat current character stat totals as persisted mutable values until the user clarifies whether stats should be recomputed from base stats plus gear bonuses.
+- Keep ammo-consumption and zero-count unequip decisions on the Unity server. `UpdateCharacterCommand` is a persistence pass-through for the submitted `AmmoType`, `AmmoCount`, and stats and must not automatically replace ammo types or normalize ammo counts.
 - Resolve character state through `UserManager.Characters[clientId]`; do not reintroduce a process-wide single `Character` reference.
 - Treat current stat mechanics as percentage-based: outgoing fireball damage uses Strength with Iron Sword, Intellect with Iron Wand, and Dexterity with Iron Bow; empty/unknown weapon types use base damage. Dexterity is also capped dodge chance, Speed increases movement, and Armor is capped damage reduction.
 - Classify equippable weapons through client `InventoryItemEnum.IsWeapon()` rather than enumerating weapon cases in usable-item dispatch. Weapon metadata controls the persisted equipment bonus, while `CharacterStatsCalculator.ApplyWeaponDamage` maps weapon type to its damage stat.
-- Treat the ammo gear contract as `AmmoType` plus `AmmoCount`, with use origin selected by `UsableItemFromEnum.Inventory` / `.Gear`. Weapon/ammo compatibility is category-based and read from `InventoryItemParametersAttribute.WeaponCategory`: Arrows/Bow, Runes/Wand, Feathers+Oils/Sword. All equip, merge, swap, explicit unequip, and weapon-triggered auto-unequip paths use whole-stack transfers; attack consumption is still not implemented.
+- Treat the ammo gear contract as `AmmoType` plus `AmmoCount`, with use origin selected by `UsableItemFromEnum.Inventory` / `.Gear`. Weapon/ammo compatibility is category-based and read from `InventoryItemParametersAttribute.WeaponCategory`: Arrows/Bow, Runes/Wand, Feathers+Oils/Sword. All equip, merge, swap, explicit unequip, and weapon-triggered auto-unequip paths use whole-stack transfers. Feathers are armor ammo consumed after a positive, non-dodged incoming hit; all other real ammo is damage ammo consumed after an outgoing hit. The last unit applies to the current hit before its bonus is removed.
 - Treat health-potion restoration as server-persisted through `UpdateCharacterCommand`; at full health the potion is intentionally not consumed.
 - Preserve API crafting recipe ordering by `Id` and the pooled client recipe-button sibling ordering.
 - Keep the current API database reset behavior for developer work unless the user asks to prepare a non-destructive persistence flow.
@@ -86,7 +89,7 @@
 - Confirm product-level goals with the user when changes require design or gameplay decisions not already implied by code.
 - Keep `progress.md` updated after meaningful changes.
 - When changing startup/build behavior, update both `Client/Automation/run.ps1` and `Client/Assets/Editor/ProjectXDevAutomation.cs`.
-- Define and implement per-attack ammo effects/consumption.
+- Add focused automated or Unity runtime coverage for per-hit ammo consumption, final-item stat removal, API persistence, and owner Gear UI refresh.
 - Add focused tests for weapon-based damage stat selection, first ammo equip, same-type merge, type switch, unequip/reload, health-potion persistence, and crafting ordering; only translation-service unit tests are currently present.
 - Before replacing the intentional database reset with persistent upgrades, create a data-migration plan for ammo IDs `1010`-`1012`, whose meanings were repurposed when tiered ammo was introduced.
 - Fix or narrowly override the repo's `*.meta` ignore rule before adding more Unity assets/scripts so their GUIDs/import settings are versioned; the known affected project files include 13 ammo icon/template metas and three gameplay-script metas.

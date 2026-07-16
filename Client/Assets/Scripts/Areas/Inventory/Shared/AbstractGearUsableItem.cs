@@ -45,12 +45,12 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
                 foreach (var item in UnequipItems)
                 {
-                    AddStats(character, item);
+                    RemoveStats(character, item.Type);
                 }
 
                 if (from == UsableItemFromEnum.Inventory)
                 {
-                    RemoveStats(character);
+                    AddStats(character, Item.Type);
                 }
 
 #if UNITY_EDITOR
@@ -109,9 +109,9 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
         }
 
-        private void RemoveStats(CharacterDto character)
+        public static void AddStats(CharacterDto character, InventoryItemEnum type)
         {
-            var parameters = Item.Type.GetInventoryItemParametersAttribute();
+            var parameters = type.GetInventoryItemParametersAttribute();
 
             character.MaxHealth += parameters.MaxHealth;
             character.Strength += parameters.Strength;
@@ -121,9 +121,9 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             character.Armor += parameters.Armor;
         }
 
-        private static void AddStats(CharacterDto character, InventoryItemDto item)
+        public static void RemoveStats(CharacterDto character, InventoryItemEnum type)
         {
-            var parameters = item.Type.GetInventoryItemParametersAttribute();
+            var parameters = type.GetInventoryItemParametersAttribute();
 
             character.MaxHealth -= parameters.MaxHealth;
             character.Strength -= parameters.Strength;

@@ -4,6 +4,8 @@ using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.Models;
+using Assets.Scripts.Areas.Inventory.Shared;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Models;
@@ -65,6 +67,11 @@ namespace Assets.Scripts.Areas.Character.Mono
                     }
 
                     var damage = character.ApplyArmor(e.Value);
+
+                    if (character.AmmoType.IsArmorAmmo())
+                    {
+                        ConsumeAmmo();
+                    }
 
                     character.Health = Math.Max(character.Health - damage, 0);
 
@@ -176,6 +183,75 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             CraftingUI.Instance.UpdateRequirements(InventoryItemEnum.Xp);
+        }
+
+        public void ConsumeAmmo()
+        {
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
+            {
+                ConsumeAmmoClientRpc(new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+
+                character.AmmoCount--;
+
+                if (character.AmmoCount <= 0)
+                {
+                    AbstractGearUsableItem.RemoveStats(character, character.AmmoType);
+
+                    character.AmmoType = InventoryItemEnum.AmmoTemplate;
+                    character.AmmoCount = 0;
+                }
+
+                // TODO: split to smaller commands
+                UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                {
+                    CharacterId = 1,
+                    MaxHealth = character.MaxHealth,
+                    Strength = character.Strength,
+                    Dexterity = character.Dexterity,
+                    Speed = character.Speed,
+                    Intellect = character.Intellect,
+                    Armor = character.Armor,
+                    AmmoType = character.AmmoType,
+                    AmmoCount = character.AmmoCount,
+                }, UserManager.Instance.Token)
+                .Forget();
+            }
+        }
+
+        [ClientRpc]
+        private void ConsumeAmmoClientRpc(ClientRpcParams rpcParams = default)
+        {
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
+            {
+                character.AmmoCount--;
+
+                if (character.AmmoCount <= 0)
+                {
+                    AbstractGearUsableItem.RemoveStats(character, character.AmmoType);
+
+                    character.AmmoType = InventoryItemEnum.AmmoTemplate;
+                    character.AmmoCount = 0;
+
+                    GearUI.Instance.UpdateRightPanel();
+                    PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
+                }
+
+                GearUI.Instance.Wear(GearUI.Instance.Ammo, new InventoryItemDto
+                {
+                    Type = character.AmmoType,
+                    Count = character.AmmoCount
+                });
+            }
         }
 
         public override void OnNetworkDespawn()

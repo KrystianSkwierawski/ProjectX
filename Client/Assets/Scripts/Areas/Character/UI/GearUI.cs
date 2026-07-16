@@ -114,6 +114,7 @@ namespace Assets.Scripts.Areas.Character.UI
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;
+                slot.Preview.SetActive(false);
                 slot.Mesh.text = "0";
                 slot.Mesh.enabled = false;
 

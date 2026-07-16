@@ -151,21 +151,11 @@ namespace Assets.Scripts.Areas.Inventory.Enums
                 or InventoryItemEnum.IronBow;
         }
 
-        public static bool IsCompatibleWithWeapon(this InventoryItemEnum ammoType, InventoryItemEnum weaponType)
+        public static bool IsArmorAmmo(this InventoryItemEnum value)
         {
-            if (!ammoType.IsAmmo() || !weaponType.IsWeapon())
-            {
-                return false;
-            }
-
-            var ammoParameters = ammoType.GetInventoryItemParametersAttribute();
-            var weaponParameters = weaponType.GetInventoryItemParametersAttribute();
-
-            return ammoParameters != null
-                && weaponParameters != null
-                && ammoParameters.WeaponCategory != WeaponCategoryEnum.None
-                && ammoParameters.WeaponCategory == weaponParameters.WeaponCategory;
+            return value is InventoryItemEnum.AmmoFeather1
+                or InventoryItemEnum.AmmoFeather2
+                or InventoryItemEnum.AmmoFeather3;
         }
     }
-
 }

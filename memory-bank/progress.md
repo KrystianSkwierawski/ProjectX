@@ -21,7 +21,7 @@
 - Runtime stat calculation exists: Iron Sword/Wand/Bow select Strength/Intellect/Dexterity for outgoing fireball damage, Dexterity controls dodge chance, Speed scales controller movement, and Armor reduces incoming damage.
 - Gear equip/unequip flow uses concrete usable item classes for helmet, chest, boots, and weapon slots and updates Gear UI plus backend character gear/stat totals in server builds.
 - Iron Sword, Wand, and Bow are mirrored API/client items. All route through `InventoryItemEnum.IsWeapon()` to the shared weapon usable-item path, grant +20 Strength, Intellect, and Dexterity respectively, and select that same stat for outgoing fireball damage scaling.
-- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, defaults to `0` for seeded template ammo, is shown in the ammo gear preview, and is preserved across first equip, same-type merge, different-type swap, explicit unequip, and weapon-triggered auto-unequip.
+- Ammo-slot data exists across API and Unity as `AmmoType` plus `AmmoCount`; the count is persisted/network-serialized, defaults to `0` for seeded template ammo, is shown in the ammo gear preview, and is preserved across first equip, same-type merge, different-type swap, explicit unequip, and weapon-triggered auto-unequip. Combat consumes one applicable unit per hit: Feather on positive non-dodged incoming attacks, or Arrow/Rune/Oil on outgoing hits. Reaching zero removes the item's stats, clears the slot, persists the result, and refreshes the owner Gear UI.
 - Usable-item calls carry exact `UsableItemFromEnum.Inventory` / `.Gear` origins and a full `InventoryItemDto` from inventory/gear UI through RPC. Normal gear rejects re-equipping the same type; a different item swaps and returns the old item, and a Gear-origin call unequips/returns it.
 - `AbstractGearUsableItem` centralizes removal/addition of all six declared stat bonuses, full character gear/stat/count persistence, editor UI refresh, and inventory add/remove operations; concrete gear classes define current item, slot, template, and wear/unwear mutation.
 - Twelve tiered ammo items exist (Arrow/Rune/Feather/Oil I-III) with mirrored API/client enum values, icons, translations, merchant offers/prices, +5/+10/+15 stat metadata, localized required-weapon previews, and enforced compatibility: Arrow/Bow, Rune/Wand, Feather+Oil/Sword.
@@ -47,7 +47,7 @@
 - Client/server contract drift risk should be checked before API or DTO changes.
 - Base-stat versus gear-derived-stat ownership is not documented; current gear use mutates persisted totals directly.
 - Ammo compatibility, merge, swap, auto-unequip, inventory transfer, and Gear UI payload/count paths need focused tests.
-- Per-attack ammo effects and consumption remain to be implemented.
+- Additional ammo-specific combat effects beyond the current stat bonuses and one-unit consumption are not defined.
 - Intellect is persisted, displayed, granted by Wand/Rune metadata, and used for outgoing fireball damage while Iron Wand is equipped.
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
 
@@ -58,7 +58,7 @@
 - Full runtime automation has not been end-to-end verified after the final rename to `run`; only no-op script wiring was smoke-tested.
 - `.claude/settings.local.json` was not present during the 2026-07-06 refresh; if it reappears, treat it as local-only secret configuration.
 - `UpdateCharacterCommandHandler` currently resolves the current user's character and has the direct `CharacterId` filter commented out; confirm intended multi-character behavior before expanding character update endpoints.
-- Ammo is not consumed by attack code. Seeded characters start with `AmmoType = AmmoTemplate` and the default `AmmoCount = 0`.
+- Seeded characters start with `AmmoType = AmmoTemplate` and the default `AmmoCount = 0`; the new combat-consumption flow has compile/test coverage but not a full Unity dedicated-server/API runtime test.
 - Tiered ammo repurposed persisted IDs `1010`-`1012` from the former Rune/Feather/Oil meanings. The intentional database recreation masks this during development, but a non-destructive persistence flow will require explicit data migration.
 - `.gitignore` ignores `*.meta`; the known affected project-owned files include 13 ammo icon/template metas plus `CharacterStatsCalculator.cs.meta`, `AmmoUsableItem.cs.meta`, and `UsableItemFromEnum.cs.meta`, so their Unity GUIDs/import settings are not versioned. Other ignored package/cache metas also exist locally.
 - Merchant offer tooltips use the shared sell-price description while the adjacent currency amount is the full purchase price, so the displayed `Price` inside the tooltip can be misleading.
@@ -86,3 +86,4 @@
 - 2026-07-14: Converted all `CharacterStatsCalculator` operations to `CharacterDto` extensions and their shared private calculations to `short` extensions; updated fireball, damage/dodge, and movement call sites. Client compilation passed with zero errors and existing warnings.
 - 2026-07-14: Enforced ammo/weapon categories (Arrow/Bow, Rune/Wand, Feather+Oil/Sword), added localized required-weapon preview lines, rejected incompatible ammo use, and made weapon changes atomically auto-unequip incompatible ammo with full stack/stat/UI/persistence handling. The shared transition also fixed same-type ammo duplication and stale Gear UI payloads; client compilation and localization JSON validation passed.
 - 2026-07-15: Replaced the weapon/ammo category mapping extensions with `InventoryItemParametersAttribute.WeaponCategory` metadata assigned to all current weapons and ammo. Compatibility validation and required-weapon descriptions now read the same metadata; client compilation passed with zero errors and six existing warnings.
+- 2026-07-15: Implemented one-unit combat ammo consumption across Unity server, owner client/UI, and API persistence. Feather armor ammo is consumed on positive non-dodged incoming hits; Arrow/Rune/Oil damage ammo is consumed on outgoing hits. The last unit contributes to its hit, then the item bonus and slot are removed. API/client builds passed with zero errors and all 190 API tests passed.

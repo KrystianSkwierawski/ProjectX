@@ -8,7 +8,7 @@ ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core b
 - Backend API under `API/`, organized as separate API, Application, Domain, Infrastructure, and UnitTests projects.
 - Gameplay domains currently represented in code include characters, character transforms, health/combat state, max health, character stats, equipment/gear, inventory, quests, crafting recipes, experience, users, and translation/i18n.
 - Gear currently includes helmet, chest, boots, weapon, and ammo slots plus stat bonuses that affect persisted character totals.
-- Tiered Arrow, Rune, Feather, and Oil ammo content is represented in inventory, merchant, localization, icon, and crafting data. Ammo equip, merge, swap, and unequip paths preserve whole stacks; Arrows require bows, Runes require wands, and Feathers/Oils require swords. Per-attack consumption is not complete.
+- Tiered Arrow, Rune, Feather, and Oil ammo content is represented in inventory, merchant, localization, icon, and crafting data. Ammo equip, merge, swap, and unequip paths preserve whole stacks; Arrows require bows, Runes require wands, and Feathers/Oils require swords. Feather armor ammo is consumed on a non-dodged incoming hit, while Arrow/Rune/Oil damage ammo is consumed on an outgoing hit.
 
 ## Core Goals
 - Provide a playable Unity client backed by persistent API services.

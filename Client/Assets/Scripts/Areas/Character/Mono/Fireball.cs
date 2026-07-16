@@ -1,5 +1,6 @@
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Mono;
@@ -116,6 +117,11 @@ namespace Assets.Scripts.Areas.Character.Mono
                 var character = UserManager.Instance.Characters[OwnerClientId];
 
                 var damage = character.ApplyWeaponDamage(50f);
+
+                if (!character.AmmoType.IsArmorAmmo())
+                {
+                    _caster.GetComponent<Player>().ConsumeAmmo();
+                }
 
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {
