@@ -37,13 +37,13 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
 
-            var parameters = Item.Type.GetInventoryItemParametersAttribute();
+            var weaponCategory = Item.Type.GetWeaponCategory();
 
-            if (parameters.WeaponCategory != character.WeaponType.GetInventoryItemParametersAttribute()?.WeaponCategory)
+            if (weaponCategory != character.WeaponType.GetWeaponCategory())
             {
                 LogUI.Instance.ShowAsync
                 (
-                    $"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(parameters.WeaponCategory.ToString())}", 
+                    $"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(weaponCategory.ToString())}", 
                     color: ColorUI.Red
                 ).Forget();
 

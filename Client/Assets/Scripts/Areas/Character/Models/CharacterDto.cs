@@ -188,11 +188,11 @@ namespace Assets.Scripts.Areas.Character.Models
     {
         public static float ApplyWeaponDamage(this CharacterDto character, float damage)
         {
-            var value = character.WeaponType switch
+            var value = character.WeaponType.GetWeaponCategory() switch
             {
-                InventoryItemEnum.IronSword => character.Strength,
-                InventoryItemEnum.IronWand => character.Intellect,
-                InventoryItemEnum.IronBow => character.Dexterity,
+                WeaponCategoryEnum.Sword => character.Strength,
+                WeaponCategoryEnum.Wand => character.Intellect,
+                WeaponCategoryEnum.Bow => character.Dexterity,
                 _ => (short)0
             };
 

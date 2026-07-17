@@ -128,6 +128,16 @@ namespace Assets.Scripts.Areas.Inventory.Enums
             return member.GetCustomAttribute<InventoryItemParametersAttribute>();
         }
 
+        public static WeaponCategoryEnum GetWeaponCategory(this InventoryItemEnum value)
+        {
+            var member = value
+                .GetType()
+                .GetMember(value.ToString())
+                .FirstOrDefault();
+
+            return member?.GetCustomAttribute<InventoryItemParametersAttribute>()?.WeaponCategory ?? WeaponCategoryEnum.None;
+        }
+
         public static bool IsAmmo(this InventoryItemEnum value)
         {
             return value is InventoryItemEnum.AmmoArrow1

@@ -30,7 +30,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 return false;
             }
 
-            if (character.AmmoType != InventoryItemEnum.AmmoTemplate && Item.Type.GetInventoryItemParametersAttribute().WeaponCategory != character.AmmoType.GetInventoryItemParametersAttribute().WeaponCategory)
+            if (character.AmmoType != InventoryItemEnum.AmmoTemplate && Item.Type.GetWeaponCategory() != character.AmmoType.GetWeaponCategory())
             {
                 UnwearAmmo(character);
             }
