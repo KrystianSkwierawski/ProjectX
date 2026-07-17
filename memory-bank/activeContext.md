@@ -1,6 +1,7 @@
 # Active Context
 
 ## Current Focus
+- 2026-07-17: Fireball and Arrow now hide their whole GameObject on hit, release to their projectile pool after every hit, deactivate on pool release/network despawn, and reactivate before the next spawn. Hit notification is sent before damage callbacks can synchronously despawn a killing projectile.
 - 2026-07-15: Implemented server-authoritative per-hit ammo consumption. Feather armor ammo is consumed after `ApplyArmor` on a positive, non-dodged incoming attack; Arrow/Rune/Oil damage ammo is consumed after outgoing weapon damage is calculated. The final item contributes to that hit, then its stats are removed, the ammo slot is cleared, API state is persisted, and the owner Gear UI is refreshed.
 - 2026-07-14: Added `IronWand` and `IronBow` as mirrored API/client inventory items. Weapon classification now goes through `InventoryItemEnum.IsWeapon()`, iron weapon bonuses are Strength for sword, Intellect for wand, and Dexterity for bow, and outgoing fireball damage scales from the corresponding equipped-weapon stat.
 - Memory bank reviewed and refreshed on 2026-07-13 against repository HEAD `8c954ff`.
