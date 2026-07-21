@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Areas.Character.Models;
-using System;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Enums;
@@ -13,11 +12,11 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public abstract class AbstractWeapon : NetworkBehaviour
     {
-        protected abstract AudioTypeEnum PrecastAudioType { get; }
+        protected virtual AudioTypeEnum PrecastAudioType { get; }
 
-        protected abstract AudioTypeEnum CastAudioType { get; }
+        protected virtual AudioTypeEnum CastAudioType { get; }
 
-        protected abstract AudioTypeEnum ImpactAudioType { get; }
+        protected virtual AudioTypeEnum ImpactAudioType { get; }
 
         protected abstract float BaseDamage { get; }
 
@@ -59,7 +58,11 @@ namespace Assets.Scripts.Areas.Character.Mono
         private void StartCastingClientRpc()
         {
             Debug.Log("StartCastingClientRpc");
-            AudioManager.Instance.TryPlayOneShot(_audioSource, PrecastAudioType, 0.7f);
+
+            if (PrecastAudioType != AudioTypeEnum.None)
+            {
+                AudioManager.Instance.TryPlayOneShot(_audioSource, PrecastAudioType, 0.7f);
+            }
 
             if (_visualEffect != null)
             {
@@ -81,7 +84,10 @@ namespace Assets.Scripts.Areas.Character.Mono
                 _audioSource.Stop();
             }
 
-            AudioManager.Instance.TryPlayOneShot(_audioSource, CastAudioType, 0.7f);
+            if (CastAudioType != AudioTypeEnum.None)
+            {
+                AudioManager.Instance.TryPlayOneShot(_audioSource, CastAudioType, 0.7f);
+            }
         }
 
         public void Failed()
@@ -162,7 +168,11 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         private void OnHitTargetClientRpc()
         {
-            AudioManager.Instance.TryPlayOneShot(ImpactAudioType, 1f);
+            if (ImpactAudioType != AudioTypeEnum.None)
+            {
+                AudioManager.Instance.TryPlayOneShot(ImpactAudioType, 1f);
+            }
+
             gameObject.SetActive(false);
         }
 

@@ -779,6 +779,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _fireballPrefab: {fileID: 2527298531764070780, guid: 2bddad797c2838042a856f26f2f43f67, type: 3}
   _arrowPrefab: {fileID: 7825809438050140326, guid: 3be6e816f568a46439c9d339aa7f1fea, type: 3}
+  _swordPrefab: {fileID: 6638779253483831745, guid: 426547132c2cd9a438700e581b0fa95b, type: 3}
 --- !u!114 &2047821004939733657
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ namespace Assets.Scripts.Areas.Shared.Enums
         ArrowCast,
         ArrowImpact,
         ArrowPrecast,
+        SwordImpact,
         InventoryOpen,
         InventoryClose,
         LevelUp,

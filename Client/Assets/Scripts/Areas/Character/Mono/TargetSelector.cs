@@ -14,6 +14,7 @@ namespace Assets.Scripts.Areas.Character.Mono
     {
         [SerializeField] private GameObject _fireballPrefab;
         [SerializeField] private GameObject _arrowPrefab;
+        [SerializeField] private GameObject _swordPrefab;
 
         private static Renderer _currentlySelectedRenderer = null;
         private static Color _originalSelectedColor;
@@ -27,6 +28,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private ObjectPool<GameObject> _fireballPool;
         private ObjectPool<GameObject> _arrowPool;
+        private ObjectPool<GameObject> _swordPool;
 
         private GameObject _currentWeapon;
         private bool _onlyView;
@@ -67,6 +69,28 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 _arrowPool = new ObjectPool<GameObject>(
                     createFunc: () => Instantiate(_arrowPrefab),
+                    actionOnGet: (GameObject gameObject) =>
+                    {
+                        gameObject.SetActive(true);
+
+                        var spawnPos = transform.position + Vector3.up * 1.0f;
+                        var targetPos = _selectedTarget.transform.position;
+                        var direction = (targetPos - spawnPos).normalized;
+
+                        gameObject.GetComponent<AbstractWeapon>().SetPositionAndDirection(spawnPos, direction);
+
+                        var networkObject = gameObject.GetComponent<NetworkObject>();
+                        networkObject.SpawnWithOwnership(OwnerClientId);
+                    },
+                    actionOnRelease: (GameObject gameObject) =>
+                    {
+                        gameObject.GetComponent<NetworkObject>().Despawn(false);
+                        gameObject.SetActive(false);
+                    }
+                );
+
+                _swordPool = new ObjectPool<GameObject>(
+                    createFunc: () => Instantiate(_swordPrefab),
                     actionOnGet: (GameObject gameObject) =>
                     {
                         gameObject.SetActive(true);
@@ -236,6 +260,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 WeaponCategoryEnum.Wand => _fireballPool.Get(),
                 WeaponCategoryEnum.Bow => _arrowPool.Get(),
+                WeaponCategoryEnum.Sword => _swordPool.Get(),
                 _ => null
             };
 
@@ -340,6 +365,9 @@ namespace Assets.Scripts.Areas.Character.Mono
                     case WeaponCategoryEnum.Bow:
                         _arrowPool.Release(_currentWeapon);
                         break;
+                    case WeaponCategoryEnum.Sword:
+                        _swordPool.Release(_currentWeapon);
+                        break;
                 }
 
                 _currentWeapon = null;
@@ -350,7 +378,13 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             float distance = Vector3.Distance(transform.position, selectedTransform.position);
 
-            var maxCastDistance = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() == WeaponCategoryEnum.Wand ? 12f : 18f;
+            var maxCastDistance = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() switch
+            {
+                WeaponCategoryEnum.Wand => 12f,
+                WeaponCategoryEnum.Bow => 18f,
+                WeaponCategoryEnum.Sword => 3f,
+                _ => 0f
+            };
 
             var result = distance <= maxCastDistance;
 
