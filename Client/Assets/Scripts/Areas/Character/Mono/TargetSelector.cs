@@ -307,9 +307,21 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void CheckCasting()
         {
-            if (_selectedTarget == null || UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() == WeaponCategoryEnum.None)
+            var weaponCategory = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory();
+
+            if (_selectedTarget == null || weaponCategory == WeaponCategoryEnum.None)
             {
                 StopCasting();
+
+                return;
+            }
+
+            if (_isCasting && weaponCategory == WeaponCategoryEnum.Wand && (_thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump))
+            {
+                _onlyView = true;
+                _thirdPersonController.UnlockCamera();
+                StopCasting();
+                DespawnDespawnServerRpc();
 
                 return;
             }

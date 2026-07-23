@@ -110,7 +110,7 @@ namespace StarterAssets
 #endif
         private Animator _animator;
         private CharacterController _controller;
-        private StarterAssetsInputs _input;
+        public StarterAssetsInputs Input { get; set; }
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemachineVirtualCamera;
         private TargetSelector _targetSelector;
@@ -159,7 +159,7 @@ namespace StarterAssets
             _animator = GetComponent<Animator>();
             _hasAnimator = _animator != null;
             _controller = GetComponent<CharacterController>();
-            _input = GetComponent<StarterAssetsInputs>();
+            Input = GetComponent<StarterAssetsInputs>();
 
             AssignAnimationIDs();
 
@@ -216,7 +216,7 @@ namespace StarterAssets
 
         private void HandleCusor()
         {
-            if (_input.Rotate && Cursor.lockState == CursorLockMode.None)
+            if (Input.Rotate && Cursor.lockState == CursorLockMode.None)
             {
                 if (_lastMousePos == null)
                 {
@@ -227,7 +227,7 @@ namespace StarterAssets
                 Cursor.lockState = CursorLockMode.Locked;
             }
 
-            if (!_input.Rotate && Cursor.lockState == CursorLockMode.Locked)
+            if (!Input.Rotate && Cursor.lockState == CursorLockMode.Locked)
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
@@ -318,7 +318,7 @@ namespace StarterAssets
         {
             if (_lockTarget != null)
             {
-                if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold)
+                if (Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
                 {
                     if (_lockTarget.tag == "Target")
                     {
@@ -368,13 +368,13 @@ namespace StarterAssets
                 return;
             }
 
-            if (_input.Rotate && _input.Look.sqrMagnitude >= _threshold && !LockCameraPosition)
+            if (Input.Rotate && Input.Look.sqrMagnitude >= _threshold && !LockCameraPosition)
             {
                 //Don't multiply mouse input by Time.deltaTime;
                 float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
-                _cinemachineTargetYaw += _input.Look.x * deltaTimeMultiplier;
-                _cinemachineTargetPitch += _input.Look.y * deltaTimeMultiplier;
+                _cinemachineTargetYaw += Input.Look.x * deltaTimeMultiplier;
+                _cinemachineTargetPitch += Input.Look.y * deltaTimeMultiplier;
             }
 
             // clamp our rotations so our values are limited 360 degrees
@@ -388,11 +388,11 @@ namespace StarterAssets
         private void Move()
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            var baseSpeed = _input.Sprint ? SprintSpeed : LockSpeed;
+            var baseSpeed = Input.Sprint ? SprintSpeed : LockSpeed;
             var targetSpeed = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].ApplySpeed(baseSpeed);
 
             // if there is no input, set the target speed to 0
-            if (_input.Move == Vector2.zero)
+            if (Input.Move == Vector2.zero)
             {
                 targetSpeed = 0.0f;
             }
@@ -401,7 +401,7 @@ namespace StarterAssets
             float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
             float speedOffset = 0.1f;
-            float inputMagnitude = _input.AnalogMovement ? _input.Move.magnitude : 1f;
+            float inputMagnitude = Input.AnalogMovement ? Input.Move.magnitude : 1f;
 
             // accelerate or decelerate to target speed
             if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
@@ -422,7 +422,7 @@ namespace StarterAssets
             if (_animationBlend < 0.01f) _animationBlend = 0f;
 
             // normalise input direction
-            Vector3 inputDirection = new Vector3(_input.Move.x, 0.0f, _input.Move.y).normalized;
+            Vector3 inputDirection = new Vector3(Input.Move.x, 0.0f, Input.Move.y).normalized;
 
             // When locked on to a target, move relative to the target axis and rotate to face the target.
             if (_lockTarget != null)
@@ -443,7 +443,7 @@ namespace StarterAssets
                 Vector3 forward = targetYawRot * Vector3.forward;
                 Vector3 right = targetYawRot * Vector3.right;
 
-                Vector3 moveDir = (right * _input.Move.x + forward * _input.Move.y);
+                Vector3 moveDir = (right * Input.Move.x + forward * Input.Move.y);
                 if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
 
                 _controller.Move(moveDir * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
@@ -459,7 +459,7 @@ namespace StarterAssets
             }
 
             // if there is a move input rotate player when the player is moving (free camera mode)
-            if (_input.Move != Vector2.zero)
+            if (Input.Move != Vector2.zero)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
@@ -514,7 +514,7 @@ namespace StarterAssets
             }
 
             // Jump
-            if (_input.Jump && _jumpTimeoutDelta <= 0.0f)
+            if (Input.Jump && _jumpTimeoutDelta <= 0.0f)
             {
                 PerformJump();
             }
@@ -555,7 +555,7 @@ namespace StarterAssets
             }
 
             // if we are not grounded, do not jump
-            _input.Jump = false;
+            Input.Jump = false;
         }
 
         private void ApplyGravity()
@@ -628,14 +628,14 @@ namespace StarterAssets
             }
 
             _cinemachineTargetPitch = Mathf.Clamp(pitch, BottomClamp, TopClamp);
-            _input.SprintInput(false);
+            Input.SprintInput(false);
         }
 
         public void UnlockCamera()
         {
             _lockTarget = null;
             LockCameraPosition = false;
-            _input.SprintInput(true);
+            Input.SprintInput(true);
         }
     }
 }
