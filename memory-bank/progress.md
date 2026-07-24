@@ -28,6 +28,7 @@
 - All 12 ammo items have crafting recipes: Arrow/Rune/Feather use Blacksmithing and Oil uses Alchemy. API results are ordered by recipe `Id`, and pooled client recipe buttons preserve that order.
 - Gear stat bonuses are declared on Unity inventory enum values with `InventoryItemParametersAttribute`; inventory, merchant, crafting, and gear previews display those bonuses through `InventoryUI.PrepareDescription(InventoryItemDto)`.
 - Shared item previews now accept a full `InventoryItemDto` and display count-aware sell prices in inventory, loot, gear, crafting, and merchant contexts.
+- Inventory items can be dragged with an icon/count preview instantiated from the serialized `InventoryDragPreview` prefab. Drops onto different items swap, drops onto matching items merge stack counts, and drops onto empty slots preserve the target index across API persistence. Empty positions use `None`/count `0` placeholders, and add/split/remove flows preserve those positions.
 - Merchant and crafting panels close on Escape or after the player moves out of interaction range.
 - Character UI has a `RefreshDescription()` path used when opening the character panel and when level changes arrive from the server.
 - Health potions restore up to 20 health capped at max, persist the resulting `Health` through `UpdateCharacterCommand` in dedicated-server builds, and consume one potion through the shared item flow; use at full health returns without consuming.
@@ -68,6 +69,8 @@
 - `PlayerUI.SetPlayer()` currently calls `SetHealth()` and then `SetMaxHealth()` on the same text field, so the initial displayed value may be max health rather than current health.
 
 ## Evolution Notes
+- 2026-07-24: Fixed inventory stack splitting after the positioned-slot/drag changes. The right-click callback now captures the slot's stable index instead of the completed `for` loop counter, so Alt + right-click reaches the split subscription again.
+- 2026-07-24: Added inventory drag-and-drop with a cursor-following preview, same-type stack merging, different-type swapping, exact empty-slot placement, client/server/API persistence, and focused move/slot-invariant tests. The drag preview is now a serialized prefab referenced by `InventoryUI` instead of a hierarchy assembled at runtime. Inventory hover callbacks are registered once per slot. API/client builds passed with zero errors, the API specification JSON parsed successfully, and all 206 API tests passed.
 - 2026-07-17: Corrected shared Fireball/Arrow projectile cleanup. A hit now hides the complete projectile on clients, returns it to its pool after damage processing, deactivates it on release/network despawn, and reactivates it on get; client compilation passed with zero errors and six existing warnings.
 - 2026-05-07: Initial memory bank created from repo inspection.
 - 2026-07-02: Added Unity/API dev stack run automation, moved scripts under `Client/Automation/`, renamed from `serve` to `run`, and exposed Unity menu entries for `Run` and `Build And Run`.

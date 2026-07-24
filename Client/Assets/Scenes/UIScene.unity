@@ -9289,6 +9289,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _inventorySlotPrefab: {fileID: 2896474591842914507, guid: 7e58fd153c4ab6d47ab2a705a8bebd7d, type: 3}
+  _inventoryDragPreviewPrefab: {fileID: 541209948563700001, guid: efba053d8f654d86824ebe6657c00cc7, type: 3}
 --- !u!114 &1524911728
 MonoBehaviour:
   m_ObjectHideFlags: 0

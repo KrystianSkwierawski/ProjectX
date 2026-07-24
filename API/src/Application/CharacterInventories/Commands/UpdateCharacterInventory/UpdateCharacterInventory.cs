@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
@@ -11,7 +12,9 @@ public record UpdateCharacterInventoryCommand(
     int CharacterId,
     InventoryItemDto[] Add,
     InventoryItemDto[] Remove,
-    int? SplitSlotIndex = null) : IRequest;
+    int? SplitSlotIndex = null,
+    int? MoveSourceSlotIndex = null,
+    int? MoveTargetSlotIndex = null) : IRequest;
 
 public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand>
 {
@@ -52,6 +55,22 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
                 result);
         }
 
+        if (request.MoveSourceSlotIndex.HasValue && request.MoveTargetSlotIndex.HasValue)
+        {
+            var result = Move(
+                request.MoveSourceSlotIndex.Value,
+                request.MoveTargetSlotIndex.Value,
+                inventory,
+                entity.Count);
+
+            Log.Debug(
+                "Moved item for inventory Id: {0}, SourceSlotIndex: {1}, TargetSlotIndex: {2}, Result: {3}",
+                entity.Id,
+                request.MoveSourceSlotIndex.Value,
+                request.MoveTargetSlotIndex.Value,
+                result);
+        }
+
         foreach (var item in request.Add)
         {
             var result = Add(item, inventory);
@@ -81,7 +100,16 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         if (slot == null)
         {
-            inventory.Items.Add(item);
+            var emptySlotIndex = FindEmptySlotIndex(inventory);
+
+            if (emptySlotIndex >= 0)
+            {
+                inventory.Items[emptySlotIndex] = item;
+            }
+            else
+            {
+                inventory.Items.Add(item);
+            }
 
             return true;
         }
@@ -102,7 +130,7 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
     {
         if (sourceSlotIndex < 0
             || sourceSlotIndex >= inventory.Items.Count
-            || inventory.Items.Count >= capacity)
+            || IsEmpty(inventory.Items[sourceSlotIndex]))
         {
             return false;
         }
@@ -118,11 +146,59 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         source.Count -= splitCount;
 
-        inventory.Items.Add(new InventoryItemDto
+        var splitItem = new InventoryItemDto
         {
             Type = source.Type,
             Count = splitCount,
-        });
+        };
+
+        var emptySlotIndex = FindEmptySlotIndex(inventory);
+
+        if (emptySlotIndex >= 0)
+        {
+            inventory.Items[emptySlotIndex] = splitItem;
+        }
+        else if (inventory.Items.Count < capacity)
+        {
+            inventory.Items.Add(splitItem);
+        }
+        else
+        {
+            source.Count += splitCount;
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public static bool Move(int sourceSlotIndex, int targetSlotIndex, InventoryDto inventory, int capacity)
+    {
+        if (sourceSlotIndex < 0
+            || sourceSlotIndex >= inventory.Items.Count
+            || targetSlotIndex < 0
+            || targetSlotIndex >= capacity
+            || sourceSlotIndex == targetSlotIndex
+            || IsEmpty(inventory.Items[sourceSlotIndex]))
+        {
+            return false;
+        }
+
+        EnsureSlotExists(targetSlotIndex, inventory);
+
+        var source = inventory.Items[sourceSlotIndex];
+        var target = inventory.Items[targetSlotIndex];
+
+        if (!IsEmpty(target) && target.Type == source.Type)
+        {
+            target.Count += source.Count;
+            inventory.Items[sourceSlotIndex] = EmptySlot;
+
+            return true;
+        }
+
+        inventory.Items[sourceSlotIndex] = target;
+        inventory.Items[targetSlotIndex] = source;
 
         return true;
     }
@@ -136,7 +212,8 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         if (slot.Count == item.Count)
         {
-            inventory.Items.Remove(slot);
+            var slotIndex = inventory.Items.IndexOf(slot);
+            inventory.Items[slotIndex] = EmptySlot;
 
             return true;
         }
@@ -152,4 +229,37 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         return false;
     }
+
+    private static int FindEmptySlotIndex(InventoryDto inventory)
+    {
+        for (var i = 0; i < inventory.Items.Count; i++)
+        {
+            if (IsEmpty(inventory.Items[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static void EnsureSlotExists(int slotIndex, InventoryDto inventory)
+    {
+        while (inventory.Items.Count <= slotIndex)
+        {
+            inventory.Items.Add(EmptySlot);
+        }
+    }
+
+    private static bool IsEmpty(InventoryItemDto item)
+    {
+        return item.Type == InventoryItemEnum.None || item.Count <= 0;
+    }
+
+    private static InventoryItemDto EmptySlot => new InventoryItemDto
+    {
+        Type = InventoryItemEnum.None,
+        Count = 0,
+    };
+
 }

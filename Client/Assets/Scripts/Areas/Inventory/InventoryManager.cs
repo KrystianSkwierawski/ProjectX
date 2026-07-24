@@ -27,11 +27,18 @@ namespace Assets.Scripts.Areas.Inventory
                 .Where(x => x.Type == item.Type)
                 .FirstOrDefault();
 
-            // TODO: out of slots?
-
             if (slot == null)
             {
-                Dto.Inventory.Items.Add(item);
+                var emptySlotIndex = FindEmptySlotIndex();
+
+                if (emptySlotIndex >= 0)
+                {
+                    Dto.Inventory.Items[emptySlotIndex] = item;
+                }
+                else
+                {
+                    Dto.Inventory.Items.Add(item);
+                }
 
                 return;
             }
@@ -44,7 +51,8 @@ namespace Assets.Scripts.Areas.Inventory
             return Dto?.Inventory?.Items != null
                 && sourceSlotIndex >= 0
                 && sourceSlotIndex < Dto.Inventory.Items.Count
-                && Dto.Inventory.Items.Count < Dto.Count
+                && !IsEmpty(Dto.Inventory.Items[sourceSlotIndex])
+                && (Dto.Inventory.Items.Count < Dto.Count || FindEmptySlotIndex() >= 0)
                 && Dto.Inventory.Items[sourceSlotIndex].Count > 1;
         }
 
@@ -60,11 +68,54 @@ namespace Assets.Scripts.Areas.Inventory
 
             source.Count -= splitCount;
 
-            Dto.Inventory.Items.Add(new InventoryItemDto
+            var splitItem = new InventoryItemDto
             {
                 Type = source.Type,
                 Count = splitCount,
-            });
+            };
+
+            var emptySlotIndex = FindEmptySlotIndex();
+
+            if (emptySlotIndex >= 0)
+            {
+                Dto.Inventory.Items[emptySlotIndex] = splitItem;
+            }
+            else
+            {
+                Dto.Inventory.Items.Add(splitItem);
+            }
+
+            return true;
+        }
+
+        public bool Move(int sourceSlotIndex, int targetSlotIndex)
+        {
+            if (Dto?.Inventory?.Items == null
+                || sourceSlotIndex < 0
+                || sourceSlotIndex >= Dto.Inventory.Items.Count
+                || targetSlotIndex < 0
+                || targetSlotIndex >= Dto.Count
+                || sourceSlotIndex == targetSlotIndex
+                || IsEmpty(Dto.Inventory.Items[sourceSlotIndex]))
+            {
+                return false;
+            }
+
+            EnsureSlotExists(targetSlotIndex);
+
+            var source = Dto.Inventory.Items[sourceSlotIndex];
+            var target = Dto.Inventory.Items[targetSlotIndex];
+
+            if (!IsEmpty(target) && target.Type == source.Type)
+            {
+                target.Count += source.Count;
+                Dto.Inventory.Items[sourceSlotIndex] = EmptySlot;
+
+                return true;
+            }
+
+            Dto.Inventory.Items[sourceSlotIndex] = target;
+            Dto.Inventory.Items[targetSlotIndex] = source;
 
             return true;
         }
@@ -89,7 +140,8 @@ namespace Assets.Scripts.Areas.Inventory
 
             if (diff <= 0)
             {
-                Dto.Inventory.Items.Remove(slot);
+                var slotIndex = Dto.Inventory.Items.IndexOf(slot);
+                Dto.Inventory.Items[slotIndex] = EmptySlot;
 
                 if (diff < 0)
                 {
@@ -105,5 +157,37 @@ namespace Assets.Scripts.Areas.Inventory
 
             slot.Count -= item.Count;
         }
+
+        private int FindEmptySlotIndex()
+        {
+            for (var i = 0; i < Dto.Inventory.Items.Count; i++)
+            {
+                if (IsEmpty(Dto.Inventory.Items[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void EnsureSlotExists(int slotIndex)
+        {
+            while (Dto.Inventory.Items.Count <= slotIndex)
+            {
+                Dto.Inventory.Items.Add(EmptySlot);
+            }
+        }
+
+        private static bool IsEmpty(InventoryItemDto item)
+        {
+            return item.Type == Enums.InventoryItemEnum.None || item.Count <= 0;
+        }
+
+        private static InventoryItemDto EmptySlot => new InventoryItemDto
+        {
+            Type = Enums.InventoryItemEnum.None,
+            Count = 0,
+        };
     }
 }

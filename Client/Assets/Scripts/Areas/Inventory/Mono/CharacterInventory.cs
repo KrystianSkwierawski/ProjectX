@@ -161,6 +161,14 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     }
                 });
 
+                MoveInventorySubscription.Instance.Subscribe(key, (e) =>
+                {
+                    if (MoveInventory(e.SourceSlotIndex, e.TargetSlotIndex))
+                    {
+                        MoveInventoryServerRpc(e.CharacterId, e.SourceSlotIndex, e.TargetSlotIndex, e.ClientToken);
+                    }
+                });
+
                 UseItemSubscribtion.Instance.Subscribe(key, (e) =>
                 {
                     if (MerchantUI.Instance.Merchant.activeSelf)
@@ -302,6 +310,18 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             return true;
         }
 
+        private bool MoveInventory(int sourceSlotIndex, int targetSlotIndex)
+        {
+            if (!InventoryManager.Instance.Move(sourceSlotIndex, targetSlotIndex))
+            {
+                return false;
+            }
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
+            return true;
+        }
+
         [ServerRpc]
         private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request, string clientToken)
         {
@@ -329,12 +349,28 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             SplitInventoryAsync(characterId, sourceSlotIndex, clientToken).Forget();
         }
 
+        [ServerRpc]
+        private void MoveInventoryServerRpc(int characterId, int sourceSlotIndex, int targetSlotIndex, string clientToken)
+        {
+            MoveInventoryAsync(characterId, sourceSlotIndex, targetSlotIndex, clientToken).Forget();
+        }
+
         private async UniTask SplitInventoryAsync(int characterId, int sourceSlotIndex, string clientToken)
         {
             await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
             {
                 CharacterId = characterId,
                 SplitSlotIndex = sourceSlotIndex,
+            }, clientToken);
+        }
+
+        private async UniTask MoveInventoryAsync(int characterId, int sourceSlotIndex, int targetSlotIndex, string clientToken)
+        {
+            await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
+            {
+                CharacterId = characterId,
+                MoveSourceSlotIndex = sourceSlotIndex,
+                MoveTargetSlotIndex = targetSlotIndex,
             }, clientToken);
         }
 
@@ -395,6 +431,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnNetworkDespawn();
         }
@@ -403,6 +440,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnDestroy();
         }

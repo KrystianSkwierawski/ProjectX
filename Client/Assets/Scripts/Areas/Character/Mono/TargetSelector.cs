@@ -115,7 +115,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void Update()
         {
-            if (IsOwner)
+            if (IsOwner && UserManager.Instance.Characters.ContainsKey(OwnerClientId))
             {
                 CheckCurrentTarget();
                 HandleSelectionInput();

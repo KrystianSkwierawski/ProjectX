@@ -1025,6 +1025,16 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "moveSourceSlotIndex": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "moveTargetSlotIndex": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         }
       },

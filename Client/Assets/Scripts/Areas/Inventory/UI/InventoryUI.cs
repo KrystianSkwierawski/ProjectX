@@ -12,6 +12,7 @@ using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.UI;
@@ -25,6 +26,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
         #region Prefab
 
         [SerializeField] private GameObject _inventorySlotPrefab;
+
+        [SerializeField] private GameObject _inventoryDragPreviewPrefab;
 
         #endregion
 
@@ -45,6 +48,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private ObjectPool<InventorySlot> _lootObjectPool;
         private readonly IDictionary<InventoryItemEnum, InventorySlot> _lootPoolObjects = new Dictionary<InventoryItemEnum, InventorySlot>();
         private InventorySlot[] _inventorySlots;
+        private GameObject _dragPreview;
+        private Canvas _dragCanvas;
+        private int _draggedSlotIndex = -1;
 
         public void Start()
         {
@@ -93,6 +99,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             {
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryClose, 0.5f);
 
+                ClearDragPreview();
                 Inventory.SetActive(false);
 
                 return;
@@ -112,7 +119,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 var slot = _inventorySlots[i];
                 var item = dto.Inventory.Items.ElementAtOrDefault(i);
 
-                if (item == null)
+                if (item == null || item.Type == InventoryItemEnum.None || item.Count <= 0)
                 {
                     slot.Mesh.gameObject.SetActive(false);
                     slot.Mesh.text = "0";
@@ -120,7 +127,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     slot.Image.texture = null;
                     slot.Type = InventoryItemEnum.None;
                     slot.HoverUI.enabled = false;
+                    slot.DragTrigger.enabled = false;
                     slot.Button.OnRightClick.RemoveAllListeners();
+                    slot.Preview.SetActive(false);
 
                     continue;
                 }
@@ -137,26 +146,17 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
                 slot.Type = item.Type;
                 slot.HoverUI.enabled = true;
-
-                var key = slot.GameObject.GetInstanceID().ToString();
-
-                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    slot.Preview.SetActive(true);
-                });
-
-                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    slot.Preview.SetActive(false);
-                });
+                slot.DragTrigger.enabled = true;
 
                 slot.Button.OnRightClick.RemoveAllListeners();
+
+                var slotIndex = i;
 
                 slot.Button.OnRightClick.AddListener(() =>
                 {
                     if (Keyboard.current.altKey.isPressed)
                     {
-                        SplitStack(i);
+                        SplitStack(slotIndex);
 
                         return;
                     }
@@ -172,6 +172,122 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     });
                 });
             }
+        }
+
+        private void BeginDrag(InventorySlot slot, PointerEventData eventData)
+        {
+            if (slot.Type == InventoryItemEnum.None
+                || slot.Index < 0
+                || slot.Index >= InventoryManager.Instance.Dto.Inventory.Items.Count)
+            {
+                return;
+            }
+
+            ClearDragPreview();
+            _draggedSlotIndex = slot.Index;
+
+            foreach (var inventorySlot in _inventorySlots)
+            {
+                inventorySlot.Preview.SetActive(false);
+            }
+
+            _dragCanvas = InventoryCanvas.GetComponentInParent<Canvas>();
+
+            if (_dragCanvas == null)
+            {
+                _draggedSlotIndex = -1;
+
+                return;
+            }
+
+            if (_inventoryDragPreviewPrefab == null)
+            {
+                _draggedSlotIndex = -1;
+
+                return;
+            }
+
+            _dragPreview = Instantiate(_inventoryDragPreviewPrefab, _dragCanvas.transform);
+
+            var previewRect = _dragPreview.GetComponent<RectTransform>();
+            previewRect.SetAsLastSibling();
+
+            var previewImage = _dragPreview.GetComponent<RawImage>();
+            previewImage.texture = slot.Image.texture;
+
+            var count = _dragPreview.transform.Find("Count").GetComponent<TextMeshProUGUI>();
+            count.text = slot.Mesh.text;
+            count.gameObject.SetActive(slot.Mesh.gameObject.activeSelf);
+
+            UpdateDragPreviewPosition(eventData);
+        }
+
+        private void Drag(PointerEventData eventData)
+        {
+            if (_dragPreview != null)
+            {
+                UpdateDragPreviewPosition(eventData);
+            }
+        }
+
+        private void EndDrag(PointerEventData eventData)
+        {
+            if (_draggedSlotIndex < 0)
+            {
+                return;
+            }
+
+            var sourceSlotIndex = _draggedSlotIndex;
+            var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
+            var targetSlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
+
+            ClearDragPreview();
+
+            if (targetSlot == null || targetSlot.Index == sourceSlotIndex)
+            {
+                return;
+            }
+
+            MoveInventorySubscription.Instance.Invoke(
+                UserManager.Instance.OwnerClientId.ToString(),
+                new MoveInventorySubscriptionEvent
+                {
+                    CharacterId = InventoryManager.Instance.Dto.CharacterId,
+                    SourceSlotIndex = sourceSlotIndex,
+                    TargetSlotIndex = targetSlot.Index,
+                    ClientToken = UserManager.Instance.Token,
+                });
+        }
+
+        private void UpdateDragPreviewPosition(PointerEventData eventData)
+        {
+            if (_dragPreview == null || _dragCanvas == null)
+            {
+                return;
+            }
+
+            var canvasRect = (RectTransform)_dragCanvas.transform;
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect,
+                eventData.position,
+                eventData.pressEventCamera,
+                out var localPoint))
+            {
+                ((RectTransform)_dragPreview.transform).anchoredPosition = localPoint;
+            }
+        }
+
+        private void ClearDragPreview()
+        {
+            if (_dragPreview != null)
+            {
+                Destroy(_dragPreview);
+            }
+
+            _dragPreview = null;
+            _dragCanvas = null;
+            _draggedSlotIndex = -1;
         }
 
         private void SplitStack(int sourceSlotIndex)
@@ -317,26 +433,61 @@ namespace Assets.Scripts.Areas.Inventory.UI
         {
             for (int i = 0; i < count; i++)
             {
-                var slot = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
-
-                var preview = slot.transform.Find("Preview").gameObject;
-
-                yield return new InventorySlot
+                var slotGameObject = Instantiate(_inventorySlotPrefab, InventoryContent.transform);
+                var preview = slotGameObject.transform.Find("Preview").gameObject;
+                var slot = new InventorySlot
                 {
-                    GameObject = slot,
-                    Image = slot.transform.Find("Background").GetComponent<RawImage>(),
-                    Mesh = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
-                    HoverUI = slot.GetComponent<HoverUI>(),
+                    Index = i,
+                    GameObject = slotGameObject,
+                    Image = slotGameObject.transform.Find("Background").GetComponent<RawImage>(),
+                    Mesh = slotGameObject.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                    HoverUI = slotGameObject.GetComponent<HoverUI>(),
                     Preview = preview,
                     PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                     PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
-                    Button = slot.GetComponent<ButtonUI>(),
+                    Button = slotGameObject.GetComponent<ButtonUI>(),
+                    DragTrigger = slotGameObject.AddComponent<EventTrigger>(),
                 };
+
+                var key = slotGameObject.GetInstanceID().ToString();
+
+                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    if (_draggedSlotIndex < 0 && slot.Type != InventoryItemEnum.None)
+                    {
+                        slot.Preview.SetActive(true);
+                    }
+                });
+
+                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                {
+                    slot.Preview.SetActive(false);
+                });
+
+                AddDragEvent(slot.DragTrigger, EventTriggerType.BeginDrag, (eventData) => BeginDrag(slot, eventData));
+                AddDragEvent(slot.DragTrigger, EventTriggerType.Drag, Drag);
+                AddDragEvent(slot.DragTrigger, EventTriggerType.EndDrag, EndDrag);
+
+                yield return slot;
             }
+        }
+
+        private static void AddDragEvent(EventTrigger trigger, EventTriggerType eventType, Action<PointerEventData> action)
+        {
+            var entry = new EventTrigger.Entry
+            {
+                eventID = eventType,
+            };
+
+            entry.callback.AddListener((eventData) => action((PointerEventData)eventData));
+
+            trigger.triggers.Add(entry);
         }
 
         private class InventorySlot
         {
+            public int Index { get; set; }
+
             public GameObject GameObject { get; set; }
 
             public RawImage Image { get; set; }
@@ -346,6 +497,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
             public HoverUI HoverUI { get; set; }
 
             public ButtonUI Button { get; set; }
+
+            public EventTrigger DragTrigger { get; set; }
 
             public GameObject Preview { get; set; }
 

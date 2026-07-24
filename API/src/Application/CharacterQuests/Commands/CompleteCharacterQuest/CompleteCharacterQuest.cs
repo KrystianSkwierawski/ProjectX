@@ -75,7 +75,8 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
         if (item.Count == characterQuest.Quest.Requirement)
         {
-            inventory.Items.Remove(item);
+            item.Type = InventoryItemEnum.None;
+            item.Count = 0;
         }
         else
         {

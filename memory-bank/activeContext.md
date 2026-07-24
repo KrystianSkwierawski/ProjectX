@@ -1,6 +1,7 @@
 # Active Context
 
 ## Current Focus
+- 2026-07-24: Inventory items can be dragged between slots with a cursor-following icon/count preview instantiated from the serialized `InventoryDragPreview` prefab. Dropping onto a different item swaps slots, dropping onto the same item type merges stack counts, and dropping onto an empty slot preserves the selected position. The move is applied optimistically on the owner and persisted through the Unity server/API flow.
 - 2026-07-17: Fireball and Arrow now hide their whole GameObject on hit, release to their projectile pool after every hit, deactivate on pool release/network despawn, and reactivate before the next spawn. Hit notification is sent before damage callbacks can synchronously despawn a killing projectile.
 - 2026-07-15: Implemented server-authoritative per-hit ammo consumption. Feather armor ammo is consumed after `ApplyArmor` on a positive, non-dodged incoming attack; Arrow/Rune/Oil damage ammo is consumed after outgoing weapon damage is calculated. The final item contributes to that hit, then its stats are removed, the ammo slot is cleared, API state is persisted, and the owner Gear UI is refreshed.
 - 2026-07-14: Added `IronWand` and `IronBow` as mirrored API/client inventory items. Weapon classification now goes through `InventoryItemEnum.IsWeapon()`, iron weapon bonuses are Strength for sword, Intellect for wand, and Dexterity for bow, and outgoing fireball damage scales from the corresponding equipped-weapon stat.
@@ -10,6 +11,8 @@
 - At the start of this refresh, branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## Recent Changes
+- 2026-07-24: Fixed Alt + right-click inventory splitting by capturing each slot's stable index before registering its callback; the loop counter is no longer read after the inventory refresh loop has completed.
+- 2026-07-24: Added inventory drag-and-drop UI, slot move/merge/swap logic on both client and API, persistent `None` placeholders for empty positioned slots, focused backend tests, and fixed inventory-slot hover subscriptions so they are registered once rather than duplicated on each refresh.
 - Created the required memory bank structure:
   - `projectbrief.md`
   - `productContext.md`
@@ -79,6 +82,7 @@
 - Classify equippable weapons through client `InventoryItemEnum.IsWeapon()` rather than enumerating weapon cases in usable-item dispatch. Weapon metadata controls the persisted equipment bonus, while `CharacterStatsCalculator.ApplyWeaponDamage` maps weapon type to its damage stat.
 - Treat the ammo gear contract as `AmmoType` plus `AmmoCount`, with use origin selected by `UsableItemFromEnum.Inventory` / `.Gear`. Weapon/ammo compatibility is category-based and read from `InventoryItemParametersAttribute.WeaponCategory`: Arrows/Bow, Runes/Wand, Feathers+Oils/Sword. All equip, merge, swap, explicit unequip, and weapon-triggered auto-unequip paths use whole-stack transfers. Feathers are armor ammo consumed after a positive, non-dodged incoming hit; all other real ammo is damage ammo consumed after an outgoing hit. The last unit applies to the current hit before its bonus is removed.
 - Treat health-potion restoration as server-persisted through `UpdateCharacterCommand`; at full health the potion is intentionally not consumed.
+- Treat `InventoryItemEnum.None` with count `0` as an empty persisted inventory slot. Full removals clear the slot instead of compacting the list, and additions/splits reuse empty slots so drag-and-drop positions remain stable.
 - Preserve API crafting recipe ordering by `Id` and the pooled client recipe-button sibling ordering.
 - Keep the current API database reset behavior for developer work unless the user asks to prepare a non-destructive persistence flow.
 - Do not replace the English client `pl.json` fallback unless the user explicitly asks for proper Polish client localization.
@@ -91,6 +95,7 @@
 - Keep `progress.md` updated after meaningful changes.
 - When changing startup/build behavior, update both `Client/Automation/run.ps1` and `Client/Assets/Editor/ProjectXDevAutomation.cs`.
 - Add focused automated or Unity runtime coverage for per-hit ammo consumption, final-item stat removal, API persistence, and owner Gear UI refresh.
+- Perform a Unity Play Mode smoke test for drag preview positioning, dropping onto occupied/empty slots, and persistence after reconnect; compile and backend unit coverage do not exercise pointer events.
 - Add focused tests for weapon-based damage stat selection, first ammo equip, same-type merge, type switch, unequip/reload, health-potion persistence, and crafting ordering; only translation-service unit tests are currently present.
 - Before replacing the intentional database reset with persistent upgrades, create a data-migration plan for ammo IDs `1010`-`1012`, whose meanings were repurposed when tiered ammo was introduced.
 - Fix or narrowly override the repo's `*.meta` ignore rule before adding more Unity assets/scripts so their GUIDs/import settings are versioned; the known affected project files include 13 ammo icon/template metas and three gameplay-script metas.

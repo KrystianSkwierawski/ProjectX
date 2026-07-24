@@ -16,6 +16,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 
 ## User Experience Goals
 - Players should be able to log in, control a character, interact with targets/NPCs/resources, manage inventory, equip gear, track health, progress quests, craft items, and gain experience.
+- Inventory management should support direct drag-and-drop organization, including exact empty-slot placement, swapping different items, and merging matching stacks with clear visual feedback while dragging.
 - UI should expose character, gear/stat totals, inventory, item stat previews, quest, crafting, hover/target, cursor, quick-access, chat, and translation behavior through Unity scenes and prefabs.
 - Client/server behavior should feel consistent across play sessions.
 
