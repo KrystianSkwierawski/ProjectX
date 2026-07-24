@@ -11,6 +11,8 @@ namespace Assets.Scripts.Areas.Inventory.Models
 
         public InventoryItemDto[] Remove { get; set; } = Array.Empty<InventoryItemDto>();
 
+        public int? SplitSlotIndex { get; set; }
+
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             // Serialize CharacterId via a local so we can pass by ref

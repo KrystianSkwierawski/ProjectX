@@ -153,6 +153,14 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     UpdateInventoryServerRpc(e.Request, e.ClientToken);
                 });
 
+                SplitInventorySubscription.Instance.Subscribe(key, (e) =>
+                {
+                    if (SplitInventory(e.SourceSlotIndex))
+                    {
+                        SplitInventoryServerRpc(e.CharacterId, e.SourceSlotIndex, e.ClientToken);
+                    }
+                });
+
                 UseItemSubscribtion.Instance.Subscribe(key, (e) =>
                 {
                     if (MerchantUI.Instance.Merchant.activeSelf)
@@ -279,6 +287,21 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             MerchantUI.Instance.UpdatePriceValidation();
         }
 
+        private bool SplitInventory(int sourceSlotIndex)
+        {
+            if (!InventoryManager.Instance.Split(sourceSlotIndex))
+            {
+                return false;
+            }
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+            //CraftingUI.Instance.UpdateRequirements();
+            //MerchantUI.Instance.UpdatePriceValidation();
+
+            return true;
+        }
+
         [ServerRpc]
         private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request, string clientToken)
         {
@@ -298,6 +321,21 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
                 _currentLoot.Clear();
             }
+        }
+
+        [ServerRpc]
+        private void SplitInventoryServerRpc(int characterId, int sourceSlotIndex, string clientToken)
+        {
+            SplitInventoryAsync(characterId, sourceSlotIndex, clientToken).Forget();
+        }
+
+        private async UniTask SplitInventoryAsync(int characterId, int sourceSlotIndex, string clientToken)
+        {
+            await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
+            {
+                CharacterId = characterId,
+                SplitSlotIndex = sourceSlotIndex,
+            }, clientToken);
         }
 
         private async UniTask UpdateInventoryAsync(UpdateCharacterInventoryCommand request, string clientToken)
@@ -356,6 +394,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         public override void OnNetworkDespawn()
         {
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnNetworkDespawn();
         }
@@ -363,6 +402,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         public override void OnDestroy()
         {
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnDestroy();
         }

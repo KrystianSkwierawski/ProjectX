@@ -12,6 +12,7 @@ using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.UI;
 
@@ -150,8 +151,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 });
 
                 slot.Button.OnRightClick.RemoveAllListeners();
+
                 slot.Button.OnRightClick.AddListener(() =>
                 {
+                    if (Keyboard.current.altKey.isPressed)
+                    {
+                        SplitStack(i);
+
+                        return;
+                    }
+
                     UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
                     {
                         Item = new InventoryItemDto
@@ -163,6 +172,21 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     });
                 });
             }
+        }
+
+        private void SplitStack(int sourceSlotIndex)
+        {
+            if (!InventoryManager.Instance.CanSplit(sourceSlotIndex))
+            {
+                return;
+            }
+
+            SplitInventorySubscription.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new SplitInventorySubscriptionEvent
+            {
+                CharacterId = InventoryManager.Instance.Dto.CharacterId,
+                SourceSlotIndex = sourceSlotIndex,
+                ClientToken = UserManager.Instance.Token,
+            });
         }
 
         public string PrepareDescription(InventoryItemDto item)

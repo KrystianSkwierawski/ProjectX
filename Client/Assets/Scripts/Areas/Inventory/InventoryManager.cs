@@ -39,6 +39,36 @@ namespace Assets.Scripts.Areas.Inventory
             slot.Count += item.Count;
         }
 
+        public bool CanSplit(int sourceSlotIndex)
+        {
+            return Dto?.Inventory?.Items != null
+                && sourceSlotIndex >= 0
+                && sourceSlotIndex < Dto.Inventory.Items.Count
+                && Dto.Inventory.Items.Count < Dto.Count
+                && Dto.Inventory.Items[sourceSlotIndex].Count > 1;
+        }
+
+        public bool Split(int sourceSlotIndex)
+        {
+            if (!CanSplit(sourceSlotIndex))
+            {
+                return false;
+            }
+
+            var source = Dto.Inventory.Items[sourceSlotIndex];
+            var splitCount = source.Count / 2;
+
+            source.Count -= splitCount;
+
+            Dto.Inventory.Items.Add(new InventoryItemDto
+            {
+                Type = source.Type,
+                Count = splitCount,
+            });
+
+            return true;
+        }
+
         public void Remove(InventoryItemDto item)
         {
             var sum = Dto.Inventory.Items

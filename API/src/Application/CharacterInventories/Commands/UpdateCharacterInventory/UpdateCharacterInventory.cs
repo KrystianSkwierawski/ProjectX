@@ -7,7 +7,11 @@ using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
-public record UpdateCharacterInventoryCommand(int CharacterId, InventoryItemDto[] Add, InventoryItemDto[] Remove) : IRequest;
+public record UpdateCharacterInventoryCommand(
+    int CharacterId,
+    InventoryItemDto[] Add,
+    InventoryItemDto[] Remove,
+    int? SplitSlotIndex = null) : IRequest;
 
 public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand>
 {
@@ -36,6 +40,17 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         var inventory = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
 
         ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
+
+        if (request.SplitSlotIndex.HasValue)
+        {
+            var result = Split(request.SplitSlotIndex.Value, inventory, entity.Count);
+
+            Log.Debug(
+                "Split item stack for inventory Id: {0}, SlotIndex: {1}, Result: {2}",
+                entity.Id,
+                request.SplitSlotIndex.Value,
+                result);
+        }
 
         foreach (var item in request.Add)
         {
@@ -81,6 +96,35 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         // TODO: out of slots
 
         return false;
+    }
+
+    public static bool Split(int sourceSlotIndex, InventoryDto inventory, int capacity)
+    {
+        if (sourceSlotIndex < 0
+            || sourceSlotIndex >= inventory.Items.Count
+            || inventory.Items.Count >= capacity)
+        {
+            return false;
+        }
+
+        var source = inventory.Items[sourceSlotIndex];
+
+        if (source.Count < 2)
+        {
+            return false;
+        }
+
+        var splitCount = source.Count / 2;
+
+        source.Count -= splitCount;
+
+        inventory.Items.Add(new InventoryItemDto
+        {
+            Type = source.Type,
+            Count = splitCount,
+        });
+
+        return true;
     }
 
     public static bool Remove(InventoryItemDto item, InventoryDto inventory)
