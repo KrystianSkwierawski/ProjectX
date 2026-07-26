@@ -52,11 +52,11 @@ public enum InventoryItemEnum
     ChestTemplate = 1001,
     BootsTemplate = 1002,
     WeaponTemplate = 1003,
-    IronHelmet = 1004,
-    IronChest = 1005,
-    IronBoots = 1006,
-    IronSword = 1007,
-    AmmoTemplate = 1008,
+    AmmoTemplate = 1004,
+    IronHelmet = 1005,
+    IronChest = 1006,
+    IronBoots = 1007,
+    IronSword = 1008,
     AmmoArrow1 = 1009,
     AmmoArrow2 = 1010,
     AmmoArrow3 = 1011,
@@ -69,6 +69,8 @@ public enum InventoryItemEnum
     AmmoOil1 = 1018,
     AmmoOil2 = 1019,
     AmmoOil3 = 1020,
+    IronWand = 1021,
+    IronBow = 1022,
 
     #endregion
 }

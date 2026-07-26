@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
-using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Shared.Enums;
@@ -25,8 +24,6 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private const float _maxDistance = 2f;
 
-        private StarterAssetsInputs _input;
-
         private Color _originalBarColor;
         private bool _isCasting = false;
         private float _castingTime = 2f;
@@ -43,7 +40,6 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             if (IsOwner)
             {
-                _input = GetComponent<StarterAssetsInputs>();
                 _thirdPersonController = GetComponent<ThirdPersonController>();
             }
         }
@@ -66,7 +62,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 return;
             }
 
-            if (_input.Move != Vector2.zero || _input.Jump)
+            if (_thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump)
             {
                 InterruptCast();
                 return;

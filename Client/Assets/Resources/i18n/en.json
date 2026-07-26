@@ -93,5 +93,13 @@
     "AmmoOil2Title": "Weapon Oil II",
     "AmmoOil2Description": "A vial of weapon oil for coating a blade. For now it can be equipped in the ammo slot.",
     "AmmoOil3Title": "Weapon Oil III",
-    "AmmoOil3Description": "A vial of weapon oil for coating a blade. For now it can be equipped in the ammo slot."
+    "AmmoOil3Description": "A vial of weapon oil for coating a blade. For now it can be equipped in the ammo slot.",
+    "IronWandTitle": "Iron Wand",
+    "IronWandDescription": "An iron-shod wand built to focus a steady current of magic. Fine runes circle its grip, warming as the wielder gathers their thoughts.",
+    "IronBowTitle": "Iron Bow",
+    "IronBowDescription": "A sturdy bow reinforced with iron at its most vulnerable points. Its balanced limbs reward a precise hand and a well-timed release.",
+    "Required": "Required",
+    "Sword": "Sword",
+    "Wand": "Wand",
+    "Bow": "Bow"
 }

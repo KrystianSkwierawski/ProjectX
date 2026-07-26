@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 namespace Assets.Scripts.Areas.Character.Models
 {
@@ -179,6 +181,49 @@ namespace Assets.Scripts.Areas.Character.Models
                     }
                 }
             }
+        }
+    }
+
+    public static class CharacterExtensions
+    {
+        public static float ApplyWeaponDamage(this CharacterDto character, float damage)
+        {
+            var value = character.WeaponType.GetWeaponCategory() switch
+            {
+                WeaponCategoryEnum.Sword => character.Strength,
+                WeaponCategoryEnum.Wand => character.Intellect,
+                WeaponCategoryEnum.Bow => character.Dexterity,
+                _ => (short)0
+            };
+
+            return Mathf.Max(0f, damage) * GetIncreaseMultiplier(value);
+        }
+
+        public static bool IsAttackDodged(this CharacterDto character)
+        {
+            return Random.Range(0f, 100f) < GetLimitedPercent(character.Dexterity);
+        }
+
+        public static float ApplySpeed(this CharacterDto character, float speed)
+        {
+            return Mathf.Max(0f, speed) * GetIncreaseMultiplier(character.Speed);
+        }
+
+        public static int ApplyArmor(this CharacterDto character, int damage)
+        {
+            var reducedDamage = Mathf.Max(0, damage) * (1f - GetLimitedPercent(character.Armor) / 100f);
+
+            return Mathf.RoundToInt(reducedDamage);
+        }
+
+        private static float GetIncreaseMultiplier(short value)
+        {
+            return 1f + Mathf.Max(0, value) / 100f;
+        }
+
+        private static float GetLimitedPercent(short value)
+        {
+            return Mathf.Clamp(value, 0, 100);
         }
     }
 }

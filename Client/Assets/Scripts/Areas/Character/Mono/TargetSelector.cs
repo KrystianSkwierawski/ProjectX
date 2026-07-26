@@ -1,5 +1,6 @@
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.UI;
 using StarterAssets;
 using Unity.Netcode;
@@ -11,18 +12,25 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class TargetSelector : NetworkBehaviour
     {
-        [SerializeField] private float _maxCastDistance = 12f;
         [SerializeField] private GameObject _fireballPrefab;
+        [SerializeField] private GameObject _arrowPrefab;
+        [SerializeField] private GameObject _swordPrefab;
 
         private static Renderer _currentlySelectedRenderer = null;
         private static Color _originalSelectedColor;
+
         private bool _isCasting = false;
+
         private float _castTime = 1.5f;
         private float _castTimer = 0f;
 
         private GameObject _selectedTarget;
+
         private ObjectPool<GameObject> _fireballPool;
-        private GameObject _currentFireball;
+        private ObjectPool<GameObject> _arrowPool;
+        private ObjectPool<GameObject> _swordPool;
+
+        private GameObject _currentWeapon;
         private bool _onlyView;
 
         private ThirdPersonController _thirdPersonController;
@@ -41,16 +49,66 @@ namespace Assets.Scripts.Areas.Character.Mono
                     createFunc: () => Instantiate(_fireballPrefab),
                     actionOnGet: (GameObject gameObject) =>
                     {
+                        gameObject.SetActive(true);
+
                         var spawnPos = transform.position + Vector3.up * 1.0f;
                         var targetPos = _selectedTarget.transform.position;
                         var direction = (targetPos - spawnPos).normalized;
 
-                        gameObject.transform.SetPositionAndRotation(spawnPos, Quaternion.LookRotation(direction));
+                        gameObject.GetComponent<AbstractWeapon>().SetPositionAndDirection(spawnPos, direction);
 
                         var networkObject = gameObject.GetComponent<NetworkObject>();
                         networkObject.SpawnWithOwnership(OwnerClientId);
                     },
-                    actionOnRelease: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Despawn(false)
+                    actionOnRelease: (GameObject gameObject) =>
+                    {
+                        gameObject.GetComponent<NetworkObject>().Despawn(false);
+                        gameObject.SetActive(false);
+                    }
+                );
+
+                _arrowPool = new ObjectPool<GameObject>(
+                    createFunc: () => Instantiate(_arrowPrefab),
+                    actionOnGet: (GameObject gameObject) =>
+                    {
+                        gameObject.SetActive(true);
+
+                        var spawnPos = transform.position + Vector3.up * 1.0f;
+                        var targetPos = _selectedTarget.transform.position;
+                        var direction = (targetPos - spawnPos).normalized;
+
+                        gameObject.GetComponent<AbstractWeapon>().SetPositionAndDirection(spawnPos, direction);
+
+                        var networkObject = gameObject.GetComponent<NetworkObject>();
+                        networkObject.SpawnWithOwnership(OwnerClientId);
+                    },
+                    actionOnRelease: (GameObject gameObject) =>
+                    {
+                        gameObject.GetComponent<NetworkObject>().Despawn(false);
+                        gameObject.SetActive(false);
+                    }
+                );
+
+                _swordPool = new ObjectPool<GameObject>(
+                    createFunc: () => Instantiate(_swordPrefab),
+                    actionOnGet: (GameObject gameObject) =>
+                    {
+                        gameObject.SetActive(true);
+
+                        var spawnPos = transform.position + Vector3.up * 1.0f;
+                        var targetPos = _selectedTarget.transform.position;
+                        var direction = (targetPos - spawnPos).normalized;
+
+                        gameObject.GetComponent<AbstractWeapon>().SetPositionAndDirection(spawnPos, direction);
+
+                        var networkObject = gameObject.GetComponent<NetworkObject>();
+                        networkObject.SpawnWithOwnership(OwnerClientId);
+                    },
+                    actionOnRelease: (GameObject gameObject) =>
+                    {
+                        gameObject.GetComponent<NetworkObject>().Despawn(false);
+                        gameObject.SetActive(false);
+                    }
                 );
             }
         }
@@ -173,7 +231,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void UnselectTarget()
         {
-            DespawnFireball();
+            DespawnWeapon();
             _selectedTarget = null;
         }
 
@@ -196,11 +254,26 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         public void SpawnProjectileServerRpc(string token)
         {
-            _currentFireball = _fireballPool.Get();
+            var character = UserManager.Instance.Characters[OwnerClientId];
 
-            _currentFireball.GetComponent<Fireball>().StartCasting(_selectedTarget, gameObject, token);
+            _currentWeapon = character.WeaponType.GetWeaponCategory() switch
+            {
+                WeaponCategoryEnum.Wand => _fireballPool.Get(),
+                WeaponCategoryEnum.Bow => _arrowPool.Get(),
+                WeaponCategoryEnum.Sword => _swordPool.Get(),
+                _ => null
+            };
 
-            NotifyFireballSpawnedClientRpc(new ClientRpcParams
+            if (_currentWeapon == null)
+            {
+                Debug.LogError($"No weapon found");
+
+                return;
+            }
+
+            _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject, token);
+
+            NotifyWeaponSpawnedClientRpc(new ClientRpcParams
             {
                 Send = new ClientRpcSendParams
                 {
@@ -212,14 +285,14 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         public void CastServerRpc()
         {
-            if (_currentFireball != null)
+            if (_currentWeapon != null)
             {
-                _currentFireball.GetComponent<Fireball>().Cast();
+                _currentWeapon.GetComponent<AbstractWeapon>().Cast();
             }
         }
 
         [ClientRpc]
-        void NotifyFireballSpawnedClientRpc(ClientRpcParams rpcParams = default)
+        void NotifyWeaponSpawnedClientRpc(ClientRpcParams rpcParams = default)
         {
             _isCasting = true;
             _castTimer = 0f;
@@ -227,16 +300,28 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ServerRpc]
-        private void DespawnFireballServerRpc()
+        private void DespawnDespawnServerRpc()
         {
-            DespawnFireball();
+            DespawnWeapon();
         }
 
         private void CheckCasting()
         {
-            if (_selectedTarget == null)
+            var weaponCategory = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory();
+
+            if (_selectedTarget == null || weaponCategory == WeaponCategoryEnum.None)
             {
                 StopCasting();
+
+                return;
+            }
+
+            if (_isCasting && weaponCategory == WeaponCategoryEnum.Wand && (_thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump))
+            {
+                _onlyView = true;
+                _thirdPersonController.UnlockCamera();
+                StopCasting();
+                DespawnDespawnServerRpc();
 
                 return;
             }
@@ -259,10 +344,13 @@ namespace Assets.Scripts.Areas.Character.Mono
                 return;
             }
 
-            _castTimer += Time.deltaTime;
-            PlayerUI.Instance.UpdateCastBar(_castTimer / _castTime);
+            var castingTime = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() == WeaponCategoryEnum.Wand ? (_castTime * 2f) : _castTime;
 
-            if (_castTimer >= _castTime)
+            _castTimer += Time.deltaTime;
+
+            PlayerUI.Instance.UpdateCastBar(_castTimer / castingTime);
+
+            if (_castTimer >= castingTime)
             {
                 StopCasting();
 
@@ -277,21 +365,42 @@ namespace Assets.Scripts.Areas.Character.Mono
             PlayerUI.Instance.HideCastBar();
         }
 
-        private void DespawnFireball()
+        private void DespawnWeapon()
         {
-            if (_currentFireball != null)
+            if (_currentWeapon != null)
             {
-                _fireballPool.Release(_currentFireball);
-                _currentFireball = null;
+                switch (UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory())
+                {
+                    case WeaponCategoryEnum.Wand:
+                        _fireballPool.Release(_currentWeapon);
+                        break;
+                    case WeaponCategoryEnum.Bow:
+                        _arrowPool.Release(_currentWeapon);
+                        break;
+                    case WeaponCategoryEnum.Sword:
+                        _swordPool.Release(_currentWeapon);
+                        break;
+                }
+
+                _currentWeapon = null;
             }
         }
 
         private bool CheckMaxDistance(Transform selectedTransform)
         {
             float distance = Vector3.Distance(transform.position, selectedTransform.position);
-            var result = distance <= _maxCastDistance;
 
-            Debug.Log($"CheckMaxDistance -> IsValid: {result}, Distance: {distance}, MaxCastDistance: {_maxCastDistance}");
+            var maxCastDistance = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() switch
+            {
+                WeaponCategoryEnum.Wand => 12f,
+                WeaponCategoryEnum.Bow => 18f,
+                WeaponCategoryEnum.Sword => 3f,
+                _ => 0f
+            };
+
+            var result = distance <= maxCastDistance;
+
+            Debug.Log($"CheckMaxDistance -> IsValid: {result}, Distance: {distance}, MaxCastDistance: {maxCastDistance}");
 
             return result;
         }

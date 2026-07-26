@@ -27,8 +27,6 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private GameObject _axe;
 
-        private StarterAssetsInputs _input;
-
         private readonly NetworkVariable<bool> _active =
             new NetworkVariable<bool>(
                 false,
@@ -64,7 +62,6 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             if (IsOwner)
             {
-                _input = GetComponent<StarterAssetsInputs>();
                 _thirdPersonController = GetComponent<ThirdPersonController>();
             }
         }
@@ -87,7 +84,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 return;
             }
 
-            if (_input.Move != Vector2.zero || _input.Jump)
+            if (_thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump)
             {
                 InterruptCast();
                 return;

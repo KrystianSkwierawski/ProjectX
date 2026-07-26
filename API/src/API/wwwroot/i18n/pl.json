@@ -89,5 +89,9 @@
     "AmmoOil2Title": "Olejek do broni II",
     "AmmoOil2Description": "Fiolka olejku do nacierania ostrza. Na razie można ją założyć w slocie amunicji.",
     "AmmoOil3Title": "Olejek do broni III",
-    "AmmoOil3Description": "Fiolka olejku do nacierania ostrza. Na razie można ją założyć w slocie amunicji."
+    "AmmoOil3Description": "Fiolka olejku do nacierania ostrza. Na razie można ją założyć w slocie amunicji.",
+    "IronWandTitle": "Żelazna różdżka",
+    "IronWandDescription": "Okuta żelazem różdżka stworzona do skupiania stabilnego nurtu magii. Drobne runy wokół rękojeści ogrzewają się, gdy jej właściciel zbiera myśli.",
+    "IronBowTitle": "Żelazny łuk",
+    "IronBowDescription": "Solidny łuk wzmocniony żelazem w najbardziej narażonych miejscach. Wyważone ramiona nagradzają precyzyjną rękę i strzał oddany we właściwej chwili."
 }

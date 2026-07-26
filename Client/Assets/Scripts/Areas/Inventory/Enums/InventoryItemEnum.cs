@@ -57,56 +57,61 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         ChestTemplate = 1001,
         BootsTemplate = 1002,
         WeaponTemplate = 1003,
+        AmmoTemplate = 1004,
 
         [InventoryItemParameters(MaxHealth = 10, Armor = 10)]
-        IronHelmet = 1004,
+        IronHelmet = 1005,
 
         [InventoryItemParameters(MaxHealth = 20, Armor = 20)]
-        IronChest = 1005,
+        IronChest = 1006,
 
         [InventoryItemParameters(MaxHealth = 5, Speed = 80, Armor = 5)]
-        IronBoots = 1006,
+        IronBoots = 1007,
 
-        [InventoryItemParameters(Strength = 20)]
-        IronSword = 1007,
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Strength = 20)]
+        IronSword = 1008,
 
-        AmmoTemplate = 1008,
-
-        [InventoryItemParameters(Dexterity = 5)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 5)]
         AmmoArrow1 = 1009,
 
-        [InventoryItemParameters(Dexterity = 10)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 10)]
         AmmoArrow2 = 1010,
 
-        [InventoryItemParameters(Dexterity = 15)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 15)]
         AmmoArrow3 = 1011,
 
-        [InventoryItemParameters(Intellect = 5)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Wand, Intellect = 5)]
         AmmoRune1 = 1012,
 
-        [InventoryItemParameters(Intellect = 10)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Wand, Intellect = 10)]
         AmmoRune2 = 1013,
 
-        [InventoryItemParameters(Intellect = 15)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Wand, Intellect = 15)]
         AmmoRune3 = 1014,
 
-        [InventoryItemParameters(Armor = 5)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Armor = 5)]
         AmmoFeather1 = 1015,
 
-        [InventoryItemParameters(Armor = 10)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Armor = 10)]
         AmmoFeather2 = 1016,
 
-        [InventoryItemParameters(Armor = 15)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Armor = 15)]
         AmmoFeather3 = 1017,
 
-        [InventoryItemParameters(Strength = 5)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Strength = 5)]
         AmmoOil1 = 1018,
 
-        [InventoryItemParameters(Strength = 10)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Strength = 10)]
         AmmoOil2 = 1019,
 
-        [InventoryItemParameters(Strength = 15)]
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Strength = 15)]
         AmmoOil3 = 1020,
+
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Wand, Intellect = 20)]
+        IronWand = 1021,
+
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 20)]
+        IronBow = 1022,
 
         #endregion
     }
@@ -121,6 +126,16 @@ namespace Assets.Scripts.Areas.Inventory.Enums
                 .First();
 
             return member.GetCustomAttribute<InventoryItemParametersAttribute>();
+        }
+
+        public static WeaponCategoryEnum GetWeaponCategory(this InventoryItemEnum value)
+        {
+            var member = value
+                .GetType()
+                .GetMember(value.ToString())
+                .FirstOrDefault();
+
+            return member?.GetCustomAttribute<InventoryItemParametersAttribute>()?.WeaponCategory ?? WeaponCategoryEnum.None;
         }
 
         public static bool IsAmmo(this InventoryItemEnum value)
@@ -138,6 +153,19 @@ namespace Assets.Scripts.Areas.Inventory.Enums
                 or InventoryItemEnum.AmmoOil2
                 or InventoryItemEnum.AmmoOil3;
         }
-    }
 
+        public static bool IsWeapon(this InventoryItemEnum value)
+        {
+            return value is InventoryItemEnum.IronSword
+                or InventoryItemEnum.IronWand
+                or InventoryItemEnum.IronBow;
+        }
+
+        public static bool IsArmorAmmo(this InventoryItemEnum value)
+        {
+            return value is InventoryItemEnum.AmmoFeather1
+                or InventoryItemEnum.AmmoFeather2
+                or InventoryItemEnum.AmmoFeather3;
+        }
+    }
 }

@@ -108,4 +108,8 @@
     AmmoOil2Description,
     AmmoOil3Title,
     AmmoOil3Description,
+    IronWandTitle,
+    IronWandDescription,
+    IronBowTitle,
+    IronBowDescription,
 }
