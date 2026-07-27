@@ -14,6 +14,7 @@ using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Quest.UI;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
+using UnityEngine.EventSystems;
 
 namespace Assets.Scripts.Areas.Shared.UI
 {
@@ -54,7 +55,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
                     var preview = obj.transform.Find("Preview").gameObject;
 
-                    return new ItemPoolObject
+                    var itemObject = new ItemPoolObject
                     {
                         GameObject = obj,
                         Image = obj.transform.Find("Background").GetComponent<RawImage>(),
@@ -65,6 +66,29 @@ namespace Assets.Scripts.Areas.Shared.UI
                         PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                         PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
                     };
+
+                    itemObject.DragTrigger = InventoryUI.Instance.ConfigureMerchantDrag(
+                        itemObject.GameObject,
+                        itemObject.Image,
+                        itemObject.Mesh,
+                        () => itemObject.Item);
+
+                    var key = itemObject.GameObject.GetInstanceID().ToString();
+
+                    OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                    {
+                        if (!InventoryUI.Instance.IsDragging && itemObject.CanPurchase)
+                        {
+                            itemObject.Preview.SetActive(true);
+                        }
+                    });
+
+                    OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                    {
+                        itemObject.Preview.SetActive(false);
+                    });
+
+                    return itemObject;
                 },
                 actionOnGet: (ItemPoolObject obj) =>
                 {
@@ -73,10 +97,14 @@ namespace Assets.Scripts.Areas.Shared.UI
                     obj.Mesh.gameObject.SetActive(true);
                     obj.HoverUI.enabled = true;
                     obj.GameObject.transform.SetAsLastSibling();
+                    obj.CanPurchase = false;
+                    obj.DragTrigger.enabled = false;
                 },
                 actionOnRelease: (ItemPoolObject obj) =>
                 {
                     obj.Item = null;
+                    obj.CanPurchase = false;
+                    obj.DragTrigger.enabled = false;
                     obj.GameObject.SetActive(false);
                     obj.Mesh.gameObject.SetActive(false);
                     obj.Mesh.text = string.Empty;
@@ -85,6 +113,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                     obj.Image.texture = null;
                     obj.HoverUI.enabled = false;
                     obj.Button.OnRightClick.RemoveAllListeners();
+                    obj.Preview.SetActive(false);
                 }
             );
         }
@@ -127,6 +156,8 @@ namespace Assets.Scripts.Areas.Shared.UI
                 var itemObj = _itemPool.Get();
 
                 itemObj.Item = item;
+                itemObj.CanPurchase = true;
+                itemObj.DragTrigger.enabled = true;
                 itemObj.Mesh.text = itemObj.Item.Count.ToString();
                 itemObj.Image.texture = InventoryUI.Instance.Textures[itemObj.Item.Type];
                 itemObj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{itemObj.Item.Type}Title");
@@ -142,29 +173,48 @@ namespace Assets.Scripts.Areas.Shared.UI
                 currencyObj.Mesh.text = currencyObj.Item.Count > 1000 ? $"~{currencyObj.Item.Count / 1000}k" : currencyObj.Item.Count.ToString();
                 currencyObj.Mesh.color = currency < currencyObj.Item.Count ? ColorUI.Red : ColorUI.White;
                 currencyObj.Image.texture = InventoryUI.Instance.Textures[InventoryItemEnum.Currency];
+                currencyObj.HoverUI.enabled = false;
+                currencyObj.DragTrigger.enabled = false;
+                currencyObj.Preview.SetActive(false);
 
                 itemObj.Button.OnRightClick.AddListener(() =>
                 {
-                    PurchaseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new PurchaseItemSubscribtionEvent
-                    {
-                        item = itemObj.Item
-                    });
-                });
-
-                var key = itemObj.GameObject.GetInstanceID().ToString();
-
-                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    itemObj.Preview.SetActive(true);
-                });
-
-                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    itemObj.Preview.SetActive(false);
+                    Purchase(itemObj.Item);
                 });
 
                 _itemObjects.Add(itemObj);
                 _itemObjects.Add(currencyObj);
+            }
+        }
+
+        public void Purchase(InventoryItemDto item)
+        {
+            if (!Merchant.activeSelf
+                || item == null
+                || item.Type is InventoryItemEnum.None or InventoryItemEnum.Currency
+                || item.Count <= 0)
+            {
+                return;
+            }
+
+            PurchaseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new PurchaseItemSubscribtionEvent
+            {
+                item = item,
+            });
+        }
+
+        public bool IsDropTarget(GameObject target)
+        {
+            return Merchant.activeSelf
+                && target != null
+                && (target == Merchant || target.transform.IsChildOf(Merchant.transform));
+        }
+
+        public void HidePreviews()
+        {
+            foreach (var itemObject in _itemObjects)
+            {
+                itemObject.Preview.SetActive(false);
             }
         }
 
@@ -187,6 +237,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         {
             if (Merchant.activeSelf)
             {
+                InventoryUI.Instance.CancelDrag();
                 Merchant.SetActive(false);
             }
         }
@@ -205,11 +256,15 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             public ButtonUI Button { get; set; }
 
+            public EventTrigger DragTrigger { get; set; }
+
             public TextMeshProUGUI PreviewTitleMesh { get; set; }
 
             public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
 
             public InventoryItemDto Item { get; set; }
+
+            public bool CanPurchase { get; set; }
         }
     }
 }

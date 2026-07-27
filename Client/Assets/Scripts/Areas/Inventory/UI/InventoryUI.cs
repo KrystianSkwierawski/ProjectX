@@ -54,8 +54,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private int _draggedSlotIndex = -1;
         private GearSlot _draggedGearSlot;
         private InventoryItemDto _draggedItem;
+        private bool _isDraggingMerchantItem;
 
-        public bool IsDragging => _draggedSlotIndex >= 0 || _draggedGearSlot != null;
+        public bool IsDragging => _draggedSlotIndex >= 0 || _draggedGearSlot != null || _isDraggingMerchantItem;
 
         public void Start()
         {
@@ -189,6 +190,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             HidePreviews();
             GearUI.Instance.HidePreviews();
+            MerchantUI.Instance.HidePreviews();
 
             if (!CreateDragPreview(
                 slot.GameObject,
@@ -210,6 +212,21 @@ namespace Assets.Scripts.Areas.Inventory.UI
             AddDragEvent(slot.DragTrigger, EventTriggerType.EndDrag, EndGearDrag);
         }
 
+        public EventTrigger ConfigureMerchantDrag(
+            GameObject source,
+            RawImage image,
+            TextMeshProUGUI mesh,
+            Func<InventoryItemDto> getItem)
+        {
+            var trigger = source.GetComponent<EventTrigger>() ?? source.AddComponent<EventTrigger>();
+
+            AddDragEvent(trigger, EventTriggerType.BeginDrag, (eventData) => BeginMerchantDrag(source, image, mesh, getItem(), eventData));
+            AddDragEvent(trigger, EventTriggerType.Drag, Drag);
+            AddDragEvent(trigger, EventTriggerType.EndDrag, EndMerchantDrag);
+
+            return trigger;
+        }
+
         private void BeginGearDrag(GearSlot slot, PointerEventData eventData)
         {
             if (eventData.button != PointerEventData.InputButton.Left || !slot.HasItem)
@@ -223,12 +240,47 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             HidePreviews();
             GearUI.Instance.HidePreviews();
+            MerchantUI.Instance.HidePreviews();
 
             if (!CreateDragPreview(
                 slot.GameObject,
                 slot.Image.texture,
                 slot.Mesh.text,
                 slot.Mesh.enabled && slot.Mesh.gameObject.activeSelf,
+                eventData))
+            {
+                ClearDragPreview();
+            }
+        }
+
+        private void BeginMerchantDrag(
+            GameObject source,
+            RawImage image,
+            TextMeshProUGUI mesh,
+            InventoryItemDto item,
+            PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left
+                || item == null
+                || item.Type is InventoryItemEnum.None or InventoryItemEnum.Currency
+                || item.Count <= 0)
+            {
+                return;
+            }
+
+            ClearDragPreview();
+            _isDraggingMerchantItem = true;
+            _draggedItem = CloneItem(item);
+
+            HidePreviews();
+            GearUI.Instance.HidePreviews();
+            MerchantUI.Instance.HidePreviews();
+
+            if (!CreateDragPreview(
+                source,
+                image.texture,
+                mesh.text,
+                mesh.gameObject.activeSelf,
                 eventData))
             {
                 ClearDragPreview();
@@ -283,9 +335,11 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             var sourceSlotIndex = _draggedSlotIndex;
             var item = _draggedItem;
-            var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
+            var targetGameObject = eventData.pointerCurrentRaycast.gameObject;
+            var targetButton = targetGameObject?.GetComponentInParent<ButtonUI>();
             var targetInventorySlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
             var targetGearSlot = GearUI.Instance.GetSlot(targetButton);
+            var targetMerchant = MerchantUI.Instance.IsDropTarget(targetGameObject);
 
             ClearDragPreview();
 
@@ -309,7 +363,14 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 return;
             }
 
-            if (targetGearSlot != null && item != null && GearSlot.IsEquippable(item.Type))
+            if (targetGearSlot != null && item != null && item.Type.IsGear())
+            {
+                UseItem(item, UsableItemFromEnum.Inventory);
+
+                return;
+            }
+
+            if (targetMerchant && item != null && item.Type != InventoryItemEnum.Currency)
             {
                 UseItem(item, UsableItemFromEnum.Inventory);
             }
@@ -331,6 +392,25 @@ namespace Assets.Scripts.Areas.Inventory.UI
             if (targetInventorySlot != null && item != null)
             {
                 UseItem(item, UsableItemFromEnum.Gear);
+            }
+        }
+
+        private void EndMerchantDrag(PointerEventData eventData)
+        {
+            if (!_isDraggingMerchantItem)
+            {
+                return;
+            }
+
+            var item = _draggedItem;
+            var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
+            var targetInventorySlot = _inventorySlots?.FirstOrDefault(x => x.Button == targetButton);
+
+            ClearDragPreview();
+
+            if (targetInventorySlot != null && item != null)
+            {
+                MerchantUI.Instance.Purchase(item);
             }
         }
 
@@ -365,6 +445,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             _draggedSlotIndex = -1;
             _draggedGearSlot = null;
             _draggedItem = null;
+            _isDraggingMerchantItem = false;
         }
 
         public void CancelDrag()
@@ -391,6 +472,15 @@ namespace Assets.Scripts.Areas.Inventory.UI
             {
                 Type = item.Type,
                 Count = item.Type.IsAmmo() ? item.Count : 1,
+            };
+        }
+
+        private static InventoryItemDto CloneItem(InventoryItemDto item)
+        {
+            return new InventoryItemDto
+            {
+                Type = item.Type,
+                Count = item.Count,
             };
         }
 
