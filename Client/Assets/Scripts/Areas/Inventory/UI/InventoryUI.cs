@@ -53,10 +53,20 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private Canvas _dragCanvas;
         private int _draggedSlotIndex = -1;
         private GearSlot _draggedGearSlot;
+        private InventorySlot _draggedLootSlot;
         private InventoryItemDto _draggedItem;
         private bool _isDraggingMerchantItem;
+        private RawImage _dragSourceImage;
+        private bool _dragSourceImageWasEnabled;
+        private Texture _dragSourceTexture;
+        private Color _dragSourceColor;
+        private TextMeshProUGUI _dragSourceMesh;
+        private bool _dragSourceMeshWasEnabled;
 
-        public bool IsDragging => _draggedSlotIndex >= 0 || _draggedGearSlot != null || _isDraggingMerchantItem;
+        public bool IsDragging => _draggedSlotIndex >= 0
+            || _draggedGearSlot != null
+            || _draggedLootSlot != null
+            || _isDraggingMerchantItem;
 
         public void Start()
         {
@@ -71,29 +81,62 @@ namespace Assets.Scripts.Areas.Inventory.UI
                createFunc: () =>
                {
                    var obj = Instantiate(_inventorySlotPrefab, LootContent.transform);
-
                    var mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>();
-
-                   mesh.gameObject.SetActive(true);
-
                    var preview = obj.transform.Find("Preview").gameObject;
-
-                   return new InventorySlot
+                   var slot = new InventorySlot
                    {
+                       Index = -1,
                        GameObject = obj,
                        Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                        Mesh = mesh,
+                       HoverUI = obj.GetComponent<HoverUI>(),
                        Button = obj.GetComponent<ButtonUI>(),
+                       DragTrigger = obj.GetComponent<EventTrigger>() ?? obj.AddComponent<EventTrigger>(),
                        Preview = preview,
                        PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                        PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
                    };
+
+                   var key = obj.GetInstanceID().ToString();
+
+                   OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+                   {
+                       if (!IsDragging && slot.Item != null)
+                       {
+                           slot.Preview.SetActive(true);
+                       }
+                   });
+
+                   OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+                   {
+                       slot.Preview.SetActive(false);
+                   });
+
+                   AddDragEvent(slot.DragTrigger, EventTriggerType.BeginDrag, (eventData) => BeginLootDrag(slot, eventData));
+                   AddDragEvent(slot.DragTrigger, EventTriggerType.Drag, Drag);
+                   AddDragEvent(slot.DragTrigger, EventTriggerType.EndDrag, EndLootDrag);
+
+                   return slot;
                },
-               actionOnGet: (InventorySlot obj) => obj.GameObject.SetActive(true),
+               actionOnGet: (InventorySlot obj) =>
+               {
+                   obj.GameObject.SetActive(true);
+                   obj.Image.enabled = true;
+                   obj.Mesh.enabled = true;
+                   obj.Mesh.gameObject.SetActive(true);
+                   obj.HoverUI.enabled = true;
+                   obj.DragTrigger.enabled = false;
+               },
                actionOnRelease: (InventorySlot obj) =>
                {
+                   obj.Item = null;
+                   obj.Type = InventoryItemEnum.None;
+                   obj.LootClientId = 0;
+                   obj.LootClientToken = null;
+                   obj.DragTrigger.enabled = false;
+                   obj.HoverUI.enabled = false;
                    obj.Button.OnRightClick.RemoveAllListeners();
-
+                   obj.Preview.SetActive(false);
                    obj.GameObject.SetActive(false);
                }
             );
@@ -200,7 +243,11 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 eventData))
             {
                 ClearDragPreview();
+
+                return;
             }
+
+            SetDragSourcePlaceholder(slot.Image, slot.Mesh, null, ColorUI.Black);
         }
 
         public void ConfigureGearDrag(GearSlot slot)
@@ -250,7 +297,15 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 eventData))
             {
                 ClearDragPreview();
+
+                return;
             }
+
+            SetDragSourcePlaceholder(
+                slot.Image,
+                slot.Mesh,
+                Textures[slot.TemplateType],
+                ColorUI.White);
         }
 
         private void BeginMerchantDrag(
@@ -284,7 +339,44 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 eventData))
             {
                 ClearDragPreview();
+
+                return;
             }
+
+            SetDragSourcePlaceholder(image, mesh, null, ColorUI.Black);
+        }
+
+        private void BeginLootDrag(InventorySlot slot, PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left
+                || slot.Item == null
+                || slot.Item.Type == InventoryItemEnum.None
+                || slot.Item.Count <= 0)
+            {
+                return;
+            }
+
+            ClearDragPreview();
+            _draggedLootSlot = slot;
+            _draggedItem = CloneItem(slot.Item);
+
+            HidePreviews();
+            GearUI.Instance.HidePreviews();
+            MerchantUI.Instance.HidePreviews();
+
+            if (!CreateDragPreview(
+                slot.GameObject,
+                slot.Image.texture,
+                slot.Mesh.text,
+                slot.Mesh.enabled && slot.Mesh.gameObject.activeSelf,
+                eventData))
+            {
+                ClearDragPreview();
+
+                return;
+            }
+
+            SetDragSourcePlaceholder(slot.Image, slot.Mesh, null, ColorUI.Black);
         }
 
         private bool CreateDragPreview(
@@ -414,6 +506,25 @@ namespace Assets.Scripts.Areas.Inventory.UI
             }
         }
 
+        private void EndLootDrag(PointerEventData eventData)
+        {
+            if (_draggedLootSlot == null)
+            {
+                return;
+            }
+
+            var sourceSlot = _draggedLootSlot;
+            var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
+            var targetInventorySlot = _inventorySlots?.FirstOrDefault(x => x.Button == targetButton);
+
+            ClearDragPreview();
+
+            if (targetInventorySlot != null)
+            {
+                TakeLoot(sourceSlot);
+            }
+        }
+
         private void UpdateDragPreviewPosition(PointerEventData eventData)
         {
             if (_dragPreview == null || _dragCanvas == null)
@@ -435,6 +546,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         private void ClearDragPreview()
         {
+            RestoreDragSource();
+
             if (_dragPreview != null)
             {
                 Destroy(_dragPreview);
@@ -444,8 +557,54 @@ namespace Assets.Scripts.Areas.Inventory.UI
             _dragCanvas = null;
             _draggedSlotIndex = -1;
             _draggedGearSlot = null;
+            _draggedLootSlot = null;
             _draggedItem = null;
             _isDraggingMerchantItem = false;
+        }
+
+        private void SetDragSourcePlaceholder(
+            RawImage image,
+            TextMeshProUGUI mesh,
+            Texture placeholderTexture,
+            Color placeholderColor)
+        {
+            _dragSourceImage = image;
+            _dragSourceImageWasEnabled = image != null && image.enabled;
+            _dragSourceTexture = image?.texture;
+            _dragSourceColor = image != null ? image.color : Color.white;
+            _dragSourceMesh = mesh;
+            _dragSourceMeshWasEnabled = mesh != null && mesh.enabled;
+
+            if (_dragSourceImage != null)
+            {
+                _dragSourceImage.enabled = true;
+                _dragSourceImage.texture = placeholderTexture;
+                _dragSourceImage.color = placeholderColor;
+            }
+
+            if (_dragSourceMesh != null)
+            {
+                _dragSourceMesh.enabled = false;
+            }
+        }
+
+        private void RestoreDragSource()
+        {
+            if (_dragSourceImage != null)
+            {
+                _dragSourceImage.texture = _dragSourceTexture;
+                _dragSourceImage.color = _dragSourceColor;
+                _dragSourceImage.enabled = _dragSourceImageWasEnabled;
+            }
+
+            if (_dragSourceMesh != null)
+            {
+                _dragSourceMesh.enabled = _dragSourceMeshWasEnabled;
+            }
+
+            _dragSourceImage = null;
+            _dragSourceTexture = null;
+            _dragSourceMesh = null;
         }
 
         public void CancelDrag()
@@ -455,14 +614,17 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         private void HidePreviews()
         {
-            if (_inventorySlots == null)
+            if (_inventorySlots != null)
             {
-                return;
+                foreach (var inventorySlot in _inventorySlots)
+                {
+                    inventorySlot.Preview.SetActive(false);
+                }
             }
 
-            foreach (var inventorySlot in _inventorySlots)
+            foreach (var lootSlot in _lootPoolObjects.Values)
             {
-                inventorySlot.Preview.SetActive(false);
+                lootSlot.Preview.SetActive(false);
             }
         }
 
@@ -567,56 +729,58 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             foreach (var item in items)
             {
-                if (_lootPoolObjects.TryGetValue(item.Type, out var slot))
+                if (!_lootPoolObjects.TryGetValue(item.Type, out var slot))
                 {
-                    slot.Mesh.text = item.Count.ToString();
-
-                    continue;
+                    slot = _lootObjectPool.Get();
+                    var lootSlot = slot;
+                    slot.Button.OnRightClick.AddListener(() => TakeLoot(lootSlot));
+                    _lootPoolObjects.Add(item.Type, slot);
                 }
 
-                slot = _lootObjectPool.Get();
-
-                slot.Mesh.text = item.Count.ToString();
+                slot.Item = CloneItem(item);
+                slot.Type = item.Type;
+                slot.LootClientId = clientId;
+                slot.LootClientToken = clientToken;
+                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-                slot.PreviewDescriptionMesh.text = PrepareDescription(item).ToString();
-                slot.Type = item.Type;
+                slot.PreviewDescriptionMesh.text = PrepareDescription(item);
+                slot.HoverUI.enabled = true;
+                slot.DragTrigger.enabled = true;
+            }
+        }
 
-                slot.Button.OnRightClick.AddListener(() =>
+        private void TakeLoot(InventorySlot slot)
+        {
+            if (slot?.Item == null
+                || !_lootPoolObjects.TryGetValue(slot.Type, out var activeSlot)
+                || activeSlot != slot)
+            {
+                return;
+            }
+
+            var item = CloneItem(slot.Item);
+            var type = slot.Type;
+
+            UpdateInventorySubscription.Instance.Invoke(
+                slot.LootClientId.ToString(),
+                new UpdateInventorySubscriptionEvent
                 {
-                    UpdateInventorySubscription.Instance.Invoke(clientId.ToString(), new UpdateInventorySubscriptionEvent
+                    Request = new UpdateCharacterInventoryCommand
                     {
-                        Request = new UpdateCharacterInventoryCommand
-                        {
-                            CharacterId = 1,
-                            Add = new InventoryItemDto[] { item },
-                        },
-                        ClientToken = clientToken
-                    });
-
-                    _lootObjectPool.Release(slot);
-                    _lootPoolObjects.Remove(item.Type);
-
-                    if (_lootPoolObjects.Count == 0)
-                    {
-                        Loot.SetActive(false);
-                    }
+                        CharacterId = InventoryManager.Instance.Dto.CharacterId,
+                        Add = new[] { item },
+                    },
+                    ClientToken = slot.LootClientToken,
                 });
 
-                var key = slot.GameObject.GetInstanceID().ToString();
+            _lootPoolObjects.Remove(type);
+            _lootObjectPool.Release(slot);
 
-                OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    slot.Preview.SetActive(true);
-                });
-
-                OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    slot.Preview.SetActive(false);
-                });
-
-                _lootPoolObjects.Add(item.Type, slot);
+            if (_lootPoolObjects.Count == 0)
+            {
+                Loot.SetActive(false);
             }
         }
 
@@ -710,6 +874,12 @@ namespace Assets.Scripts.Areas.Inventory.UI
             public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
 
             public InventoryItemEnum Type { get; set; }
+
+            public InventoryItemDto Item { get; set; }
+
+            public ulong LootClientId { get; set; }
+
+            public string LootClientToken { get; set; }
         }
 
     }

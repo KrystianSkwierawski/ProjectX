@@ -218,6 +218,15 @@ namespace Assets.Scripts.Areas.Character.UI
 
             var slot = new GearSlot
             {
+                TemplateType = name switch
+                {
+                    nameof(Helmet) => InventoryItemEnum.HelmetTemplate,
+                    nameof(Chest) => InventoryItemEnum.ChestTemplate,
+                    nameof(Boots) => InventoryItemEnum.BootsTemplate,
+                    nameof(Weapon) => InventoryItemEnum.WeaponTemplate,
+                    nameof(Ammo) => InventoryItemEnum.AmmoTemplate,
+                    _ => InventoryItemEnum.None,
+                },
                 GameObject = obj,
                 Image = obj.transform.Find("Background").GetComponent<RawImage>(),
                 Mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
@@ -272,6 +281,8 @@ namespace Assets.Scripts.Areas.Character.UI
 
     public class GearSlot
     {
+        public InventoryItemEnum TemplateType { get; set; }
+
         public InventoryItemDto Item { get; set; }
 
         public GameObject GameObject { get; set; }

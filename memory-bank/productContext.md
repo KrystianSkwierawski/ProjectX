@@ -17,6 +17,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 ## User Experience Goals
 - Players should be able to log in, control a character, interact with targets/NPCs/resources, manage inventory, equip gear, track health, progress quests, craft items, and gain experience.
 - Inventory management should support direct drag-and-drop organization, including exact empty-slot placement, swapping different items, merging matching stacks, and equipping/unequipping through Gear with clear visual feedback while dragging. Any Gear slot may receive an equippable item; the item type determines its actual equipment slot.
+- Loot should be transferable into inventory by drag-and-drop as well as right-click. While an item is being dragged from Inventory, Gear, Merchant, or Loot, its source item/count should be replaced by the appropriate empty-slot appearance (black inventory-style background or the matching Gear template) so only the cursor-following preview represents the item; cancellation restores the source.
 - Merchant interaction should support direct transactions: dragging an offer into inventory buys it, while dragging an inventory item onto the Merchant panel sells it, using the same prices, currency checks, and persistence as the existing click actions.
 - UI should expose character, gear/stat totals, inventory, item stat previews, quest, crafting, hover/target, cursor, quick-access, chat, and translation behavior through Unity scenes and prefabs.
 - Client/server behavior should feel consistent across play sessions.
