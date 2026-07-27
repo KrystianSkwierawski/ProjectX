@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
@@ -51,6 +52,10 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private GameObject _dragPreview;
         private Canvas _dragCanvas;
         private int _draggedSlotIndex = -1;
+        private GearSlot _draggedGearSlot;
+        private InventoryItemDto _draggedItem;
+
+        public bool IsDragging => _draggedSlotIndex >= 0 || _draggedGearSlot != null;
 
         public void Start()
         {
@@ -150,7 +155,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
                 slot.Button.OnRightClick.RemoveAllListeners();
 
-                var slotIndex = i;
+                var slotIndex = slot.Index;
 
                 slot.Button.OnRightClick.AddListener(() =>
                 {
@@ -161,50 +166,87 @@ namespace Assets.Scripts.Areas.Inventory.UI
                         return;
                     }
 
-                    UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
-                    {
-                        Item = new InventoryItemDto
-                        {
-                            Type = item.Type,
-                            Count = item.Type.IsAmmo() ? item.Count : 1
-                        },
-                        From = UsableItemFromEnum.Inventory,
-                    });
+                    UseItem(CreateUsableItem(item), UsableItemFromEnum.Inventory);
                 });
             }
         }
 
         private void BeginDrag(InventorySlot slot, PointerEventData eventData)
         {
-            if (slot.Type == InventoryItemEnum.None
+            if (eventData.button != PointerEventData.InputButton.Left
+                || slot.Type == InventoryItemEnum.None
                 || slot.Index < 0
                 || slot.Index >= InventoryManager.Instance.Dto.Inventory.Items.Count)
             {
                 return;
             }
 
+            var item = InventoryManager.Instance.Dto.Inventory.Items[slot.Index];
+
             ClearDragPreview();
             _draggedSlotIndex = slot.Index;
+            _draggedItem = CreateUsableItem(item);
 
-            foreach (var inventorySlot in _inventorySlots)
+            HidePreviews();
+            GearUI.Instance.HidePreviews();
+
+            if (!CreateDragPreview(
+                slot.GameObject,
+                slot.Image.texture,
+                slot.Mesh.text,
+                slot.Mesh.gameObject.activeSelf,
+                eventData))
             {
-                inventorySlot.Preview.SetActive(false);
+                ClearDragPreview();
             }
+        }
 
-            _dragCanvas = InventoryCanvas.GetComponentInParent<Canvas>();
+        public void ConfigureGearDrag(GearSlot slot)
+        {
+            slot.DragTrigger = slot.GameObject.GetComponent<EventTrigger>() ?? slot.GameObject.AddComponent<EventTrigger>();
 
-            if (_dragCanvas == null)
+            AddDragEvent(slot.DragTrigger, EventTriggerType.BeginDrag, (eventData) => BeginGearDrag(slot, eventData));
+            AddDragEvent(slot.DragTrigger, EventTriggerType.Drag, Drag);
+            AddDragEvent(slot.DragTrigger, EventTriggerType.EndDrag, EndGearDrag);
+        }
+
+        private void BeginGearDrag(GearSlot slot, PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left || !slot.HasItem)
             {
-                _draggedSlotIndex = -1;
-
                 return;
             }
 
-            if (_inventoryDragPreviewPrefab == null)
-            {
-                _draggedSlotIndex = -1;
+            ClearDragPreview();
+            _draggedGearSlot = slot;
+            _draggedItem = CreateUsableItem(slot.Item);
 
-                return;
+            HidePreviews();
+            GearUI.Instance.HidePreviews();
+
+            if (!CreateDragPreview(
+                slot.GameObject,
+                slot.Image.texture,
+                slot.Mesh.text,
+                slot.Mesh.enabled && slot.Mesh.gameObject.activeSelf,
+                eventData))
+            {
+                ClearDragPreview();
+            }
+        }
+
+        private bool CreateDragPreview(
+            GameObject source,
+            Texture texture,
+            string countText,
+            bool showCount,
+            PointerEventData eventData)
+        {
+            _dragCanvas = source.GetComponentInParent<Canvas>();
+
+            if (_dragCanvas == null || _inventoryDragPreviewPrefab == null)
+            {
+                return false;
             }
 
             _dragPreview = Instantiate(_inventoryDragPreviewPrefab, _dragCanvas.transform);
@@ -213,13 +255,15 @@ namespace Assets.Scripts.Areas.Inventory.UI
             previewRect.SetAsLastSibling();
 
             var previewImage = _dragPreview.GetComponent<RawImage>();
-            previewImage.texture = slot.Image.texture;
+            previewImage.texture = texture;
 
             var count = _dragPreview.transform.Find("Count").GetComponent<TextMeshProUGUI>();
-            count.text = slot.Mesh.text;
-            count.gameObject.SetActive(slot.Mesh.gameObject.activeSelf);
+            count.text = countText;
+            count.gameObject.SetActive(showCount);
 
             UpdateDragPreviewPosition(eventData);
+
+            return true;
         }
 
         private void Drag(PointerEventData eventData)
@@ -238,25 +282,56 @@ namespace Assets.Scripts.Areas.Inventory.UI
             }
 
             var sourceSlotIndex = _draggedSlotIndex;
+            var item = _draggedItem;
             var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
-            var targetSlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
+            var targetInventorySlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
+            var targetGearSlot = GearUI.Instance.GetSlot(targetButton);
 
             ClearDragPreview();
 
-            if (targetSlot == null || targetSlot.Index == sourceSlotIndex)
+            if (targetInventorySlot != null)
+            {
+                if (targetInventorySlot.Index == sourceSlotIndex)
+                {
+                    return;
+                }
+
+                MoveInventorySubscription.Instance.Invoke(
+                    UserManager.Instance.OwnerClientId.ToString(),
+                    new MoveInventorySubscriptionEvent
+                    {
+                        CharacterId = InventoryManager.Instance.Dto.CharacterId,
+                        SourceSlotIndex = sourceSlotIndex,
+                        TargetSlotIndex = targetInventorySlot.Index,
+                        ClientToken = UserManager.Instance.Token,
+                    });
+
+                return;
+            }
+
+            if (targetGearSlot != null && item != null && GearSlot.IsEquippable(item.Type))
+            {
+                UseItem(item, UsableItemFromEnum.Inventory);
+            }
+        }
+
+        private void EndGearDrag(PointerEventData eventData)
+        {
+            if (_draggedGearSlot == null)
             {
                 return;
             }
 
-            MoveInventorySubscription.Instance.Invoke(
-                UserManager.Instance.OwnerClientId.ToString(),
-                new MoveInventorySubscriptionEvent
-                {
-                    CharacterId = InventoryManager.Instance.Dto.CharacterId,
-                    SourceSlotIndex = sourceSlotIndex,
-                    TargetSlotIndex = targetSlot.Index,
-                    ClientToken = UserManager.Instance.Token,
-                });
+            var item = _draggedItem;
+            var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
+            var targetInventorySlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
+
+            ClearDragPreview();
+
+            if (targetInventorySlot != null && item != null)
+            {
+                UseItem(item, UsableItemFromEnum.Gear);
+            }
         }
 
         private void UpdateDragPreviewPosition(PointerEventData eventData)
@@ -288,6 +363,44 @@ namespace Assets.Scripts.Areas.Inventory.UI
             _dragPreview = null;
             _dragCanvas = null;
             _draggedSlotIndex = -1;
+            _draggedGearSlot = null;
+            _draggedItem = null;
+        }
+
+        public void CancelDrag()
+        {
+            ClearDragPreview();
+        }
+
+        private void HidePreviews()
+        {
+            if (_inventorySlots == null)
+            {
+                return;
+            }
+
+            foreach (var inventorySlot in _inventorySlots)
+            {
+                inventorySlot.Preview.SetActive(false);
+            }
+        }
+
+        private static InventoryItemDto CreateUsableItem(InventoryItemDto item)
+        {
+            return new InventoryItemDto
+            {
+                Type = item.Type,
+                Count = item.Type.IsAmmo() ? item.Count : 1,
+            };
+        }
+
+        private static void UseItem(InventoryItemDto item, UsableItemFromEnum from)
+        {
+            UseItemSubscribtion.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new UseItemSubscribtionEvent
+            {
+                Item = item,
+                From = from,
+            });
         }
 
         private void SplitStack(int sourceSlotIndex)
@@ -453,7 +566,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
                 OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
                 {
-                    if (_draggedSlotIndex < 0 && slot.Type != InventoryItemEnum.None)
+                    if (!IsDragging && slot.Type != InventoryItemEnum.None)
                     {
                         slot.Preview.SetActive(true);
                     }

@@ -11,6 +11,7 @@ using Assets.Scripts.Areas.Shared.UI;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Character.UI
@@ -108,12 +109,20 @@ namespace Assets.Scripts.Areas.Character.UI
         public void Wear(GearSlot slot, InventoryItemDto item)
         {
             slot.Button.OnRightClick.RemoveAllListeners();
+
+            slot.Item = new InventoryItemDto
+            {
+                Type = item.Type,
+                Count = item.Count,
+            };
+
             slot.Image.texture = InventoryUI.Instance.Textures[item.Type];
 
             if (item.Type == InventoryItemEnum.None || item.Type == InventoryItemEnum.HelmetTemplate || item.Type == InventoryItemEnum.ChestTemplate || item.Type == InventoryItemEnum.BootsTemplate || item.Type == InventoryItemEnum.WeaponTemplate || item.Type == InventoryItemEnum.AmmoTemplate)
             {
                 slot.Button.interactable = false;
                 slot.HoverUI.enabled = false;
+                slot.DragTrigger.enabled = false;
                 slot.Preview.SetActive(false);
                 slot.Mesh.text = "0";
                 slot.Mesh.enabled = false;
@@ -132,18 +141,7 @@ namespace Assets.Scripts.Areas.Character.UI
            
             slot.Button.interactable = true;
             slot.HoverUI.enabled = true;
-
-            var key = slot.GameObject.GetInstanceID().ToString();
-
-            OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
-            {
-                slot.Preview.SetActive(true);
-            });
-
-            OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
-            {
-                slot.Preview.SetActive(false);
-            });
+            slot.DragTrigger.enabled = true;
 
             slot.Button.OnRightClick.AddListener(() =>
             {
@@ -173,13 +171,52 @@ namespace Assets.Scripts.Areas.Character.UI
             }
         }
 
-        private GearSlot GetGearSlot(string n)
+        public GearSlot GetSlot(ButtonUI button)
         {
-            var obj = LeftPanel.transform.Find(n).gameObject;
+            if (button == null)
+            {
+                return null;
+            }
+
+            if (Helmet?.Button == button)
+            {
+                return Helmet;
+            }
+
+            if (Chest?.Button == button)
+            {
+                return Chest;
+            }
+
+            if (Boots?.Button == button)
+            {
+                return Boots;
+            }
+
+            if (Weapon?.Button == button)
+            {
+                return Weapon;
+            }
+
+            return Ammo?.Button == button ? Ammo : null;
+        }
+
+        public void HidePreviews()
+        {
+            Helmet?.Preview.SetActive(false);
+            Chest?.Preview.SetActive(false);
+            Boots?.Preview.SetActive(false);
+            Weapon?.Preview.SetActive(false);
+            Ammo?.Preview.SetActive(false);
+        }
+
+        private GearSlot GetGearSlot(string name)
+        {
+            var obj = LeftPanel.transform.Find(name).gameObject;
 
             var preview = obj.transform.Find("Preview").gameObject;
 
-            return new GearSlot
+            var slot = new GearSlot
             {
                 GameObject = obj,
                 Image = obj.transform.Find("Background").GetComponent<RawImage>(),
@@ -190,12 +227,32 @@ namespace Assets.Scripts.Areas.Character.UI
                 PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
                 PreviewDescriptionMesh = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>(),
             };
+
+            var key = slot.GameObject.GetInstanceID().ToString();
+
+            OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
+            {
+                if (!InventoryUI.Instance.IsDragging && slot.HasItem)
+                {
+                    slot.Preview.SetActive(true);
+                }
+            });
+
+            OnPointerExitSubscription.Instance.Subscribe(key, (e) =>
+            {
+                slot.Preview.SetActive(false);
+            });
+
+            InventoryUI.Instance.ConfigureGearDrag(slot);
+
+            return slot;
         }
 
         public void Hide()
         {
             if (Gear.activeSelf)
             {
+                InventoryUI.Instance.CancelDrag();
                 Gear.SetActive(false);
             }
         }
@@ -215,6 +272,8 @@ namespace Assets.Scripts.Areas.Character.UI
 
     public class GearSlot
     {
+        public InventoryItemDto Item { get; set; }
+
         public GameObject GameObject { get; set; }
 
         public RawImage Image { get; set; }
@@ -225,10 +284,20 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public HoverUI HoverUI { get; set; }
 
+        public EventTrigger DragTrigger { get; set; }
+
         public GameObject Preview { get; set; }
 
         public TextMeshProUGUI PreviewTitleMesh { get; set; }
 
         public TextMeshProUGUI PreviewDescriptionMesh { get; set; }
+
+        public bool HasItem => Item != null
+            && Item.Type != InventoryItemEnum.None
+            && Item.Type != InventoryItemEnum.HelmetTemplate
+            && Item.Type != InventoryItemEnum.ChestTemplate
+            && Item.Type != InventoryItemEnum.BootsTemplate
+            && Item.Type != InventoryItemEnum.WeaponTemplate
+            && Item.Type != InventoryItemEnum.AmmoTemplate;
     }
 }

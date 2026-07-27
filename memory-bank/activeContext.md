@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Focus
-- 2026-07-24: Inventory items can be dragged between slots with a cursor-following icon/count preview instantiated from the serialized `InventoryDragPreview` prefab. Dropping onto a different item swaps slots, dropping onto the same item type merges stack counts, and dropping onto an empty slot preserves the selected position. The move is applied optimistically on the owner and persisted through the Unity server/API flow.
+- 2026-07-24: Inventory items can be dragged between inventory slots and between Inventory/Gear with a cursor-following icon/count preview instantiated from the serialized `InventoryDragPreview` prefab. Inventory drops still swap, merge, or preserve exact empty positions. Dropping an equippable item onto any Helmet/Chest/Boots/Weapon/Ammo slot invokes the existing equip flow, which routes it to its actual slot; dropping equipped gear onto any inventory slot invokes the existing unequip flow. Weapon/ammo compatibility and stack behavior remain enforced by the shared usable-item logic.
 - 2026-07-17: Fireball and Arrow now hide their whole GameObject on hit, release to their projectile pool after every hit, deactivate on pool release/network despawn, and reactivate before the next spawn. Hit notification is sent before damage callbacks can synchronously despawn a killing projectile.
 - 2026-07-15: Implemented server-authoritative per-hit ammo consumption. Feather armor ammo is consumed after `ApplyArmor` on a positive, non-dodged incoming attack; Arrow/Rune/Oil damage ammo is consumed after outgoing weapon damage is calculated. The final item contributes to that hit, then its stats are removed, the ammo slot is cleared, API state is persisted, and the owner Gear UI is refreshed.
 - 2026-07-14: Added `IronWand` and `IronBow` as mirrored API/client inventory items. Weapon classification now goes through `InventoryItemEnum.IsWeapon()`, iron weapon bonuses are Strength for sword, Intellect for wand, and Dexterity for bow, and outgoing fireball damage scales from the corresponding equipped-weapon stat.
@@ -11,6 +11,7 @@
 - At the start of this refresh, branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## Recent Changes
+- 2026-07-24: Extended drag-and-drop across Inventory and Gear. Gear slots are registered once as drag sources/shared drop targets, suppress hover previews during dragging, and reuse `UseItemSubscribtion` for equip/unequip persistence. Any Gear slot accepts an equippable inventory item and the usable-item dispatch routes it to its actual slot. The drag preview prefab has override sorting so it remains visible across the separate Inventory and Gear canvases.
 - 2026-07-24: Fixed Alt + right-click inventory splitting by capturing each slot's stable index before registering its callback; the loop counter is no longer read after the inventory refresh loop has completed.
 - 2026-07-24: Added inventory drag-and-drop UI, slot move/merge/swap logic on both client and API, persistent `None` placeholders for empty positioned slots, focused backend tests, and fixed inventory-slot hover subscriptions so they are registered once rather than duplicated on each refresh.
 - Created the required memory bank structure:
@@ -95,7 +96,7 @@
 - Keep `progress.md` updated after meaningful changes.
 - When changing startup/build behavior, update both `Client/Automation/run.ps1` and `Client/Assets/Editor/ProjectXDevAutomation.cs`.
 - Add focused automated or Unity runtime coverage for per-hit ammo consumption, final-item stat removal, API persistence, and owner Gear UI refresh.
-- Perform a Unity Play Mode smoke test for drag preview positioning, dropping onto occupied/empty slots, and persistence after reconnect; compile and backend unit coverage do not exercise pointer events.
+- Perform a Unity Play Mode smoke test for drag preview positioning, Inventory ↔ Gear equip/unequip drops, wrong Gear-slot rejection, inventory occupied/empty drops, and persistence after reconnect; compile and backend unit coverage do not exercise pointer events.
 - Add focused tests for weapon-based damage stat selection, first ammo equip, same-type merge, type switch, unequip/reload, health-potion persistence, and crafting ordering; only translation-service unit tests are currently present.
 - Before replacing the intentional database reset with persistent upgrades, create a data-migration plan for ammo IDs `1010`-`1012`, whose meanings were repurposed when tiered ammo was introduced.
 - Fix or narrowly override the repo's `*.meta` ignore rule before adding more Unity assets/scripts so their GUIDs/import settings are versioned; the known affected project files include 13 ammo icon/template metas and three gameplay-script metas.
