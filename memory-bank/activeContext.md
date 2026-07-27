@@ -75,7 +75,7 @@
 - Treat the repository as two cooperating applications:
   - `Client/`: Unity 6000.1 project using Netcode for GameObjects.
   - `API/`: ASP.NET Core API using clean/layered architecture.
-- Preserve existing project organization and naming patterns when making future changes.
+- Keep code clean, understandable, and as simple as reasonably possible. Avoid unnecessary complexity and abstractions, and follow the organization, naming, style, and conventions established by the surrounding code.
 - Read all memory bank files at the start of every task, per `.Codexrules`.
 - Local dev startup automation lives inside the Unity project under `Client/Automation/`, not at repository root.
 - Unity menu entries under `ProjectX` should remain aligned with `Client/Automation/run.bat`.
