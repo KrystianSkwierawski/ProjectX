@@ -73,6 +73,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             // TODO: validate?
             // TODO: log?
+            // TODO: get sender from character manager?
             SendClientRpc(message, sender);
         }
 
