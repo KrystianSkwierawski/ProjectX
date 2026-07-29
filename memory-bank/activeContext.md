@@ -78,6 +78,7 @@
   - `Client/`: Unity 6000.1 project using Netcode for GameObjects.
   - `API/`: ASP.NET Core API using clean/layered architecture.
 - Keep code clean, understandable, and as simple as reasonably possible. Avoid unnecessary complexity and abstractions, and follow the organization, naming, style, and conventions established by the surrounding code.
+- Prefer scene-backed, reusable prefabs for Unity UI components, connected through serialized references. Create UI structures programmatically only when their dynamic nature justifies it, and instantiate repeated dynamic UI from prefabs rather than constructing it ad hoc.
 - Read all memory bank files at the start of every task, per `.Codexrules`.
 - Local dev startup automation lives inside the Unity project under `Client/Automation/`, not at repository root.
 - Unity menu entries under `ProjectX` should remain aligned with `Client/Automation/run.bat`.

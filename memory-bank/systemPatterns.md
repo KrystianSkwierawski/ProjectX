@@ -42,6 +42,7 @@
 
 ## Cross-Cutting Patterns
 - Client DTO/model names closely mirror backend DTOs and commands.
+- Prefer authoring UI components as reusable prefabs placed or referenced in Unity scenes and wired through serialized fields. Avoid assembling UI hierarchies ad hoc in runtime code unless the UI is genuinely dynamic; repeated dynamic elements should normally be instantiated from prefabs.
 - Client and backend inventory enums must stay synchronized for persisted items; the client also has an `Xp` pseudo item for crafting/requirement UI. Treat numeric IDs as persisted data and plan migrations before repurposing them.
 - `UserManager.Characters` stores `CharacterDto` values by Netcode client ID; owner/local-client lookups should use the appropriate dictionary key rather than a global single-character property.
 - Localization resources exist in both API and Unity client paths; English content in client `pl.json` is currently an intentional temporary development fallback.
