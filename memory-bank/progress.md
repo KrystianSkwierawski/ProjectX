@@ -7,6 +7,7 @@
 - Before this memory-bank edit, local branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## What Works / Exists
+- Shared weapon hits notify clients before invoking synchronous damage subscribers, so killing sword attacks still play `SwordImpact` before the weapon is despawned.
 - Backend solution structure is present.
 - API startup configures Kestrel, Serilog, Swagger/NSwag, database initialization, HTTPS redirection, and endpoint mapping.
 - Infrastructure configures EF Core, Identity, JWT bearer authentication, authorization policies, and database context services.
@@ -71,6 +72,7 @@
 - `PlayerUI.SetPlayer()` currently calls `SetHealth()` and then `SetMaxHealth()` on the same text field, so the initial displayed value may be max health rather than current health.
 
 ## Evolution Notes
+- 2026-07-27: Fixed missing `SwordImpact` on killing blows by queuing the shared hit ClientRpc before damage callbacks can synchronously unselect the killed target and despawn the pooled weapon. The generated Unity client project compiled with zero errors and six existing warnings.
 - 2026-07-27: Added Loot -> Inventory drag-and-drop and consolidated Loot right-click/drop pickup through one path. Pooled Loot slots now register hover/drag callbacks once and retain current DTO/client metadata. The shared drag lifecycle shows the correct empty Inventory or Gear-template placeholder without disabling event delivery, restores the original visual during cleanup, and the generated Unity client project compiled with zero errors and six existing warnings.
 - 2026-07-24: Added merchant drag-and-drop transactions. Offer → inventory invokes the existing purchase subscription with currency validation, while inventory → Merchant invokes the existing sale subscription. Pooled merchant slots now register hover/drag callbacks once and distinguish draggable offers from non-draggable Currency price slots. Client compilation passed with zero errors and existing warnings.
 - 2026-07-24: Added bidirectional Inventory ↔ Gear drag-and-drop. Gear slots act as shared drop targets and occupied drag sources; any Gear slot accepts an equippable item, while usable-item dispatch selects its actual slot. Equip/unequip drops reuse `UseItemSubscribtion`, preserving gear swaps, whole ammo stacks, weapon/ammo validation, stat changes, UI refreshes, and server/API persistence. Hover callbacks are registered once per Gear slot, and the shared drag preview uses override sorting across both canvases. Client compilation passed with zero errors and the existing warnings.

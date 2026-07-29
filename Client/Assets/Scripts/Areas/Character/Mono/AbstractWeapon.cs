@@ -153,6 +153,8 @@ namespace Assets.Scripts.Areas.Character.Mono
                     _caster.GetComponent<Player>().ConsumeAmmo(_clientToken);
                 }
 
+                OnHitTargetClientRpc();
+
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
@@ -160,8 +162,6 @@ namespace Assets.Scripts.Areas.Character.Mono
                     ClientToken = _clientToken,
                     Player = _caster
                 });
-
-                OnHitTargetClientRpc();
             }
         }
 
