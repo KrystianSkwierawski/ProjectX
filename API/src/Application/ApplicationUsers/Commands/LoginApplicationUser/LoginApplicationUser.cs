@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using ProjectX.Application.Common;
+using ProjectX.Application.Common.Exceptions;
 using ProjectX.Domain.Entities;
 
 namespace ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
@@ -26,20 +27,17 @@ public class LoginApplicationUserCommandHandler : IRequestHandler<LoginApplicati
     {
         var user = await _userManager.FindByEmailAsync(request.UserName);
 
-        ArgumentNullException.ThrowIfNull(user);
-        ArgumentNullException.ThrowIfNull(user.Email);
-
-        if (await _userManager.CheckPasswordAsync(user, request.Password))
+        if (user?.Email is null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            var token = await _jwtHandler.GenerateToken(user);
-
-            return new LoginApplicationUserDto
-            {
-                Token = token,
-                Language = user.Language
-            };
+            throw new InvalidCredentialsException();
         }
 
-        throw new Exception("invalid login or password");
+        var token = await _jwtHandler.GenerateToken(user);
+
+        return new LoginApplicationUserDto
+        {
+            Token = token,
+            Language = user.Language
+        };
     }
 }

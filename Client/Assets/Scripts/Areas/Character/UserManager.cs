@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Professions.Enums;
@@ -20,18 +22,23 @@ namespace Assets.Scripts.Areas.Character
 
         public ulong OwnerClientId { get; set; } // TODO: replace all references
 
-        public async UniTask LoginAsync(string userName, string password)
+        public async UniTask LoginAsync(string userName, string password, CancellationToken cancellationToken = default)
         {
             var result = await UnityWebRequestHelper.ExecutePostAsync<LoginApplicationUserDto>("ApplicationUsers", new LoginApplicationUserCommand
             {
                 UserName = userName,
                 Password = password
-            });
+            }, log: false, cancellationToken: cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(result?.Token))
+            {
+                throw new InvalidOperationException("The login response did not contain an access token.");
+            }
 
             Token = result.Token;
             Language = result.Language;
 
-            Debug.Log($"Login -> UserName: {userName}, Token: {Token}, Language: {Language}");
+            Debug.Log($"Login -> UserName: {userName}, Language: {Language}");
         }
 
         public byte GetLevelByRecipeType(CraftingRecipeTypeEnum craftingRecipeType)

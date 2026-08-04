@@ -1,12 +1,15 @@
 # Progress
 
 ## Current Status
+- `BootstrapScene` has a working responsive prefab-backed login screen integrated with the existing API login command and developer multiplayer-playmode identities.
 - Memory bank initialized on 2026-05-07.
 - Memory bank reviewed and refreshed through repository HEAD `8c954ff` on 2026-07-13.
 - Repository contains an existing Unity client and ASP.NET Core backend with major gameplay support areas already scaffolded or implemented.
 - Before this memory-bank edit, local branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## What Works / Exists
+- `BootstrapLogin.prefab` provides email/password inputs, basic regex/length validation, inline errors, Font Awesome eye/eye-slash toggling, and a form-replacing spinner state. It uses Futura PT Book/Medium and the shared `ColorUI` dark palette. Its full-screen root, centered preferred-width card, layout bounds, and proportional field anchors adapt to narrow and landscape viewports. `BootstrapScene` stores an actual prefab instance and places the scene-scoped `LoginUI` component directly beside `Bootstrap`; `LoginUI` resolves and caches the prefab view hierarchy in `Awake`, without Inspector references or reference-null validation.
+- Login requests use cancellation, a 15-second timeout, no JWT response logging, and structured `ApiRequestException` mapping. Invalid email/password cases return identical API 401 responses through an application-specific exception. Editor main/clone players autofill user1/user2 directly in a temporary marked region; normal release builds do not show the development hint or accept `@localhost`.
 - Shared weapon hits notify clients before invoking synchronous damage subscribers, so killing sword attacks still play `SwordImpact` before the weapon is despawned.
 - Backend solution structure is present.
 - API startup configures Kestrel, Serilog, Swagger/NSwag, database initialization, HTTPS redirection, and endpoint mapping.
@@ -45,6 +48,7 @@
 - Local movement processing waits until `UserManager.Characters` contains the local client ID, preventing early stat-dependent character access.
 
 ## What's Left / Unknown
+- The login UI was Play Mode smoke-tested with main-editor autofill and password visibility; a full successful API/database/client-scene transition was not run because API startup recreates the development database.
 - Exact gameplay roadmap and release target are not documented.
 - Automated coverage is narrow: only `TranslateServiceTests.cs` was found, although its parameterized cases currently total 190; stat, ammo, gear, potion, crafting, and Unity gameplay paths have no focused tests.
 - Backend and generated Unity client projects compiled with zero errors and all 182 API unit tests passed on 2026-07-13, but the Unity client/dedicated server/API stack was not verified end-to-end at runtime.
@@ -72,6 +76,9 @@
 - `PlayerUI.SetPlayer()` currently calls `SetHealth()` and then `SetMaxHealth()` on the same text field, so the initial displayed value may be max health rather than current health.
 
 ## Evolution Notes
+- 2026-08-04: Converted `LoginUI` to a scene-scoped `MonoSingleton` attached directly to the `Bootstrap` GameObject. It now resolves and caches the `BootstrapLogin.prefab` view hierarchy in `Awake`, leaving no per-control fields in the Inspector and requiring no reference-null validation; `Bootstrap` subscribes in `Start`. Runtime and editor client builds completed with zero errors and existing dependency warnings.
+- 2026-08-03: Made the Bootstrap login responsive in both its prefab and scene. Added a full-screen anchored layout root, a centered card with preferred/minimum width, proportional field/loading anchors, and height-based Canvas scaling; visually verified 16:9, 16:10, and 360x780 portrait layouts. Client runtime and editor project builds completed with zero errors and the existing dependency warnings.
+- 2026-08-03: Added the prefab-backed Bootstrap login flow, separated `LoginUI` from bootstrap orchestration, added validation/password visibility/loading and developer autofill, hardened request timeout/cancellation/error mapping and token logging, and changed invalid credentials to API 401. Unity client/editor and API builds passed with zero errors; all 206 API tests passed.
 - 2026-07-27: Fixed missing `SwordImpact` on killing blows by queuing the shared hit ClientRpc before damage callbacks can synchronously unselect the killed target and despawn the pooled weapon. The generated Unity client project compiled with zero errors and six existing warnings.
 - 2026-07-27: Added Loot -> Inventory drag-and-drop and consolidated Loot right-click/drop pickup through one path. Pooled Loot slots now register hover/drag callbacks once and retain current DTO/client metadata. The shared drag lifecycle shows the correct empty Inventory or Gear-template placeholder without disabling event delivery, restores the original visual during cleanup, and the generated Unity client project compiled with zero errors and six existing warnings.
 - 2026-07-24: Added merchant drag-and-drop transactions. Offer → inventory invokes the existing purchase subscription with currency validation, while inventory → Merchant invokes the existing sale subscription. Pooled merchant slots now register hover/drag callbacks once and distinguish draggable offers from non-draggable Currency price slots. Client compilation passed with zero errors and existing warnings.
