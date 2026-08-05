@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Quest;
 using Assets.Scripts.Areas.Shared.UI;
@@ -12,6 +13,17 @@ namespace Assets.Scripts.Areas.Shared.Mono
 {
     public sealed class Bootstrap : MonoBehaviour
     {
+        private const string _mainSceneName = "MainScene";
+
+        private static readonly string[] _clientSceneNames =
+        {
+            _mainSceneName,
+            "UIScene",
+            "AudioScene",
+            "EnvironmentScene",
+            "TestScene"
+        };
+
         private bool _isLoginInProgress;
 
         private async void Start()
@@ -111,6 +123,11 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 return "Check the email and password and try again.";
             }
 
+            if (exception.ResponseCode == 429)
+            {
+                return "Too many login attempts. Please wait a moment and try again.";
+            }
+
             if (exception.Result == UnityWebRequest.Result.DataProcessingError)
             {
                 return "The server response could not be read. Please try again.";
@@ -144,32 +161,68 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         #endregion
 
-        private static async UniTask StartAuthenticatedClientAsync()
+        private async UniTask StartAuthenticatedClientAsync()
         {
-            await QuestManager.Instance.LoadAsync();
-            await QuestManager.Instance.LoadAsync(1);
+            var loadedSceneNames = new List<string>(_clientSceneNames.Length);
 
-            await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
-            Debug.Log("MainScene Loaded");
-
-            await SceneManager.LoadSceneAsync("UIScene", LoadSceneMode.Additive);
-            Debug.Log("UIScene Loaded");
-
-            await SceneManager.LoadSceneAsync("AudioScene", LoadSceneMode.Additive);
-            Debug.Log("AudioScene Loaded");
-
-            await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
-            Debug.Log("EnvironmentScene Loaded");
-
-            await SceneManager.LoadSceneAsync("TestScene", LoadSceneMode.Additive);
-            Debug.Log("TestScene Loaded");
-
-            if (!NetworkManager.Singleton.StartClient())
+            try
             {
-                throw new InvalidOperationException("The network client could not be started.");
+                await QuestManager.Instance.LoadAsync();
+                await QuestManager.Instance.LoadAsync(1);
+
+                foreach (var sceneName in _clientSceneNames)
+                {
+                    await LoadSceneAdditivelyAsync(sceneName, loadedSceneNames);
+                }
+
+                if (!SceneManager.SetActiveScene(SceneManager.GetSceneByName(_mainSceneName)))
+                {
+                    throw new InvalidOperationException("MainScene could not be activated.");
+                }
+
+                if (!NetworkManager.Singleton.StartClient())
+                {
+                    throw new InvalidOperationException("The network client could not be started.");
+                }
+
+                Debug.Log("Client started");
+
+                await SceneManager.UnloadSceneAsync(gameObject.scene);
+            }
+            catch
+            {
+                await RollbackClientStartupAsync(loadedSceneNames);
+
+                throw;
+            }
+        }
+
+        private static async UniTask LoadSceneAdditivelyAsync(string sceneName, List<string> loadedSceneNames)
+        {
+            await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            loadedSceneNames.Add(sceneName);
+
+            Debug.Log($"{sceneName} Loaded");
+        }
+
+        private async UniTask RollbackClientStartupAsync(IReadOnlyList<string> loadedSceneNames)
+        {
+            SceneManager.SetActiveScene(gameObject.scene);
+
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                NetworkManager.Singleton.Shutdown();
             }
 
-            Debug.Log("Client started");
+            for (var i = loadedSceneNames.Count - 1; i >= 0; i--)
+            {
+                var scene = SceneManager.GetSceneByName(loadedSceneNames[i]);
+
+                if (scene.IsValid() && scene.isLoaded)
+                {
+                    await SceneManager.UnloadSceneAsync(scene);
+                }
+            }
         }
 
         private static async UniTask StartServerAsync()

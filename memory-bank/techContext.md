@@ -18,7 +18,7 @@
 - Swagger/OpenAPI UI is enabled by `API:SwaggerEnabled` and mounted at `/api`.
 - Serilog writes to console and daily rolling file logs.
 - API startup currently calls database initialization unconditionally; the initializer intentionally deletes and recreates the database before seeding development data as a temporary developer workflow.
-- A Debug `dotnet build API/ProjectX.sln` runs the NSwag MSBuild target, which starts the API to generate its specification and therefore also runs the destructive development database initializer. Treat even backend builds as database-resetting operations in the current setup.
+- The NSwag MSBuild target sets `SkipDatabaseInitialization=true`, so OpenAPI regeneration no longer runs the destructive development database initializer. Normal API startup still initializes and recreates the development database unless that configuration flag is explicitly set.
 - Current EF Core migration history is squashed to `20260706184932_Init` plus `ApplicationDbContextModelSnapshot.cs`.
 
 ## Client
@@ -47,6 +47,8 @@
 - On 2026-07-15, after combat ammo consumption was added, `dotnet build API/ProjectX.sln --no-restore -p:SkipNSwag=True` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and existing warnings. `dotnet test API/ProjectX.sln --no-build --no-restore` passed all 190 tests. No full Unity client/dedicated-server/API runtime test was performed.
 - On 2026-07-24, after inventory drag-and-drop was added, `dotnet build API/ProjectX.sln --no-restore -p:SkipNSwag=True` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and existing warnings, the API specification JSON parsed successfully, and `dotnet test API/ProjectX.sln --no-build --no-restore` passed all 206 tests. Pointer-driven behavior still requires a Unity Play Mode smoke test.
 - On 2026-07-27, after Loot -> Inventory drag-and-drop and correct Inventory/Gear source placeholders were added, `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and the six existing warnings. Pointer-driven behavior still requires a Unity Play Mode smoke test.
+- On 2026-08-05, after the login security review fixes, API and Unity runtime/editor projects compiled with zero errors, NSwag regenerated the login `200/400/401/429` contract without initializing the database, and all 215 API tests passed.
+- On 2026-08-05, the full 16-operation NSwag contract was documented and regression-tested, application validation/not-found errors were normalized to ProblemDetails, API tests passed all 220 cases, and the generated Unity client project compiled with zero errors and its existing dependency/unused-field warnings.
 - The repo-level `.gitignore` is tracked.
 - Git status commands emit permission warnings for `C:\Users\pc/.config/git/ignore`.
 

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterTransforms.Queries.GetCharacterTransform;
@@ -32,6 +33,6 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransfo
                 PositionZ = x.PositionZ,
                 RotationY = x.RotationY
             })
-            .FirstAsync(cancellationToken);
+            .FirstOrNotFoundAsync("character transform", cancellationToken);
     }
 }

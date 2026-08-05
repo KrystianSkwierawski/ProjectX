@@ -1,11 +1,12 @@
 ﻿namespace ProjectX.Domain.Enums;
+
 public enum QuestTypeEnum : byte
 {
     Indefinite,
 
     Kill,
 
-    Epxlore,
+    Explore,
 
     Find,
 

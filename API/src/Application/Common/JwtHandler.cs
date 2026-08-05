@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
@@ -8,10 +8,9 @@ using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Common;
+
 public class JwtHandler
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<JwtHandler>();
-
     private readonly IConfiguration _configuration;
     private readonly IConfigurationSection _jwtSettings;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -53,10 +52,6 @@ public class JwtHandler
             signingCredentials: GetSigningCredentials()
         );
 
-        var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-
-        Log.Verbose("Generated token. UserName: {0}, Token: {1}", user.UserName, token);
-
-        return token;
+        return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
@@ -51,7 +52,7 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
                         x.Amount
                     }).ToList()
             })
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("character", cancellationToken);
 
         return new CharacterDto
         {

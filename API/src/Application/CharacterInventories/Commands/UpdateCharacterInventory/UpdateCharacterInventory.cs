@@ -3,6 +3,7 @@ using System.Transactions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
@@ -36,7 +37,7 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         var entity = await _context.CharacterInventories
           //.Where(x => x.CharacterId == request.CharacterId)
           .Where(x => x.Character.ApplicationUserId == userId)
-          .SingleAsync(cancellationToken);
+          .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
         Log.Debug("Found inventory for Id: {0}", entity.Id);
 

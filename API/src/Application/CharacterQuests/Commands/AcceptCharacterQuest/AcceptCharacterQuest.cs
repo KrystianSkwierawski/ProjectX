@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
+using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -27,8 +28,9 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
 
         var characterId = await _context.Characters
             .Where(x => x.ApplicationUserId == userId)
-            .Select(x => x.Id)
-            .FirstAsync();
+            .Select(x => (int?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException("character");
 
         Log.Debug("AcceptCharacterQuest -> Found character for id: {0}", characterId);
 

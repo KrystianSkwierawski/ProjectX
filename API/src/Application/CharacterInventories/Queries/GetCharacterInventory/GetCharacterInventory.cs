@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
@@ -32,7 +33,7 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
                 Items = x.Inventory,
                 Count = x.Count
             })
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(result.Items);
 

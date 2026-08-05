@@ -1,21 +1,21 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
 
-public record AddCharacterQuestProgressCommand(int CharacterQuestId, int Progres) : IRequest<AddCharacterQuestProgressDto>;
+public record AddCharacterQuestProgressCommand(int CharacterQuestId, int Progress) : IRequest<AddCharacterQuestProgressDto>;
 
-public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharacterQuestProgressCommand, AddCharacterQuestProgressDto>
+public class AddCharacterQuestProgressCommandHandler : IRequestHandler<AddCharacterQuestProgressCommand, AddCharacterQuestProgressDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterQuestProgresCommandHandler>();
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterQuestProgressCommandHandler>();
 
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
-    public AddCharacterQuestProgresCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public AddCharacterQuestProgressCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
@@ -29,11 +29,11 @@ public class AddCharacterQuestProgresCommandHandler : IRequestHandler<AddCharact
             .Include(x => x.Quest)
             .Where(x => x.Id == request.CharacterQuestId)
             .Where(x => x.Character.ApplicationUserId == userId)
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("character quest", cancellationToken);
 
         Log.Debug("Found character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 
-        characterQuest.Progress += request.Progres;
+        characterQuest.Progress += request.Progress;
         characterQuest.ModDate = DateTime.Now;
 
         if (characterQuest.Progress >= characterQuest.Quest.Requirement)

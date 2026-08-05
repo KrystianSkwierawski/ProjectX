@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -51,7 +52,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
                 .Include(x => x.CharacterExperiences.Where(x => x.Type == request.Type))
                 //.Where(x => x.Id == request.CharacterId)
                 .Where(x => x.ApplicationUserId == userId)
-                .SingleAsync(cancellationToken);
+                .SingleOrNotFoundAsync("character", cancellationToken);
 
         Log.Debug("Found character. CharacterId {0}, UserId: {1}", character.Id, userId);
 

@@ -1,7 +1,7 @@
 # Progress
 
 ## Current Status
-- `BootstrapScene` has a working responsive prefab-backed login screen integrated with the existing API login command and developer multiplayer-playmode identities.
+- `BootstrapScene` has a working responsive prefab-backed login screen integrated with the existing API login command and developer multiplayer-playmode identities. Login payloads are redacted from server logs, invalid attempts participate in Identity lockout and per-IP rate limiting, and failed gameplay startup rolls back to the still-active login scene.
 - Memory bank initialized on 2026-05-07.
 - Memory bank reviewed and refreshed through repository HEAD `8c954ff` on 2026-07-13.
 - Repository contains an existing Unity client and ASP.NET Core backend with major gameplay support areas already scaffolded or implemented.
@@ -10,6 +10,7 @@
 ## What Works / Exists
 - `BootstrapLogin.prefab` provides email/password inputs, basic regex/length validation, inline errors, Font Awesome eye/eye-slash toggling, and a form-replacing spinner state. It uses Futura PT Book/Medium and the shared `ColorUI` dark palette. Its full-screen root, centered preferred-width card, layout bounds, and proportional field anchors adapt to narrow and landscape viewports. `BootstrapScene` stores an actual prefab instance and places the scene-scoped `LoginUI` component directly beside `Bootstrap`; `LoginUI` resolves and caches the prefab view hierarchy in `Awake`, without Inspector references or reference-null validation.
 - Login requests use cancellation, a 15-second timeout, no JWT response logging, and structured `ApiRequestException` mapping. Invalid email/password cases return identical API 401 responses through an application-specific exception. Editor main/clone players autofill user1/user2 directly in a temporary marked region; normal release builds do not show the development hint or accept `@localhost`.
+- The checked-in OpenAPI 3.0 contract documents all 16 operations with summaries, descriptions, parameter/body/response details, stable operation IDs, complete schema metadata, bearer JWT, an anonymous login route, policy-derived `401`/`403`, and domain `400`/`404` responses. NSwag generation skips database initialization, and contract tests enforce these conventions. MediatR logging consistently uses request `ToString()` implementations; login email/password/token values are omitted directly. The API suite currently has 220 passing tests.
 - Shared weapon hits notify clients before invoking synchronous damage subscribers, so killing sword attacks still play `SwordImpact` before the weapon is despawned.
 - Backend solution structure is present.
 - API startup configures Kestrel, Serilog, Swagger/NSwag, database initialization, HTTPS redirection, and endpoint mapping.
@@ -60,6 +61,7 @@
 - Full Polish client localization remains future work; the current English content in `Client/Assets/Resources/i18n/pl.json` is an intentional temporary development fallback.
 
 ## Known Issues / Risks
+- The login rate limiter partitions requests by `HttpContext.Connection.RemoteIpAddress`, but the API does not currently configure `UseForwardedHeaders()`. Behind a reverse proxy, load balancer, or CDN it may therefore rate-limit the proxy's shared IP instead of the real client IP. Production deployment must configure and trust forwarded headers before `UseRateLimiter()`; forwarded headers must not be accepted indiscriminately from untrusted senders.
 - Secrets or development keys appear in `API/src/API/appsettings.json`; treat as local development values unless the user confirms otherwise.
 - Generated Unity and .NET artifacts are present in the workspace, so future searches and edits should avoid build/cache directories.
 - A repo-level Visual Studio/.NET-style `.gitignore` is tracked, but generated Unity/.NET artifacts may still exist locally, so searches and edits should keep explicit exclusions.
@@ -76,6 +78,7 @@
 - `PlayerUI.SetPlayer()` currently calls `SetHealth()` and then `SetMaxHealth()` on the same text field, so the initial displayed value may be max health rather than current health.
 
 ## Evolution Notes
+- 2026-08-05: Applied the senior login review fixes: removed sensitive credentials/tokens from log text and JWT logging, added Identity failure tracking/lockout and per-IP rate limiting, stopped treating invalid credentials as server errors, forwarded cancellation, safely regenerated and regression-tested OpenAPI, and made Unity client scene startup retain/restore Bootstrap with rollback on failure. API and Unity runtime/editor builds passed with zero errors and all 215 API tests passed at that stage.
 - 2026-08-04: Converted `LoginUI` to a scene-scoped `MonoSingleton` attached directly to the `Bootstrap` GameObject. It now resolves and caches the `BootstrapLogin.prefab` view hierarchy in `Awake`, leaving no per-control fields in the Inspector and requiring no reference-null validation; `Bootstrap` subscribes in `Start`. Runtime and editor client builds completed with zero errors and existing dependency warnings.
 - 2026-08-03: Made the Bootstrap login responsive in both its prefab and scene. Added a full-screen anchored layout root, a centered card with preferred/minimum width, proportional field/loading anchors, and height-based Canvas scaling; visually verified 16:9, 16:10, and 360x780 portrait layouts. Client runtime and editor project builds completed with zero errors and the existing dependency warnings.
 - 2026-08-03: Added the prefab-backed Bootstrap login flow, separated `LoginUI` from bootstrap orchestration, added validation/password visibility/loading and developer autofill, hardened request timeout/cancellation/error mapping and token logging, and changed invalid credentials to API 401. Unity client/editor and API builds passed with zero errors; all 206 API tests passed.

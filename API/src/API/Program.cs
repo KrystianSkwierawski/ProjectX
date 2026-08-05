@@ -23,15 +23,21 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddUserSecrets<Program>();
 }
 
-await app.InitialiseDatabaseAsync();
+if (!builder.Configuration.GetValue<bool>("SkipDatabaseInitialization"))
+{
+    await app.InitialiseDatabaseAsync();
+}
 
 app.UseHsts();
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 
 if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))
 {

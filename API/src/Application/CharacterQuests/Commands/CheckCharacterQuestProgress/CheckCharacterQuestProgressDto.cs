@@ -1,6 +1,6 @@
 ﻿using ProjectX.Domain.Enums;
 
-namespace ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgres;
+namespace ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 public class CheckCharacterQuestProgressDto
 {
     public QuestEnum QuestId { get; set; }

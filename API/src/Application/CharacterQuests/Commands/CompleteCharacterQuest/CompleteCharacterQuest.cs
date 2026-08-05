@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -32,7 +33,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
             .Where(x => x.Id == request.CharacterQuestId)
             .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
             .Where(x => x.Character.ApplicationUserId == userId)
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("finished character quest", cancellationToken);
 
         Log.Debug("Found character quest for id: {0}", characterQuest.Id);
 
@@ -42,7 +43,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
         if (characterQuest.Quest.Type == QuestTypeEnum.Collect)
         {
-            CollectItemsAsync(userId, characterQuest, cancellationToken).Wait(cancellationToken);
+            await CollectItemsAsync(userId, characterQuest, cancellationToken);
         }
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -62,7 +63,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
         var characterInventory = await _context.CharacterInventories
             //.Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
         var inventory = JsonSerializer.Deserialize<InventoryDto>(characterInventory.Inventory);
 

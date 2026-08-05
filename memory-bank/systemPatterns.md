@@ -19,13 +19,16 @@
 - Minimal API endpoint classes under `API/src/API/Endpoints`.
 - MediatR for application commands/queries.
 - FluentValidation wired through a MediatR validation behavior.
-- Logging behavior registered in the MediatR pipeline.
+- Logging behavior registered in the MediatR pipeline. It renders command/query payloads through their own `ToString()` implementation; concrete MediatR requests are records (or provide an equivalent explicit override), and a convention test enforces that every request declares `ToString()`. Types carrying credentials or tokens must override `ToString()` so those values are omitted entirely; there is no marker-based redaction mechanism.
+- Every Minimal API operation declares summary, description, request/parameter/response documentation beside its route mapping. `OpenApiDocumentationOperationProcessor` adds the shared authorization responses and policy text, while `OpenApiSchemaDocumentationProcessor` supplies schema/property descriptions, examples, formats, and required-property metadata. Contract tests enforce complete metadata, stable operation IDs, bearer-JWT security, and an anonymous login operation across the generated specification.
+- `ApiExceptionHandler` maps application validation and not-found exceptions to RFC 7807 responses. Application queries use `SingleOrNotFoundAsync` / `FirstOrNotFoundAsync` when absence is a normal `404`, while inconsistent duplicate data continues to surface as a server error.
 - Character state mutations use `UpdateCharacterCommand` for optional partial updates of health, max health, Strength, Dexterity, Speed, Intellect, Armor, `HelmetType`, `ChestType`, `BootsType`, `WeaponType`, `AmmoType`, and `AmmoCount`. Ammo fields are persisted exactly as submitted; ammo-consumption and zero-count unequip rules belong to the Unity server rather than the API handler.
 - Entity Framework Core through `ApplicationDbContext`, with SQL Server by default and in-memory database support through configuration.
 - API startup calls `InitialiseDatabaseAsync()`, whose current implementation intentionally deletes and recreates the database with `EnsureDeletedAsync()` / `EnsureCreatedAsync()` and then seeds roles, users, inventory items, quests, and crafting recipes. This is a temporary developer workflow.
 - Quests and crafting recipes are defined declaratively through enum attributes and synchronized into the database by `ApplicationDbContextInitialiser`.
 - Crafting recipe queries filter active recipes by type and return them ordered by recipe `Id`.
 - ASP.NET Core Identity with roles and JWT bearer authentication.
+- Login command/response `ToString()` implementations omit the email, password, and token rather than redacting whole payloads through a marker interface. Login failures use Identity access-failure tracking with a five-attempt/five-minute lockout and the endpoint has a per-IP fixed-window rate limit of five requests per minute. The limiter partitions requests using `HttpContext.Connection.RemoteIpAddress`; deployments behind a reverse proxy, load balancer, or CDN must configure trusted forwarded headers before rate limiting so this value represents the real client IP rather than the shared proxy IP.
 - Authorization policies for server/client roles.
 - NSwag exposes API docs at `/api` when enabled.
 

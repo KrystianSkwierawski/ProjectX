@@ -3,17 +3,27 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ProjectX.API",
+    "description": "HTTP API used by the ProjectX Unity client and dedicated game server for authentication and persistent game state.",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current ProjectX API host."
+    }
+  ],
   "paths": {
     "/api/ApplicationUsers": {
       "post": {
         "tags": [
           "ApplicationUsers"
         ],
+        "summary": "Authenticate an application user",
+        "description": "Validates an email address and password, then returns a JWT bearer token and the user's preferred language.",
         "operationId": "LoginAsync",
         "requestBody": {
           "x-name": "command",
+          "description": "Application-user email address and password.",
           "content": {
             "application/json": {
               "schema": {
@@ -26,11 +36,27 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Authentication succeeded and a JWT bearer token was issued.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LoginApplicationUserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The email or password is invalid, or the account is locked out."
+          },
+          "429": {
+            "description": "Too many login attempts were made from the same IP address."
+          },
+          "400": {
+            "description": "The credentials payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -43,9 +69,12 @@
         "tags": [
           "CharacterExperiences"
         ],
+        "summary": "Add character experience",
+        "description": "Adds experience to one progression category and returns the updated total experience and calculated level.\n\nRequired authorization policy: Server.",
         "operationId": "AddCharacterExperience",
         "requestBody": {
           "x-name": "command",
+          "description": "Character identifier, experience amount, and progression category.",
           "content": {
             "application/json": {
               "schema": {
@@ -58,7 +87,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Experience was added and the updated progression values are returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -66,6 +95,32 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -80,14 +135,18 @@
         "tags": [
           "CharacterInventories"
         ],
+        "summary": "Get a character inventory",
+        "description": "Returns the persisted ordered inventory slots and capacity for the authenticated user's character.\n\nRequired authorization policy: Client.",
         "operationId": "GetCharacterInventory",
         "parameters": [
           {
             "name": "CharacterId",
             "in": "query",
             "required": true,
+            "description": "Identifier of the character whose inventory is requested.",
             "schema": {
               "type": "integer",
+              "description": "Int32 schema.",
               "format": "int32"
             },
             "x-position": 1
@@ -95,7 +154,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The character inventory was found and returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -103,6 +162,22 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -115,9 +190,12 @@
         "tags": [
           "CharacterInventories"
         ],
+        "summary": "Update a character inventory",
+        "description": "Applies item additions, removals, a stack split, or a slot move to the persisted character inventory.\n\nRequired authorization policy: Server.",
         "operationId": "UpdateCharacterInventory",
         "requestBody": {
           "x-name": "command",
+          "description": "Character identifier and inventory operations to apply.",
           "content": {
             "application/json": {
               "schema": {
@@ -130,7 +208,33 @@
         },
         "responses": {
           "204": {
-            "description": ""
+            "description": "The inventory update was persisted."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -145,14 +249,18 @@
         "tags": [
           "CharacterQuests"
         ],
+        "summary": "Get character quests",
+        "description": "Returns the quest lifecycle state and progress assigned to a character.\n\nRequired authorization policy: Client.",
         "operationId": "GetCharacterQuests",
         "parameters": [
           {
             "name": "CharacterId",
             "in": "query",
             "required": true,
+            "description": "Identifier of the character whose quests are requested.",
             "schema": {
               "type": "integer",
+              "description": "Int32 schema.",
               "format": "int32"
             },
             "x-position": 1
@@ -160,7 +268,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Character quest states were returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -168,6 +276,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -182,9 +296,12 @@
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "PostApiCharacterQuestsAccept",
+        "summary": "Accept a quest",
+        "description": "Creates an accepted quest state for the authenticated user's character.\n\nRequired authorization policy: Client.",
+        "operationId": "AcceptCharacterQuest",
         "requestBody": {
           "x-name": "command",
+          "description": "Identifier of the quest to accept.",
           "content": {
             "application/json": {
               "schema": {
@@ -197,7 +314,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
+            "description": "The quest was accepted and its initial character state is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -205,6 +322,32 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -219,9 +362,12 @@
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "PostApiCharacterQuestsProgress",
+        "summary": "Add character quest progress",
+        "description": "Adds a progress increment to an accepted character quest and updates its lifecycle state when the requirement is met.\n\nRequired authorization policy: Server.",
+        "operationId": "AddCharacterQuestProgress",
         "requestBody": {
           "x-name": "command",
+          "description": "Character quest identifier and progress increment.",
           "content": {
             "application/json": {
               "schema": {
@@ -234,7 +380,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Quest progress was updated and the resulting state is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -242,6 +388,32 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -256,9 +428,12 @@
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "PostApiCharacterQuestsCheckProgress",
+        "summary": "Check and apply quest progress",
+        "description": "Finds an active quest matching a game-server event, applies progress when present, and returns the resulting state.\n\nRequired authorization policy: Server.",
+        "operationId": "CheckCharacterQuestProgress",
         "requestBody": {
           "x-name": "command",
+          "description": "Quest identifier, progress increment, and character identifier reported by the game server.",
           "content": {
             "application/json": {
               "schema": {
@@ -271,7 +446,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "The matching active quest was updated, or an empty result is returned when none is active.",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,6 +454,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -293,9 +484,12 @@
         "tags": [
           "CharacterQuests"
         ],
-        "operationId": "PostApiCharacterQuestsComplete",
+        "summary": "Complete a finished character quest",
+        "description": "Marks a finished character quest as completed, consumes required collection items, and returns its reward.\n\nRequired authorization policy: Server.",
+        "operationId": "CompleteCharacterQuest",
         "requestBody": {
           "x-name": "command",
+          "description": "Identifier of the finished character quest to complete.",
           "content": {
             "application/json": {
               "schema": {
@@ -308,7 +502,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "The quest was completed and its reward is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -316,6 +510,32 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -330,14 +550,18 @@
         "tags": [
           "Characters"
         ],
+        "summary": "Get a character",
+        "description": "Returns current persistent state, attributes, equipment, and progression levels for a character owned by the authenticated user.\n\nRequired authorization policy: Server.",
         "operationId": "GetCharacter",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
+            "description": "Identifier of the character to retrieve.",
             "schema": {
               "type": "integer",
+              "description": "Int32 schema.",
               "format": "int32"
             },
             "x-position": 1
@@ -345,7 +569,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The character was found and returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -353,6 +577,22 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -367,9 +607,12 @@
         "tags": [
           "Characters"
         ],
+        "summary": "Update a character",
+        "description": "Partially updates persistent health, attributes, equipment, or ammunition state for a character.\n\nRequired authorization policy: Server.",
         "operationId": "UpdateCharacter",
         "requestBody": {
           "x-name": "command",
+          "description": "Character identifier and the optional state fields to update.",
           "content": {
             "application/json": {
               "schema": {
@@ -381,8 +624,34 @@
           "x-position": 1
         },
         "responses": {
-          "200": {
-            "description": ""
+          "204": {
+            "description": "The character update was persisted."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -397,10 +666,12 @@
         "tags": [
           "CharacterTransforms"
         ],
+        "summary": "Get the latest character transform",
+        "description": "Returns the most recently persisted world position and horizontal rotation for the authenticated user's character.\n\nRequired authorization policy: Client.",
         "operationId": "GetCharacterTransform",
         "responses": {
           "200": {
-            "description": "",
+            "description": "The latest character transform was found and returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -408,6 +679,22 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -420,13 +707,16 @@
         "tags": [
           "CharacterTransforms"
         ],
-        "operationId": "SaveTransformTransform",
+        "summary": "Save a character transform",
+        "description": "Persists a new world-position snapshot for the authenticated user's character.\n\nRequired authorization policy: Server.",
+        "operationId": "SaveCharacterTransform",
         "requestBody": {
           "x-name": "command",
+          "description": "World position and horizontal rotation to persist.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SaveTransformTransformCommand"
+                "$ref": "#/components/schemas/SaveCharacterTransformCommand"
               }
             }
           },
@@ -435,7 +725,33 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "The transform snapshot was persisted."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -450,12 +766,15 @@
         "tags": [
           "CraftingRecipes"
         ],
+        "summary": "Get crafting recipes",
+        "description": "Returns active crafting recipes for the requested profession, ordered by recipe identifier.\n\nRequired authorization policy: ServerOrClient.",
         "operationId": "GetCraftingRecipes",
         "parameters": [
           {
             "name": "type",
             "in": "query",
             "required": true,
+            "description": "Crafting profession used to filter active recipes.",
             "schema": {
               "$ref": "#/components/schemas/CraftingRecipeTypeEnum"
             },
@@ -464,7 +783,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Matching active crafting recipes were returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -472,6 +791,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -486,12 +811,15 @@
         "tags": [
           "Quests"
         ],
+        "summary": "Get a quest",
+        "description": "Returns one localized quest definition in the authenticated user's preferred language.\n\nRequired authorization policy: Client.",
         "operationId": "GetQuest",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
+            "description": "Identifier of the quest to retrieve.",
             "schema": {
               "$ref": "#/components/schemas/QuestEnum"
             },
@@ -500,7 +828,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "The localized quest definition was found and returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -508,6 +836,22 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "The requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -522,10 +866,12 @@
         "tags": [
           "Quests"
         ],
+        "summary": "Get active quests",
+        "description": "Returns all active quest definitions localized to the authenticated user's preferred language.\n\nRequired authorization policy: ServerOrClient.",
         "operationId": "GetQuests",
         "responses": {
           "200": {
-            "description": "",
+            "description": "Active localized quest definitions were returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -533,6 +879,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
           }
         },
         "security": [
@@ -547,19 +899,28 @@
     "schemas": {
       "LoginApplicationUserDto": {
         "type": "object",
+        "description": "Successful authentication result containing an access token and preferred language.",
         "additionalProperties": false,
+        "required": [
+          "token",
+          "language"
+        ],
         "properties": {
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "JWT bearer access token.",
+            "example": "eyJhbGciOiJIUzI1NiJ9..."
           },
           "language": {
+            "description": "Preferred interface language.",
+            "example": 0,
             "$ref": "#/components/schemas/LanguageEnum"
           }
         }
       },
       "LanguageEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Supported interface languages.",
         "x-enum-names": [
           "pl",
           "en"
@@ -573,64 +934,170 @@
           "en"
         ],
         "x-enum-descriptions": [
-          null,
-          null
+          "pl.",
+          "en."
         ],
         "x-enumDescriptions": [
-          null,
-          null
+          "pl.",
+          "en."
         ],
         "enum": [
           0,
           1
         ]
       },
+      "HttpValidationProblemDetails": {
+        "description": "RFC 7807 validation problem containing errors grouped by field.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProblemDetails"
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "description": "Object schema.",
+              "nullable": true
+            },
+            "properties": {
+              "errors": {
+                "type": "object",
+                "description": "I Dictionary`2 schema.",
+                "additionalProperties": {
+                  "type": "array",
+                  "description": "String[] schema.",
+                  "items": {
+                    "type": "string",
+                    "description": "String schema."
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "description": "RFC 7807 machine-readable API error.",
+        "additionalProperties": {
+          "description": "Object schema.",
+          "nullable": true
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
+            "nullable": true,
+            "example": "string"
+          },
+          "title": {
+            "type": "string",
+            "description": "Localized quest title or problem title.",
+            "nullable": true,
+            "example": "string"
+          },
+          "status": {
+            "type": "integer",
+            "description": "Current resource or error status.",
+            "format": "int32",
+            "nullable": true,
+            "example": 1
+          },
+          "detail": {
+            "type": "string",
+            "description": "Detail value.",
+            "nullable": true,
+            "example": "string"
+          },
+          "instance": {
+            "type": "string",
+            "description": "Instance value.",
+            "nullable": true,
+            "example": "string"
+          }
+        }
+      },
       "LoginApplicationUserCommand": {
         "type": "object",
+        "description": "Credentials used to authenticate an application user.",
         "additionalProperties": false,
+        "required": [
+          "userName",
+          "password"
+        ],
         "properties": {
           "userName": {
-            "type": "string"
+            "type": "string",
+            "description": "Application user email address.",
+            "format": "email",
+            "maxLength": 256,
+            "minLength": 3,
+            "example": "user@example.com"
           },
           "password": {
-            "type": "string"
+            "type": "string",
+            "description": "Application user password.",
+            "format": "password",
+            "maxLength": 256,
+            "minLength": 6,
+            "example": "P@ssw0rd!"
           }
         }
       },
       "AddCharacterExperienceDto": {
         "type": "object",
+        "description": "Character experience and calculated level after an experience update.",
         "additionalProperties": false,
+        "required": [
+          "level",
+          "experience"
+        ],
         "properties": {
           "level": {
             "type": "integer",
-            "format": "byte"
+            "description": "Calculated character or required profession level.",
+            "format": "byte",
+            "example": 1
           },
           "experience": {
             "type": "integer",
-            "format": "int32"
+            "description": "Experience amount.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "AddCharacterExperienceCommand": {
         "type": "object",
+        "description": "Experience amount to add to a character progression category.",
         "additionalProperties": false,
+        "required": [
+          "characterId",
+          "amount",
+          "type"
+        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character identifier.",
+            "format": "int32",
+            "example": 1
           },
           "amount": {
             "type": "integer",
-            "format": "int32"
+            "description": "Experience amount to add.",
+            "format": "int32",
+            "example": 1
           },
           "type": {
+            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
+            "example": 0,
             "$ref": "#/components/schemas/ExperienceTypeEnum"
           }
         }
       },
       "ExperienceTypeEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Character progression and profession categories.",
         "x-enum-names": [
           "None",
           "Main",
@@ -665,26 +1132,26 @@
           "Alchemy"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Main.",
+          "Fishing.",
+          "Mining.",
+          "Lumberjack.",
+          "Herbalism.",
+          "Cooking.",
+          "Blacksmithing.",
+          "Alchemy."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Main.",
+          "Fishing.",
+          "Mining.",
+          "Lumberjack.",
+          "Herbalism.",
+          "Cooking.",
+          "Blacksmithing.",
+          "Alchemy."
         ],
         "enum": [
           0,
@@ -700,26 +1167,44 @@
       },
       "CharacterInventoryDto": {
         "type": "object",
+        "description": "Persisted character inventory and slot capacity.",
         "additionalProperties": false,
+        "required": [
+          "characterId",
+          "inventory",
+          "count"
+        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character identifier.",
+            "format": "int32",
+            "example": 1
           },
           "inventory": {
+            "description": "Ordered inventory contents.",
+            "example": {},
             "$ref": "#/components/schemas/InventoryDto"
           },
           "count": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Stack count or inventory slot capacity, depending on the containing schema.",
+            "example": 1
           }
         }
       },
       "InventoryDto": {
         "type": "object",
+        "description": "Ordered collection of inventory slots.",
         "additionalProperties": false,
+        "required": [
+          "items"
+        ],
         "properties": {
           "items": {
             "type": "array",
+            "description": "Ordered inventory items or required crafting items.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
@@ -728,20 +1213,29 @@
       },
       "InventoryItemDto": {
         "type": "object",
+        "description": "Inventory item type and stack count.",
         "additionalProperties": false,
+        "required": [
+          "type",
+          "count"
+        ],
         "properties": {
           "type": {
+            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
+            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "count": {
             "type": "integer",
-            "format": "int32"
+            "description": "Stack count or inventory slot capacity, depending on the containing schema.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "InventoryItemEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Persisted inventory item identifiers.",
         "x-enum-names": [
           "None",
           "Can",
@@ -872,90 +1366,90 @@
           "IronBow"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Can.",
+          "Currency.",
+          "Fish.",
+          "Cooked Fish.",
+          "Rice.",
+          "Sushi.",
+          "Purple Ore.",
+          "White Ore.",
+          "Copper Ore.",
+          "Black Ore.",
+          "Purple Bar.",
+          "White Bar.",
+          "Copper Bar.",
+          "Black Bar.",
+          "Wood.",
+          "Chamomile.",
+          "Health Potion.",
+          "Helmet Template.",
+          "Chest Template.",
+          "Boots Template.",
+          "Weapon Template.",
+          "Ammo Template.",
+          "Iron Helmet.",
+          "Iron Chest.",
+          "Iron Boots.",
+          "Iron Sword.",
+          "Ammo Arrow1.",
+          "Ammo Arrow2.",
+          "Ammo Arrow3.",
+          "Ammo Rune1.",
+          "Ammo Rune2.",
+          "Ammo Rune3.",
+          "Ammo Feather1.",
+          "Ammo Feather2.",
+          "Ammo Feather3.",
+          "Ammo Oil1.",
+          "Ammo Oil2.",
+          "Ammo Oil3.",
+          "Iron Wand.",
+          "Iron Bow."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Can.",
+          "Currency.",
+          "Fish.",
+          "Cooked Fish.",
+          "Rice.",
+          "Sushi.",
+          "Purple Ore.",
+          "White Ore.",
+          "Copper Ore.",
+          "Black Ore.",
+          "Purple Bar.",
+          "White Bar.",
+          "Copper Bar.",
+          "Black Bar.",
+          "Wood.",
+          "Chamomile.",
+          "Health Potion.",
+          "Helmet Template.",
+          "Chest Template.",
+          "Boots Template.",
+          "Weapon Template.",
+          "Ammo Template.",
+          "Iron Helmet.",
+          "Iron Chest.",
+          "Iron Boots.",
+          "Iron Sword.",
+          "Ammo Arrow1.",
+          "Ammo Arrow2.",
+          "Ammo Arrow3.",
+          "Ammo Rune1.",
+          "Ammo Rune2.",
+          "Ammo Rune3.",
+          "Ammo Feather1.",
+          "Ammo Feather2.",
+          "Ammo Feather3.",
+          "Ammo Oil1.",
+          "Ammo Oil2.",
+          "Ammo Oil3.",
+          "Iron Wand.",
+          "Iron Bow."
         ],
         "enum": [
           0,
@@ -1003,47 +1497,71 @@
       },
       "UpdateCharacterInventoryCommand": {
         "type": "object",
+        "description": "Inventory additions, removals, stack splits, or slot moves.",
         "additionalProperties": false,
+        "required": [
+          "characterId",
+          "add",
+          "remove"
+        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character identifier.",
+            "format": "int32",
+            "example": 1
           },
           "add": {
             "type": "array",
+            "description": "Inventory item stacks to add.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
           },
           "remove": {
             "type": "array",
+            "description": "Inventory item stacks to remove.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
           },
           "splitSlotIndex": {
             "type": "integer",
+            "description": "Zero-based slot index of the stack to split.",
             "format": "int32",
-            "nullable": true
+            "nullable": true,
+            "example": 1
           },
           "moveSourceSlotIndex": {
             "type": "integer",
+            "description": "Zero-based source slot index for an inventory move.",
             "format": "int32",
-            "nullable": true
+            "nullable": true,
+            "example": 1
           },
           "moveTargetSlotIndex": {
             "type": "integer",
+            "description": "Zero-based target slot index for an inventory move.",
             "format": "int32",
-            "nullable": true
+            "nullable": true,
+            "example": 1
           }
         }
       },
       "GetCharacterQuestsDto": {
         "type": "object",
+        "description": "Quest state assigned to a character.",
         "additionalProperties": false,
+        "required": [
+          "characterQuests"
+        ],
         "properties": {
           "characterQuests": {
             "type": "array",
+            "description": "Quest states assigned to the character.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/CharacterQuestDto"
             }
@@ -1052,27 +1570,42 @@
       },
       "CharacterQuestDto": {
         "type": "object",
+        "description": "A character's progress and status for one quest.",
         "additionalProperties": false,
+        "required": [
+          "id",
+          "questId",
+          "status",
+          "progress"
+        ],
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int32"
+            "description": "Resource identifier.",
+            "format": "int32",
+            "example": 1
           },
           "questId": {
+            "description": "Quest identifier.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "status": {
+            "description": "Current resource or error status.",
+            "example": 0,
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           },
           "progress": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest progress value or increment.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "QuestEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Persisted quest identifiers.",
         "x-enum-names": [
           "None",
           "Kill2Beans",
@@ -1131,42 +1664,42 @@
           "Collect2HealthPotions"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Kill2 Beans.",
+          "Collect2 Cans.",
+          "Collect2 Fish.",
+          "Collect2 Purple Ores.",
+          "Collect2 White Ores.",
+          "Collect2 Copper Ores.",
+          "Collect2 Black Ores.",
+          "Collect2 Chamomile.",
+          "Collect2 Woods.",
+          "Collect2 Cooked Fish.",
+          "Collect2 Sushi.",
+          "Collect2 Purple Bars.",
+          "Collect2 White Bars.",
+          "Collect2 Copper Bars.",
+          "Collect2 Black Bars.",
+          "Collect2 Health Potions."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Kill2 Beans.",
+          "Collect2 Cans.",
+          "Collect2 Fish.",
+          "Collect2 Purple Ores.",
+          "Collect2 White Ores.",
+          "Collect2 Copper Ores.",
+          "Collect2 Black Ores.",
+          "Collect2 Chamomile.",
+          "Collect2 Woods.",
+          "Collect2 Cooked Fish.",
+          "Collect2 Sushi.",
+          "Collect2 Purple Bars.",
+          "Collect2 White Bars.",
+          "Collect2 Copper Bars.",
+          "Collect2 Black Bars.",
+          "Collect2 Health Potions."
         ],
         "enum": [
           0,
@@ -1190,7 +1723,7 @@
       },
       "CharacterQuestStatusEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Lifecycle state of a character quest.",
         "x-enum-names": [
           "None",
           "Accepted",
@@ -1213,18 +1746,18 @@
           "Abandoned"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Accepted.",
+          "Finished.",
+          "Completed.",
+          "Abandoned."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Accepted.",
+          "Finished.",
+          "Completed.",
+          "Abandoned."
         ],
         "enum": [
           0,
@@ -1236,194 +1769,325 @@
       },
       "AcceptCharacterQuestCommand": {
         "type": "object",
+        "description": "Quest to accept for the authenticated user's character.",
         "additionalProperties": false,
+        "required": [
+          "questId"
+        ],
         "properties": {
           "questId": {
+            "description": "Quest identifier.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           }
         }
       },
       "AddCharacterQuestProgressDto": {
         "type": "object",
+        "description": "Quest state after progress is added.",
         "additionalProperties": false,
+        "required": [
+          "status",
+          "reward"
+        ],
         "properties": {
           "status": {
+            "description": "Current resource or error status.",
+            "example": 0,
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           },
           "reward": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest or crafting reward, depending on the containing schema.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "AddCharacterQuestProgressCommand": {
         "type": "object",
+        "description": "Progress increment for an accepted character quest.",
         "additionalProperties": false,
+        "required": [
+          "characterQuestId",
+          "progress"
+        ],
         "properties": {
           "characterQuestId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character quest identifier.",
+            "format": "int32",
+            "example": 1
           },
-          "progres": {
+          "progress": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest progress value or increment.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "CheckCharacterQuestProgressDto": {
         "type": "object",
+        "description": "Result of checking character quest progress.",
         "additionalProperties": false,
+        "required": [
+          "questId",
+          "characterQuestId",
+          "status"
+        ],
         "properties": {
           "questId": {
+            "description": "Quest identifier.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "characterQuestId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character quest identifier.",
+            "format": "int32",
+            "example": 1
           },
           "status": {
+            "description": "Current resource or error status.",
+            "example": 0,
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           }
         }
       },
       "CheckCharacterQuestProgressCommand": {
         "type": "object",
+        "description": "Quest progress reported by the game server.",
         "additionalProperties": false,
+        "required": [
+          "questId",
+          "progress",
+          "characterId"
+        ],
         "properties": {
           "questId": {
+            "description": "Quest identifier.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "progress": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest progress value or increment.",
+            "format": "int32",
+            "example": 1
           },
           "characterId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character identifier.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "CompleteCharacterQuestDto": {
         "type": "object",
+        "description": "Reward granted for completing a finished quest.",
         "additionalProperties": false,
+        "required": [
+          "reward"
+        ],
         "properties": {
           "reward": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest or crafting reward, depending on the containing schema.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "CompleteCharacterQuestCommand": {
         "type": "object",
+        "description": "Finished character quest to complete.",
         "additionalProperties": false,
+        "required": [
+          "characterQuestId"
+        ],
         "properties": {
           "characterQuestId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character quest identifier.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "CharacterDto": {
         "type": "object",
+        "description": "Current character state, attributes, equipment, and progression levels.",
         "additionalProperties": false,
+        "required": [
+          "name",
+          "levels",
+          "health",
+          "maxHealth",
+          "strength",
+          "dexterity",
+          "speed",
+          "intellect",
+          "armor",
+          "helmetType",
+          "chestType",
+          "bootsType",
+          "weaponType",
+          "ammoType",
+          "ammoCount"
+        ],
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Character name.",
+            "example": "string"
           },
           "levels": {
             "type": "object",
+            "description": "Calculated level for each progression category.",
+            "example": [],
             "x-dictionaryKey": {
               "$ref": "#/components/schemas/ExperienceTypeEnum"
             },
             "additionalProperties": {
               "type": "integer",
+              "description": "Byte schema.",
               "format": "byte"
             }
           },
           "health": {
             "type": "integer",
-            "format": "int32"
+            "description": "Current character health.",
+            "format": "int32",
+            "example": 1
           },
           "maxHealth": {
             "type": "integer",
-            "format": "int32"
+            "description": "Maximum character health.",
+            "format": "int32",
+            "example": 1
           },
           "strength": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Character strength attribute value.",
+            "example": 1
           },
           "dexterity": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Character dexterity attribute value.",
+            "example": 1
           },
           "speed": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Character speed attribute value.",
+            "example": 1
           },
           "intellect": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Character intellect attribute value.",
+            "example": 1
           },
           "armor": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Character armor attribute value.",
+            "example": 1
           },
           "helmetType": {
+            "description": "Equipped helmet item type.",
+            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "chestType": {
+            "description": "Equipped chest item type.",
+            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "bootsType": {
+            "description": "Equipped boots item type.",
+            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "weaponType": {
+            "description": "Equipped weapon item type.",
+            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "ammoType": {
+            "description": "Equipped ammunition item type.",
+            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "ammoCount": {
             "type": "integer",
-            "format": "int32"
+            "description": "Number of items in the equipped ammunition stack.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "UpdateCharacterCommand": {
         "type": "object",
+        "description": "Partial update of character state, attributes, or equipped items.",
         "additionalProperties": false,
+        "required": [
+          "characterId"
+        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character identifier.",
+            "format": "int32",
+            "example": 1
           },
           "health": {
             "type": "integer",
+            "description": "Current character health.",
             "format": "int32",
-            "nullable": true
+            "nullable": true,
+            "example": 1
           },
           "maxHealth": {
             "type": "integer",
+            "description": "Maximum character health.",
             "format": "int32",
-            "nullable": true
+            "nullable": true,
+            "example": 1
           },
           "strength": {
             "type": "integer",
-            "nullable": true
+            "description": "Character strength attribute value.",
+            "nullable": true,
+            "example": 1
           },
           "dexterity": {
             "type": "integer",
-            "nullable": true
+            "description": "Character dexterity attribute value.",
+            "nullable": true,
+            "example": 1
           },
           "speed": {
             "type": "integer",
-            "nullable": true
+            "description": "Character speed attribute value.",
+            "nullable": true,
+            "example": 1
           },
           "intellect": {
             "type": "integer",
-            "nullable": true
+            "description": "Character intellect attribute value.",
+            "nullable": true,
+            "example": 1
           },
           "armor": {
             "type": "integer",
-            "nullable": true
+            "description": "Character armor attribute value.",
+            "nullable": true,
+            "example": 1
           },
           "helmetType": {
+            "description": "Equipped helmet item type.",
             "nullable": true,
+            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -1431,7 +2095,9 @@
             ]
           },
           "chestType": {
+            "description": "Equipped chest item type.",
             "nullable": true,
+            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -1439,7 +2105,9 @@
             ]
           },
           "bootsType": {
+            "description": "Equipped boots item type.",
             "nullable": true,
+            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -1447,7 +2115,9 @@
             ]
           },
           "weaponType": {
+            "description": "Equipped weapon item type.",
             "nullable": true,
+            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -1455,7 +2125,9 @@
             ]
           },
           "ammoType": {
+            "description": "Equipped ammunition item type.",
             "nullable": true,
+            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -1464,65 +2136,106 @@
           },
           "ammoCount": {
             "type": "integer",
+            "description": "Number of items in the equipped ammunition stack.",
             "format": "int32",
-            "nullable": true
+            "nullable": true,
+            "example": 1
           }
         }
       },
       "CharacterTransformDto": {
         "type": "object",
+        "description": "Latest persisted world position and horizontal rotation of a character.",
         "additionalProperties": false,
+        "required": [
+          "characterId",
+          "positionX",
+          "positionY",
+          "positionZ",
+          "rotationY"
+        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "format": "int32"
+            "description": "Character identifier.",
+            "format": "int32",
+            "example": 1
           },
           "positionX": {
             "type": "number",
-            "format": "float"
+            "description": "World-space X coordinate.",
+            "format": "float",
+            "example": 0.0
           },
           "positionY": {
             "type": "number",
-            "format": "float"
+            "description": "World-space Y coordinate.",
+            "format": "float",
+            "example": 0.0
           },
           "positionZ": {
             "type": "number",
-            "format": "float"
+            "description": "World-space Z coordinate.",
+            "format": "float",
+            "example": 0.0
           },
           "rotationY": {
             "type": "number",
-            "format": "float"
+            "description": "Horizontal world rotation around the Y axis.",
+            "format": "float",
+            "example": 0.0
           }
         }
       },
-      "SaveTransformTransformCommand": {
+      "SaveCharacterTransformCommand": {
         "type": "object",
+        "description": "World position and horizontal rotation to persist for a character.",
         "additionalProperties": false,
+        "required": [
+          "positionX",
+          "positionY",
+          "positionZ",
+          "rotationY"
+        ],
         "properties": {
           "positionX": {
             "type": "number",
-            "format": "float"
+            "description": "World-space X coordinate.",
+            "format": "float",
+            "example": 0.0
           },
           "positionY": {
             "type": "number",
-            "format": "float"
+            "description": "World-space Y coordinate.",
+            "format": "float",
+            "example": 0.0
           },
           "positionZ": {
             "type": "number",
-            "format": "float"
+            "description": "World-space Z coordinate.",
+            "format": "float",
+            "example": 0.0
           },
           "rotationY": {
             "type": "number",
-            "format": "float"
+            "description": "Horizontal world rotation around the Y axis.",
+            "format": "float",
+            "example": 0.0
           }
         }
       },
       "GetCraftingRecipesDto": {
         "type": "object",
+        "description": "Available crafting recipes.",
         "additionalProperties": false,
+        "required": [
+          "craftingRecipes"
+        ],
         "properties": {
           "craftingRecipes": {
             "type": "array",
+            "description": "Crafting recipes matching the requested profession.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/CraftingRecipeDto"
             }
@@ -1531,22 +2244,34 @@
       },
       "CraftingRecipeDto": {
         "type": "object",
+        "description": "Crafting recipe definition with requirements and reward.",
         "additionalProperties": false,
+        "required": [
+          "id",
+          "requirement",
+          "reward"
+        ],
         "properties": {
           "id": {
+            "description": "Resource identifier.",
+            "example": 0,
             "$ref": "#/components/schemas/CraftingRecipeEnum"
           },
           "requirement": {
+            "description": "Quest target amount or crafting requirements, depending on the containing schema.",
+            "example": {},
             "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
           },
           "reward": {
+            "description": "Quest or crafting reward, depending on the containing schema.",
+            "example": {},
             "$ref": "#/components/schemas/CraftingRecipeRewardDto"
           }
         }
       },
       "CraftingRecipeEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Persisted crafting recipe identifiers.",
         "x-enum-names": [
           "None",
           "CookedFish",
@@ -1614,48 +2339,48 @@
           "AmmoOil3"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Cooked Fish.",
+          "Sushi.",
+          "Purple Bar.",
+          "White Bar.",
+          "Copper Bar.",
+          "Black Bar.",
+          "Health Potion.",
+          "Ammo Arrow1.",
+          "Ammo Arrow2.",
+          "Ammo Arrow3.",
+          "Ammo Rune1.",
+          "Ammo Rune2.",
+          "Ammo Rune3.",
+          "Ammo Feather1.",
+          "Ammo Feather2.",
+          "Ammo Feather3.",
+          "Ammo Oil1.",
+          "Ammo Oil2.",
+          "Ammo Oil3."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Cooked Fish.",
+          "Sushi.",
+          "Purple Bar.",
+          "White Bar.",
+          "Copper Bar.",
+          "Black Bar.",
+          "Health Potion.",
+          "Ammo Arrow1.",
+          "Ammo Arrow2.",
+          "Ammo Arrow3.",
+          "Ammo Rune1.",
+          "Ammo Rune2.",
+          "Ammo Rune3.",
+          "Ammo Feather1.",
+          "Ammo Feather2.",
+          "Ammo Feather3.",
+          "Ammo Oil1.",
+          "Ammo Oil2.",
+          "Ammo Oil3."
         ],
         "enum": [
           0,
@@ -1682,36 +2407,54 @@
       },
       "CraftingRecipeRequirementDto": {
         "type": "object",
+        "description": "Items and profession level required by a crafting recipe.",
         "additionalProperties": false,
+        "required": [
+          "items",
+          "level"
+        ],
         "properties": {
           "items": {
             "type": "array",
+            "description": "Ordered inventory items or required crafting items.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
           },
           "level": {
             "type": "integer",
-            "format": "int32"
+            "description": "Calculated character or required profession level.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "CraftingRecipeRewardDto": {
         "type": "object",
+        "description": "Item and experience granted by a crafting recipe.",
         "additionalProperties": false,
+        "required": [
+          "item",
+          "experience"
+        ],
         "properties": {
           "item": {
+            "description": "Inventory item granted as the crafting reward.",
+            "example": {},
             "$ref": "#/components/schemas/InventoryItemDto"
           },
           "experience": {
             "type": "integer",
-            "format": "int32"
+            "description": "Experience amount.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "CraftingRecipeTypeEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Crafting profession used to filter recipes.",
         "x-enum-names": [
           "None",
           "Alchemy",
@@ -1740,22 +2483,22 @@
           "Cooking"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Alchemy.",
+          "Blacksmithing.",
+          "Enchanting.",
+          "Leatherworking.",
+          "Tailoring.",
+          "Cooking."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "None.",
+          "Alchemy.",
+          "Blacksmithing.",
+          "Enchanting.",
+          "Leatherworking.",
+          "Tailoring.",
+          "Cooking."
         ],
         "enum": [
           0,
@@ -1769,49 +2512,82 @@
       },
       "QuestDto": {
         "type": "object",
+        "description": "Localized quest definition and completion requirements.",
         "additionalProperties": false,
+        "required": [
+          "id",
+          "previousQuestId",
+          "type",
+          "title",
+          "description",
+          "completeDescription",
+          "statusText",
+          "gameObjectName",
+          "requirement",
+          "reward"
+        ],
         "properties": {
           "id": {
+            "description": "Resource identifier.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "previousQuestId": {
+            "description": "Identifier of the prerequisite quest, or None when there is no prerequisite.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "type": {
+            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
+            "example": 0,
             "$ref": "#/components/schemas/QuestTypeEnum"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "Localized quest title or problem title.",
+            "example": "string"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Localized quest description.",
+            "example": "string"
           },
           "completeDescription": {
-            "type": "string"
+            "type": "string",
+            "description": "Localized text shown after completing the quest.",
+            "example": "string"
           },
           "statusText": {
-            "type": "string"
+            "type": "string",
+            "description": "Localized quest progress text.",
+            "example": "string"
           },
           "gameObjectName": {
-            "type": "string"
+            "type": "string",
+            "description": "Unity GameObject or item name associated with the quest objective.",
+            "example": "string"
           },
           "requirement": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest target amount or crafting requirements, depending on the containing schema.",
+            "format": "int32",
+            "example": 1
           },
           "reward": {
             "type": "integer",
-            "format": "int32"
+            "description": "Quest or crafting reward, depending on the containing schema.",
+            "format": "int32",
+            "example": 1
           }
         }
       },
       "QuestTypeEnum": {
         "type": "integer",
-        "description": "",
+        "description": "Supported quest objective categories.",
         "x-enum-names": [
           "Indefinite",
           "Kill",
-          "Epxlore",
+          "Explore",
           "Find",
           "Gather",
           "Drop",
@@ -1821,7 +2597,7 @@
         "x-enum-varnames": [
           "Indefinite",
           "Kill",
-          "Epxlore",
+          "Explore",
           "Find",
           "Gather",
           "Drop",
@@ -1831,7 +2607,7 @@
         "x-enumNames": [
           "Indefinite",
           "Kill",
-          "Epxlore",
+          "Explore",
           "Find",
           "Gather",
           "Drop",
@@ -1839,24 +2615,24 @@
           "Craft"
         ],
         "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "Indefinite.",
+          "Kill.",
+          "Explore.",
+          "Find.",
+          "Gather.",
+          "Drop.",
+          "Collect.",
+          "Craft."
         ],
         "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
+          "Indefinite.",
+          "Kill.",
+          "Explore.",
+          "Find.",
+          "Gather.",
+          "Drop.",
+          "Collect.",
+          "Craft."
         ],
         "enum": [
           0,
@@ -1871,10 +2647,16 @@
       },
       "GetQuestsDto": {
         "type": "object",
+        "description": "Localized quest definitions available to the caller.",
         "additionalProperties": false,
+        "required": [
+          "quests"
+        ],
         "properties": {
           "quests": {
             "type": "array",
+            "description": "Localized quest definitions.",
+            "example": [],
             "items": {
               "$ref": "#/components/schemas/QuestDto"
             }
@@ -1884,16 +2666,45 @@
     },
     "securitySchemes": {
       "JWT": {
-        "type": "apiKey",
-        "description": "Type into the textbox: Bearer {your JWT token}.",
-        "name": "Authorization",
-        "in": "header"
+        "type": "http",
+        "description": "JWT bearer token returned by the application-user login endpoint.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   },
-  "security": [
+  "tags": [
     {
-      "JWT": []
+      "name": "ApplicationUsers",
+      "description": "Application-user authentication."
+    },
+    {
+      "name": "CharacterExperiences",
+      "description": "Character experience and profession progression."
+    },
+    {
+      "name": "CharacterInventories",
+      "description": "Persistent character inventory state."
+    },
+    {
+      "name": "CharacterQuests",
+      "description": "Quest lifecycle and character progress."
+    },
+    {
+      "name": "Characters",
+      "description": "Persistent character state and attributes."
+    },
+    {
+      "name": "CharacterTransforms",
+      "description": "Persistent character world transforms."
+    },
+    {
+      "name": "CraftingRecipes",
+      "description": "Available crafting recipes and requirements."
+    },
+    {
+      "name": "Quests",
+      "description": "Localized quest definitions."
     }
   ]
 }

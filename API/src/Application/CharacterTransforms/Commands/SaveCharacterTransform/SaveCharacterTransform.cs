@@ -1,12 +1,13 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 
 namespace ProjectX.Application.CharacterTransforms.Commands.SaveCharacterTransform;
 
-public record SaveTransformTransformCommand : IRequest
+public record SaveCharacterTransformCommand : IRequest
 {
     public float PositionX { get; init; }
 
@@ -17,20 +18,20 @@ public record SaveTransformTransformCommand : IRequest
     public float RotationY { get; init; }
 }
 
-public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTransformCommand>
+public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacterTransformCommand>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<SavePlayerTransformCommandHandler>();
+    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<SaveCharacterTransformCommandHandler>();
 
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
-    public SavePlayerTransformCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public SaveCharacterTransformCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
     }
 
-    public async Task Handle(SaveTransformTransformCommand request, CancellationToken cancellationToken)
+    public async Task Handle(SaveCharacterTransformCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
 
@@ -39,7 +40,7 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
         await SavePositionAsync(request, characterId, cancellationToken);
     }
 
-    private async Task SavePositionAsync(SaveTransformTransformCommand request, int characterId, CancellationToken cancellationToken)
+    private async Task SavePositionAsync(SaveCharacterTransformCommand request, int characterId, CancellationToken cancellationToken)
     {
         var entity = new CharacterTransform
         {
@@ -62,8 +63,9 @@ public class SavePlayerTransformCommandHandler : IRequestHandler<SaveTransformTr
         var result = await _context.Characters
             .Where(x => x.ApplicationUserId == userId)
             .OrderByDescending(x => x.ModDate)
-            .Select(x => x.Id)
-            .FirstAsync(cancellationToken);
+            .Select(x => (int?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException("character");
 
         Log.Debug("Found character: {0} for user: {1}", result, userId);
 

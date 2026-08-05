@@ -6,6 +6,7 @@ public class LoginApplicationUserCommandValidator : AbstractValidator<LoginAppli
     public LoginApplicationUserCommandValidator()
     {
         RuleFor(x => x.UserName)
+            .EmailAddress()
             .MaximumLength(256)
             .NotEmpty();
 
