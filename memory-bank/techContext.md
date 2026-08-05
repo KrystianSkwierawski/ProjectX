@@ -49,12 +49,13 @@
 - On 2026-07-27, after Loot -> Inventory drag-and-drop and correct Inventory/Gear source placeholders were added, `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and the six existing warnings. Pointer-driven behavior still requires a Unity Play Mode smoke test.
 - On 2026-08-05, after the login security review fixes, API and Unity runtime/editor projects compiled with zero errors, NSwag regenerated the login `200/400/401/429` contract without initializing the database, and all 215 API tests passed.
 - On 2026-08-05, the full 16-operation NSwag contract was documented and regression-tested, application validation/not-found errors were normalized to ProblemDetails, API tests passed all 220 cases, and the generated Unity client project compiled with zero errors and its existing dependency/unused-field warnings.
+- On 2026-08-05, after the global LoadingScene/loading-scope implementation, `dotnet build Client/Assembly-CSharp.csproj --no-restore` and `dotnet build Client/Assembly-CSharp-Editor.csproj --no-restore` completed with zero errors and the existing warnings. Static prefab/scene local-reference and GUID checks passed. A Unity batch import/Play Mode run was not possible because no valid headless Editor license was available.
 - The repo-level `.gitignore` is tracked.
 - Git status commands emit permission warnings for `C:\Users\pc/.config/git/ignore`.
 
 ## Constraints And Preferences
 - Preserve Unity `.meta` files when moving or adding Unity assets.
-- The repo's tracked `.gitignore` currently contains `*.meta`; the known affected project-owned files include 13 ammo icon/template metas and the metas for `CharacterStatsCalculator.cs`, `AmmoUsableItem.cs`, and `UsableItemFromEnum.cs`, while other ignored package/cache metas also exist locally. Correct/narrow that ignore behavior or force-add required metas when asset stability matters.
+- The repo's tracked `.gitignore` does not currently exclude `*.meta`; keep required Unity metadata versioned with every new or moved asset/script.
 - Avoid editing generated artifacts and caches such as `Client/Library`, `Client/obj`, `API/**/bin`, `API/**/obj`, and log files.
 - Keep API contract changes synchronized with Unity client models and request code.
 - Validate JSON localization files when editing i18n resources.

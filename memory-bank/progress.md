@@ -1,6 +1,7 @@
 # Progress
 
 ## Current Status
+- The client has a universal `LoadingScene` and disposable loading-scope API. It starts before Bootstrap, remains available above all client canvases, and covers the complete post-login gameplay startup sequence.
 - `BootstrapScene` has a working responsive prefab-backed login screen integrated with the existing API login command and developer multiplayer-playmode identities. Login payloads are redacted from server logs, invalid attempts participate in Identity lockout and per-IP rate limiting, and failed gameplay startup rolls back to the still-active login scene.
 - Memory bank initialized on 2026-05-07.
 - Memory bank reviewed and refreshed through repository HEAD `8c954ff` on 2026-07-13.
@@ -8,6 +9,9 @@
 - Before this memory-bank edit, local branch `dev` was clean and exactly aligned with `origin/dev` (`0` ahead, `0` behind).
 
 ## What Works / Exists
+- `Background.prefab` is the shared responsive `#0F1115` background used by both the Bootstrap/login Canvas and `LoadingScreen.prefab`. Both `BootstrapScene` and `LoadingScene` contain the shared lowest-priority `UIBackgroundCamera.prefab`, preventing Unity's no-camera diagnostic when either UI scene is started independently without interfering with later gameplay cameras or adding a second `AudioListener`.
+- `LoadingScene` owns the responsive `LoadingScreen.prefab`, starts the client by loading `BootstrapScene` additively, and stays loaded as the global overlay host. Its Canvas uses full-screen anchors, explicit height-based scaling, sorting order `32000`, and a raycast-blocking dark background.
+- `LoadingScreenUI.Instance.Show(message)` returns an idempotent `IDisposable` scope. Overlapping scopes retain the overlay until all are disposed and display every active message in acquisition order, one per line. `LoadingSpinner.prefab` uses `SpinnerUI` with `Time.unscaledDeltaTime` and is shared by the global overlay and the login loading state.
 - `BootstrapLogin.prefab` provides email/password inputs, basic regex/length validation, inline errors, Font Awesome eye/eye-slash toggling, and a form-replacing spinner state. It uses Futura PT Book/Medium and the shared `ColorUI` dark palette. Its full-screen root, centered preferred-width card, layout bounds, and proportional field anchors adapt to narrow and landscape viewports. `BootstrapScene` stores an actual prefab instance and places the scene-scoped `LoginUI` component directly beside `Bootstrap`; `LoginUI` resolves and caches the prefab view hierarchy in `Awake`, without Inspector references or reference-null validation.
 - Login requests use cancellation, a 15-second timeout, no JWT response logging, and structured `ApiRequestException` mapping. Invalid email/password cases return identical API 401 responses through an application-specific exception. Editor main/clone players autofill user1/user2 directly in a temporary marked region; normal release builds do not show the development hint or accept `@localhost`.
 - The checked-in OpenAPI 3.0 contract documents all 16 operations with summaries, descriptions, parameter/body/response details, stable operation IDs, complete schema metadata, bearer JWT, an anonymous login route, policy-derived `401`/`403`, and domain `400`/`404` responses. NSwag generation skips database initialization, and contract tests enforce these conventions. MediatR logging consistently uses request `ToString()` implementations; login email/password/token values are omitted directly. The API suite currently has 220 passing tests.
@@ -49,6 +53,7 @@
 - Local movement processing waits until `UserManager.Characters` contains the local client ID, preventing early stat-dependent character access.
 
 ## What's Left / Unknown
+- The new LoadingScene/prefab YAML and runtime/editor projects passed static validation and compilation, but the final visual/startup behavior still needs a Unity Play Mode smoke test; headless Unity import could not run because this environment has no valid Editor license.
 - The login UI was Play Mode smoke-tested with main-editor autofill and password visibility; a full successful API/database/client-scene transition was not run because API startup recreates the development database.
 - Exact gameplay roadmap and release target are not documented.
 - Automated coverage is narrow: only `TranslateServiceTests.cs` was found, although its parameterized cases currently total 190; stat, ammo, gear, potion, crafting, and Unity gameplay paths have no focused tests.
@@ -70,7 +75,6 @@
 - `UpdateCharacterCommandHandler` currently resolves the current user's character and has the direct `CharacterId` filter commented out; confirm intended multi-character behavior before expanding character update endpoints.
 - Seeded characters start with `AmmoType = AmmoTemplate` and the default `AmmoCount = 0`; the new combat-consumption flow has compile/test coverage but not a full Unity dedicated-server/API runtime test.
 - Tiered ammo repurposed persisted IDs `1010`-`1012` from the former Rune/Feather/Oil meanings. The intentional database recreation masks this during development, but a non-destructive persistence flow will require explicit data migration.
-- `.gitignore` ignores `*.meta`; the known affected project-owned files include 13 ammo icon/template metas plus `CharacterStatsCalculator.cs.meta`, `AmmoUsableItem.cs.meta`, and `UsableItemFromEnum.cs.meta`, so their Unity GUIDs/import settings are not versioned. Other ignored package/cache metas also exist locally.
 - Merchant offer tooltips use the shared sell-price description while the adjacent currency amount is the full purchase price, so the displayed `Price` inside the tooltip can be misleading.
 - Hiding the crafting panel or walking out of range does not stop an in-progress craft; the timer can finish and invoke the server craft after the UI closes.
 - Git reports permission warnings for `C:\Users\pc/.config/git/ignore` during status checks.
@@ -78,6 +82,8 @@
 - `PlayerUI.SetPlayer()` currently calls `SetHealth()` and then `SetMaxHealth()` on the same text field, so the initial displayed value may be max health rather than current health.
 
 ## Evolution Notes
+- 2026-08-05: Removed the Loading/Bootstrap `No cameras rendering` state with a shared no-culling, lowest-priority UI background camera and extracted the Bootstrap background into a reusable prefab used by both scenes. Prefab/scene YAML IDs, local references, and GUID links passed static validation.
+- 2026-08-05: Added a persistent client `LoadingScene`, responsive blocking loading overlay, shared spinner prefab, and nestable disposable `LoadingScreenUI` scopes. All active scope messages are rendered in acquisition order. Client/editor scene order and Play automation now start from Loading, while dedicated server remains Bootstrap-first. Post-login startup uses one scope across data/scenes/network initialization. Runtime and editor C# builds passed with zero errors; static Unity YAML/GUID checks passed, while Play Mode remains pending because headless Unity lacked a valid license.
 - 2026-08-05: Applied the senior login review fixes: removed sensitive credentials/tokens from log text and JWT logging, added Identity failure tracking/lockout and per-IP rate limiting, stopped treating invalid credentials as server errors, forwarded cancellation, safely regenerated and regression-tested OpenAPI, and made Unity client scene startup retain/restore Bootstrap with rollback on failure. API and Unity runtime/editor builds passed with zero errors and all 215 API tests passed at that stage.
 - 2026-08-04: Converted `LoginUI` to a scene-scoped `MonoSingleton` attached directly to the `Bootstrap` GameObject. It now resolves and caches the `BootstrapLogin.prefab` view hierarchy in `Awake`, leaving no per-control fields in the Inspector and requiring no reference-null validation; `Bootstrap` subscribes in `Start`. Runtime and editor client builds completed with zero errors and existing dependency warnings.
 - 2026-08-03: Made the Bootstrap login responsive in both its prefab and scene. Added a full-screen anchored layout root, a centered card with preferred/minimum width, proportional field/loading anchors, and height-based Canvas scaling; visually verified 16:9, 16:10, and 360x780 portrait layouts. Client runtime and editor project builds completed with zero errors and the existing dependency warnings.

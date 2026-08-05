@@ -12,6 +12,7 @@ namespace ProjectX.Editor
     public static class ProjectXDevAutomation
     {
         private const string BootstrapScenePath = "Assets/Scenes/BootstrapScene.unity";
+        private const string LoadingScenePath = "Assets/Scenes/LoadingScene.unity";
         private const string PlayClientRequestPath = "Temp/ProjectXAutomation/play-client.request";
         private const string BuildServerRequestPath = "Temp/ProjectXAutomation/build-server.request";
         private const string BuildServerStatusPath = "Temp/ProjectXAutomation/build-server.status";
@@ -21,6 +22,7 @@ namespace ProjectX.Editor
         private const string BuildAfterExitPathEditorPref = "ProjectX.DevAutomation.BuildAfterExitPath";
         private static readonly string[] ClientRuntimeScenePaths =
         {
+            LoadingScenePath,
             BootstrapScenePath,
             "Assets/Scenes/MainScene.unity",
             "Assets/Scenes/UIScene.unity",
@@ -63,8 +65,8 @@ namespace ProjectX.Editor
             RunAutomationFromUnity();
         }
 
-        [MenuItem("ProjectX/Play Client From Bootstrap", false, 51)]
-        public static void PlayClientFromBootstrap()
+        [MenuItem("ProjectX/Play Client From Loading Scene", false, 51)]
+        public static void PlayClientFromLoadingScene()
         {
             QueuePlayClient();
         }
@@ -203,7 +205,7 @@ namespace ProjectX.Editor
 
         private static void StartPlayClientFromEditMode()
         {
-            if (!OpenBootstrapSceneWithPrompt())
+            if (!OpenClientEntrySceneWithPrompt())
             {
                 Debug.LogWarning("ProjectX automation cancelled before entering Play Mode.");
                 return;
@@ -227,6 +229,21 @@ namespace ProjectX.Editor
 
             EnsureScenesInBuildSettings(ClientRuntimeScenePaths);
             var scene = EditorSceneManager.OpenScene(BootstrapScenePath, OpenSceneMode.Single);
+            EditorSceneManager.SetActiveScene(scene);
+            return scene.IsValid() && scene.isLoaded;
+        }
+
+        private static bool OpenClientEntrySceneWithPrompt()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return false;
+            }
+
+            EnsureScenesInBuildSettings(ClientRuntimeScenePaths);
+            MoveSceneToFirstInBuildSettings(LoadingScenePath);
+
+            var scene = EditorSceneManager.OpenScene(LoadingScenePath, OpenSceneMode.Single);
             EditorSceneManager.SetActiveScene(scene);
             return scene.IsValid() && scene.isLoaded;
         }
@@ -335,6 +352,24 @@ namespace ProjectX.Editor
             {
                 EditorBuildSettings.scenes = existingScenes;
             }
+        }
+
+        private static void MoveSceneToFirstInBuildSettings(string scenePath)
+        {
+            var scenes = EditorBuildSettings.scenes;
+            var index = Array.FindIndex(
+                scenes,
+                scene => string.Equals(scene.path, scenePath, StringComparison.OrdinalIgnoreCase));
+
+            if (index <= 0)
+            {
+                return;
+            }
+
+            var firstScene = scenes[index];
+            Array.Copy(scenes, 0, scenes, 1, index);
+            scenes[0] = firstScene;
+            EditorBuildSettings.scenes = scenes;
         }
 
         private static void BuildDedicatedServerWithStatus(string outputPath)

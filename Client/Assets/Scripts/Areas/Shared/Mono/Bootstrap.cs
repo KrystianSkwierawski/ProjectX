@@ -90,7 +90,10 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
             try
             {
-                await StartAuthenticatedClientAsync();
+                using (var loadingScope = LoadingScreenUI.Instance.Show("Loading game..."))
+                {
+                    await StartAuthenticatedClientAsync();
+                }
             }
             catch (Exception exception)
             {

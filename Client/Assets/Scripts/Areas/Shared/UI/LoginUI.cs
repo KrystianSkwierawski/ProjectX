@@ -11,7 +11,6 @@ namespace Assets.Scripts.Areas.Shared.UI
     {
         private const int _maxCredentialLength = 256;
         private const int _minPasswordLength = 6;
-        private const float _spinnerSpeed = 180f;
         private const string _eyeIcon = "\uf06e";
         private const string _eyeSlashIcon = "\uf070";
 
@@ -31,7 +30,6 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         private GameObject _formView;
         private GameObject _loadingView;
-        private RectTransform _spinner;
         private TMP_InputField _emailInput;
         private TMP_InputField _passwordInput;
         private Image _emailBorder;
@@ -61,14 +59,6 @@ namespace Assets.Scripts.Areas.Shared.UI
             ConfigureView();
         }
 
-        private void Update()
-        {
-            if (_isLoading)
-            {
-                _spinner.Rotate(0f, 0f, -_spinnerSpeed * Time.unscaledDeltaTime);
-            }
-        }
-
         private void CacheViewReferences()
         {
             var card = GameObject.Find("LoginCard").transform.Find("Card");
@@ -81,7 +71,6 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             _formView = formView.gameObject;
             _loadingView = loadingView.gameObject;
-            _spinner = loadingView.Find("Spinner").GetComponent<RectTransform>();
             _emailInput = emailBorder.Find("EmailInput").GetComponent<TMP_InputField>();
             _passwordInput = passwordInput.GetComponent<TMP_InputField>();
             _emailBorder = emailBorder.GetComponent<Image>();
@@ -136,11 +125,6 @@ namespace Assets.Scripts.Areas.Shared.UI
             _formView.SetActive(!isLoading);
             _loadingView.SetActive(isLoading);
             _loginButton.interactable = !isLoading;
-
-            if (!isLoading)
-            {
-                _spinner.localRotation = Quaternion.identity;
-            }
         }
 
         public void ShowRequestError(string message)

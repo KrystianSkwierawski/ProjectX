@@ -33,7 +33,7 @@
 - NSwag exposes API docs at `/api` when enabled.
 
 ## Client Architecture
-- Unity scenes under `Client/Assets/Scenes`, including Bootstrap, Main, Server, UI, Environment, Audio, and Test scenes.
+- Unity scenes under `Client/Assets/Scenes`, including Loading, Bootstrap, Main, Server, UI, Environment, Audio, and Test scenes. `LoadingScene` is the first client scene, remains loaded as a lightweight overlay host, and loads `BootstrapScene` additively; dedicated-server builds continue to start directly from Bootstrap.
 - Unity Editor automation lives in `Client/Assets/Editor/ProjectXDevAutomation.cs`.
 - Local run scripts live in `Client/Automation/` so they are grouped with the Unity client without being imported as Unity assets.
 - Runtime scripts under `Client/Assets/Scripts/Areas` are grouped by domain:
@@ -47,6 +47,8 @@
 - Client DTO/model names closely mirror backend DTOs and commands.
 - Author UI structures as reusable prefabs placed in Unity scenes. Classes named `*UI.cs` should resolve their required scene/prefab elements from the transform hierarchy during startup and cache those references in fields, following `LoginUI`; do not expose every child control as a serialized Inspector field. Serialized fields remain appropriate for external prefab/configuration assets that cannot be obtained from the owned hierarchy. Avoid assembling UI hierarchies ad hoc in runtime code unless the UI is genuinely dynamic; repeated dynamic elements should normally be instantiated from prefabs.
 - Responsive layout is required for every new or modified Unity UI. Use suitable `RectTransform` anchors/stretch and layout components inside the prefab, define the scene's `CanvasScaler` behavior explicitly, preserve usable margins on narrow screens, and validate representative landscape, portrait/narrow, and—where relevant—4:3 or ultrawide proportions. Treat fixed pixel dimensions as preferred or bounded sizes rather than the sole layout mechanism.
+- Long-running client operations can display the global scene-backed overlay through `LoadingScreenUI.Instance.Show(message)`. The returned `IDisposable` owns one loading scope and must be disposed (normally with `using`); nested or overlapping scopes are supported, all active messages are displayed in acquisition order, and the overlay hides only after the final scope ends. `LoadingScreenUI` caches its prefab hierarchy in `Awake`, while the shared `LoadingSpinner.prefab` and `SpinnerUI` provide the unscaled-time animation used by both global loading and login.
+- Bootstrap/login and global loading reuse the generic `Background.prefab` for the full-screen `#0F1115` UI background. `LoadingScene` and `BootstrapScene` each instantiate `UIBackgroundCamera.prefab` so either scene can be run independently without Unity's `No cameras rendering` diagnostic; this fallback camera has no `AudioListener`, renders no layers, clears only to the shared background color, and uses depth/priority `-1000` so gameplay cameras render after it.
 - Client and backend inventory enums must stay synchronized for persisted items; the client also has an `Xp` pseudo item for crafting/requirement UI. Treat numeric IDs as persisted data and plan migrations before repurposing them.
 - `UserManager.Characters` stores `CharacterDto` values by Netcode client ID; owner/local-client lookups should use the appropriate dictionary key rather than a global single-character property.
 - Localization resources exist in both API and Unity client paths; English content in client `pl.json` is currently an intentional temporary development fallback.
@@ -72,7 +74,7 @@
 - Player locomotion follows the Starter Assets code-driven pattern: `PlayerArmature.prefab` has Animator root motion disabled (`m_ApplyRootMotion: 0`), while `ThirdPersonController` applies movement via `CharacterController.Move(...)` and feeds Animator parameters such as `Speed`, `Grounded`, `Jump`, `FreeFall`, and `MotionSpeed`.
 - `ThirdPersonController.Update()` gates local movement processing until `UserManager.Characters` contains the local client ID, because stat-scaled movement reads that character entry.
 - Generated/build artifacts are present in the workspace; avoid touching `bin/`, `obj/`, Unity `Library/`, and log/cache outputs unless specifically needed.
-- The tracked `.gitignore` currently ignores all `*.meta` files. The known affected project-owned files as of 2026-07-13 include 13 ammo icon/template metas plus `CharacterStatsCalculator.cs.meta`, `AmmoUsableItem.cs.meta`, and `UsableItemFromEnum.cs.meta`; other ignored package/cache metas also exist locally. Future Unity asset/script work must ensure required GUID/import-setting metas are explicitly versioned.
+- Unity asset/script changes must include their corresponding `.meta` files so GUIDs and import settings remain stable; the tracked `.gitignore` does not currently exclude `*.meta` files.
 - Dev startup flow:
   - PowerShell starts/restarts the API executable and auto-builds it if missing.
   - PowerShell builds or reuses the Unity dedicated server executable.
