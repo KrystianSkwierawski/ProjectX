@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Application.Common.Exceptions;
@@ -7,12 +7,11 @@ using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
+
 public record AcceptCharacterQuestCommand(QuestEnum QuestId) : IRequest<CharacterQuestDto>;
 
 public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacterQuestCommand, CharacterQuestDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AcceptCharacterQuestCommandHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
     private readonly TimeProvider _timeProvider;
@@ -27,35 +26,29 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
     public async Task<CharacterQuestDto> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
-
         var characterId = await _context.Characters
-            .Where(x => x.ApplicationUserId == userId)
-            .Select(x => (int?)x.Id)
+            .Where(character => character.ApplicationUserId == userId)
+            .Select(character => (int?)character.Id)
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("character");
-
-        Log.Debug("AcceptCharacterQuest -> Found character for id: {0}", characterId);
 
         var entity = new CharacterQuest
         {
             QuestId = request.QuestId,
             CharacterId = characterId,
             Status = CharacterQuestStatusEnum.Accepted,
-            StartDate = _timeProvider.GetUtcNow(),
+            StartDate = _timeProvider.GetUtcNow()
         };
 
         _context.CharacterQuests.Add(entity);
-
         await _context.SaveChangesAsync(cancellationToken);
-
-        Log.Debug("AcceptCharacterQuest -> Accepted quest for id: {0}", request.QuestId);
 
         return new CharacterQuestDto
         {
             Id = entity.Id,
             QuestId = entity.QuestId,
             Progress = entity.Progress,
-            Status = entity.Status,
+            Status = entity.Status
         };
     }
 }

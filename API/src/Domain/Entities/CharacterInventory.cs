@@ -10,5 +10,5 @@ public class CharacterInventory : BaseAuditableEntity
 
     public short Count { get; set; }
 
-    public virtual Character Character { get; set; }
+    public virtual Character Character { get; set; } = null!;
 }

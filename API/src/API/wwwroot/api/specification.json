@@ -140,16 +140,6 @@
               }
             }
           },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "The requested resource was not found.",
             "content": {
@@ -264,16 +254,6 @@
         "responses": {
           "204": {
             "description": "The inventory update was persisted."
-          },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
           },
           "404": {
             "description": "The requested resource was not found.",
@@ -455,16 +435,6 @@
               }
             }
           },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "The requested resource was not found.",
             "content": {
@@ -532,16 +502,6 @@
               }
             }
           },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
           "401": {
             "description": "A valid JWT access token is required."
           },
@@ -595,16 +555,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CompleteCharacterQuestDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -735,16 +685,6 @@
           "204": {
             "description": "The character update was persisted."
           },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
           "404": {
             "description": "The requested resource was not found.",
             "content": {
@@ -845,16 +785,6 @@
         "responses": {
           "201": {
             "description": "The transform snapshot was persisted."
-          },
-          "400": {
-            "description": "The request is malformed or failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
           },
           "404": {
             "description": "The requested resource was not found.",

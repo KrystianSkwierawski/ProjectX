@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -16,9 +15,8 @@ public class CharacterExperiences : EndpointGroupBase
             .WithDescription("Adds experience to one progression category and returns the updated total experience and calculated level.")
             .WithRequestBodyDescription("Character identifier, experience amount, and progression category.")
             .WithResponseDescription(StatusCodes.Status200OK, "Experience was added and the updated progression values are returned.")
-            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
     private static async Task<Ok<AddCharacterExperienceDto>> AddCharacterExperience(

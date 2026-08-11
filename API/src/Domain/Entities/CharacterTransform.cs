@@ -16,5 +16,5 @@ public class CharacterTransform : BaseAuditableEntity
 
     public float RotationY { get; set; }
 
-    public virtual Character Character { get; set; }
+    public virtual Character Character { get; set; } = null!;
 }

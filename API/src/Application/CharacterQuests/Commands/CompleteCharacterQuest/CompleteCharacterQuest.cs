@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
@@ -6,6 +6,7 @@ using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
+using ProjectX.Domain.Inventory;
 
 namespace ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
 
@@ -13,8 +14,6 @@ public record CompleteCharacterQuestCommand(int CharacterQuestId) : IRequest<Com
 
 public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteCharacterQuestCommand, CompleteCharacterQuestDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<CompleteCharacterQuestCommandHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
     private readonly TimeProvider _timeProvider;
@@ -29,64 +28,45 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
     public async Task<CompleteCharacterQuestDto> Handle(CompleteCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
-
         var characterQuest = await _context.CharacterQuests
-            .Include(x => x.Quest)
-            .Where(x => x.Id == request.CharacterQuestId)
-            .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
-            .Where(x => x.Character.ApplicationUserId == userId)
+            .Include(candidate => candidate.Quest)
+            .Where(candidate => candidate.Id == request.CharacterQuestId)
+            .Where(candidate => candidate.Status == CharacterQuestStatusEnum.Finished)
+            .Where(candidate => candidate.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("finished character quest", cancellationToken);
-
-        Log.Debug("Found character quest for id: {0}", characterQuest.Id);
-
-        characterQuest.EndDate = _timeProvider.GetUtcNow();
-        characterQuest.Status = CharacterQuestStatusEnum.Completed;
 
         if (characterQuest.Quest.Type == QuestTypeEnum.Collect)
         {
             await CollectItemsAsync(userId, characterQuest, cancellationToken);
         }
 
+        characterQuest.Complete(_timeProvider.GetUtcNow());
         await _context.SaveChangesAsync(cancellationToken);
 
-        Log.Debug("Completed character quest for id: {0}", characterQuest.Id);
-
-        return new CompleteCharacterQuestDto
-        {
-            Reward = characterQuest.Quest.Reward
-        };
+        return new CompleteCharacterQuestDto { Reward = characterQuest.Quest.Reward };
     }
 
     private async Task CollectItemsAsync(string userId, CharacterQuest characterQuest, CancellationToken cancellationToken)
     {
         var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
-
         var characterInventory = await _context.CharacterInventories
-            //.Where(x => x.CharacterId == request.CharacterId)
-            .Where(x => x.Character.ApplicationUserId == userId)
+            .Where(inventory => inventory.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
+        var dto = JsonSerializer.Deserialize<InventoryDto>(characterInventory.Inventory);
+        ArgumentNullException.ThrowIfNull(dto);
 
-        var inventory = JsonSerializer.Deserialize<InventoryDto>(characterInventory.Inventory);
+        var inventory = new InventoryState(dto.Items.Select(item => new InventorySlot(item.Type, Math.Max(0, item.Count))));
 
-        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
-
-        var item = inventory.Items
-            .Where(x => x.Type == itemType)
-            .Where(x => x.Count >= characterQuest.Quest.Requirement)
-            .First();
-
-        if (item.Count == characterQuest.Quest.Requirement)
+        if (!inventory.Remove(itemType, characterQuest.Quest.Requirement))
         {
-            item.Type = InventoryItemEnum.None;
-            item.Count = 0;
-        }
-        else
-        {
-            item.Count -= characterQuest.Quest.Requirement;
+            throw new InvalidOperationException("The quest requirement is not present in the character inventory.");
         }
 
-        characterInventory.Inventory = JsonSerializer.Serialize(inventory);
-
-        Log.Debug("Collected items. DharacterInventoryId: {0}, UserId: {1}", characterInventory.Id, userId);
+        characterInventory.Inventory = JsonSerializer.Serialize(new InventoryDto
+        {
+            Items = inventory.Items
+                .Select(slot => new InventoryItemDto { Type = slot.Type, Count = slot.Count })
+                .ToList()
+        });
     }
 }

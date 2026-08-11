@@ -7,6 +7,7 @@ using NSwag.Generation.Processors.Security;
 using ProjectX.API.Infrastructure;
 using ProjectX.API.Services;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Application.Common.Security;
 
 namespace ProjectX.API;
 
@@ -16,6 +17,17 @@ public static class DependencyInjection
     {
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
         builder.Services.AddSingleton<IAuthorizationHandler, PlayerSessionAuthorizationHandler>();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy(AuthorizationPolicies.Server, policy => policy.RequireRole(ApplicationRoles.Server));
+            options.AddPolicy(AuthorizationPolicies.Client, policy => policy.RequireRole(ApplicationRoles.Client));
+            options.AddPolicy(AuthorizationPolicies.ServerOrClient, policy => policy.RequireRole(ApplicationRoles.Server, ApplicationRoles.Client));
+            options.AddPolicy(AuthorizationPolicies.ServerPlayerSession, policy =>
+            {
+                policy.RequireRole(ApplicationRoles.Server);
+                policy.AddRequirements(new PlayerSessionAuthorizationRequirement());
+            });
+        });
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddProblemDetails();

@@ -1,20 +1,14 @@
 ﻿using ProjectX.Domain.Enums;
 
 using ProjectX.Domain.Common;
+using ProjectX.Domain.Characters;
 
 namespace ProjectX.Domain.Entities;
 public class Character : BaseAuditableEntity
 {
-    public Character()
-    {
-        CharacterTransforms = new HashSet<CharacterTransform>();
-        CharacterExperiences = new HashSet<CharacterExperience>();
-        CharacterQuests = new HashSet<CharacterQuest>();
-    }
-
     public int Id { get; set; }
 
-    public string ApplicationUserId { get; set; }
+    public required string ApplicationUserId { get; set; }
 
     public required string Name { get; set; }
 
@@ -46,13 +40,34 @@ public class Character : BaseAuditableEntity
 
     public StatusEnum Status { get; set; }
 
-    public virtual CharacterInventory CharacterInventory { get; set; }
+    public virtual CharacterInventory CharacterInventory { get; set; } = null!;
 
-    public virtual ICollection<CharacterTransform> CharacterTransforms { get; set; }
+    public virtual ICollection<CharacterTransform> CharacterTransforms { get; private set; } = new HashSet<CharacterTransform>();
 
-    public virtual ICollection<CharacterExperience> CharacterExperiences { get; set; }
+    public virtual ICollection<CharacterExperience> CharacterExperiences { get; private set; } = new HashSet<CharacterExperience>();
 
-    public virtual ICollection<CharacterQuest> CharacterQuests { get; set; }
+    public virtual ICollection<CharacterQuest> CharacterQuests { get; private set; } = new HashSet<CharacterQuest>();
 
-    public virtual ApplicationUser ApplicationUser { get; set; }
+    public void AddTransform(CharacterTransform transform)
+    {
+        ArgumentNullException.ThrowIfNull(transform);
+        CharacterTransforms.Add(transform);
+    }
+
+    public void UpdateState(CharacterStateUpdate update)
+    {
+        Health = update.Health ?? Health;
+        MaxHealth = update.MaxHealth ?? MaxHealth;
+        Strength = update.Strength ?? Strength;
+        Dexterity = update.Dexterity ?? Dexterity;
+        Speed = update.Speed ?? Speed;
+        Intellect = update.Intellect ?? Intellect;
+        Armor = update.Armor ?? Armor;
+        HelmetType = update.HelmetType ?? HelmetType;
+        ChestType = update.ChestType ?? ChestType;
+        BootsType = update.BootsType ?? BootsType;
+        WeaponType = update.WeaponType ?? WeaponType;
+        AmmoType = update.AmmoType ?? AmmoType;
+        AmmoCount = update.AmmoCount ?? AmmoCount;
+    }
 }

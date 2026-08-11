@@ -13,5 +13,5 @@ public class CharacterExperience : BaseAuditableEntity
 
     public ExperienceTypeEnum Type { get; set; }
 
-    public virtual Character Character { get; set; }
+    public virtual Character Character { get; set; } = null!;
 }

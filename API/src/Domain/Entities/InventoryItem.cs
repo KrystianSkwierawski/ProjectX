@@ -8,7 +8,7 @@ public class InventoryItem : BaseAuditableEntity
 {
     public InventoryItemEnum Id { get; set; }
 
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     public byte MaxCount { get; set; }
 

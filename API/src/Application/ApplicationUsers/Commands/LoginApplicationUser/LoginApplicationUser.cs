@@ -1,8 +1,6 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Identity;
-using ProjectX.Application.Common;
+using MediatR;
 using ProjectX.Application.Common.Exceptions;
-using ProjectX.Domain.Entities;
+using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
 
@@ -20,40 +18,23 @@ public record LoginApplicationUserCommand : IRequest<LoginApplicationUserDto>
 
 public class LoginApplicationUserCommandHandler : IRequestHandler<LoginApplicationUserCommand, LoginApplicationUserDto>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly JwtHandler _jwtHandler;
+    private readonly IApplicationUserAuthenticationService _authenticationService;
+    private readonly IAccessTokenService _accessTokenService;
 
-    public LoginApplicationUserCommandHandler(UserManager<ApplicationUser> userManager, JwtHandler jwtHandler)
+    public LoginApplicationUserCommandHandler(IApplicationUserAuthenticationService authenticationService, IAccessTokenService accessTokenService)
     {
-        _userManager = userManager;
-        _jwtHandler = jwtHandler;
+        _authenticationService = authenticationService;
+        _accessTokenService = accessTokenService;
     }
 
     public async Task<LoginApplicationUserDto> Handle(LoginApplicationUserCommand request, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var user = await _userManager.FindByEmailAsync(request.UserName);
-
-        if (user?.Email is null || await _userManager.IsLockedOutAsync(user))
-        {
-            throw new InvalidCredentialsException();
-        }
-
-        if (!await _userManager.CheckPasswordAsync(user, request.Password))
-        {
-            await _userManager.AccessFailedAsync(user);
-
-            throw new InvalidCredentialsException();
-        }
-
-        await _userManager.ResetAccessFailedCountAsync(user);
-
-        var token = await _jwtHandler.GenerateToken(user);
+        var user = await _authenticationService.AuthenticateAsync(request.UserName, request.Password, cancellationToken)
+            ?? throw new InvalidCredentialsException();
 
         return new LoginApplicationUserDto
         {
-            Token = token,
+            Token = _accessTokenService.Create(user),
             Language = user.Language
         };
     }

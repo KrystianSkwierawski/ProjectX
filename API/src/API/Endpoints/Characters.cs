@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Characters.Commands;
 using ProjectX.Application.Characters.Queries.GetCharacter;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -18,7 +17,7 @@ public class Characters : EndpointGroupBase
             .WithParameterDescription("id", "Identifier of the character to retrieve.")
             .WithResponseDescription(StatusCodes.Status200OK, "The character was found and returned.")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(UpdateCharacter)
@@ -26,9 +25,8 @@ public class Characters : EndpointGroupBase
             .WithDescription("Partially updates persistent health, attributes, equipment, or ammunition state for a character.")
             .WithRequestBodyDescription("Character identifier and the optional state fields to update.")
             .WithResponseDescription(StatusCodes.Status204NoContent, "The character update was persisted.")
-            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
     private static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, int id, CancellationToken cancellationToken)

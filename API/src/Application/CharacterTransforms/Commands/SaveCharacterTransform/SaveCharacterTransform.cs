@@ -1,4 +1,3 @@
-﻿using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Exceptions;
@@ -10,18 +9,13 @@ namespace ProjectX.Application.CharacterTransforms.Commands.SaveCharacterTransfo
 public record SaveCharacterTransformCommand : IRequest
 {
     public float PositionX { get; init; }
-
     public float PositionY { get; init; }
-
     public float PositionZ { get; init; }
-
     public float RotationY { get; init; }
 }
 
 public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacterTransformCommand>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<SaveCharacterTransformCommandHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -34,40 +28,22 @@ public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacte
     public async Task Handle(SaveCharacterTransformCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var characterId = await _context.Characters
+            .Where(character => character.ApplicationUserId == userId)
+            .OrderByDescending(character => character.ModDate)
+            .Select(character => (int?)character.Id)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException("character");
 
-        int characterId = await GetCharacterIdAsync(userId, cancellationToken);
-
-        await SavePositionAsync(request, characterId, cancellationToken);
-    }
-
-    private async Task SavePositionAsync(SaveCharacterTransformCommand request, int characterId, CancellationToken cancellationToken)
-    {
-        var entity = new CharacterTransform
+        _context.CharacterTransforms.Add(new CharacterTransform
         {
             PositionX = request.PositionX,
             PositionY = request.PositionY,
             PositionZ = request.PositionZ,
             RotationY = request.RotationY,
             CharacterId = characterId
-        };
+        });
 
-        _context.CharacterTransforms.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
-
-        Log.Debug("Saved position for character: {0}", characterId);
-    }
-
-    private async Task<int> GetCharacterIdAsync(string userId, CancellationToken cancellationToken)
-    {
-        var result = await _context.Characters
-            .Where(x => x.ApplicationUserId == userId)
-            .OrderByDescending(x => x.ModDate)
-            .Select(x => (int?)x.Id)
-            .FirstOrDefaultAsync(cancellationToken)
-            ?? throw new NotFoundException("character");
-
-        Log.Debug("Found character: {0} for user: {1}", result, userId);
-
-        return result;
     }
 }

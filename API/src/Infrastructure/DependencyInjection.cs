@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +7,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using ProjectX.Application.Common;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Domain.Constants;
-using ProjectX.Domain.Entities;
-using ProjectX.Infrastructure.GameSessions;
+using ProjectX.Application.GameSessions;
+using ProjectX.Infrastructure.Identity;
+using ProjectX.Infrastructure.Localization;
 using ProjectX.Infrastructure.Persistance;
 using ProjectX.Infrastructure.Persistance.Interceptors;
-
 
 namespace ProjectX.Infrastructure;
 
@@ -23,9 +21,17 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
         var timeProvider = TimeProvider.System;
-
         builder.Services.AddSingleton<TimeProvider>(timeProvider);
 
+        AddGameSessions(builder, timeProvider);
+        AddPersistence(builder);
+        AddIdentityAndAuthentication(builder, timeProvider);
+
+        builder.Services.AddScoped<ITranslateService, JsonFileTranslateService>();
+    }
+
+    private static void AddGameSessions(IHostApplicationBuilder builder, TimeProvider timeProvider)
+    {
         var ticketLifetimeSeconds = builder.Configuration.GetValue<int?>("GameSessionSettings:TicketLifetimeSeconds") ?? 60;
 
         if (ticketLifetimeSeconds is < 10 or > 300)
@@ -41,38 +47,50 @@ public static class DependencyInjection
         }
 
         var allowDirectTransport = builder.Configuration.GetValue<bool?>("GameSessionSettings:AllowDirectTransport") ?? builder.Environment.IsDevelopment();
-        var gameSessionService = new InMemoryGameSessionService(timeProvider, TimeSpan.FromSeconds(ticketLifetimeSeconds), TimeSpan.FromSeconds(serverLeaseSeconds), allowDirectTransport);
+        var gameSessionService = new GameSessionService(
+            timeProvider,
+            TimeSpan.FromSeconds(ticketLifetimeSeconds),
+            TimeSpan.FromSeconds(serverLeaseSeconds),
+            allowDirectTransport);
 
         builder.Services.AddSingleton<IGameSessionService>(gameSessionService);
+    }
+
+    private static void AddPersistence(IHostApplicationBuilder builder)
+    {
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
 
         if (builder.Configuration.GetValue<bool>("UseInMemoryDatabase"))
         {
-            builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
-                options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+                options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
                 options.UseInMemoryDatabase("ProjectX");
             });
         }
         else
         {
-            builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
-                options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
+                options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    sql => sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
                 options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
             });
         }
 
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
+    }
 
-        builder.Services.AddAuthorizationBuilder();
-
+    private static void AddIdentityAndAuthentication(IHostApplicationBuilder builder, TimeProvider timeProvider)
+    {
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-        var securityKey = jwtSettings["SecurityKey"] ?? throw new InvalidOperationException("JwtSettings:SecurityKey is required.");
-        var validIssuer = jwtSettings["ValidIssuer"] ?? throw new InvalidOperationException("JwtSettings:ValidIssuer is required.");
-        var validAudience = jwtSettings["ValidAudience"] ?? throw new InvalidOperationException("JwtSettings:ValidAudience is required.");
+        var jwtOptions = new JwtOptions(
+            jwtSettings["SecurityKey"] ?? throw new InvalidOperationException("JwtSettings:SecurityKey is required."),
+            jwtSettings["ValidIssuer"] ?? throw new InvalidOperationException("JwtSettings:ValidIssuer is required."),
+            jwtSettings["ValidAudience"] ?? throw new InvalidOperationException("JwtSettings:ValidAudience is required."));
 
         var tokenValidationParameters = new TokenValidationParameters
         {
@@ -80,25 +98,21 @@ public static class DependencyInjection
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = validIssuer,
-            ValidAudience = validAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey)),
-            LifetimeValidator = (notBefore, expires, securityToken, _) => JwtHandler.ValidateLifetime(notBefore, expires, securityToken, timeProvider.GetUtcNow().UtcDateTime),
+            ValidIssuer = jwtOptions.ValidIssuer,
+            ValidAudience = jwtOptions.ValidAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecurityKey)),
+            LifetimeValidator = (notBefore, expires, securityToken, _) => JwtAccessTokenService.ValidateLifetime(notBefore, expires, securityToken, timeProvider.GetUtcNow().UtcDateTime),
             ClockSkew = TimeSpan.Zero
         };
 
+        builder.Services.AddSingleton(jwtOptions);
         builder.Services.AddSingleton(tokenValidationParameters);
-
-        builder.Services.AddAuthentication(opt =>
+        builder.Services.AddAuthentication(options =>
         {
-            opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-
-        }).AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = tokenValidationParameters; // TODO: add from di?
-        });
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options => options.TokenValidationParameters = tokenValidationParameters);
 
         builder.Services
             .AddIdentityCore<ApplicationUser>(options =>
@@ -109,23 +123,10 @@ public static class DependencyInjection
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders()
-            .AddApiEndpoints();
+            .AddDefaultTokenProviders();
 
-        builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromHours(2));
-
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy(Policies.Server, policy => policy.RequireRole(Roles.Server));
-            options.AddPolicy(Policies.Client, policy => policy.RequireRole(Roles.Client));
-            options.AddPolicy(Policies.ServerOrClient, policy => policy.RequireRole(Roles.Server, Roles.Client));
-            options.AddPolicy(Policies.ServerPlayerSession, policy =>
-            {
-                policy.RequireRole(Roles.Server);
-                policy.AddRequirements(new PlayerSessionAuthorizationRequirement());
-            });
-        });
-
-        builder.Services.AddScoped<JwtHandler>();
+        builder.Services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromHours(2));
+        builder.Services.AddScoped<IApplicationUserAuthenticationService, ApplicationUserAuthenticationService>();
+        builder.Services.AddScoped<IAccessTokenService, JwtAccessTokenService>();
     }
 }

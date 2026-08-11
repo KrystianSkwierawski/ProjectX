@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Caching.Memory;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Application.Extensions;
 using ProjectX.Application.Quests.Queries.GetQuest;
 using ProjectX.Application.Quests.Queries.GetQuests;
-using ProjectX.Domain.Constants;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.API.Endpoints;
@@ -22,14 +20,14 @@ public class Quests : EndpointGroupBase
             .WithParameterDescription("id", "Identifier of the quest to retrieve.")
             .WithResponseDescription(StatusCodes.Status200OK, "The localized quest definition was found and returned.")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
             .MapGet(GetQuests)
             .WithSummary("Get active quests")
             .WithDescription("Returns all active quest definitions localized to the authenticated user's preferred language.")
             .WithResponseDescription(StatusCodes.Status200OK, "Active localized quest definitions were returned.")
-            .RequireAuthorization(Policies.ServerOrClient);
+            .RequireAuthorization(AuthorizationPolicies.ServerOrClient);
     }
 
     private static async Task<Ok<QuestDto>> GetQuest(
@@ -39,12 +37,13 @@ public class Quests : EndpointGroupBase
         QuestEnum id,
         CancellationToken cancellationToken)
     {
-        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quest, async entry =>
+        return await memoryCache.GetOrCreateAsync(ApiCacheKeys.Quest(id, currentUserService.Language), async entry =>
         {
+            entry.AbsoluteExpirationRelativeToNow = ApiCacheKeys.Lifetime;
             var result = await sender.Send(new GetQuestQuery(id), cancellationToken);
 
             return TypedResults.Ok(result);
-        }, id, currentUserService.Language);
+        }) ?? throw new InvalidOperationException("The quest cache factory returned null.");
     }
 
     private static async Task<Ok<GetQuestsDto>> GetQuests(
@@ -54,11 +53,12 @@ public class Quests : EndpointGroupBase
         [AsParameters] GetQuestsQuery query,
         CancellationToken cancellationToken)
     {
-        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.Quests, async entry =>
+        return await memoryCache.GetOrCreateAsync(ApiCacheKeys.Quests(currentUserService.Language), async entry =>
         {
+            entry.AbsoluteExpirationRelativeToNow = ApiCacheKeys.Lifetime;
             var result = await sender.Send(query, cancellationToken);
 
             return TypedResults.Ok(result);
-        }, currentUserService.Language);
+        }) ?? throw new InvalidOperationException("The quests cache factory returned null.");
     }
 }

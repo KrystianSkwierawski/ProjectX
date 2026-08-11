@@ -6,7 +6,6 @@ using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
 using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 using ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -20,7 +19,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithDescription("Returns the quest lifecycle state and progress assigned to a character.")
             .WithParameterDescription("CharacterId", "Identifier of the character whose quests are requested.")
             .WithResponseDescription(StatusCodes.Status200OK, "Character quest states were returned.")
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
             .MapPost(AcceptCharacterQuest, "Accept")
@@ -30,7 +29,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status201Created, "The quest was accepted and its initial character state is returned.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
             .MapPost(AddCharacterQuestProgress, "Progress")
@@ -38,9 +37,8 @@ public class CharacterQuests : EndpointGroupBase
             .WithDescription("Adds a progress increment to an accepted character quest and updates its lifecycle state when the requirement is met.")
             .WithRequestBodyDescription("Character quest identifier and progress increment.")
             .WithResponseDescription(StatusCodes.Status200OK, "Quest progress was updated and the resulting state is returned.")
-            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(CheckCharacterQuestProgress, "CheckProgress")
@@ -48,8 +46,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithDescription("Finds an active quest matching a game-server event, applies progress when present, and returns the resulting state.")
             .WithRequestBodyDescription("Quest identifier, progress increment, and character identifier reported by the game server.")
             .WithResponseDescription(StatusCodes.Status200OK, "The matching active quest was updated, or an empty result is returned when none is active.")
-            .ProducesValidationProblem()
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(CompleteCharacterQuest, "Complete")
@@ -57,9 +54,8 @@ public class CharacterQuests : EndpointGroupBase
             .WithDescription("Marks a finished character quest as completed, consumes required collection items, and returns its reward.")
             .WithRequestBodyDescription("Identifier of the finished character quest to complete.")
             .WithResponseDescription(StatusCodes.Status200OK, "The quest was completed and its reward is returned.")
-            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
     private static async Task<Ok<GetCharacterQuestsDto>> GetCharacterQuests(

@@ -7,8 +7,6 @@ public record GetCharacterQuestsQuery(int CharacterId) : IRequest<GetCharacterQu
 
 public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery, GetCharacterQuestsDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<GetCharacterQuestsHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -34,8 +32,6 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
             })
             .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);
-
-        Log.Debug("Found character quests. CharacterId: {0}, Count: {1}", request.CharacterId, result.Count);
 
         return new GetCharacterQuestsDto
         {

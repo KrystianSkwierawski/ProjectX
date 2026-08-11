@@ -99,7 +99,7 @@ public sealed class OpenApiDocumentationOperationProcessor : IOperationProcessor
             .Distinct()
             .ToArray();
 
-        if (policies.Contains(ProjectX.Domain.Constants.Policies.ServerPlayerSession))
+        if (policies.Contains(AuthorizationPolicies.ServerPlayerSession))
         {
             operation.Parameters.Add(new OpenApiParameter
             {

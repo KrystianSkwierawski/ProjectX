@@ -5,7 +5,6 @@ using ProjectX.Application.GameSessions.Commands.HeartbeatGameSession;
 using ProjectX.Application.GameSessions.Commands.RedeemGameSessionTicket;
 using ProjectX.Application.GameSessions.Commands.RegisterGameSession;
 using ProjectX.Application.GameSessions.Commands.RevokePlayerSession;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -23,7 +22,7 @@ public class GameSessions : EndpointGroupBase
             .Produces<RegisterGameSessionDto>()
             .Produces(StatusCodes.Status403Forbidden)
             .ProducesValidationProblem()
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(AuthorizationPolicies.Server);
 
         groupBuilder
             .MapPost(HeartbeatAsync, "Heartbeat")
@@ -35,7 +34,7 @@ public class GameSessions : EndpointGroupBase
             .Produces<HeartbeatGameSessionDto>()
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesValidationProblem()
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(AuthorizationPolicies.Server);
 
         groupBuilder
             .MapPost(CreateTicketAsync, "Ticket")
@@ -47,7 +46,7 @@ public class GameSessions : EndpointGroupBase
             .Produces<CreateGameSessionTicketDto>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status429TooManyRequests)
-            .RequireAuthorization(Policies.Client)
+            .RequireAuthorization(AuthorizationPolicies.Client)
             .RequireRateLimiting(RateLimitPolicies.GameSessionTicket);
 
         groupBuilder
@@ -60,7 +59,7 @@ public class GameSessions : EndpointGroupBase
             .Produces<RedeemGameSessionTicketDto>()
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesValidationProblem()
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(AuthorizationPolicies.Server);
 
         groupBuilder
             .MapPost(RevokePlayerAsync, "RevokePlayer")
@@ -70,7 +69,7 @@ public class GameSessions : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status204NoContent, "The credential was revoked or was already unavailable.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem()
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(AuthorizationPolicies.Server);
     }
 
     private static async Task<IResult> RegisterAsync(ISender sender, RegisterGameSessionCommand command, CancellationToken cancellationToken)

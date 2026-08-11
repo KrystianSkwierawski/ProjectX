@@ -1,4 +1,6 @@
-﻿public enum TranslateKeyEnum
+namespace ProjectX.Domain.Enums;
+
+public enum TranslateKeyEnum
 {
     Empty,
 

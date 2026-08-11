@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -18,7 +17,7 @@ public class CharacterInventories : EndpointGroupBase
             .WithParameterDescription("CharacterId", "Identifier of the character whose inventory is requested.")
             .WithResponseDescription(StatusCodes.Status200OK, "The character inventory was found and returned.")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
             .MapPost(UpdateCharacterInventory)
@@ -26,9 +25,8 @@ public class CharacterInventories : EndpointGroupBase
             .WithDescription("Applies item additions, removals, a stack split, or a slot move to the persisted character inventory.")
             .WithRequestBodyDescription("Character identifier and inventory operations to apply.")
             .WithResponseDescription(StatusCodes.Status204NoContent, "The inventory update was persisted.")
-            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
     private static async Task<Ok<CharacterInventoryDto>> GetCharacterInventory(

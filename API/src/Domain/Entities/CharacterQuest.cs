@@ -19,7 +19,38 @@ public class CharacterQuest : BaseAuditableEntity
 
     public DateTimeOffset EndDate { get; set; }
 
-    public virtual Character Character { get; set; }
+    public virtual Character Character { get; set; } = null!;
 
-    public virtual Quest Quest { get; set; }
+    public virtual Quest Quest { get; set; } = null!;
+
+    public void AddProgress(int amount, int requiredProgress)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount));
+        }
+
+        if (Status != CharacterQuestStatusEnum.Accepted)
+        {
+            throw new InvalidOperationException("Only an accepted quest can receive progress.");
+        }
+
+        Progress += amount;
+
+        if (Progress >= requiredProgress)
+        {
+            Status = CharacterQuestStatusEnum.Finished;
+        }
+    }
+
+    public void Complete(DateTimeOffset completedAtUtc)
+    {
+        if (Status != CharacterQuestStatusEnum.Finished)
+        {
+            throw new InvalidOperationException("Only a finished quest can be completed.");
+        }
+
+        EndDate = completedAtUtc;
+        Status = CharacterQuestStatusEnum.Completed;
+    }
 }

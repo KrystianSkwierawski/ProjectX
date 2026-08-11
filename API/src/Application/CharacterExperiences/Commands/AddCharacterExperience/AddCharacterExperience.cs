@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
@@ -6,32 +6,21 @@ using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
+
 public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto>
 {
     public int CharacterId { get; set; }
-
     public int Amount { get; set; }
-
     public ExperienceTypeEnum Type { get; init; }
 }
 
 public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacterExperienceCommand, AddCharacterExperienceDto>
 {
-    private static readonly SortedDictionary<int, byte> _experienceToLevel = new SortedDictionary<int, byte>
+    private static readonly SortedDictionary<int, byte> ExperienceToLevel = new()
     {
-        { 0, 1 },
-        { 100, 2 },
-        { 400, 3 },
-        { 4000, 4 },
-        { 5000, 5 },
-        { 6000, 6 },
-        { 7000, 7 },
-        { 8000, 8 },
-        { 9000, 9 },
-        { 10000, 10 }
+        { 0, 1 }, { 100, 2 }, { 400, 3 }, { 4000, 4 }, { 5000, 5 },
+        { 6000, 6 }, { 7000, 7 }, { 8000, 8 }, { 9000, 9 }, { 10000, 10 }
     };
-
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<AddCharacterExperienceCommandHandler>();
 
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
@@ -44,39 +33,26 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
 
     public async Task<AddCharacterExperienceDto> Handle(AddCharacterExperienceCommand request, CancellationToken cancellationToken)
     {
-        var result = new AddCharacterExperienceDto();
-
         var userId = _currentUserService.GetId();
-
         var character = await _context.Characters
-                .Include(x => x.CharacterExperiences.Where(x => x.Type == request.Type))
-                //.Where(x => x.Id == request.CharacterId)
-                .Where(x => x.ApplicationUserId == userId)
-                .SingleOrNotFoundAsync("character", cancellationToken);
+            .Include(candidate => candidate.CharacterExperiences.Where(experience => experience.Type == request.Type))
+            .Where(candidate => candidate.ApplicationUserId == userId)
+            .SingleOrNotFoundAsync("character", cancellationToken);
 
-        Log.Debug("Found character. CharacterId {0}, UserId: {1}", character.Id, userId);
-
-        character.CharacterExperiences.Add(new CharacterExperience
-        {
-            Amount = request.Amount,
-            Type = request.Type
-        });
-
-        result.Experience = character.CharacterExperiences
-            .Select(x => x.Amount)
-            .Sum();
-
-        result.Level = GetLevel(result.Experience);
+        character.CharacterExperiences.Add(new CharacterExperience { Amount = request.Amount, Type = request.Type });
+        var experience = character.CharacterExperiences.Sum(entry => entry.Amount);
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return result;
+        return new AddCharacterExperienceDto
+        {
+            Experience = experience,
+            Level = GetLevel(experience)
+        };
     }
 
     public static byte GetLevel(int experience)
     {
-        return _experienceToLevel
-            .Where(x => x.Key <= experience)
-            .Max(x => x.Value);
+        return ExperienceToLevel.Where(level => level.Key <= experience).Max(level => level.Value);
     }
 }

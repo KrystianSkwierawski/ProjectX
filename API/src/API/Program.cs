@@ -2,7 +2,6 @@ using ProjectX.API;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application;
 using ProjectX.Infrastructure;
-using ProjectX.Infrastructure.Persistance;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +11,7 @@ builder.WebHost.ConfigureKestrel((context, options) =>
     options.Configure(context.Configuration.GetSection("Kestrel"));
 });
 
-builder.AddApplicationServices();
+builder.Services.AddApplicationServices();
 builder.AddInfrastructureServices();
 builder.AddWebServices();
 

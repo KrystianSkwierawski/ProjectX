@@ -1,9 +1,7 @@
 using MediatR;
-using Microsoft.AspNetCore.Identity;
-using ProjectX.Application.Common;
 using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Domain.Entities;
+using ProjectX.Application.Common.Security;
 
 namespace ProjectX.Application.ApplicationUsers.Commands.RefreshSession;
 
@@ -18,28 +16,26 @@ public record RefreshSessionCommand : IRequest<RefreshSessionDto>
 public class RefreshSessionCommandHandler : IRequestHandler<RefreshSessionCommand, RefreshSessionDto>
 {
     private readonly ICurrentUserService _currentUserService;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly JwtHandler _jwtHandler;
+    private readonly IApplicationUserAuthenticationService _authenticationService;
+    private readonly IAccessTokenService _accessTokenService;
     private readonly TimeProvider _timeProvider;
 
-    public RefreshSessionCommandHandler(ICurrentUserService currentUserService, UserManager<ApplicationUser> userManager, JwtHandler jwtHandler, TimeProvider timeProvider)
+    public RefreshSessionCommandHandler(
+        ICurrentUserService currentUserService,
+        IApplicationUserAuthenticationService authenticationService,
+        IAccessTokenService accessTokenService,
+        TimeProvider timeProvider)
     {
         _currentUserService = currentUserService;
-        _userManager = userManager;
-        _jwtHandler = jwtHandler;
+        _authenticationService = authenticationService;
+        _accessTokenService = accessTokenService;
         _timeProvider = timeProvider;
     }
 
     public async Task<RefreshSessionDto> Handle(RefreshSessionCommand request, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var user = await _userManager.FindByIdAsync(_currentUserService.GetAuthenticatedUserId());
-
-        if (user is null || await _userManager.IsLockedOutAsync(user))
-        {
-            throw new InvalidCredentialsException();
-        }
+        var user = await _authenticationService.FindActiveByIdAsync(_currentUserService.GetAuthenticatedUserId(), cancellationToken)
+            ?? throw new InvalidCredentialsException();
 
         var tokenExpiresAtUtc = _currentUserService.GetAuthenticatedTokenExpirationUtc();
         var utcNow = _timeProvider.GetUtcNow();
@@ -49,14 +45,14 @@ public class RefreshSessionCommandHandler : IRequestHandler<RefreshSessionComman
             throw new InvalidCredentialsException();
         }
 
-        if (tokenExpiresAtUtc > utcNow.Add(JwtHandler.RefreshWindow))
+        if (tokenExpiresAtUtc > utcNow.Add(SessionTokenPolicy.RefreshWindow))
         {
             throw new ForbiddenAccessException();
         }
 
         return new RefreshSessionDto
         {
-            Token = await _jwtHandler.GenerateToken(user),
+            Token = _accessTokenService.Create(user),
             Language = user.Language
         };
     }

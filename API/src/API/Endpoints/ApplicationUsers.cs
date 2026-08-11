@@ -2,7 +2,6 @@
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
 using ProjectX.Application.ApplicationUsers.Commands.RefreshSession;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -36,7 +35,7 @@ public class ApplicationUsers : EndpointGroupBase
             .Produces<RefreshSessionDto>()
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
-            .RequireAuthorization(Policies.ServerOrClient);
+            .RequireAuthorization(AuthorizationPolicies.ServerOrClient);
     }
 
     private static async Task<IResult> LoginAsync(ISender sender, LoginApplicationUserCommand command, CancellationToken cancellationToken)

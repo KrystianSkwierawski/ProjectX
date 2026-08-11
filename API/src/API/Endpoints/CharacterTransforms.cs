@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.CharacterTransforms.Commands.SaveCharacterTransform;
 using ProjectX.Application.CharacterTransforms.Queries.GetCharacterTransform;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -17,7 +16,7 @@ public class CharacterTransforms : EndpointGroupBase
             .WithDescription("Returns the most recently persisted world position and horizontal rotation for the authenticated user's character.")
             .WithResponseDescription(StatusCodes.Status200OK, "The latest character transform was found and returned.")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Client);
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
             .MapPost(SaveCharacterTransform)
@@ -25,9 +24,8 @@ public class CharacterTransforms : EndpointGroupBase
             .WithDescription("Persists a new world-position snapshot for the authenticated user's character.")
             .WithRequestBodyDescription("World position and horizontal rotation to persist.")
             .WithResponseDescription(StatusCodes.Status201Created, "The transform snapshot was persisted.")
-            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.ServerPlayerSession);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
     private static async Task<Ok<CharacterTransformDto>> GetCharacterTransform(

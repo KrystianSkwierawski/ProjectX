@@ -4,9 +4,9 @@ using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.GameSessions.Models;
 
-namespace ProjectX.Infrastructure.GameSessions;
+namespace ProjectX.Application.GameSessions;
 
-public sealed class InMemoryGameSessionService : IGameSessionService
+public sealed class GameSessionService : IGameSessionService
 {
     private const int SecretSizeBytes = 32;
 
@@ -19,7 +19,7 @@ public sealed class InMemoryGameSessionService : IGameSessionService
     private readonly TimeSpan _serverLeaseLifetime;
     private readonly bool _allowDirectTransport;
 
-    public InMemoryGameSessionService(TimeProvider timeProvider, TimeSpan ticketLifetime, TimeSpan serverLeaseLifetime, bool allowDirectTransport)
+    public GameSessionService(TimeProvider timeProvider, TimeSpan ticketLifetime, TimeSpan serverLeaseLifetime, bool allowDirectTransport)
     {
         if (ticketLifetime <= TimeSpan.Zero)
         {

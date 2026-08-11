@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Infrastructure.GameSessions;
 
 namespace ProjectX.API.Infrastructure;
 

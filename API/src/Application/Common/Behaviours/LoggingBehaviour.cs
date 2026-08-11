@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 
@@ -8,13 +9,15 @@ namespace ProjectX.Application.Common.Behaviours;
 public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(LoggingBehaviour<,>));
-
     private readonly ICurrentUserService _currentUserService;
+    private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
 
-    public LoggingBehaviour(ICurrentUserService currentUserService)
+    public LoggingBehaviour(
+        ICurrentUserService currentUserService,
+        ILogger<LoggingBehaviour<TRequest, TResponse>> logger)
     {
         _currentUserService = currentUserService;
+        _logger = logger;
     }
 
     public async Task<TResponse> Handle(
@@ -28,46 +31,39 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
         {
             var userId = _currentUserService.GetId();
 
-            Log.Debug(
+            _logger.LogDebug(
                 "{RequestName} -> Start. UserId: {UserId}, Request: {Request}",
                 requestName,
                 userId,
-                GetLogPayload(request));
+                request.ToString());
 
-            var sw = Stopwatch.StartNew();
-
+            var stopwatch = Stopwatch.StartNew();
             var response = await next();
+            stopwatch.Stop();
 
-            sw.Stop();
-
-            Log.Debug(
+            _logger.LogDebug(
                 "{RequestName} -> Stop. UserId: {UserId}, Elapsed: {Elapsed}, Response: {Response}",
                 requestName,
                 userId,
-                sw.Elapsed,
-                GetLogPayload(response));
+                stopwatch.Elapsed,
+                response?.ToString());
 
             return response;
         }
         catch (Exception exception) when (exception is InvalidCredentialsException or InvalidGameSessionCredentialException)
         {
-            Log.Debug("{RequestName} -> Rejected credentials", requestName);
+            _logger.LogDebug("{RequestName} -> Rejected credentials", requestName);
             throw;
         }
         catch (Exception exception) when (exception is ValidationException or NotFoundException)
         {
-            Log.Debug("{RequestName} -> Rejected: {Reason}", requestName, exception.Message);
+            _logger.LogDebug("{RequestName} -> Rejected: {Reason}", requestName, exception.Message);
             throw;
         }
         catch (Exception exception)
         {
-            Log.Error(exception, exception.Message);
+            _logger.LogError(exception, "{RequestName} failed", requestName);
             throw;
         }
-    }
-
-    private static string? GetLogPayload<TPayload>(TPayload payload)
-    {
-        return payload?.ToString();
     }
 }

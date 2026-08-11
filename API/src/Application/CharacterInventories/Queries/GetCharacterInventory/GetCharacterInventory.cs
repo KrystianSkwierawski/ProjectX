@@ -9,8 +9,6 @@ public record GetCharacterInventoryQuery(int CharacterId) : IRequest<CharacterIn
 
 public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInventoryQuery, CharacterInventoryDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<GetCharacterInventoryQueryHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 

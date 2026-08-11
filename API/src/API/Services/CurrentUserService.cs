@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Application.Common.Security;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.API.Services;
@@ -20,7 +21,7 @@ public class CurrentUserService : ICurrentUserService
     {
         var httpContext = _httpContextAccessor.HttpContext;
 
-        if (httpContext?.User?.IsInRole("Server") == true
+        if (httpContext?.User?.IsInRole(ApplicationRoles.Server) == true
             && httpContext.Items.TryGetValue(PlayerSessionAuthorizationHandler.DelegatedUserIdItemKey, out var delegatedUserId)
             && delegatedUserId is string userId)
         {
