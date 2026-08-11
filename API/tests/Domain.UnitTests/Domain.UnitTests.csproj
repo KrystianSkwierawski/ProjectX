@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\TestProject.props" />
+
+  <PropertyGroup>
+    <RootNamespace>ProjectX.Domain.UnitTests</RootNamespace>
+    <AssemblyName>ProjectX.Domain.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Domain\Domain.csproj" />
+  </ItemGroup>
+</Project>

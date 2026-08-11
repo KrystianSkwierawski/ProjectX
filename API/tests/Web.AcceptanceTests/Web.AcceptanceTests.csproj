@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\TestProject.props" />
+
+  <PropertyGroup>
+    <RootNamespace>ProjectX.Web.AcceptanceTests</RootNamespace>
+    <AssemblyName>ProjectX.Web.AcceptanceTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\API\API.csproj" />
+  </ItemGroup>
+</Project>

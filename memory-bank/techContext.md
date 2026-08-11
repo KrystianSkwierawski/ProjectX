@@ -7,7 +7,12 @@
   - `API/src/Application/Application.csproj`
   - `API/src/Domain/Domain.csproj`
   - `API/src/Infrastructure/Infrastructure.csproj`
-  - `API/tests/UnitTests/UnitTests.csproj`
+  - `API/tests/Domain.UnitTests/Domain.UnitTests.csproj`
+  - `API/tests/Application.UnitTests/Application.UnitTests.csproj`
+  - `API/tests/Infrastructure.IntegrationTests/Infrastructure.IntegrationTests.csproj`
+  - `API/tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj`
+  - `API/tests/Architecture.Tests/Architecture.Tests.csproj`
+- Shared backend test settings are centralized in `API/tests/TestProject.props` and imported explicitly by the five actual test projects.
 - Central package management via `API/Directory.Packages.props`.
 - Key packages include Entity Framework Core 9, ASP.NET Core Identity, MediatR 13, FluentValidation, NSwag, Serilog, JWT token libraries, xUnit, Moq, and coverlet.
 
@@ -40,10 +45,10 @@
   - `ProjectX > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
   - `ProjectX > Build And Run` invokes `Client/Automation/run.bat`.
 - Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
-- At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 279 passing unit/contract/architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
+- At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 281 passing domain/application unit, infrastructure integration, web acceptance/contract, and architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
 
 ## Current Repo Notes
-- On 2026-08-11, after the Clean Architecture corrections, trusted-server validation simplification, and expanded architecture rules, `dotnet restore API/ProjectX.sln` and `dotnet test API/ProjectX.sln --no-restore` succeeded; the latter rebuilt all projects, regenerated NSwag with zero warnings/errors, and passed all 279 tests. The nine architecture cases now cover compiled assembly boundaries, declared production-project references, Domain/Application package constraints, and layer namespaces. This validates backend structure/contracts but is not a Unity runtime or full-stack gameplay test.
+- On 2026-08-11, backend tests were split into `Domain.UnitTests`, `Application.UnitTests`, `Infrastructure.IntegrationTests`, `Web.AcceptanceTests`, and `Architecture.Tests`, with shared tooling explicitly imported from `API/tests/TestProject.props`. The production-localization resource contract lives in Web rather than creating a hidden Infrastructure-to-API filesystem dependency. `dotnet restore API/ProjectX.sln` and `dotnet test API/ProjectX.sln --no-restore` succeeded; the latter rebuilt all projects, regenerated NSwag with zero warnings/errors, and passed all 281 tests. The ten architecture cases cover compiled assembly boundaries, declared production/test-project references, Domain/Application package constraints, and layer namespaces. This validates backend structure/contracts but is not a Unity runtime or full-stack gameplay test.
 - At the start of the 2026-07-13 memory-bank refresh, branch `dev` was clean and exactly aligned with `origin/dev` at `8c954ff` (`0` ahead, `0` behind).
 - On 2026-07-13, `dotnet build API/ProjectX.sln --no-restore` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` both completed with zero errors. They emitted existing nullable/reference/version-conflict/unused-field warnings. `dotnet test API/ProjectX.sln --no-build --no-restore` then passed all 182 tests. This is build/unit-test validation, not Unity runtime or dedicated-server validation.
 - On 2026-07-15, after combat ammo consumption was added, `dotnet build API/ProjectX.sln --no-restore -p:SkipNSwag=True` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and existing warnings. `dotnet test API/ProjectX.sln --no-build --no-restore` passed all 190 tests. No full Unity client/dedicated-server/API runtime test was performed.

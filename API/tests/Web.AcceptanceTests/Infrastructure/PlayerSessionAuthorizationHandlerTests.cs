@@ -4,10 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Domain.Constants;
-using ProjectX.Infrastructure.GameSessions;
+using ProjectX.Application.Common.Security;
 
-namespace ProjectX.UnitTests.API;
+namespace ProjectX.Web.AcceptanceTests.Infrastructure;
 
 public sealed class PlayerSessionAuthorizationHandlerTests
 {
@@ -78,7 +77,7 @@ public sealed class PlayerSessionAuthorizationHandlerTests
         var identity = new ClaimsIdentity(
         [
             new Claim(ClaimTypes.NameIdentifier, ServerUserId),
-            new Claim(ClaimTypes.Role, Roles.Server)
+            new Claim(ClaimTypes.Role, ApplicationRoles.Server)
         ], "Bearer");
 
         return new AuthorizationHandlerContext([new PlayerSessionAuthorizationRequirement()], new ClaimsPrincipal(identity), resource: null);

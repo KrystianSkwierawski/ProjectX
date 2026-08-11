@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\TestProject.props" />
+
+  <PropertyGroup>
+    <RootNamespace>ProjectX.Infrastructure.IntegrationTests</RootNamespace>
+    <AssemblyName>ProjectX.Infrastructure.IntegrationTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ProjectX.API.Services;
 
-namespace ProjectX.UnitTests.API;
+namespace ProjectX.Web.AcceptanceTests.Services;
 
 public sealed class CurrentUserServiceTests
 {

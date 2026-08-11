@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Common.Exceptions;
 
-namespace ProjectX.UnitTests.API;
+namespace ProjectX.Web.AcceptanceTests.Infrastructure;
 
 public class ApiExceptionHandlerTests
 {

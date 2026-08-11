@@ -1,19 +1,18 @@
-using ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
-using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Domain.Enums;
+using ProjectX.Domain.Inventory;
 
-namespace ProjectX.UnitTests.Application.CharacterInventories;
+namespace ProjectX.Domain.UnitTests.Inventory;
 
-public class UpdateCharacterInventoryCommandHandlerTests
+public class InventoryStateTests
 {
     [Fact]
     public void Split_AppendsHalfOfEvenStackToNextFreeSlot()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 8 },
-            new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 3 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 8),
+            new InventorySlot(InventoryItemEnum.Currency, 3));
 
-        var result = UpdateCharacterInventoryCommandHandler.Split(0, inventory, 4);
+        var result = inventory.Split(0, 4);
 
         Assert.True(result);
         Assert.Equal(3, inventory.Items.Count);
@@ -26,9 +25,9 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Split_LeavesLargerHalfInSourceSlotForOddStack()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 5 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 5));
 
-        var result = UpdateCharacterInventoryCommandHandler.Split(0, inventory, 2);
+        var result = inventory.Split(0, 2);
 
         Assert.True(result);
         Assert.Equal(3, inventory.Items[0].Count);
@@ -39,10 +38,10 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Split_DoesNotChangeInventoryWhenThereIsNoFreeSlot()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 8 },
-            new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 3 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 8),
+            new InventorySlot(InventoryItemEnum.Currency, 3));
 
-        var result = UpdateCharacterInventoryCommandHandler.Split(0, inventory, 2);
+        var result = inventory.Split(0, 2);
 
         Assert.False(result);
         Assert.Equal(2, inventory.Items.Count);
@@ -55,9 +54,9 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Split_DoesNotChangeInventoryForInvalidSourceSlot(int sourceSlotIndex)
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 8 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 8));
 
-        var result = UpdateCharacterInventoryCommandHandler.Split(sourceSlotIndex, inventory, 2);
+        var result = inventory.Split(sourceSlotIndex, 2);
 
         Assert.False(result);
         Assert.Single(inventory.Items);
@@ -68,9 +67,9 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Split_DoesNotChangeSingleItemStack()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 1 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1));
 
-        var result = UpdateCharacterInventoryCommandHandler.Split(0, inventory, 2);
+        var result = inventory.Split(0, 2);
 
         Assert.False(result);
         Assert.Single(inventory.Items);
@@ -81,10 +80,10 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Move_SwapsDifferentItems()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 },
-            new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 10 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 4),
+            new InventorySlot(InventoryItemEnum.Currency, 10));
 
-        var result = UpdateCharacterInventoryCommandHandler.Move(0, 1, inventory, 4);
+        var result = inventory.Move(0, 1, 4);
 
         Assert.True(result);
         Assert.Equal(InventoryItemEnum.Currency, inventory.Items[0].Type);
@@ -97,10 +96,10 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Move_MergesStacksOfTheSameItem()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 },
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 3 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 4),
+            new InventorySlot(InventoryItemEnum.HealthPotion, 3));
 
-        var result = UpdateCharacterInventoryCommandHandler.Move(0, 1, inventory, 4);
+        var result = inventory.Move(0, 1, 4);
 
         Assert.True(result);
         Assert.Equal(InventoryItemEnum.None, inventory.Items[0].Type);
@@ -113,9 +112,9 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Move_PreservesTheSelectedEmptySlot()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 4));
 
-        var result = UpdateCharacterInventoryCommandHandler.Move(0, 3, inventory, 4);
+        var result = inventory.Move(0, 3, 4);
 
         Assert.True(result);
         Assert.Equal(4, inventory.Items.Count);
@@ -133,13 +132,9 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Move_DoesNotChangeInventoryForInvalidSlots(int sourceSlotIndex, int targetSlotIndex)
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 4));
 
-        var result = UpdateCharacterInventoryCommandHandler.Move(
-            sourceSlotIndex,
-            targetSlotIndex,
-            inventory,
-            4);
+        var result = inventory.Move(sourceSlotIndex, targetSlotIndex, 4);
 
         Assert.False(result);
         Assert.Single(inventory.Items);
@@ -151,12 +146,10 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Remove_ClearsSlotWithoutShiftingFollowingItems()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 },
-            new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 10 });
+            new InventorySlot(InventoryItemEnum.HealthPotion, 4),
+            new InventorySlot(InventoryItemEnum.Currency, 10));
 
-        var result = UpdateCharacterInventoryCommandHandler.Remove(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 },
-            inventory);
+        var result = inventory.Remove(InventoryItemEnum.HealthPotion, 4);
 
         Assert.True(result);
         Assert.Equal(2, inventory.Items.Count);
@@ -168,12 +161,10 @@ public class UpdateCharacterInventoryCommandHandlerTests
     public void Add_FillsFirstEmptySlot()
     {
         var inventory = CreateInventory(
-            new InventoryItemDto { Type = InventoryItemEnum.None, Count = 0 },
-            new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 10 });
+            InventorySlot.Empty(),
+            new InventorySlot(InventoryItemEnum.Currency, 10));
 
-        var result = UpdateCharacterInventoryCommandHandler.Add(
-            new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 4 },
-            inventory);
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 4);
 
         Assert.True(result);
         Assert.Equal(2, inventory.Items.Count);
@@ -182,11 +173,50 @@ public class UpdateCharacterInventoryCommandHandlerTests
         Assert.Equal(InventoryItemEnum.Currency, inventory.Items[1].Type);
     }
 
-    private static InventoryDto CreateInventory(params InventoryItemDto[] items)
+    [Fact]
+    public void Add_AppendsItemWhenThereIsNoEmptySlot()
     {
-        return new InventoryDto
-        {
-            Items = items.ToList(),
-        };
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.Currency, 10));
+
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 4);
+
+        Assert.True(result);
+        Assert.Equal(2, inventory.Items.Count);
+        Assert.Equal(InventoryItemEnum.HealthPotion, inventory.Items[1].Type);
+        Assert.Equal(4, inventory.Items[1].Count);
+    }
+
+    [Fact]
+    public void Remove_ConsumesMultipleStacks()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2),
+            new InventorySlot(InventoryItemEnum.HealthPotion, 3));
+
+        var result = inventory.Remove(InventoryItemEnum.HealthPotion, 4);
+
+        Assert.True(result);
+        Assert.Equal(InventoryItemEnum.None, inventory.Items[0].Type);
+        Assert.Equal(1, inventory.Items[1].Count);
+    }
+
+    [Fact]
+    public void Remove_DoesNotMutateInventoryWhenTotalCountIsInsufficient()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2),
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1));
+
+        var result = inventory.Remove(InventoryItemEnum.HealthPotion, 4);
+
+        Assert.False(result);
+        Assert.Equal(2, inventory.Items[0].Count);
+        Assert.Equal(1, inventory.Items[1].Count);
+    }
+
+    private static InventoryState CreateInventory(params InventorySlot[] items)
+    {
+        return new InventoryState(items);
     }
 }

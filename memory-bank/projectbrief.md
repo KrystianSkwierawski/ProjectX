@@ -5,7 +5,7 @@ ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core b
 
 ## Current Scope
 - Unity client under `Client/`.
-- Backend API under `API/`, organized as separate API, Application, Domain, Infrastructure, and UnitTests projects.
+- Backend API under `API/`, organized as separate API, Application, Domain, and Infrastructure projects plus responsibility-aligned test projects.
 - Gameplay domains currently represented in code include characters, character transforms, health/combat state, max health, character stats, equipment/gear, inventory, quests, crafting recipes, experience, users, and translation/i18n.
 - Inventory slots support persisted drag-and-drop positioning: different items swap, matching stacks merge, empty positions are represented by `None` placeholders, and Loot can be picked up by dropping it onto inventory.
 - Gear currently includes helmet, chest, boots, weapon, and ammo slots plus stat bonuses that affect persisted character totals.

@@ -1,7 +1,7 @@
 using MediatR;
 using ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
 
-namespace ProjectX.UnitTests.Application;
+namespace ProjectX.Application.UnitTests.Common;
 
 public class RequestLoggingConventionTests
 {

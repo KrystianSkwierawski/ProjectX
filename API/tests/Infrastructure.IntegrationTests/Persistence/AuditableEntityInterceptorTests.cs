@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Domain.Common;
 using ProjectX.Infrastructure.Persistance.Interceptors;
 
-namespace ProjectX.UnitTests.Infrastructure;
+namespace ProjectX.Infrastructure.IntegrationTests.Persistence;
 
 public class AuditableEntityInterceptorTests
 {

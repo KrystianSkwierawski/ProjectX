@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace ProjectX.UnitTests.API;
+namespace ProjectX.Web.AcceptanceTests.Contracts;
 
 public class OpenApiContractTests
 {
