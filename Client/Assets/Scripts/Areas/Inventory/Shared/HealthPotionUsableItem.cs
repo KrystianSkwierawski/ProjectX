@@ -13,7 +13,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class HealthPotionUsableItem : AbstractUsableItem
     {
-        public HealthPotionUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public HealthPotionUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
 
         }
@@ -40,7 +40,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             {
                 CharacterId = 1,
                 Health = character.Health
-            }, ClientToken)
+            }, PlayerSessionId)
             .Forget();
 #endif
 

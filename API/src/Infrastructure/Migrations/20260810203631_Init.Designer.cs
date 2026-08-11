@@ -12,7 +12,7 @@ using ProjectX.Infrastructure.Persistance;
 namespace ProjectX.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260706184932_Init")]
+    [Migration("20260810203631_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -374,19 +374,18 @@ namespace ProjectX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AmmoCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AmmoType")
+                        .HasColumnType("int");
+
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<short>("Armor")
                         .HasColumnType("smallint");
-
-                    b.Property<int>("AmmoType")
-                        .HasDefaultValue(1008)
-                        .HasColumnType("int");
-
-                    b.Property<int>("AmmoCount")
-                        .HasColumnType("int");
 
                     b.Property<int>("BootsType")
                         .HasColumnType("int");
@@ -409,8 +408,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("MaxHealth")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -450,8 +449,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("CharacterId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<byte>("Type")
                         .HasColumnType("tinyint");
@@ -475,8 +474,8 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
@@ -494,11 +493,11 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("CharacterId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Progress")
                         .HasColumnType("int");
@@ -506,8 +505,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<short>("QuestId")
                         .HasColumnType("smallint");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
@@ -532,8 +531,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("CharacterId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<float>("PositionX")
                         .HasColumnType("real");
@@ -559,8 +558,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<short>("Id")
                         .HasColumnType("smallint");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -596,8 +595,8 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<byte>("MaxCount")
                         .HasColumnType("tinyint");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -618,8 +617,8 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
                         .IsRequired()

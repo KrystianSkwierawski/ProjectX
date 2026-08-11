@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using ProjectX.API.Infrastructure;
@@ -13,6 +15,7 @@ public static class DependencyInjection
     public static void AddWebServices(this IHostApplicationBuilder builder)
     {
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+        builder.Services.AddSingleton<IAuthorizationHandler, PlayerSessionAuthorizationHandler>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddProblemDetails();
@@ -56,6 +59,7 @@ public static class DependencyInjection
                 document.Tags.Add(new OpenApiTag { Name = "Characters", Description = "Persistent character state and attributes." });
                 document.Tags.Add(new OpenApiTag { Name = "CharacterTransforms", Description = "Persistent character world transforms." });
                 document.Tags.Add(new OpenApiTag { Name = "CraftingRecipes", Description = "Available crafting recipes and requirements." });
+                document.Tags.Add(new OpenApiTag { Name = "GameSessions", Description = "Dedicated-server registration and one-time player connection tickets." });
                 document.Tags.Add(new OpenApiTag { Name = "Quests", Description = "Localized quest definitions." });
             };
         });
@@ -71,6 +75,20 @@ public static class DependencyInjection
                     _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        AutoReplenishment = true
+                    }));
+
+            options.AddPolicy(RateLimitPolicies.GameSessionTicket, context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.User.FindFirstValue(ClaimTypes.NameIdentifier) is { Length: > 0 } userId
+                        ? $"user:{userId}"
+                        : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20,
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0,
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,

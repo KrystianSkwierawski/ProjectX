@@ -30,13 +30,13 @@ namespace Assets.Scripts.Areas.Quest.Mono
         private StarterAssetsInputs _input;
 
         [ServerRpc]
-        private void CompleteQuestServerRpc(QuestEnum questId, int characterQuestId, string token)
+        private void CompleteQuestServerRpc(QuestEnum questId, int characterQuestId)
         {
             // TODO: validation
-            CompleteQuestAsync(questId, characterQuestId, token).Forget();
+            CompleteQuestAsync(questId, characterQuestId, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
         }
 
-        private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string clientToken)
+        private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string playerSessionId)
         {
             // TODO: validate and get type from complete?
             var quest = QuestManager.Instance.Quests
@@ -59,17 +59,17 @@ namespace Assets.Scripts.Areas.Quest.Mono
                             }
                         }
                     },
-                    ClientToken = UserManager.Instance.Token,
+                    PlayerSessionId = playerSessionId,
                 });
             }
 
-            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, clientToken);
+            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, playerSessionId);
 
             AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
             {
                 Amount = result.Reward,
                 Type = ExperienceTypeEnum.Main,
-                ClientToken = clientToken,
+                PlayerSessionId = playerSessionId,
             });
         }
 
@@ -102,11 +102,11 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             if (IsServer)
             {
-                CheckCharacterQuestSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) => await CheckProgressAsync(e.GameObjectName, e.Progress, OwnerClientId, e.ClientToken));
+                CheckCharacterQuestSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) => await CheckProgressAsync(e.GameObjectName, e.Progress, OwnerClientId));
             }
         }
 
-        private async UniTask CheckProgressAsync(string gameObjectName, int progress, ulong clientId, string clientToken)
+        private async UniTask CheckProgressAsync(string gameObjectName, int progress, ulong clientId)
         {
             // TODO: multiple quests with same gameObjectName
             var quest = QuestManager.Instance.Quests
@@ -120,7 +120,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            var result = await QuestManager.Instance.CheckProgressAsync(quest.Id, progress, 1, clientToken);
+            var result = await QuestManager.Instance.CheckProgressAsync(quest.Id, progress, 1, UserManager.Instance.GetPlayerSessionId(clientId));
 
             if (result.Status != CharacterQuestStatusEnum.None)
             {
@@ -185,7 +185,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.QuestId.ToString(), new CompleteQuestSubscriptionEvent());
 
-            CompleteQuestServerRpc(quest.Id, characterQuest.Id, UserManager.Instance.Token);
+            CompleteQuestServerRpc(quest.Id, characterQuest.Id);
         }
 
         private void Update()

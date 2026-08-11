@@ -13,7 +13,6 @@ namespace Assets.Scripts.Areas.Character.Mono
     {
         private GameObject _target;
         private ulong? _clientId;
-        private string _clientToken;
         private float _attackTime = 2f;
         private float _attackTimer = 0f;
         private Vector3 _initPosition;
@@ -52,7 +51,6 @@ namespace Assets.Scripts.Areas.Character.Mono
                     {
                         _target = e.Target;
                         _clientId = e.ClientId;
-                        _clientToken = e.ClientToken;
                         _isReturning = false;
                         _isPatrolling = false;
 
@@ -147,7 +145,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 AttackPlayerSubscription.Instance.Invoke(_clientId.Value.ToString(), new PlayerAttackSubscriptionEvent
                 {
                     Value = 50,
-                    ClientToken = _clientToken
+                    PlayerSessionId = UserManager.Instance.GetPlayerSessionId(_clientId.Value)
                 });
             }
         }

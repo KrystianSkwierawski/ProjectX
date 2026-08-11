@@ -49,7 +49,7 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
             return response;
         }
-        catch (InvalidCredentialsException)
+        catch (Exception exception) when (exception is InvalidCredentialsException or InvalidGameSessionCredentialException)
         {
             Log.Debug("{RequestName} -> Rejected credentials", requestName);
             throw;

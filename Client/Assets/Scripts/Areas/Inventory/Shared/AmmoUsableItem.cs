@@ -29,7 +29,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         protected override InventoryItemEnum TemplateType => InventoryItemEnum.AmmoTemplate;
 
-        public AmmoUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public AmmoUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
         }
 

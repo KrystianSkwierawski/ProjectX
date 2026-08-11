@@ -27,7 +27,7 @@ public class CharacterTransforms : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status201Created, "The transform snapshot was persisted.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
     }
 
     private static async Task<Ok<CharacterTransformDto>> GetCharacterTransform(

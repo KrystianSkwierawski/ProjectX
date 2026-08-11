@@ -73,7 +73,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
             if (_castingTimer >= _castingTime)
             {
-                ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>(), UserManager.Instance.Token);
+                ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>());
                 StopHerbalism();
             }
         }
@@ -165,12 +165,13 @@ namespace Assets.Scripts.Areas.Professions.Mono
         }
 
         [ServerRpc]
-        private void ProcessServerRpc(NetworkObjectReference networkObjectRef, string clientToken)
+        private void ProcessServerRpc(NetworkObjectReference networkObjectRef)
         {
             // TODO: validation
             if (networkObjectRef.TryGet(out NetworkObject networkObject) && HasRequiredLevel(networkObject.gameObject.name))
             {
                 var gameObject = networkObject.gameObject;
+                var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
                 CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
                 {
@@ -181,7 +182,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 {
                     Amount = 50,
                     Type = ExperienceTypeEnum.Herbalism,
-                    ClientToken = clientToken
+                    PlayerSessionId = playerSessionId
                 });
 
                 ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());

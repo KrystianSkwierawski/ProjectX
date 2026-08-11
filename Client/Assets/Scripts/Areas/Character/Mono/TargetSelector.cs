@@ -248,11 +248,11 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void StartCasting()
         {
-            SpawnProjectileServerRpc(UserManager.Instance.Token);
+            SpawnProjectileServerRpc();
         }
 
         [ServerRpc]
-        public void SpawnProjectileServerRpc(string token)
+        public void SpawnProjectileServerRpc()
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
 
@@ -271,7 +271,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 return;
             }
 
-            _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject, token);
+            _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
 
             NotifyWeaponSpawnedClientRpc(new ClientRpcParams
             {

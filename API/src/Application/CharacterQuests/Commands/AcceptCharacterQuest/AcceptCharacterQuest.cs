@@ -15,11 +15,13 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
 
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
-    public AcceptCharacterQuestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public AcceptCharacterQuestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService, TimeProvider timeProvider)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CharacterQuestDto> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
@@ -39,7 +41,7 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
             QuestId = request.QuestId,
             CharacterId = characterId,
             Status = CharacterQuestStatusEnum.Accepted,
-            StartDate = DateTime.Now,
+            StartDate = _timeProvider.GetUtcNow(),
         };
 
         _context.CharacterQuests.Add(entity);

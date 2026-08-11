@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
+using NJsonSchema;
 using NSwag;
 using NSwag.Generation.AspNetCore;
 using NSwag.Generation.Processors;
@@ -97,6 +98,18 @@ public sealed class OpenApiDocumentationOperationProcessor : IOperationProcessor
             .Where(policy => !string.IsNullOrWhiteSpace(policy))
             .Distinct()
             .ToArray();
+
+        if (policies.Contains(ProjectX.Domain.Constants.Policies.ServerPlayerSession))
+        {
+            operation.Parameters.Add(new OpenApiParameter
+            {
+                Name = PlayerSessionAuthorizationHandler.HeaderName,
+                Kind = OpenApiParameterKind.Header,
+                IsRequired = true,
+                Description = "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+                Schema = new JsonSchema { Type = JsonObjectType.String }
+            });
+        }
 
         if (policies.Length > 0)
         {

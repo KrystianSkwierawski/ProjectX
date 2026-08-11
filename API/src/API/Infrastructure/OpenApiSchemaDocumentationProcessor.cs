@@ -14,10 +14,19 @@ public sealed class OpenApiSchemaDocumentationProcessor : ISchemaProcessor
         new Dictionary<string, string>
         {
             ["LoginApplicationUserDto"] = "Successful authentication result containing an access token and preferred language.",
+            ["RefreshSessionDto"] = "Successful session-refresh result containing a replacement access token and preferred language.",
             ["LanguageEnum"] = "Supported interface languages.",
             ["HttpValidationProblemDetails"] = "RFC 7807 validation problem containing errors grouped by field.",
             ["ProblemDetails"] = "RFC 7807 machine-readable API error.",
             ["LoginApplicationUserCommand"] = "Credentials used to authenticate an application user.",
+            ["RegisterGameSessionCommand"] = "Dedicated-server transport registration. Relay registrations include a Relay join code.",
+            ["RegisterGameSessionDto"] = "Identifier and UTC lease expiry assigned to a registered dedicated-server game session.",
+            ["HeartbeatGameSessionCommand"] = "Active dedicated-server game session whose lease should be renewed.",
+            ["HeartbeatGameSessionDto"] = "Renewed dedicated-server game-session lease and its UTC expiry.",
+            ["CreateGameSessionTicketDto"] = "Short-lived, one-time connection ticket and transport details for the active game session.",
+            ["RedeemGameSessionTicketCommand"] = "One-time connection ticket presented by the dedicated server during connection approval.",
+            ["RedeemGameSessionTicketDto"] = "Server-only player-session credential issued after successful ticket redemption.",
+            ["RevokePlayerSessionCommand"] = "Server-only player-session credential to revoke after disconnect.",
             ["AddCharacterExperienceDto"] = "Character experience and calculated level after an experience update.",
             ["AddCharacterExperienceCommand"] = "Experience amount to add to a character progression category.",
             ["ExperienceTypeEnum"] = "Character progression and profession categories.",
@@ -71,7 +80,9 @@ public sealed class OpenApiSchemaDocumentationProcessor : ISchemaProcessor
             ["description"] = "Localized quest description.",
             ["dexterity"] = "Character dexterity attribute value.",
             ["experience"] = "Experience amount.",
+            ["expiresAtUtc"] = "UTC instant after which the credential or game-session lease is no longer valid.",
             ["gameObjectName"] = "Unity GameObject or item name associated with the quest objective.",
+            ["gameSessionId"] = "Unique game-session identifier assigned by the API.",
             ["health"] = "Current character health.",
             ["helmetType"] = "Equipped helmet item type.",
             ["id"] = "Resource identifier.",
@@ -90,6 +101,7 @@ public sealed class OpenApiSchemaDocumentationProcessor : ISchemaProcessor
             ["positionX"] = "World-space X coordinate.",
             ["positionY"] = "World-space Y coordinate.",
             ["positionZ"] = "World-space Z coordinate.",
+            ["playerSessionId"] = "Opaque server-only credential representing an approved player connection.",
             ["previousQuestId"] = "Identifier of the prerequisite quest, or None when there is no prerequisite.",
             ["progress"] = "Quest progress value or increment.",
             ["questId"] = "Quest identifier.",
@@ -98,6 +110,7 @@ public sealed class OpenApiSchemaDocumentationProcessor : ISchemaProcessor
             ["requirement"] = "Quest target amount or crafting requirements, depending on the containing schema.",
             ["reward"] = "Quest or crafting reward, depending on the containing schema.",
             ["rotationY"] = "Horizontal world rotation around the Y axis.",
+            ["relayJoinCode"] = "Unity Relay allocation join code; present only for Relay sessions.",
             ["speed"] = "Character speed attribute value.",
             ["splitSlotIndex"] = "Zero-based slot index of the stack to split.",
             ["status"] = "Current resource or error status.",
@@ -105,7 +118,9 @@ public sealed class OpenApiSchemaDocumentationProcessor : ISchemaProcessor
             ["strength"] = "Character strength attribute value.",
             ["title"] = "Localized quest title or problem title.",
             ["token"] = "JWT bearer access token.",
+            ["ticket"] = "Random one-time game connection ticket.",
             ["type"] = "Resource type or RFC 7807 problem type, depending on the containing schema.",
+            ["usesRelay"] = "Whether the session connects through Unity Relay instead of the local direct transport.",
             ["userName"] = "Application user email address.",
             ["weaponType"] = "Equipped weapon item type."
         };
@@ -204,6 +219,26 @@ public sealed class OpenApiSchemaDocumentationProcessor : ISchemaProcessor
         if (propertyName == "token")
         {
             return "eyJhbGciOiJIUzI1NiJ9...";
+        }
+
+        if (propertyName == "ticket" || propertyName == "playerSessionId")
+        {
+            return "base64url-secret";
+        }
+
+        if (propertyName == "relayJoinCode")
+        {
+            return "AB12CD";
+        }
+
+        if (type == typeof(Guid))
+        {
+            return "2f5de532-cf36-48e5-aef6-d31c9f459273";
+        }
+
+        if (type == typeof(DateTimeOffset))
+        {
+            return "2026-08-10T14:01:00Z";
         }
 
         if (type == typeof(string))

@@ -132,7 +132,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                    obj.Item = null;
                    obj.Type = InventoryItemEnum.None;
                    obj.LootClientId = 0;
-                   obj.LootClientToken = null;
                    obj.DragTrigger.enabled = false;
                    obj.HoverUI.enabled = false;
                    obj.Button.OnRightClick.RemoveAllListeners();
@@ -449,7 +448,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                         CharacterId = InventoryManager.Instance.Dto.CharacterId,
                         SourceSlotIndex = sourceSlotIndex,
                         TargetSlotIndex = targetInventorySlot.Index,
-                        ClientToken = UserManager.Instance.Token,
                     });
 
                 return;
@@ -666,7 +664,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
             {
                 CharacterId = InventoryManager.Instance.Dto.CharacterId,
                 SourceSlotIndex = sourceSlotIndex,
-                ClientToken = UserManager.Instance.Token,
             });
         }
 
@@ -723,7 +720,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             return sb.ToString();
         }
 
-        public void UpdateLoot(InventoryItemDto[] items, ulong clientId, string clientToken)
+        public void UpdateLoot(InventoryItemDto[] items, ulong clientId)
         {
             Loot.SetActive(true);
 
@@ -740,7 +737,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Item = CloneItem(item);
                 slot.Type = item.Type;
                 slot.LootClientId = clientId;
-                slot.LootClientToken = clientToken;
                 slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
@@ -772,7 +768,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                         CharacterId = InventoryManager.Instance.Dto.CharacterId,
                         Add = new[] { item },
                     },
-                    ClientToken = slot.LootClientToken,
                 });
 
             _lootPoolObjects.Remove(type);
@@ -878,8 +873,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
             public InventoryItemDto Item { get; set; }
 
             public ulong LootClientId { get; set; }
-
-            public string LootClientToken { get; set; }
         }
 
     }

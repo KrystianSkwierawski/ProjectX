@@ -253,6 +253,7 @@ namespace ProjectX.Editor
             outputPath = Path.GetFullPath(outputPath);
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new InvalidOperationException("Invalid build output path."));
             var scenePaths = GetEnabledScenePathsFromBuildProfile(DedicatedServerBuildProfilePath, ServerRuntimeScenePaths);
+            MoveSceneToFirst(scenePaths, BootstrapScenePath);
 
             var options = new BuildPlayerOptions
             {
@@ -319,6 +320,24 @@ namespace ProjectX.Editor
 
             Array.Resize(ref scenePaths, sceneCount);
             return scenePaths;
+        }
+
+        private static void MoveSceneToFirst(string[] scenePaths, string requiredScenePath)
+        {
+            var index = Array.FindIndex(scenePaths, scenePath => string.Equals(scenePath, requiredScenePath, StringComparison.OrdinalIgnoreCase));
+            if (index < 0)
+            {
+                throw new InvalidOperationException($"The required startup scene '{requiredScenePath}' is missing from the dedicated-server build profile.");
+            }
+
+            if (index == 0)
+            {
+                return;
+            }
+
+            var firstScene = scenePaths[index];
+            Array.Copy(scenePaths, 0, scenePaths, 1, index);
+            scenePaths[0] = firstScene;
         }
 
         private static void EnsureScenesInBuildSettings(string[] scenePaths)

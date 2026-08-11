@@ -1,7 +1,9 @@
 ﻿using ProjectX.Domain.Enums;
 
+using ProjectX.Domain.Common;
+
 namespace ProjectX.Domain.Entities;
-public class Character
+public class Character : BaseAuditableEntity
 {
     public Character()
     {
@@ -43,8 +45,6 @@ public class Character
     public int AmmoCount { get; set; }
 
     public StatusEnum Status { get; set; }
-
-    public DateTime ModDate { get; set; }
 
     public virtual CharacterInventory CharacterInventory { get; set; }
 

@@ -18,7 +18,7 @@ public class CharacterExperiences : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status200OK, "Experience was added and the updated progression values are returned.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
     }
 
     private static async Task<Ok<AddCharacterExperienceDto>> AddCharacterExperience(

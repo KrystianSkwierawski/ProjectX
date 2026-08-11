@@ -40,7 +40,6 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
         Log.Debug("Found character quest. CharacterQuestId: {0}, QuestId: {1}", characterQuest.Id, characterQuest.QuestId);
 
         characterQuest.Progress += request.Progress;
-        characterQuest.ModDate = DateTime.Now;
 
         if (characterQuest.Progress >= characterQuest.Quest.Requirement)
         {

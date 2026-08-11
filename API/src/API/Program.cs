@@ -37,6 +37,8 @@ if (!builder.Configuration.GetValue<bool>("SkipDatabaseInitialization"))
 
 app.UseHsts();
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRateLimiter();
 
 if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))

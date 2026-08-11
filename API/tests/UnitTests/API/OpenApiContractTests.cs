@@ -31,13 +31,105 @@ public class OpenApiContractTests
         Assert.True(responses.TryGetProperty(statusCode, out _));
     }
 
+    [Theory]
+    [InlineData("200")]
+    [InlineData("401")]
+    [InlineData("403")]
+    public void RefreshSessionEndpoint_ContainsDocumentedResponse(string statusCode)
+    {
+        using var specification = OpenSpecification();
+
+        var responses = specification.RootElement
+            .GetProperty("paths")
+            .GetProperty("/api/ApplicationUsers/RefreshSession")
+            .GetProperty("post")
+            .GetProperty("responses");
+
+        Assert.True(responses.TryGetProperty(statusCode, out _));
+    }
+
+    [Theory]
+    [InlineData("/api/GameSessions/Register", "Server")]
+    [InlineData("/api/GameSessions/Heartbeat", "Server")]
+    [InlineData("/api/GameSessions/Ticket", "Client")]
+    [InlineData("/api/GameSessions/Redeem", "Server")]
+    [InlineData("/api/GameSessions/RevokePlayer", "Server")]
+    public void GameSessionEndpoint_RequiresExpectedAuthorizationPolicy(string path, string expectedPolicy)
+    {
+        using var specification = OpenSpecification();
+
+        var operation = specification.RootElement
+            .GetProperty("paths")
+            .GetProperty(path)
+            .GetProperty("post");
+
+        Assert.Contains($"Required authorization policy: {expectedPolicy}.", operation.GetProperty("description").GetString());
+    }
+
+    [Theory]
+    [InlineData("200")]
+    [InlineData("404")]
+    [InlineData("429")]
+    public void GameSessionTicketEndpoint_ContainsDocumentedResponse(string statusCode)
+    {
+        using var specification = OpenSpecification();
+
+        var responses = specification.RootElement
+            .GetProperty("paths")
+            .GetProperty("/api/GameSessions/Ticket")
+            .GetProperty("post")
+            .GetProperty("responses");
+
+        Assert.True(responses.TryGetProperty(statusCode, out _));
+    }
+
+    [Fact]
+    public void ServerPlayerSessionEndpoints_RequirePlayerSessionIdHeader()
+    {
+        using var specification = OpenSpecification();
+        var expectedEndpoints = new HashSet<(string Path, string Method)>
+        {
+            ("/api/CharacterExperiences", "POST"),
+            ("/api/CharacterInventories", "POST"),
+            ("/api/CharacterQuests/Progress", "POST"),
+            ("/api/CharacterQuests/CheckProgress", "POST"),
+            ("/api/CharacterQuests/Complete", "POST"),
+            ("/api/Characters/{id}", "GET"),
+            ("/api/Characters", "POST"),
+            ("/api/CharacterTransforms", "POST")
+        };
+
+        var operationsWithPlayerSessionHeader = GetOperations(specification.RootElement)
+            .Select(operation => new
+            {
+                Operation = operation,
+                Header = GetParameters(operation.Operation)
+                    .SingleOrDefault(parameter =>
+                        parameter.GetProperty("in").GetString() == "header"
+                        && parameter.GetProperty("name").GetString() == "PlayerSessionId")
+            })
+            .Where(candidate => candidate.Header.ValueKind != JsonValueKind.Undefined)
+            .ToArray();
+
+        Assert.Equal(expectedEndpoints.Count, operationsWithPlayerSessionHeader.Length);
+        Assert.True(expectedEndpoints.SetEquals(operationsWithPlayerSessionHeader.Select(candidate =>
+            (candidate.Operation.Path, candidate.Operation.Method))));
+
+        foreach (var candidate in operationsWithPlayerSessionHeader)
+        {
+            Assert.True(candidate.Header.GetProperty("required").GetBoolean());
+            Assert.False(string.IsNullOrWhiteSpace(candidate.Header.GetProperty("description").GetString()));
+            Assert.Equal("string", candidate.Header.GetProperty("schema").GetProperty("type").GetString());
+        }
+    }
+
     [Fact]
     public void AllEndpoints_ContainCompleteDocumentation()
     {
         using var specification = OpenSpecification();
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(16, operations.Length);
+        Assert.Equal(22, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -137,6 +229,24 @@ public class OpenApiContractTests
 
         Assert.True(schemas.TryGetProperty("SaveCharacterTransformCommand", out _));
         Assert.False(schemas.TryGetProperty("SaveTransformTransformCommand", out _));
+
+        var registerSessionRequired = schemas
+            .GetProperty("RegisterGameSessionDto")
+            .GetProperty("required")
+            .EnumerateArray()
+            .Select(value => value.GetString())
+            .ToArray();
+        Assert.Contains("gameSessionId", registerSessionRequired);
+        Assert.Contains("expiresAtUtc", registerSessionRequired);
+
+        var heartbeatRequired = schemas
+            .GetProperty("HeartbeatGameSessionDto")
+            .GetProperty("required")
+            .EnumerateArray()
+            .Select(value => value.GetString())
+            .ToArray();
+        Assert.Contains("gameSessionId", heartbeatRequired);
+        Assert.Contains("expiresAtUtc", heartbeatRequired);
     }
 
     [Fact]
@@ -158,7 +268,13 @@ public class OpenApiContractTests
             "GetCraftingRecipes",
             "GetQuest",
             "GetQuests",
+            "CreateTicketAsync",
+            "HeartbeatAsync",
             "LoginAsync",
+            "RedeemTicketAsync",
+            "RegisterAsync",
+            "RefreshSessionAsync",
+            "RevokePlayerAsync",
             "SaveCharacterTransform",
             "UpdateCharacter",
             "UpdateCharacterInventory"
@@ -166,7 +282,14 @@ public class OpenApiContractTests
 
         Assert.False(string.IsNullOrWhiteSpace(root.GetProperty("info").GetProperty("description").GetString()));
         Assert.True(root.GetProperty("servers").GetArrayLength() > 0);
-        Assert.Equal(8, root.GetProperty("tags").GetArrayLength());
+        Assert.Equal(9, root.GetProperty("tags").GetArrayLength());
+
+        var tags = root.GetProperty("tags")
+            .EnumerateArray()
+            .Select(tag => tag.GetProperty("name").GetString())
+            .ToHashSet();
+
+        Assert.Contains("GameSessions", tags);
 
         var actualOperationIds = GetOperations(root)
             .Select(operation => operation.Operation.GetProperty("operationId").GetString()!)
@@ -205,5 +328,12 @@ public class OpenApiContractTests
                 }
             }
         }
+    }
+
+    private static IEnumerable<JsonElement> GetParameters(JsonElement operation)
+    {
+        return operation.TryGetProperty("parameters", out var parameters)
+            ? parameters.EnumerateArray()
+            : [];
     }
 }

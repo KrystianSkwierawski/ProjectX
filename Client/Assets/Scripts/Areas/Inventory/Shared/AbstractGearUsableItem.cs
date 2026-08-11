@@ -24,7 +24,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         protected readonly IList<InventoryItemDto> UnequipItems = new List<InventoryItemDto>();
 
-        public AbstractGearUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public AbstractGearUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
         }
 
@@ -82,7 +82,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 WeaponType = character.WeaponType,
                 AmmoType = character.AmmoType,
                 AmmoCount = character.AmmoCount,
-            }, ClientToken)
+            }, PlayerSessionId)
             .Forget();
 
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
@@ -92,7 +92,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                     Add = UnequipItems.ToArray(),
                     Remove = from == UsableItemFromEnum.Inventory ? new InventoryItemDto[] { Item } : Array.Empty<InventoryItemDto>(),
                 },
-                ClientToken = ClientToken,
+                PlayerSessionId = PlayerSessionId,
             });
         }
 

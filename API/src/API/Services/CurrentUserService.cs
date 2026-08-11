@@ -1,6 +1,7 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
+using ProjectX.API.Infrastructure;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
@@ -9,31 +10,38 @@ namespace ProjectX.API.Services;
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly TokenValidationParameters _tokenValidationParameters;
 
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor, TokenValidationParameters tokenValidationParameters)
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
-        _tokenValidationParameters = tokenValidationParameters;
     }
 
     public string GetId()
     {
-        if ((_httpContextAccessor.HttpContext?.User?.IsInRole("Server") ?? false)
-            && _httpContextAccessor.HttpContext?.Request.Headers.TryGetValue("ClientToken", out var token) == true)
+        var httpContext = _httpContextAccessor.HttpContext;
+
+        if (httpContext?.User?.IsInRole("Server") == true
+            && httpContext.Items.TryGetValue(PlayerSessionAuthorizationHandler.DelegatedUserIdItemKey, out var delegatedUserId)
+            && delegatedUserId is string userId)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var principal = handler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
-
-            var userId = principal.Claims
-                .Where(x => x.Type == ClaimTypes.NameIdentifier)
-                .Select(x => x.Value)
-                .First();
-
             return userId;
         }
 
+        return GetAuthenticatedUserId();
+    }
+
+    public string GetAuthenticatedUserId()
+    {
         return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    }
+
+    public DateTimeOffset? GetAuthenticatedTokenExpirationUtc()
+    {
+        var expirationClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(JwtRegisteredClaimNames.Exp);
+
+        return long.TryParse(expirationClaim, NumberStyles.Integer, CultureInfo.InvariantCulture, out var expirationSeconds)
+            ? DateTimeOffset.FromUnixTimeSeconds(expirationSeconds)
+            : null;
     }
 
     public LanguageEnum Language => _httpContextAccessor.HttpContext?.User == null

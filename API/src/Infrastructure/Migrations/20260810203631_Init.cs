@@ -61,7 +61,7 @@ namespace ProjectX.Infrastructure.Migrations
                     Requirement = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Reward = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -94,7 +94,7 @@ namespace ProjectX.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MaxCount = table.Column<byte>(type: "tinyint", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,7 +151,7 @@ namespace ProjectX.Infrastructure.Migrations
                     Requirement = table.Column<int>(type: "int", nullable: false),
                     Reward = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -283,10 +283,10 @@ namespace ProjectX.Infrastructure.Migrations
                     ChestType = table.Column<int>(type: "int", nullable: false),
                     BootsType = table.Column<int>(type: "int", nullable: false),
                     WeaponType = table.Column<int>(type: "int", nullable: false),
-                    AmmoType = table.Column<int>(type: "int", nullable: false, defaultValue: 1008),
+                    AmmoType = table.Column<int>(type: "int", nullable: false),
                     AmmoCount = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -308,7 +308,7 @@ namespace ProjectX.Infrastructure.Migrations
                     CharacterId = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<byte>(type: "tinyint", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -327,8 +327,8 @@ namespace ProjectX.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false),
                     Inventory = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Count = table.Column<short>(type: "smallint", nullable: false)
+                    Count = table.Column<short>(type: "smallint", nullable: false),
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -351,9 +351,9 @@ namespace ProjectX.Infrastructure.Migrations
                     CharacterId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
                     Progress = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    StartDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    EndDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -383,7 +383,7 @@ namespace ProjectX.Infrastructure.Migrations
                     PositionY = table.Column<float>(type: "real", nullable: false),
                     PositionZ = table.Column<float>(type: "real", nullable: false),
                     RotationY = table.Column<float>(type: "real", nullable: false),
-                    ModDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ModDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {

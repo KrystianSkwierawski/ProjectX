@@ -103,9 +103,10 @@ public class Fishing : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void CheckLootServerRpc(string clientToken)
+    private void CheckLootServerRpc()
     {
         _canFishOut.Value = false;
+        var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
         // TODO: validation
         CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
@@ -117,7 +118,7 @@ public class Fishing : NetworkBehaviour
         {
             Amount = 50,
             Type = ExperienceTypeEnum.Fishing,
-            ClientToken = clientToken
+            PlayerSessionId = playerSessionId
         });
     }
 
@@ -291,7 +292,7 @@ public class Fishing : NetworkBehaviour
         if (mouse.rightButton.wasPressedThisFrame)
         {
             StopCasting();
-            CheckLootServerRpc(UserManager.Instance.Token);
+            CheckLootServerRpc();
         }
     }
 

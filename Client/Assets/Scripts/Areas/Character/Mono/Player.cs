@@ -25,19 +25,20 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 UserManager.Instance.OwnerClientId = OwnerClientId;
-                LoadCharacterServerRpc(UserManager.Instance.Token);
+                LoadCharacterServerRpc();
             }
 
             if (IsServer)
             {
                 AddExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
+                    var playerSessionId = GetCurrentPlayerSessionId();
                     var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
                         CharacterId = 1,
                         Amount = e.Amount,
                         type = e.Type,
-                    }, e.ClientToken);
+                    }, playerSessionId);
 
                     var character = UserManager.Instance.Characters[OwnerClientId];
 
@@ -57,6 +58,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
+                    var playerSessionId = GetCurrentPlayerSessionId();
                     var character = UserManager.Instance.Characters[OwnerClientId];
 
                     if (character.IsAttackDodged())
@@ -70,7 +72,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     if (character.AmmoType.IsArmorAmmo())
                     {
-                        ConsumeAmmo(e.ClientToken);
+                        ConsumeAmmo();
                     }
 
                     character.Health = Math.Max(character.Health - damage, 0);
@@ -87,7 +89,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     {
                         CharacterId = 1,
                         Health = character.Health
-                    }, e.ClientToken)
+                    }, playerSessionId)
                     .Forget();
                 });
             }
@@ -137,14 +139,15 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ServerRpc]
-        private void LoadCharacterServerRpc(string clientToken)
+        private void LoadCharacterServerRpc()
         {
-            LoadCharacterAsync(clientToken).Forget();
+            var playerSessionId = GetCurrentPlayerSessionId();
+            LoadCharacterAsync(playerSessionId).Forget();
         }
 
-        private async UniTask LoadCharacterAsync(string clientToken)
+        private async UniTask LoadCharacterAsync(string playerSessionId)
         {
-            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", playerSessionId);
             UserManager.Instance.Characters[OwnerClientId] = character;
 
             UpdatePlayerClientRpc(character, new ClientRpcParams
@@ -185,8 +188,9 @@ namespace Assets.Scripts.Areas.Character.Mono
             CraftingUI.Instance.UpdateRequirements(InventoryItemEnum.Xp);
         }
 
-        public void ConsumeAmmo(string clientToken)
+        public void ConsumeAmmo()
         {
+            var playerSessionId = GetCurrentPlayerSessionId();
             var character = UserManager.Instance.Characters[OwnerClientId];
 
             if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
@@ -221,7 +225,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     Armor = character.Armor,
                     AmmoType = character.AmmoType,
                     AmmoCount = character.AmmoCount,
-                }, clientToken)
+                }, playerSessionId)
                 .Forget();
             }
         }
@@ -281,6 +285,11 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             base.OnDestroy();
+        }
+
+        private string GetCurrentPlayerSessionId()
+        {
+            return UserManager.Instance.GetPlayerSessionId(OwnerClientId);
         }
     }
 }

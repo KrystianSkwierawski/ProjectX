@@ -12,7 +12,7 @@ namespace Assets.Scripts.Areas.Inventory.Subscriptions
 
         public int SourceSlotIndex { get; set; }
 
-        public string ClientToken { get; set; }
+        public string PlayerSessionId { get; set; }
     }
 
     public class MoveInventorySubscription : AbstractSubscription<MoveInventorySubscription, MoveInventorySubscriptionEvent>
@@ -27,6 +27,6 @@ namespace Assets.Scripts.Areas.Inventory.Subscriptions
 
         public int TargetSlotIndex { get; set; }
 
-        public string ClientToken { get; set; }
+        public string PlayerSessionId { get; set; }
     }
 }

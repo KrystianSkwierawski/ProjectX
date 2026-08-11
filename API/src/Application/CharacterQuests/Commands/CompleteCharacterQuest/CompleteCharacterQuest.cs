@@ -17,11 +17,13 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
 
-    public CompleteCharacterQuestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public CompleteCharacterQuestCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService, TimeProvider timeProvider)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
     }
 
     public async Task<CompleteCharacterQuestDto> Handle(CompleteCharacterQuestCommand request, CancellationToken cancellationToken)
@@ -37,8 +39,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
         Log.Debug("Found character quest for id: {0}", characterQuest.Id);
 
-        characterQuest.EndDate = DateTime.Now;
-        characterQuest.ModDate = characterQuest.EndDate;
+        characterQuest.EndDate = _timeProvider.GetUtcNow();
         characterQuest.Status = CharacterQuestStatusEnum.Completed;
 
         if (characterQuest.Quest.Type == QuestTypeEnum.Collect)

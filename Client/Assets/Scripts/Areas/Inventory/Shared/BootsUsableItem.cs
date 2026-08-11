@@ -17,7 +17,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         protected override InventoryItemEnum TemplateType => InventoryItemEnum.BootsTemplate;
 
-        public BootsUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public BootsUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
         }
 

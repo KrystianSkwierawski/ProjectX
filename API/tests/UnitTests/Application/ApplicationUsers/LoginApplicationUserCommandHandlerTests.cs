@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -34,6 +35,28 @@ public class LoginApplicationUserCommandHandlerTests
         Assert.Equal(LanguageEnum.en, result.Language);
         userManager.Verify(manager => manager.ResetAccessFailedCountAsync(user), Times.Once);
         userManager.Verify(manager => manager.AccessFailedAsync(It.IsAny<ApplicationUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_IssuesTokenValidForAtMostOneHour()
+    {
+        var user = CreateUser();
+        var userManager = CreateUserManager();
+        userManager.Setup(manager => manager.FindByEmailAsync(_email)).ReturnsAsync(user);
+        userManager.Setup(manager => manager.IsLockedOutAsync(user)).ReturnsAsync(false);
+        userManager.Setup(manager => manager.CheckPasswordAsync(user, _password)).ReturnsAsync(true);
+        userManager.Setup(manager => manager.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success);
+        userManager.Setup(manager => manager.GetRolesAsync(user)).ReturnsAsync(["Client"]);
+
+        var timeProvider = new FixedTimeProvider(new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero));
+        var handler = CreateHandler(userManager.Object, timeProvider);
+
+        var result = await handler.Handle(CreateCommand(), CancellationToken.None);
+
+        var token = new JwtSecurityTokenHandler().ReadJwtToken(result.Token);
+
+        Assert.Equal(timeProvider.GetUtcNow().UtcDateTime, token.ValidFrom);
+        Assert.Equal(timeProvider.GetUtcNow().UtcDateTime.AddHours(1), token.ValidTo);
     }
 
     [Fact]
@@ -105,21 +128,20 @@ public class LoginApplicationUserCommandHandlerTests
         Assert.Contains(response.Language.ToString(), response.ToString());
     }
 
-    private static LoginApplicationUserCommandHandler CreateHandler(UserManager<ApplicationUser> userManager)
+    private static LoginApplicationUserCommandHandler CreateHandler(UserManager<ApplicationUser> userManager, TimeProvider? timeProvider = null)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["JwtSettings:SecurityKey"] = "a-secure-test-key-that-is-at-least-32-characters-long",
                 ["JwtSettings:ValidIssuer"] = "ProjectX.UnitTests",
-                ["JwtSettings:ValidAudience"] = "ProjectX.UnitTests",
-                ["JwtSettings:ExpiryInDays"] = "1"
+                ["JwtSettings:ValidAudience"] = "ProjectX.UnitTests"
             })
             .Build();
 
         return new LoginApplicationUserCommandHandler(
             userManager,
-            new JwtHandler(configuration, userManager));
+            new JwtHandler(configuration, userManager, timeProvider ?? TimeProvider.System));
     }
 
     private static Mock<UserManager<ApplicationUser>> CreateUserManager()
@@ -156,5 +178,20 @@ public class LoginApplicationUserCommandHandlerTests
             UserName = _email,
             Password = _password
         };
+    }
+
+    private sealed class FixedTimeProvider : TimeProvider
+    {
+        private readonly DateTimeOffset _utcNow;
+
+        public FixedTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _utcNow;
+        }
     }
 }

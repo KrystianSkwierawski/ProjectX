@@ -11,6 +11,6 @@ namespace Assets.Scripts.Areas.Inventory.Subscriptions
     {
         public UpdateCharacterInventoryCommand Request { get; set; }
 
-        public string ClientToken { get; set; }
+        public string PlayerSessionId { get; set; }
     }
 }

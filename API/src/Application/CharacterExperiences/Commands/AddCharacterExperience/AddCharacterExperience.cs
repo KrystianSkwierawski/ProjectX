@@ -59,8 +59,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
         character.CharacterExperiences.Add(new CharacterExperience
         {
             Amount = request.Amount,
-            Type = request.Type,
-            ModDate = DateTime.Now
+            Type = request.Type
         });
 
         result.Experience = character.CharacterExperiences

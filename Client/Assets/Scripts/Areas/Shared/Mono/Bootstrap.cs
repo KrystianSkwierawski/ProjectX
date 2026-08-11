@@ -36,6 +36,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             catch (Exception exception)
             {
                 Debug.LogException(exception);
+                Application.Quit(1);
             }
 #else
             InitializeClientLogin();
@@ -183,10 +184,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                     throw new InvalidOperationException("MainScene could not be activated.");
                 }
 
-                if (!NetworkManager.Singleton.StartClient())
-                {
-                    throw new InvalidOperationException("The network client could not be started.");
-                }
+                await GameSessionManager.StartClientAsync();
 
                 Debug.Log("Client started");
 
@@ -230,7 +228,15 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         private static async UniTask StartServerAsync()
         {
-            await UserManager.Instance.LoginAsync("server1@localhost", "Server1!");
+            var serverUserName = Environment.GetEnvironmentVariable("PROJECTX_SERVER_USERNAME");
+            var serverPassword = Environment.GetEnvironmentVariable("PROJECTX_SERVER_PASSWORD");
+
+            if (string.IsNullOrWhiteSpace(serverUserName) || string.IsNullOrWhiteSpace(serverPassword))
+            {
+                throw new InvalidOperationException("PROJECTX_SERVER_USERNAME and PROJECTX_SERVER_PASSWORD are required for the dedicated server.");
+            }
+
+            await UserManager.Instance.LoginAsync(serverUserName, serverPassword);
 
             await QuestManager.Instance.LoadAsync();
 
@@ -243,10 +249,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
             Debug.Log("EnvironmentScene Loaded");
 
-            if (!NetworkManager.Singleton.StartServer())
-            {
-                throw new InvalidOperationException("The network server could not be started.");
-            }
+            await GameSessionManager.StartServerAsync();
 
             Debug.Log("Server started");
         }

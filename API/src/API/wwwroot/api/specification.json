@@ -64,14 +64,58 @@
         }
       }
     },
+    "/api/ApplicationUsers/RefreshSession": {
+      "post": {
+        "tags": [
+          "ApplicationUsers"
+        ],
+        "summary": "Refresh an authenticated session",
+        "description": "Issues a fresh one-hour JWT bearer token for the authenticated client or dedicated server during the current token's final five minutes. Refreshing does not revoke the current token, so it remains usable until its original expiry during the handover window.\n\nRequired authorization policy: ServerOrClient.",
+        "operationId": "RefreshSessionAsync",
+        "responses": {
+          "200": {
+            "description": "The session was refreshed and a new JWT bearer token was issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshSessionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The current JWT is invalid, expired, or belongs to an unavailable account."
+          },
+          "403": {
+            "description": "The current JWT is valid but is not yet inside its final five-minute refresh window, or the authenticated role cannot refresh sessions."
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterExperiences": {
       "post": {
         "tags": [
           "CharacterExperiences"
         ],
         "summary": "Add character experience",
-        "description": "Adds experience to one progression category and returns the updated total experience and calculated level.\n\nRequired authorization policy: Server.",
+        "description": "Adds experience to one progression category and returns the updated total experience and calculated level.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "AddCharacterExperience",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "Character identifier, experience amount, and progression category.",
@@ -191,8 +235,19 @@
           "CharacterInventories"
         ],
         "summary": "Update a character inventory",
-        "description": "Applies item additions, removals, a stack split, or a slot move to the persisted character inventory.\n\nRequired authorization policy: Server.",
+        "description": "Applies item additions, removals, a stack split, or a slot move to the persisted character inventory.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "UpdateCharacterInventory",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "Character identifier and inventory operations to apply.",
@@ -363,8 +418,19 @@
           "CharacterQuests"
         ],
         "summary": "Add character quest progress",
-        "description": "Adds a progress increment to an accepted character quest and updates its lifecycle state when the requirement is met.\n\nRequired authorization policy: Server.",
+        "description": "Adds a progress increment to an accepted character quest and updates its lifecycle state when the requirement is met.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "AddCharacterQuestProgress",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "Character quest identifier and progress increment.",
@@ -429,8 +495,19 @@
           "CharacterQuests"
         ],
         "summary": "Check and apply quest progress",
-        "description": "Finds an active quest matching a game-server event, applies progress when present, and returns the resulting state.\n\nRequired authorization policy: Server.",
+        "description": "Finds an active quest matching a game-server event, applies progress when present, and returns the resulting state.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "CheckCharacterQuestProgress",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "Quest identifier, progress increment, and character identifier reported by the game server.",
@@ -485,8 +562,19 @@
           "CharacterQuests"
         ],
         "summary": "Complete a finished character quest",
-        "description": "Marks a finished character quest as completed, consumes required collection items, and returns its reward.\n\nRequired authorization policy: Server.",
+        "description": "Marks a finished character quest as completed, consumes required collection items, and returns its reward.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "CompleteCharacterQuest",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "Identifier of the finished character quest to complete.",
@@ -551,7 +639,7 @@
           "Characters"
         ],
         "summary": "Get a character",
-        "description": "Returns current persistent state, attributes, equipment, and progression levels for a character owned by the authenticated user.\n\nRequired authorization policy: Server.",
+        "description": "Returns current persistent state, attributes, equipment, and progression levels for a character owned by the authenticated user.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "GetCharacter",
         "parameters": [
           {
@@ -565,6 +653,15 @@
               "format": "int32"
             },
             "x-position": 1
+          },
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -608,8 +705,19 @@
           "Characters"
         ],
         "summary": "Update a character",
-        "description": "Partially updates persistent health, attributes, equipment, or ammunition state for a character.\n\nRequired authorization policy: Server.",
+        "description": "Partially updates persistent health, attributes, equipment, or ammunition state for a character.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "UpdateCharacter",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "Character identifier and the optional state fields to update.",
@@ -708,8 +816,19 @@
           "CharacterTransforms"
         ],
         "summary": "Save a character transform",
-        "description": "Persists a new world-position snapshot for the authenticated user's character.\n\nRequired authorization policy: Server.",
+        "description": "Persists a new world-position snapshot for the authenticated user's character.\n\nRequired authorization policy: ServerPlayerSession.",
         "operationId": "SaveCharacterTransform",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "description": "World position and horizontal rotation to persist.",
@@ -788,6 +907,269 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetCraftingRecipesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/GameSessions/Register": {
+      "post": {
+        "tags": [
+          "GameSessions"
+        ],
+        "summary": "Register a dedicated game server session",
+        "description": "Registers the dedicated server's current direct or Relay allocation and starts a short UTC lease. A new registration replaces the previous session owned by the same server account.\n\nRequired authorization policy: Server.",
+        "operationId": "RegisterAsync",
+        "requestBody": {
+          "x-name": "command",
+          "description": "Transport mode and Relay join code. The join code is required only for Relay sessions.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterGameSessionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "The game session was registered and its lease expiry was returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterGameSessionDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Direct transport is disabled in this environment, or the authenticated principal is not a server."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/GameSessions/Heartbeat": {
+      "post": {
+        "tags": [
+          "GameSessions"
+        ],
+        "summary": "Renew a dedicated game server session lease",
+        "description": "Renews an active game-session lease from the current UTC time. An expired lease cannot be revived and the server must register a new session.\n\nRequired authorization policy: Server.",
+        "operationId": "HeartbeatAsync",
+        "requestBody": {
+          "x-name": "command",
+          "description": "The active game-session identifier assigned to this dedicated server.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatGameSessionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "The game-session lease was renewed and its new UTC expiry was returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeartbeatGameSessionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The game session is invalid, expired, or belongs to another server account."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/GameSessions/Ticket": {
+      "post": {
+        "tags": [
+          "GameSessions"
+        ],
+        "summary": "Create a one-time game connection ticket",
+        "description": "Returns the active server's connection information and a random ticket that expires quickly and can be redeemed exactly once. Creating another ticket for the same client and game session replaces the previous ticket.\n\nRequired authorization policy: Client.",
+        "operationId": "CreateTicketAsync",
+        "responses": {
+          "200": {
+            "description": "A one-time connection ticket was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateGameSessionTicketDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No active game server session is registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The per-account ticket creation limit of 20 requests per minute was exceeded."
+          },
+          "401": {
+            "description": "A valid JWT access token is required."
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/GameSessions/Redeem": {
+      "post": {
+        "tags": [
+          "GameSessions"
+        ],
+        "summary": "Redeem a one-time game connection ticket",
+        "description": "Atomically consumes a ticket assigned to this server session and creates a server-only player-session credential.\n\nRequired authorization policy: Server.",
+        "operationId": "RedeemTicketAsync",
+        "requestBody": {
+          "x-name": "command",
+          "description": "Game-session identifier and one-time connection ticket received during NGO connection approval.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemGameSessionTicketCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "The ticket was consumed and a player-session credential was issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedeemGameSessionTicketDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The ticket is invalid, expired, already consumed, or belongs to another server session."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The authenticated principal does not satisfy the required authorization policy."
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/GameSessions/RevokePlayer": {
+      "post": {
+        "tags": [
+          "GameSessions"
+        ],
+        "summary": "Revoke a disconnected player's server session",
+        "description": "Revokes the server-only player-session credential after the corresponding Netcode client disconnects.\n\nRequired authorization policy: Server.",
+        "operationId": "RevokePlayerAsync",
+        "requestBody": {
+          "x-name": "command",
+          "description": "The server-only player-session credential to revoke.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokePlayerSessionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": "The credential was revoked or was already unavailable."
+          },
+          "400": {
+            "description": "The request is malformed or failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1040,6 +1422,27 @@
             "maxLength": 256,
             "minLength": 6,
             "example": "P@ssw0rd!"
+          }
+        }
+      },
+      "RefreshSessionDto": {
+        "type": "object",
+        "description": "Successful session-refresh result containing a replacement access token and preferred language.",
+        "additionalProperties": false,
+        "required": [
+          "token",
+          "language"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT bearer access token.",
+            "example": "eyJhbGciOiJIUzI1NiJ9..."
+          },
+          "language": {
+            "description": "Preferred interface language.",
+            "example": 0,
+            "$ref": "#/components/schemas/LanguageEnum"
           }
         }
       },
@@ -2510,6 +2913,188 @@
           6
         ]
       },
+      "RegisterGameSessionDto": {
+        "type": "object",
+        "description": "Identifier and UTC lease expiry assigned to a registered dedicated-server game session.",
+        "additionalProperties": false,
+        "required": [
+          "gameSessionId",
+          "expiresAtUtc"
+        ],
+        "properties": {
+          "gameSessionId": {
+            "type": "string",
+            "description": "Unique game-session identifier assigned by the API.",
+            "format": "guid",
+            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "description": "UTC instant after which the credential or game-session lease is no longer valid.",
+            "format": "date-time",
+            "example": "2026-08-10T14:01:00Z"
+          }
+        }
+      },
+      "RegisterGameSessionCommand": {
+        "type": "object",
+        "description": "Dedicated-server transport registration. Relay registrations include a Relay join code.",
+        "additionalProperties": false,
+        "required": [
+          "usesRelay"
+        ],
+        "properties": {
+          "usesRelay": {
+            "type": "boolean",
+            "description": "Whether the session connects through Unity Relay instead of the local direct transport.",
+            "example": true
+          },
+          "relayJoinCode": {
+            "type": "string",
+            "description": "Unity Relay allocation join code; present only for Relay sessions.",
+            "nullable": true,
+            "example": "AB12CD"
+          }
+        }
+      },
+      "HeartbeatGameSessionDto": {
+        "type": "object",
+        "description": "Renewed dedicated-server game-session lease and its UTC expiry.",
+        "additionalProperties": false,
+        "required": [
+          "gameSessionId",
+          "expiresAtUtc"
+        ],
+        "properties": {
+          "gameSessionId": {
+            "type": "string",
+            "description": "Unique game-session identifier assigned by the API.",
+            "format": "guid",
+            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "description": "UTC instant after which the credential or game-session lease is no longer valid.",
+            "format": "date-time",
+            "example": "2026-08-10T14:01:00Z"
+          }
+        }
+      },
+      "HeartbeatGameSessionCommand": {
+        "type": "object",
+        "description": "Active dedicated-server game session whose lease should be renewed.",
+        "additionalProperties": false,
+        "required": [
+          "gameSessionId"
+        ],
+        "properties": {
+          "gameSessionId": {
+            "type": "string",
+            "description": "Unique game-session identifier assigned by the API.",
+            "format": "guid",
+            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+          }
+        }
+      },
+      "CreateGameSessionTicketDto": {
+        "type": "object",
+        "description": "Short-lived, one-time connection ticket and transport details for the active game session.",
+        "additionalProperties": false,
+        "required": [
+          "gameSessionId",
+          "usesRelay",
+          "ticket",
+          "expiresAtUtc"
+        ],
+        "properties": {
+          "gameSessionId": {
+            "type": "string",
+            "description": "Unique game-session identifier assigned by the API.",
+            "format": "guid",
+            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+          },
+          "usesRelay": {
+            "type": "boolean",
+            "description": "Whether the session connects through Unity Relay instead of the local direct transport.",
+            "example": true
+          },
+          "relayJoinCode": {
+            "type": "string",
+            "description": "Unity Relay allocation join code; present only for Relay sessions.",
+            "nullable": true,
+            "example": "AB12CD"
+          },
+          "ticket": {
+            "type": "string",
+            "description": "Random one-time game connection ticket.",
+            "example": "base64url-secret"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "description": "UTC instant after which the credential or game-session lease is no longer valid.",
+            "format": "date-time",
+            "example": "2026-08-10T14:01:00Z"
+          }
+        }
+      },
+      "RedeemGameSessionTicketDto": {
+        "type": "object",
+        "description": "Server-only player-session credential issued after successful ticket redemption.",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "playerSessionId"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User Id value.",
+            "example": "string"
+          },
+          "playerSessionId": {
+            "type": "string",
+            "description": "Opaque server-only credential representing an approved player connection.",
+            "example": "base64url-secret"
+          }
+        }
+      },
+      "RedeemGameSessionTicketCommand": {
+        "type": "object",
+        "description": "One-time connection ticket presented by the dedicated server during connection approval.",
+        "additionalProperties": false,
+        "required": [
+          "gameSessionId",
+          "ticket"
+        ],
+        "properties": {
+          "gameSessionId": {
+            "type": "string",
+            "description": "Unique game-session identifier assigned by the API.",
+            "format": "guid",
+            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+          },
+          "ticket": {
+            "type": "string",
+            "description": "Random one-time game connection ticket.",
+            "example": "base64url-secret"
+          }
+        }
+      },
+      "RevokePlayerSessionCommand": {
+        "type": "object",
+        "description": "Server-only player-session credential to revoke after disconnect.",
+        "additionalProperties": false,
+        "required": [
+          "playerSessionId"
+        ],
+        "properties": {
+          "playerSessionId": {
+            "type": "string",
+            "description": "Opaque server-only credential representing an approved player connection.",
+            "example": "base64url-secret"
+          }
+        }
+      },
       "QuestDto": {
         "type": "object",
         "description": "Localized quest definition and completion requirements.",
@@ -2701,6 +3286,10 @@
     {
       "name": "CraftingRecipes",
       "description": "Available crafting recipes and requirements."
+    },
+    {
+      "name": "GameSessions",
+      "description": "Dedicated-server registration and one-time player connection tickets."
     },
     {
       "name": "Quests",

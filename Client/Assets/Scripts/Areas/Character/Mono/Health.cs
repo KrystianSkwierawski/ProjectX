@@ -39,7 +39,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         {
                             Progress = 1,
                             GameObjectName = gameObject.name,
-                            ClientToken = e.ClientToken,
+                            PlayerSessionId = e.PlayerSessionId,
                         });
 
                         CheckLootSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckLootSubscriptionEvent
@@ -51,7 +51,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         {
                             Amount = 50,
                             Type = ExperienceTypeEnum.Main,
-                            ClientToken = e.ClientToken,
+                            PlayerSessionId = e.PlayerSessionId,
                         });
                     }
 
@@ -59,7 +59,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     {
                         ClientId = e.ClientId,
                         Target = targetSelectorSubscriptionsEvent.Killed ? null : e.Player,
-                        ClientToken = e.ClientToken,
+                        PlayerSessionId = e.PlayerSessionId,
                     });
 
                     UpdateTargetSelectorSubscription.Instance.Invoke(gameObjectKey, targetSelectorSubscriptionsEvent);

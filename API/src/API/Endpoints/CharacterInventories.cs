@@ -28,7 +28,7 @@ public class CharacterInventories : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status204NoContent, "The inventory update was persisted.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
     }
 
     private static async Task<Ok<CharacterInventoryDto>> GetCharacterInventory(

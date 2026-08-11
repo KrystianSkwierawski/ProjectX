@@ -12,6 +12,9 @@ public sealed class ApiExceptionHandler : IExceptionHandler
     {
         var result = exception switch
         {
+            InvalidCredentialsException => Results.Unauthorized(),
+            InvalidGameSessionCredentialException => Results.Unauthorized(),
+            ForbiddenAccessException => Results.StatusCode(StatusCodes.Status403Forbidden),
             ValidationException validationException => Results.ValidationProblem(
                 validationException.Errors,
                 statusCode: StatusCodes.Status400BadRequest,

@@ -1,7 +1,9 @@
 ﻿using ProjectX.Domain.Enums;
 
+using ProjectX.Domain.Common;
+
 namespace ProjectX.Domain.Entities;
-public class CharacterQuest
+public class CharacterQuest : BaseAuditableEntity
 {
     public int Id { get; set; }
 
@@ -13,11 +15,9 @@ public class CharacterQuest
 
     public int Progress { get; set; }
 
-    public DateTime StartDate { get; set; }
+    public DateTimeOffset StartDate { get; set; }
 
-    public DateTime ModDate { get; set; }
-
-    public DateTime EndDate { get; set; }
+    public DateTimeOffset EndDate { get; set; }
 
     public virtual Character Character { get; set; }
 

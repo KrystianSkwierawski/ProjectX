@@ -40,7 +40,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status200OK, "Quest progress was updated and the resulting state is returned.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(CheckCharacterQuestProgress, "CheckProgress")
@@ -49,7 +49,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithRequestBodyDescription("Quest identifier, progress increment, and character identifier reported by the game server.")
             .WithResponseDescription(StatusCodes.Status200OK, "The matching active quest was updated, or an empty result is returned when none is active.")
             .ProducesValidationProblem()
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(CompleteCharacterQuest, "Complete")
@@ -59,7 +59,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status200OK, "The quest was completed and its reward is returned.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
     }
 
     private static async Task<Ok<GetCharacterQuestsDto>> GetCharacterQuests(

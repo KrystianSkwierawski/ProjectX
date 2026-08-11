@@ -1,0 +1,18 @@
+using ProjectX.Application.GameSessions.Models;
+
+namespace ProjectX.Application.Common.Interfaces;
+
+public interface IGameSessionService
+{
+    RegisteredGameSession Register(string serverUserId, bool usesRelay, string? relayJoinCode);
+
+    RegisteredGameSession Heartbeat(string serverUserId, Guid gameSessionId);
+
+    GameConnectionTicket CreateTicket(string clientUserId);
+
+    RedeemedGameSessionTicket Redeem(string serverUserId, Guid gameSessionId, string ticket);
+
+    bool TryResolvePlayer(string serverUserId, string playerSessionId, out string userId);
+
+    void RevokePlayer(string serverUserId, string playerSessionId);
+}

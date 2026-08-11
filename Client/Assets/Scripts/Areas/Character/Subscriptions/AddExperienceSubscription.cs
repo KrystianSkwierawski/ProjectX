@@ -13,6 +13,6 @@ namespace Assets.Scripts.Areas.Character.Subscriptions
 
         public ExperienceTypeEnum Type { get; set; }
 
-        public string ClientToken { get; set; }
+        public string PlayerSessionId { get; set; }
     }
 }

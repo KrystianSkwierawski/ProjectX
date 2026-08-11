@@ -94,7 +94,6 @@ public class ApplicationDbContextInitialiser
                 Status = StatusEnum.Active,
                 Health = 100,
                 MaxHealth = 100,
-                ModDate = DateTime.Now,
                 Strength = 1,
                 Dexterity = 1,
                 Speed = 1,
@@ -138,7 +137,6 @@ public class ApplicationDbContextInitialiser
                             //}
                         ]
                     }),
-                    ModDate = DateTime.Now,
                     Count = 15
                 },
                 CharacterTransforms =
@@ -147,8 +145,7 @@ public class ApplicationDbContextInitialiser
                     {
                         PositionX = 3.562874f,
                         PositionY = 1.41359f,
-                        PositionZ = 4.244279f,
-                        ModDate = DateTime.Now
+                        PositionZ = 4.244279f
                     }
                 ]
             };
@@ -195,8 +192,7 @@ public class ApplicationDbContextInitialiser
                 GameObjectName = x.Value.GameObjectName,
                 Requirement = x.Value.Requirement,
                 Reward = x.Value.Reward,
-                Status = x.Value.Status,
-                ModDate = DateTime.Now
+                Status = x.Value.Status
             })
             .ToList();
 
@@ -214,8 +210,7 @@ public class ApplicationDbContextInitialiser
                 GameObjectName = x.Value.GameObjectName,
                 Requirement = x.Value.Requirement,
                 Reward = x.Value.Reward,
-                Status = x.Value.Status,
-                ModDate = DateTime.Now
+                Status = x.Value.Status
             })
             .ToList();
 
@@ -262,8 +257,7 @@ public class ApplicationDbContextInitialiser
             {
                 Id = x,
                 Name = x.ToString(),
-                MaxCount = byte.MaxValue,
-                ModDate = DateTime.Now
+                MaxCount = byte.MaxValue
             })
             .ToList();
 
@@ -275,8 +269,7 @@ public class ApplicationDbContextInitialiser
             {
                 Id = x,
                 Name = x.ToString(),
-                MaxCount = byte.MaxValue,
-                ModDate = DateTime.Now
+                MaxCount = byte.MaxValue
             })
             .ToList();
 
@@ -331,8 +324,7 @@ public class ApplicationDbContextInitialiser
                     Type = x.Value.Type,
                     Requirement = x.Value.Requirement,
                     Reward = x.Value.Reward,
-                    Status = x.Value.Status,
-                    ModDate = DateTime.Now
+                    Status = x.Value.Status
                 };
             })
             .ToList();
@@ -353,8 +345,7 @@ public class ApplicationDbContextInitialiser
                     Type = x.Value.Type,
                     Requirement = x.Value.Requirement,
                     Reward = x.Value.Reward,
-                    Status = x.Value.Status,
-                    ModDate = DateTime.Now
+                    Status = x.Value.Status
                 };
             })
             .ToList();

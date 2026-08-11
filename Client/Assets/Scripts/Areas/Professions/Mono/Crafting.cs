@@ -89,7 +89,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             if (_craftingTimer >= _craftingTime)
             {
                 StopCrafting();
-                CraftServerRpc(CraftingUI.Instance.CurrentRecipe.Id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
+                CraftServerRpc(CraftingUI.Instance.CurrentRecipe.Id, CraftingUI.Instance.CurrentType);
             }
         }
 
@@ -102,13 +102,14 @@ namespace Assets.Scripts.Areas.Professions.Mono
         }
 
         [ServerRpc]
-        private void CraftServerRpc(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string clientToken)
+        private void CraftServerRpc(CraftingRecipeEnum id, CraftingRecipeTypeEnum type)
         {
             // TODO: validate
-            CraftAsync(id, type, clientToken).Forget();
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            CraftAsync(id, type, playerSessionId).Forget();
         }
 
-        private async UniTaskVoid CraftAsync(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string clientToken)
+        private async UniTaskVoid CraftAsync(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string playerSessionId)
         {
             var dto = await CraftingRecipeManager.Instance.GetAsync(type);
 
@@ -126,7 +127,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                     Add = new InventoryItemDto[] { recipe.Reward.Item },
                     Remove = recipe.Requirement.Items
                 },
-                ClientToken = clientToken,
+                PlayerSessionId = playerSessionId,
             });
 
             var experienceType = type switch
@@ -143,7 +144,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 {
                     Amount = recipe.Reward.Experience,
                     Type = experienceType,
-                    ClientToken = clientToken,
+                    PlayerSessionId = playerSessionId,
                 });
             }
         }

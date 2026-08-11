@@ -11,7 +11,9 @@ using ProjectX.Application.Common;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Constants;
 using ProjectX.Domain.Entities;
+using ProjectX.Infrastructure.GameSessions;
 using ProjectX.Infrastructure.Persistance;
+using ProjectX.Infrastructure.Persistance.Interceptors;
 
 
 namespace ProjectX.Infrastructure;
@@ -20,15 +22,43 @@ public static class DependencyInjection
 {
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
+        var timeProvider = TimeProvider.System;
+
+        builder.Services.AddSingleton<TimeProvider>(timeProvider);
+
+        var ticketLifetimeSeconds = builder.Configuration.GetValue<int?>("GameSessionSettings:TicketLifetimeSeconds") ?? 60;
+
+        if (ticketLifetimeSeconds is < 10 or > 300)
+        {
+            throw new InvalidOperationException("GameSessionSettings:TicketLifetimeSeconds must be between 10 and 300 seconds.");
+        }
+
+        var serverLeaseSeconds = builder.Configuration.GetValue<int?>("GameSessionSettings:ServerLeaseSeconds") ?? 90;
+
+        if (serverLeaseSeconds is < 30 or > 600)
+        {
+            throw new InvalidOperationException("GameSessionSettings:ServerLeaseSeconds must be between 30 and 600 seconds.");
+        }
+
+        var allowDirectTransport = builder.Configuration.GetValue<bool?>("GameSessionSettings:AllowDirectTransport") ?? builder.Environment.IsDevelopment();
+        var gameSessionService = new InMemoryGameSessionService(timeProvider, TimeSpan.FromSeconds(ticketLifetimeSeconds), TimeSpan.FromSeconds(serverLeaseSeconds), allowDirectTransport);
+
+        builder.Services.AddSingleton<IGameSessionService>(gameSessionService);
+        builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
+
         if (builder.Configuration.GetValue<bool>("UseInMemoryDatabase"))
         {
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("ProjectX"));
+            builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            {
+                options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+                options.UseInMemoryDatabase("ProjectX");
+            });
         }
         else
         {
             builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
             {
+                options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
                 options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
             });
@@ -40,6 +70,9 @@ public static class DependencyInjection
         builder.Services.AddAuthorizationBuilder();
 
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+        var securityKey = jwtSettings["SecurityKey"] ?? throw new InvalidOperationException("JwtSettings:SecurityKey is required.");
+        var validIssuer = jwtSettings["ValidIssuer"] ?? throw new InvalidOperationException("JwtSettings:ValidIssuer is required.");
+        var validAudience = jwtSettings["ValidAudience"] ?? throw new InvalidOperationException("JwtSettings:ValidAudience is required.");
 
         var tokenValidationParameters = new TokenValidationParameters
         {
@@ -47,9 +80,10 @@ public static class DependencyInjection
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.GetSection("ValidIssuer").Value,
-            ValidAudience = jwtSettings.GetSection("ValidAudience").Value,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.GetSection("SecurityKey").Value)),
+            ValidIssuer = validIssuer,
+            ValidAudience = validAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey)),
+            LifetimeValidator = (notBefore, expires, securityToken, _) => JwtHandler.ValidateLifetime(notBefore, expires, securityToken, timeProvider.GetUtcNow().UtcDateTime),
             ClockSkew = TimeSpan.Zero
         };
 
@@ -85,6 +119,11 @@ public static class DependencyInjection
             options.AddPolicy(Policies.Server, policy => policy.RequireRole(Roles.Server));
             options.AddPolicy(Policies.Client, policy => policy.RequireRole(Roles.Client));
             options.AddPolicy(Policies.ServerOrClient, policy => policy.RequireRole(Roles.Server, Roles.Client));
+            options.AddPolicy(Policies.ServerPlayerSession, policy =>
+            {
+                policy.RequireRole(Roles.Server);
+                policy.AddRequirements(new PlayerSessionAuthorizationRequirement());
+            });
         });
 
         builder.Services.AddScoped<JwtHandler>();

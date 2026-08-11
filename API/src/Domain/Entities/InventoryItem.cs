@@ -1,8 +1,10 @@
 ﻿using ProjectX.Domain.Enums;
 
+using ProjectX.Domain.Common;
+
 namespace ProjectX.Domain.Entities;
 
-public class InventoryItem
+public class InventoryItem : BaseAuditableEntity
 {
     public InventoryItemEnum Id { get; set; }
 
@@ -10,5 +12,4 @@ public class InventoryItem
 
     public byte MaxCount { get; set; }
 
-    public DateTime ModDate { get; set; }
 }

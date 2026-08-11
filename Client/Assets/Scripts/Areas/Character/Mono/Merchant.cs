@@ -48,7 +48,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         MerchantUI.Instance.AddOffers(_merchantNpc.Items);
                     }
 
-                    PurchaseItemServerRpc(e.item, UserManager.Instance.Token);
+                    PurchaseItemServerRpc(e.item);
                 });
 
                 UseItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
@@ -61,7 +61,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         MerchantUI.Instance.ClearOffers();
                         MerchantUI.Instance.AddOffers(_merchantNpc.Items);
 
-                        SellItemServerRpc(e.Item, UserManager.Instance.Token);
+                        SellItemServerRpc(e.Item);
                     }
                 });
             }
@@ -118,8 +118,10 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ServerRpc]
-        private void PurchaseItemServerRpc(InventoryItemDto item, string clientToken)
+        private void PurchaseItemServerRpc(InventoryItemDto item)
         {
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+
             // TODO: validate npc position
             // TODO: validate currency
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
@@ -130,13 +132,15 @@ namespace Assets.Scripts.Areas.Character.Mono
                     Add = new[] { item },
                     Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetPurchasePrice(item) } },
                 },
-                ClientToken = clientToken
+                PlayerSessionId = playerSessionId
             });
         }
 
         [ServerRpc]
-        private void SellItemServerRpc(InventoryItemDto item, string clientToken)
+        private void SellItemServerRpc(InventoryItemDto item)
         {
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+
             // TODO: validate npc position
             // TODO: validate item ownership
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
@@ -147,7 +151,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetSellPrice(item) } },
                     Remove = new[] { item },
                 },
-                ClientToken = clientToken
+                PlayerSessionId = playerSessionId
             });
         }
     }

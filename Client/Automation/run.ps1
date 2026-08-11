@@ -9,7 +9,7 @@ param(
     [switch]$SkipServerBuild,
     [switch]$SkipServerRun,
     [switch]$SkipClientPlay,
-    [switch]$NoRestartExisting
+    [switch]$RestartExisting
 )
 
 $ErrorActionPreference = "Stop"
@@ -95,10 +95,6 @@ function Stop-ProcessByExecutablePath {
         [string]$Name
     )
 
-    if ($NoRestartExisting) {
-        return
-    }
-
     $processes = @(Get-ProcessesByExecutablePath $ExecutablePath)
     if ($processes.Count -eq 0) {
         return
@@ -123,7 +119,8 @@ function Start-Executable {
     param(
         [string]$ExecutablePath,
         [string]$WorkingDirectory,
-        [string]$Name
+        [string]$Name,
+        [string]$Arguments = ""
     )
 
     $processes = @(Get-ProcessesByExecutablePath $ExecutablePath)
@@ -133,7 +130,13 @@ function Start-Executable {
     }
 
     Write-Host "Starting $Name"
-    $process = Start-Process -FilePath $ExecutablePath -WorkingDirectory $WorkingDirectory -PassThru
+    if ([string]::IsNullOrWhiteSpace($Arguments)) {
+        $process = Start-Process -FilePath $ExecutablePath -WorkingDirectory $WorkingDirectory -PassThru
+    }
+    else {
+        $process = Start-Process -FilePath $ExecutablePath -WorkingDirectory $WorkingDirectory -ArgumentList $Arguments -PassThru
+    }
+
     return $process.Id
 }
 
@@ -271,20 +274,35 @@ Write-Host "Repo:  $repoRoot"
 Write-Host "Unity: $unityExe"
 
 if (-not $SkipApi) {
-    Ensure-ApiBuilt
-    Stop-ProcessByExecutablePath -ExecutablePath $ApiExePath -Name "ProjectX API"
+    $apiAlreadyListening = Wait-TcpPort -HostName "127.0.0.1" -Port $ApiPort -TimeoutSeconds 1
 
-    Write-Step "Starting API"
-    $oldAspNetEnvironment = $env:ASPNETCORE_ENVIRONMENT
-    $oldDotNetEnvironment = $env:DOTNET_ENVIRONMENT
-    $env:ASPNETCORE_ENVIRONMENT = "Development"
-    $env:DOTNET_ENVIRONMENT = "Development"
-    try {
-        Start-Executable -ExecutablePath $ApiExePath -WorkingDirectory (Split-Path $ApiExePath) -Name "ProjectX API" | Out-Null
+    if ($apiAlreadyListening -and -not $RestartExisting) {
+        Write-Step "Using running API"
+        Write-Host "API is already listening on port $ApiPort. Skipping API build and startup."
     }
-    finally {
-        $env:ASPNETCORE_ENVIRONMENT = $oldAspNetEnvironment
-        $env:DOTNET_ENVIRONMENT = $oldDotNetEnvironment
+    else {
+        Ensure-ApiBuilt
+
+        if ($RestartExisting) {
+            Stop-ProcessByExecutablePath -ExecutablePath $ApiExePath -Name "ProjectX API"
+
+            if (Wait-TcpPort -HostName "127.0.0.1" -Port $ApiPort -TimeoutSeconds 1) {
+                throw "Port $ApiPort is still in use. Stop the API process that owns it or run without -RestartExisting."
+            }
+        }
+
+        Write-Step "Starting API"
+        $oldAspNetEnvironment = $env:ASPNETCORE_ENVIRONMENT
+        $oldDotNetEnvironment = $env:DOTNET_ENVIRONMENT
+        $env:ASPNETCORE_ENVIRONMENT = "Development"
+        $env:DOTNET_ENVIRONMENT = "Development"
+        try {
+            Start-Executable -ExecutablePath $ApiExePath -WorkingDirectory (Split-Path $ApiExePath) -Name "ProjectX API" | Out-Null
+        }
+        finally {
+            $env:ASPNETCORE_ENVIRONMENT = $oldAspNetEnvironment
+            $env:DOTNET_ENVIRONMENT = $oldDotNetEnvironment
+        }
     }
 
     if (Wait-TcpPort -HostName "127.0.0.1" -Port $ApiPort -TimeoutSeconds 30) {
@@ -295,22 +313,38 @@ if (-not $SkipApi) {
     }
 }
 
-if (-not $SkipServerRun) {
+$serverAlreadyRunning = @(Get-ProcessesByExecutablePath $ServerBuildPath).Count -gt 0
+if ($serverAlreadyRunning -and $RestartExisting) {
     Stop-ProcessByExecutablePath -ExecutablePath $ServerBuildPath -Name "ProjectX server"
+    $serverAlreadyRunning = $false
 }
 
-if (-not $SkipServerBuild) {
-    Write-Step "Building Unity dedicated server"
-    Invoke-UnityServerBuild -UnityExe $unityExe -OutputPath $ServerBuildPath
+if ($serverAlreadyRunning) {
+    Write-Step "Using running Unity dedicated server"
+    Write-Host "ProjectX server is already running. Skipping server build and startup."
 }
-
-if (-not $SkipServerRun) {
-    if (-not (Test-Path $ServerBuildPath)) {
-        throw "Server executable was not found at '$ServerBuildPath'. Run without -SkipServerBuild first."
+else {
+    if (-not $SkipServerBuild) {
+        Write-Step "Building Unity dedicated server"
+        Invoke-UnityServerBuild -UnityExe $unityExe -OutputPath $ServerBuildPath
     }
 
-    Write-Step "Starting Unity dedicated server"
-    Start-Executable -ExecutablePath $ServerBuildPath -WorkingDirectory (Split-Path $ServerBuildPath) -Name "ProjectX server" | Out-Null
+    if (-not $SkipServerRun) {
+        if (-not (Test-Path $ServerBuildPath)) {
+            throw "Server executable was not found at '$ServerBuildPath'. Run without -SkipServerBuild first."
+        }
+
+        Write-Step "Starting Unity dedicated server"
+        if ([string]::IsNullOrWhiteSpace($env:PROJECTX_SERVER_USERNAME)) {
+            $env:PROJECTX_SERVER_USERNAME = "server1@localhost"
+        }
+
+        if ([string]::IsNullOrWhiteSpace($env:PROJECTX_SERVER_PASSWORD)) {
+            $env:PROJECTX_SERVER_PASSWORD = "Server1!"
+        }
+
+        Start-Executable -ExecutablePath $ServerBuildPath -WorkingDirectory (Split-Path $ServerBuildPath) -Name "ProjectX server" -Arguments "-projectx-direct" | Out-Null
+    }
 }
 
 if (-not $SkipClientPlay) {

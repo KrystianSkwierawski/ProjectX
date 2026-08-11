@@ -18,7 +18,7 @@ public class Characters : EndpointGroupBase
             .WithParameterDescription("id", "Identifier of the character to retrieve.")
             .WithResponseDescription(StatusCodes.Status200OK, "The character was found and returned.")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(UpdateCharacter)
@@ -28,7 +28,7 @@ public class Characters : EndpointGroupBase
             .WithResponseDescription(StatusCodes.Status204NoContent, "The character update was persisted.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(Policies.Server);
+            .RequireAuthorization(Policies.ServerPlayerSession);
     }
 
     private static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, int id, CancellationToken cancellationToken)

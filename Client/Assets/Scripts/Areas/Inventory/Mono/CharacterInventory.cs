@@ -150,14 +150,14 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 {
                     UpdateInventory(e.Request);
 
-                    UpdateInventoryServerRpc(e.Request, e.ClientToken);
+                    UpdateInventoryServerRpc(e.Request);
                 });
 
                 SplitInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
                     if (SplitInventory(e.SourceSlotIndex))
                     {
-                        SplitInventoryServerRpc(e.CharacterId, e.SourceSlotIndex, e.ClientToken);
+                        SplitInventoryServerRpc(e.CharacterId, e.SourceSlotIndex);
                     }
                 });
 
@@ -165,7 +165,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 {
                     if (MoveInventory(e.SourceSlotIndex, e.TargetSlotIndex))
                     {
-                        MoveInventoryServerRpc(e.CharacterId, e.SourceSlotIndex, e.TargetSlotIndex, e.ClientToken);
+                        MoveInventoryServerRpc(e.CharacterId, e.SourceSlotIndex, e.TargetSlotIndex);
                     }
                 });
 
@@ -176,9 +176,9 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         return;
                     }
 
-                    UseItem(e.Item, e.From, UserManager.Instance.Token);
+                    UseItem(e.Item, e.From, null);
 
-                    UseItemServerRpc(e.Item, e.From, UserManager.Instance.Token);
+                    UseItemServerRpc(e.Item, e.From);
                 });
             }
 
@@ -194,7 +194,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         }
                     });
 
-                    UpdateInventoryAsync(e.Request, e.ClientToken).Forget();
+                    UpdateInventoryAsync(e.Request, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
                 });
 
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
@@ -263,7 +263,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ClientRpc]
         private void ShowLootClientRpc(InventoryItemDto[] items, ClientRpcParams rpcParams = default)
         {
-            InventoryUI.Instance.UpdateLoot(items, OwnerClientId, UserManager.Instance.Token);
+            InventoryUI.Instance.UpdateLoot(items, OwnerClientId);
         }
 
         [ClientRpc]
@@ -323,7 +323,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         }
 
         [ServerRpc]
-        private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request, string clientToken)
+        private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request)
         {
             var isValid = request.Add.All(x =>
             {
@@ -337,46 +337,49 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             if (isValid)
             {
-                UpdateInventoryAsync(request, clientToken).Forget();
+                var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+                UpdateInventoryAsync(request, playerSessionId).Forget();
 
                 _currentLoot.Clear();
             }
         }
 
         [ServerRpc]
-        private void SplitInventoryServerRpc(int characterId, int sourceSlotIndex, string clientToken)
+        private void SplitInventoryServerRpc(int characterId, int sourceSlotIndex)
         {
-            SplitInventoryAsync(characterId, sourceSlotIndex, clientToken).Forget();
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            SplitInventoryAsync(characterId, sourceSlotIndex, playerSessionId).Forget();
         }
 
         [ServerRpc]
-        private void MoveInventoryServerRpc(int characterId, int sourceSlotIndex, int targetSlotIndex, string clientToken)
+        private void MoveInventoryServerRpc(int characterId, int sourceSlotIndex, int targetSlotIndex)
         {
-            MoveInventoryAsync(characterId, sourceSlotIndex, targetSlotIndex, clientToken).Forget();
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            MoveInventoryAsync(characterId, sourceSlotIndex, targetSlotIndex, playerSessionId).Forget();
         }
 
-        private async UniTask SplitInventoryAsync(int characterId, int sourceSlotIndex, string clientToken)
+        private async UniTask SplitInventoryAsync(int characterId, int sourceSlotIndex, string playerSessionId)
         {
             await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
             {
                 CharacterId = characterId,
                 SplitSlotIndex = sourceSlotIndex,
-            }, clientToken);
+            }, playerSessionId);
         }
 
-        private async UniTask MoveInventoryAsync(int characterId, int sourceSlotIndex, int targetSlotIndex, string clientToken)
+        private async UniTask MoveInventoryAsync(int characterId, int sourceSlotIndex, int targetSlotIndex, string playerSessionId)
         {
             await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
             {
                 CharacterId = characterId,
                 MoveSourceSlotIndex = sourceSlotIndex,
                 MoveTargetSlotIndex = targetSlotIndex,
-            }, clientToken);
+            }, playerSessionId);
         }
 
-        private async UniTask UpdateInventoryAsync(UpdateCharacterInventoryCommand request, string clientToken)
+        private async UniTask UpdateInventoryAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
         {
-            await InventoryManager.Instance.UpdateAsync(request, clientToken);
+            await InventoryManager.Instance.UpdateAsync(request, playerSessionId);
 
             foreach (var item in request.Add)
             {
@@ -384,40 +387,40 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 {
                     Progress = item.Count,
                     GameObjectName = item.Type.ToString(),
-                    ClientToken = clientToken,
+                    PlayerSessionId = playerSessionId,
                 });
             }
         }
 
         [ServerRpc]
-        private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from, string clientToken)
+        private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from)
         {
-            UseItem(item, from, clientToken);
+            UseItem(item, from, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
         }
 
-        private void UseItem(InventoryItemDto item, UsableItemFromEnum from, string clientToken)
+        private void UseItem(InventoryItemDto item, UsableItemFromEnum from, string playerSessionId)
         {
             if (item.Type.IsAmmo())
             {
-                new AmmoUsableItem(item, clientToken, OwnerClientId).Use(from);
+                new AmmoUsableItem(item, playerSessionId, OwnerClientId).Use(from);
 
                 return;
             }
 
             if (item.Type.IsWeapon())
             {
-                new WeaponUsableItem(item, clientToken, OwnerClientId).Use(from);
+                new WeaponUsableItem(item, playerSessionId, OwnerClientId).Use(from);
 
                 return;
             }
 
             IUsableItem usableItem = item.Type switch
             {
-                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.Currency => new CurrencyUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronChest => new ChestUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronBoots => new BootsUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, playerSessionId, OwnerClientId),
+                InventoryItemEnum.Currency => new CurrencyUsableItem(item, playerSessionId, OwnerClientId),
+                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, playerSessionId, OwnerClientId),
+                InventoryItemEnum.IronChest => new ChestUsableItem(item, playerSessionId, OwnerClientId),
+                InventoryItemEnum.IronBoots => new BootsUsableItem(item, playerSessionId, OwnerClientId),
                 _ => null
             };
 

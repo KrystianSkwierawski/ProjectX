@@ -48,8 +48,7 @@ public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacte
             PositionY = request.PositionY,
             PositionZ = request.PositionZ,
             RotationY = request.RotationY,
-            CharacterId = characterId,
-            ModDate = DateTime.Now
+            CharacterId = characterId
         };
 
         _context.CharacterTransforms.Add(entity);

@@ -1,8 +1,10 @@
 ﻿using ProjectX.Domain.Enums;
 
+using ProjectX.Domain.Common;
+
 namespace ProjectX.Domain.Entities;
 
-public class CraftingRecipe
+public class CraftingRecipe : BaseAuditableEntity
 {
     public CraftingRecipeEnum Id { get; set; }
 
@@ -16,5 +18,4 @@ public class CraftingRecipe
 
     public StatusEnum Status { get; set; }
 
-    public DateTime ModDate { get; set; }
 }

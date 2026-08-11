@@ -1,6 +1,8 @@
-﻿namespace ProjectX.Domain.Entities;
+using ProjectX.Domain.Common;
 
-public class CharacterTransform
+namespace ProjectX.Domain.Entities;
+
+public class CharacterTransform : BaseAuditableEntity
 {
     public int Id { get; set; }
 
@@ -13,8 +15,6 @@ public class CharacterTransform
     public float PositionZ { get; set; }
 
     public float RotationY { get; set; }
-
-    public DateTime ModDate { get; set; }
 
     public virtual Character Character { get; set; }
 }

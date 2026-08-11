@@ -1,7 +1,9 @@
 ﻿using ProjectX.Domain.Enums;
 
+using ProjectX.Domain.Common;
+
 namespace ProjectX.Domain.Entities;
-public class Quest
+public class Quest : BaseAuditableEntity
 {
     public Quest()
     {
@@ -23,8 +25,6 @@ public class Quest
     public int Reward { get; set; }
 
     public StatusEnum Status { get; set; }
-
-    public DateTime ModDate { get; set; }
 
     public virtual ICollection<CharacterQuest> CharacterQuests { get; set; }
 }
