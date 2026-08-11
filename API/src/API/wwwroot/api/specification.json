@@ -1,5 +1,5 @@
 {
-  "x-generator": "NSwag v14.5.0.0 (NJsonSchema v11.4.0.0 (Newtonsoft.Json v13.0.0.0))",
+  "x-generator": "NSwag v14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))",
   "openapi": "3.0.0",
   "info": {
     "title": "ProjectX.API",
@@ -1233,23 +1233,11 @@
       "LanguageEnum": {
         "type": "integer",
         "description": "Supported interface languages.",
-        "x-enum-names": [
-          "pl",
-          "en"
-        ],
-        "x-enum-varnames": [
-          "pl",
-          "en"
-        ],
         "x-enumNames": [
           "pl",
           "en"
         ],
         "x-enum-descriptions": [
-          "pl.",
-          "en."
-        ],
-        "x-enumDescriptions": [
           "pl.",
           "en."
         ],
@@ -1431,28 +1419,6 @@
       "ExperienceTypeEnum": {
         "type": "integer",
         "description": "Character progression and profession categories.",
-        "x-enum-names": [
-          "None",
-          "Main",
-          "Fishing",
-          "Mining",
-          "Lumberjack",
-          "Herbalism",
-          "Cooking",
-          "Blacksmithing",
-          "Alchemy"
-        ],
-        "x-enum-varnames": [
-          "None",
-          "Main",
-          "Fishing",
-          "Mining",
-          "Lumberjack",
-          "Herbalism",
-          "Cooking",
-          "Blacksmithing",
-          "Alchemy"
-        ],
         "x-enumNames": [
           "None",
           "Main",
@@ -1465,17 +1431,6 @@
           "Alchemy"
         ],
         "x-enum-descriptions": [
-          "None.",
-          "Main.",
-          "Fishing.",
-          "Mining.",
-          "Lumberjack.",
-          "Herbalism.",
-          "Cooking.",
-          "Blacksmithing.",
-          "Alchemy."
-        ],
-        "x-enumDescriptions": [
           "None.",
           "Main.",
           "Fishing.",
@@ -1503,8 +1458,8 @@
         "description": "Persisted character inventory and slot capacity.",
         "additionalProperties": false,
         "required": [
-          "characterId",
           "inventory",
+          "characterId",
           "count"
         ],
         "properties": {
@@ -1569,92 +1524,6 @@
       "InventoryItemEnum": {
         "type": "integer",
         "description": "Persisted inventory item identifiers.",
-        "x-enum-names": [
-          "None",
-          "Can",
-          "Currency",
-          "Fish",
-          "CookedFish",
-          "Rice",
-          "Sushi",
-          "PurpleOre",
-          "WhiteOre",
-          "CopperOre",
-          "BlackOre",
-          "PurpleBar",
-          "WhiteBar",
-          "CopperBar",
-          "BlackBar",
-          "Wood",
-          "Chamomile",
-          "HealthPotion",
-          "HelmetTemplate",
-          "ChestTemplate",
-          "BootsTemplate",
-          "WeaponTemplate",
-          "AmmoTemplate",
-          "IronHelmet",
-          "IronChest",
-          "IronBoots",
-          "IronSword",
-          "AmmoArrow1",
-          "AmmoArrow2",
-          "AmmoArrow3",
-          "AmmoRune1",
-          "AmmoRune2",
-          "AmmoRune3",
-          "AmmoFeather1",
-          "AmmoFeather2",
-          "AmmoFeather3",
-          "AmmoOil1",
-          "AmmoOil2",
-          "AmmoOil3",
-          "IronWand",
-          "IronBow"
-        ],
-        "x-enum-varnames": [
-          "None",
-          "Can",
-          "Currency",
-          "Fish",
-          "CookedFish",
-          "Rice",
-          "Sushi",
-          "PurpleOre",
-          "WhiteOre",
-          "CopperOre",
-          "BlackOre",
-          "PurpleBar",
-          "WhiteBar",
-          "CopperBar",
-          "BlackBar",
-          "Wood",
-          "Chamomile",
-          "HealthPotion",
-          "HelmetTemplate",
-          "ChestTemplate",
-          "BootsTemplate",
-          "WeaponTemplate",
-          "AmmoTemplate",
-          "IronHelmet",
-          "IronChest",
-          "IronBoots",
-          "IronSword",
-          "AmmoArrow1",
-          "AmmoArrow2",
-          "AmmoArrow3",
-          "AmmoRune1",
-          "AmmoRune2",
-          "AmmoRune3",
-          "AmmoFeather1",
-          "AmmoFeather2",
-          "AmmoFeather3",
-          "AmmoOil1",
-          "AmmoOil2",
-          "AmmoOil3",
-          "IronWand",
-          "IronBow"
-        ],
         "x-enumNames": [
           "None",
           "Can",
@@ -1699,49 +1568,6 @@
           "IronBow"
         ],
         "x-enum-descriptions": [
-          "None.",
-          "Can.",
-          "Currency.",
-          "Fish.",
-          "Cooked Fish.",
-          "Rice.",
-          "Sushi.",
-          "Purple Ore.",
-          "White Ore.",
-          "Copper Ore.",
-          "Black Ore.",
-          "Purple Bar.",
-          "White Bar.",
-          "Copper Bar.",
-          "Black Bar.",
-          "Wood.",
-          "Chamomile.",
-          "Health Potion.",
-          "Helmet Template.",
-          "Chest Template.",
-          "Boots Template.",
-          "Weapon Template.",
-          "Ammo Template.",
-          "Iron Helmet.",
-          "Iron Chest.",
-          "Iron Boots.",
-          "Iron Sword.",
-          "Ammo Arrow1.",
-          "Ammo Arrow2.",
-          "Ammo Arrow3.",
-          "Ammo Rune1.",
-          "Ammo Rune2.",
-          "Ammo Rune3.",
-          "Ammo Feather1.",
-          "Ammo Feather2.",
-          "Ammo Feather3.",
-          "Ammo Oil1.",
-          "Ammo Oil2.",
-          "Ammo Oil3.",
-          "Iron Wand.",
-          "Iron Bow."
-        ],
-        "x-enumDescriptions": [
           "None.",
           "Can.",
           "Currency.",
@@ -1939,44 +1765,6 @@
       "QuestEnum": {
         "type": "integer",
         "description": "Persisted quest identifiers.",
-        "x-enum-names": [
-          "None",
-          "Kill2Beans",
-          "Collect2Cans",
-          "Collect2Fish",
-          "Collect2PurpleOres",
-          "Collect2WhiteOres",
-          "Collect2CopperOres",
-          "Collect2BlackOres",
-          "Collect2Chamomile",
-          "Collect2Woods",
-          "Collect2CookedFish",
-          "Collect2Sushi",
-          "Collect2PurpleBars",
-          "Collect2WhiteBars",
-          "Collect2CopperBars",
-          "Collect2BlackBars",
-          "Collect2HealthPotions"
-        ],
-        "x-enum-varnames": [
-          "None",
-          "Kill2Beans",
-          "Collect2Cans",
-          "Collect2Fish",
-          "Collect2PurpleOres",
-          "Collect2WhiteOres",
-          "Collect2CopperOres",
-          "Collect2BlackOres",
-          "Collect2Chamomile",
-          "Collect2Woods",
-          "Collect2CookedFish",
-          "Collect2Sushi",
-          "Collect2PurpleBars",
-          "Collect2WhiteBars",
-          "Collect2CopperBars",
-          "Collect2BlackBars",
-          "Collect2HealthPotions"
-        ],
         "x-enumNames": [
           "None",
           "Kill2Beans",
@@ -1997,25 +1785,6 @@
           "Collect2HealthPotions"
         ],
         "x-enum-descriptions": [
-          "None.",
-          "Kill2 Beans.",
-          "Collect2 Cans.",
-          "Collect2 Fish.",
-          "Collect2 Purple Ores.",
-          "Collect2 White Ores.",
-          "Collect2 Copper Ores.",
-          "Collect2 Black Ores.",
-          "Collect2 Chamomile.",
-          "Collect2 Woods.",
-          "Collect2 Cooked Fish.",
-          "Collect2 Sushi.",
-          "Collect2 Purple Bars.",
-          "Collect2 White Bars.",
-          "Collect2 Copper Bars.",
-          "Collect2 Black Bars.",
-          "Collect2 Health Potions."
-        ],
-        "x-enumDescriptions": [
           "None.",
           "Kill2 Beans.",
           "Collect2 Cans.",
@@ -2057,20 +1826,6 @@
       "CharacterQuestStatusEnum": {
         "type": "integer",
         "description": "Lifecycle state of a character quest.",
-        "x-enum-names": [
-          "None",
-          "Accepted",
-          "Finished",
-          "Completed",
-          "Abandoned"
-        ],
-        "x-enum-varnames": [
-          "None",
-          "Accepted",
-          "Finished",
-          "Completed",
-          "Abandoned"
-        ],
         "x-enumNames": [
           "None",
           "Accepted",
@@ -2079,13 +1834,6 @@
           "Abandoned"
         ],
         "x-enum-descriptions": [
-          "None.",
-          "Accepted.",
-          "Finished.",
-          "Completed.",
-          "Abandoned."
-        ],
-        "x-enumDescriptions": [
           "None.",
           "Accepted.",
           "Finished.",
@@ -2580,9 +2328,9 @@
         "description": "Crafting recipe definition with requirements and reward.",
         "additionalProperties": false,
         "required": [
-          "id",
           "requirement",
-          "reward"
+          "reward",
+          "id"
         ],
         "properties": {
           "id": {
@@ -2605,50 +2353,6 @@
       "CraftingRecipeEnum": {
         "type": "integer",
         "description": "Persisted crafting recipe identifiers.",
-        "x-enum-names": [
-          "None",
-          "CookedFish",
-          "Sushi",
-          "PurpleBar",
-          "WhiteBar",
-          "CopperBar",
-          "BlackBar",
-          "HealthPotion",
-          "AmmoArrow1",
-          "AmmoArrow2",
-          "AmmoArrow3",
-          "AmmoRune1",
-          "AmmoRune2",
-          "AmmoRune3",
-          "AmmoFeather1",
-          "AmmoFeather2",
-          "AmmoFeather3",
-          "AmmoOil1",
-          "AmmoOil2",
-          "AmmoOil3"
-        ],
-        "x-enum-varnames": [
-          "None",
-          "CookedFish",
-          "Sushi",
-          "PurpleBar",
-          "WhiteBar",
-          "CopperBar",
-          "BlackBar",
-          "HealthPotion",
-          "AmmoArrow1",
-          "AmmoArrow2",
-          "AmmoArrow3",
-          "AmmoRune1",
-          "AmmoRune2",
-          "AmmoRune3",
-          "AmmoFeather1",
-          "AmmoFeather2",
-          "AmmoFeather3",
-          "AmmoOil1",
-          "AmmoOil2",
-          "AmmoOil3"
-        ],
         "x-enumNames": [
           "None",
           "CookedFish",
@@ -2672,28 +2376,6 @@
           "AmmoOil3"
         ],
         "x-enum-descriptions": [
-          "None.",
-          "Cooked Fish.",
-          "Sushi.",
-          "Purple Bar.",
-          "White Bar.",
-          "Copper Bar.",
-          "Black Bar.",
-          "Health Potion.",
-          "Ammo Arrow1.",
-          "Ammo Arrow2.",
-          "Ammo Arrow3.",
-          "Ammo Rune1.",
-          "Ammo Rune2.",
-          "Ammo Rune3.",
-          "Ammo Feather1.",
-          "Ammo Feather2.",
-          "Ammo Feather3.",
-          "Ammo Oil1.",
-          "Ammo Oil2.",
-          "Ammo Oil3."
-        ],
-        "x-enumDescriptions": [
           "None.",
           "Cooked Fish.",
           "Sushi.",
@@ -2788,24 +2470,6 @@
       "CraftingRecipeTypeEnum": {
         "type": "integer",
         "description": "Crafting profession used to filter recipes.",
-        "x-enum-names": [
-          "None",
-          "Alchemy",
-          "Blacksmithing",
-          "Enchanting",
-          "Leatherworking",
-          "Tailoring",
-          "Cooking"
-        ],
-        "x-enum-varnames": [
-          "None",
-          "Alchemy",
-          "Blacksmithing",
-          "Enchanting",
-          "Leatherworking",
-          "Tailoring",
-          "Cooking"
-        ],
         "x-enumNames": [
           "None",
           "Alchemy",
@@ -2816,15 +2480,6 @@
           "Cooking"
         ],
         "x-enum-descriptions": [
-          "None.",
-          "Alchemy.",
-          "Blacksmithing.",
-          "Enchanting.",
-          "Leatherworking.",
-          "Tailoring.",
-          "Cooking."
-        ],
-        "x-enumDescriptions": [
           "None.",
           "Alchemy.",
           "Blacksmithing.",
@@ -2931,9 +2586,9 @@
         "description": "Short-lived, one-time connection ticket and transport details for the active game session.",
         "additionalProperties": false,
         "required": [
+          "ticket",
           "gameSessionId",
           "usesRelay",
-          "ticket",
           "expiresAtUtc"
         ],
         "properties": {
@@ -2993,8 +2648,8 @@
         "description": "One-time connection ticket presented by the dedicated server during connection approval.",
         "additionalProperties": false,
         "required": [
-          "gameSessionId",
-          "ticket"
+          "ticket",
+          "gameSessionId"
         ],
         "properties": {
           "gameSessionId": {
@@ -3030,14 +2685,14 @@
         "description": "Localized quest definition and completion requirements.",
         "additionalProperties": false,
         "required": [
-          "id",
-          "previousQuestId",
-          "type",
           "title",
           "description",
           "completeDescription",
           "statusText",
           "gameObjectName",
+          "id",
+          "previousQuestId",
+          "type",
           "requirement",
           "reward"
         ],
@@ -3099,26 +2754,6 @@
       "QuestTypeEnum": {
         "type": "integer",
         "description": "Supported quest objective categories.",
-        "x-enum-names": [
-          "Indefinite",
-          "Kill",
-          "Explore",
-          "Find",
-          "Gather",
-          "Drop",
-          "Collect",
-          "Craft"
-        ],
-        "x-enum-varnames": [
-          "Indefinite",
-          "Kill",
-          "Explore",
-          "Find",
-          "Gather",
-          "Drop",
-          "Collect",
-          "Craft"
-        ],
         "x-enumNames": [
           "Indefinite",
           "Kill",
@@ -3130,16 +2765,6 @@
           "Craft"
         ],
         "x-enum-descriptions": [
-          "Indefinite.",
-          "Kill.",
-          "Explore.",
-          "Find.",
-          "Gather.",
-          "Drop.",
-          "Collect.",
-          "Craft."
-        ],
-        "x-enumDescriptions": [
           "Indefinite.",
           "Kill.",
           "Explore.",

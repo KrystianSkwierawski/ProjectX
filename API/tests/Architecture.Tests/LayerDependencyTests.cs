@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Xml.Linq;
 using ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
 using ProjectX.Domain.Entities;
@@ -112,6 +113,51 @@ public class LayerDependencyTests
             $"Application declares framework adapter packages: {string.Join(", ", forbiddenReferences)}");
     }
 
+    [Fact]
+    public void BuildConfiguration_UsesNet10WithPinnedStableSdk()
+    {
+        var buildProperties = XDocument.Load(Path.Combine(SolutionDirectory, "Directory.Build.props"));
+        var targetFramework = GetPropertyValue(buildProperties, "TargetFramework");
+        var warningsAsErrors = GetPropertyValue(buildProperties, "TreatWarningsAsErrors");
+
+        using var globalJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(SolutionDirectory, "global.json")));
+        var sdk = globalJson.RootElement.GetProperty("sdk");
+
+        Assert.Equal("net10.0", targetFramework);
+        Assert.Equal("true", warningsAsErrors);
+        Assert.StartsWith("10.0.", sdk.GetProperty("version").GetString());
+        Assert.Equal("latestFeature", sdk.GetProperty("rollForward").GetString());
+        Assert.False(sdk.GetProperty("allowPrerelease").GetBoolean());
+    }
+
+    [Fact]
+    public void Solution_UsesSlnxAndContainsEveryBackendProject()
+    {
+        var solutionPath = Path.Combine(SolutionDirectory, "ProjectX.slnx");
+        var actualProjects = XDocument.Load(solutionPath)
+            .Descendants("Project")
+            .Select(element => element.Attribute("Path")?.Value)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Cast<string>()
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+        var expectedProjects = new[]
+        {
+            "src/API/API.csproj",
+            "src/Application/Application.csproj",
+            "src/Domain/Domain.csproj",
+            "src/Infrastructure/Infrastructure.csproj",
+            "tests/Application.UnitTests/Application.UnitTests.csproj",
+            "tests/Architecture.Tests/Architecture.Tests.csproj",
+            "tests/Domain.UnitTests/Domain.UnitTests.csproj",
+            "tests/Infrastructure.IntegrationTests/Infrastructure.IntegrationTests.csproj",
+            "tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj"
+        };
+
+        Assert.Equal(expectedProjects, actualProjects);
+        Assert.False(File.Exists(Path.Combine(SolutionDirectory, "ProjectX.sln")));
+    }
+
     private static void AssertDoesNotReference(Assembly assembly, params string[] forbiddenPrefixes)
     {
         var forbiddenReferences = assembly
@@ -192,11 +238,19 @@ public class LayerDependencyTests
             .ToArray();
     }
 
+    private static string? GetPropertyValue(XDocument document, string propertyName)
+    {
+        return document
+            .Descendants()
+            .Single(element => element.Name.LocalName == propertyName)
+            .Value;
+    }
+
     private static string FindSolutionDirectory()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
 
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "ProjectX.sln")))
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "ProjectX.slnx")))
         {
             directory = directory.Parent;
         }

@@ -1,7 +1,8 @@
 # Tech Context
 
 ## Backend
-- .NET / ASP.NET Core solution: `API/ProjectX.sln`.
+- .NET 10 / ASP.NET Core 10 solution: `API/ProjectX.slnx`; targeting `net10.0` selects C# 14 by default.
+- Backend build defaults live in `API/Directory.Build.props`, and `API/global.json` requests stable SDK `10.0.300` with `latestFeature` roll-forward (currently resolving to installed SDK 10.0.302).
 - Projects:
   - `API/src/API/API.csproj`
   - `API/src/Application/Application.csproj`
@@ -14,7 +15,7 @@
   - `API/tests/Architecture.Tests/Architecture.Tests.csproj`
 - Shared backend test settings are centralized in `API/tests/TestProject.props` and imported explicitly by the five actual test projects.
 - Central package management via `API/Directory.Packages.props`.
-- Key packages include Entity Framework Core 9, ASP.NET Core Identity, MediatR 13, FluentValidation, NSwag, Serilog, JWT token libraries, xUnit, Moq, and coverlet.
+- Key packages include Entity Framework Core/ASP.NET Core 10.0.11, MediatR 14.2.0, FluentValidation 12.1.1, NSwag 14.7.1, Serilog 10 integration packages, IdentityModel 8.22.0, xUnit 2.9.3, Moq, and coverlet 10.0.1.
 
 ## Backend Runtime Configuration
 - Default connection string points to local SQL Server database `ProjectX`.
@@ -34,8 +35,8 @@
 
 ## Common Commands
 - Backend build/test:
-  - `dotnet build API/ProjectX.sln`
-  - `dotnet test API/ProjectX.sln`
+  - From `API/`: `dotnet build ProjectX.slnx`
+  - From `API/`: `dotnet test ProjectX.slnx`
 - Local dev stack automation:
   - `Client/Automation/run.bat` runs missing parts of the API, Unity dedicated server, and Unity client Play Mode stack. It reuses an API already listening on the configured port and skips both build and startup when the configured dedicated-server executable is already running.
   - `Client/Automation/run.bat -RestartExisting` explicitly restarts processes managed from the configured API/server executable paths before continuing.
@@ -48,6 +49,7 @@
 - At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 281 passing domain/application unit, infrastructure integration, web acceptance/contract, and architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
 
 ## Current Repo Notes
+- On 2026-08-11, the backend was migrated from .NET 9/C# 13 to .NET 10/C# 14 following the applicable build conventions in `jasontaylordev/CleanArchitecture`: centralized `Directory.Build.props`, stable SDK selection in `global.json`, and replacement of `ProjectX.sln` with `ProjectX.slnx`. All direct NuGet dependencies were updated to their latest stable compatible versions, unused `FluentValidation.AspNetCore` was removed, NSwag now runs its Net100 toolchain, and automation resolves the `net10.0` API output. Restore/build/NSwag complete with zero warnings/errors; 283 tests pass, NuGet reports no outdated direct packages, and the full transitive graph reports no known vulnerabilities.
 - On 2026-08-11, backend tests were split into `Domain.UnitTests`, `Application.UnitTests`, `Infrastructure.IntegrationTests`, `Web.AcceptanceTests`, and `Architecture.Tests`, with shared tooling explicitly imported from `API/tests/TestProject.props`. The production-localization resource contract lives in Web rather than creating a hidden Infrastructure-to-API filesystem dependency. `dotnet restore API/ProjectX.sln` and `dotnet test API/ProjectX.sln --no-restore` succeeded; the latter rebuilt all projects, regenerated NSwag with zero warnings/errors, and passed all 281 tests. The ten architecture cases cover compiled assembly boundaries, declared production/test-project references, Domain/Application package constraints, and layer namespaces. This validates backend structure/contracts but is not a Unity runtime or full-stack gameplay test.
 - At the start of the 2026-07-13 memory-bank refresh, branch `dev` was clean and exactly aligned with `origin/dev` at `8c954ff` (`0` ahead, `0` behind).
 - On 2026-07-13, `dotnet build API/ProjectX.sln --no-restore` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` both completed with zero errors. They emitted existing nullable/reference/version-conflict/unused-field warnings. `dotnet test API/ProjectX.sln --no-build --no-restore` then passed all 182 tests. This is build/unit-test validation, not Unity runtime or dedicated-server validation.

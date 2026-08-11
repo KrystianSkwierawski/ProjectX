@@ -17,5 +17,6 @@ ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core b
 - Support user login/authentication, character state, health, stats, gear/ammo, quest progress, inventory, crafting, and localization.
 
 ## Source Of Truth
+- The backend architecture and its modernization conventions intentionally use `jasontaylordev/CleanArchitecture` as the primary reference implementation. ProjectX adapts that template to its Unity/game-server requirements instead of copying unrelated template features.
 - This memory bank was initialized from repository inspection on 2026-05-07 and reviewed against repository HEAD `8c954ff` on 2026-07-13, incorporating the user clarifications recorded on 2026-07-07 and 2026-07-08.
 - Product-specific goals beyond the current code shape are not yet documented and should be confirmed with the user as the project evolves.

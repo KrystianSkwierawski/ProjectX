@@ -16,10 +16,11 @@ $ErrorActionPreference = "Stop"
 
 $clientPath = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $repoRoot = (Resolve-Path (Join-Path $clientPath "..")).Path
-$apiProjectPath = Join-Path $repoRoot "API\src\API\API.csproj"
+$apiRoot = Join-Path $repoRoot "API"
+$apiProjectPath = Join-Path $apiRoot "src\API\API.csproj"
 
 if ([string]::IsNullOrWhiteSpace($ApiExePath)) {
-    $ApiExePath = Join-Path $repoRoot "API\src\API\bin\$Configuration\net9.0\ProjectX.API.exe"
+    $ApiExePath = Join-Path $repoRoot "API\src\API\bin\$Configuration\net10.0\ProjectX.API.exe"
 }
 
 if ([string]::IsNullOrWhiteSpace($ServerBuildPath)) {
@@ -112,7 +113,16 @@ function Ensure-ApiBuilt {
     }
 
     Write-Step "API executable missing, building $Configuration"
-    dotnet build $apiProjectPath -c $Configuration
+    Push-Location $apiRoot
+    try {
+        dotnet build $apiProjectPath -c $Configuration
+        if ($LASTEXITCODE -ne 0) {
+            throw "API build failed with exit code $LASTEXITCODE."
+        }
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 function Start-Executable {

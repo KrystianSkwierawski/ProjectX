@@ -8,6 +8,7 @@
 - `CLAUDE.md` and `.claude/` are not present as of the 2026-07-13 refresh.
 
 ## Backend Architecture
+- `jasontaylordev/CleanArchitecture` is the reference template for backend layering, dependency direction, build conventions, and test organization. Follow its current patterns when they fit ProjectX, but retain ProjectX-specific API, Unity, authentication, persistence, NSwag, and deployment decisions rather than importing unrelated Aspire/UI/template features.
 - `API/src/API`: ASP.NET Core entrypoint, endpoint mapping, OpenAPI/Swagger, web services.
 - `API/src/Application`: MediatR request handlers, validators, DTOs, application services, behaviors.
 - `API/src/Domain`: framework-independent entities, enums, value/state objects, and domain behavior.
@@ -18,6 +19,7 @@
 - `API/tests/Web.AcceptanceTests`: API-boundary, authorization, exception-mapping, current-user, localization-resource, and generated OpenAPI contract tests; references only API.
 - `API/tests/Architecture.Tests`: cross-layer dependency and convention tests; references Application, Domain, and Infrastructure intentionally.
 - `API/tests/TestProject.props`: shared xUnit/test SDK/coverage settings imported explicitly by real backend test projects, so helper hosts under `API/tests` do not become test projects implicitly.
+- `API/ProjectX.slnx` is the only backend solution file. `API/Directory.Build.props` centrally selects `net10.0`, C# 14 through the target-framework default, nullable reference types, implicit usings, and warnings-as-errors. `API/global.json` pins the stable .NET 10 SDK feature band with `latestFeature` roll-forward and disallows preview SDKs.
 - EF Core migrations are currently consolidated into `API/src/Infrastructure/Migrations/20260811172103_Init.cs` plus the model snapshot. Identity persistence uses `IdentityDbContext<ApplicationUser>` and the baseline intentionally contains no Duende IdentityServer tables.
 
 ## Backend Patterns
