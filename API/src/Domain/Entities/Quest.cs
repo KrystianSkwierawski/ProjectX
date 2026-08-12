@@ -1,8 +1,8 @@
-﻿using ProjectX.Domain.Enums;
-
-using ProjectX.Domain.Common;
+﻿using ProjectX.Domain.Common;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
+
 public class Quest : BaseAuditableEntity
 {
     public QuestEnum Id { get; set; }

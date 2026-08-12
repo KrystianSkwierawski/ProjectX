@@ -34,13 +34,16 @@ public class RefreshSessionCommandHandler : IRequestHandler<RefreshSessionComman
 
     public async Task<RefreshSessionDto> Handle(RefreshSessionCommand request, CancellationToken cancellationToken)
     {
-        var user = await _authenticationService.FindActiveByIdAsync(_currentUserService.GetAuthenticatedUserId(), cancellationToken)
-            ?? throw new InvalidCredentialsException();
-
         var tokenExpiresAtUtc = _currentUserService.GetAuthenticatedTokenExpirationUtc();
+        var sessionStartedAtUtc = _currentUserService.GetAuthenticatedSessionStartedAtUtc();
         var utcNow = _timeProvider.GetUtcNow();
 
-        if (tokenExpiresAtUtc is null || tokenExpiresAtUtc <= utcNow)
+        if (tokenExpiresAtUtc is null
+            || sessionStartedAtUtc is null
+            || sessionStartedAtUtc.Value > utcNow
+            || tokenExpiresAtUtc <= utcNow
+            || tokenExpiresAtUtc > sessionStartedAtUtc.Value.Add(SessionTokenPolicy.MaximumSessionLifetime)
+            || sessionStartedAtUtc.Value.Add(SessionTokenPolicy.MaximumSessionLifetime) <= utcNow)
         {
             throw new InvalidCredentialsException();
         }
@@ -50,9 +53,12 @@ public class RefreshSessionCommandHandler : IRequestHandler<RefreshSessionComman
             throw new ForbiddenAccessException();
         }
 
+        var user = await _authenticationService.FindActiveByIdAsync(_currentUserService.GetAuthenticatedUserId(), cancellationToken)
+            ?? throw new InvalidCredentialsException();
+
         return new RefreshSessionDto
         {
-            Token = _accessTokenService.Create(user),
+            Token = _accessTokenService.Create(user, sessionStartedAtUtc),
             Language = user.Language
         };
     }

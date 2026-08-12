@@ -1,6 +1,7 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
+
 public class CraftingRecipeDto
 {
     public CraftingRecipeEnum Id { get; set; }

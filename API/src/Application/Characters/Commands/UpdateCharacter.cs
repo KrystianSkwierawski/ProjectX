@@ -39,7 +39,8 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
     {
         var userId = _currentUserService.GetId();
         var character = await _context.Characters
-            .Where(candidate => candidate.ApplicationUserId == userId)
+            .Where(x => x.Id == request.CharacterId)
+            .Where(x => x.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character", cancellationToken);
 
         character.UpdateState(new CharacterStateUpdate(

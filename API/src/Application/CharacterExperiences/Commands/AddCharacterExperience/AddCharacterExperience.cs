@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Characters;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
@@ -16,12 +17,6 @@ public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto
 
 public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacterExperienceCommand, AddCharacterExperienceDto>
 {
-    private static readonly SortedDictionary<int, byte> ExperienceToLevel = new()
-    {
-        { 0, 1 }, { 100, 2 }, { 400, 3 }, { 4000, 4 }, { 5000, 5 },
-        { 6000, 6 }, { 7000, 7 }, { 8000, 8 }, { 9000, 9 }, { 10000, 10 }
-    };
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -35,8 +30,9 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     {
         var userId = _currentUserService.GetId();
         var character = await _context.Characters
-            .Include(candidate => candidate.CharacterExperiences.Where(experience => experience.Type == request.Type))
-            .Where(candidate => candidate.ApplicationUserId == userId)
+            .Include(x => x.CharacterExperiences.Where(experience => experience.Type == request.Type))
+            .Where(x => x.Id == request.CharacterId)
+            .Where(x => x.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character", cancellationToken);
 
         character.CharacterExperiences.Add(new CharacterExperience { Amount = request.Amount, Type = request.Type });
@@ -47,12 +43,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
         return new AddCharacterExperienceDto
         {
             Experience = experience,
-            Level = GetLevel(experience)
+            Level = ExperienceProgression.GetLevel(experience)
         };
-    }
-
-    public static byte GetLevel(int experience)
-    {
-        return ExperienceToLevel.Where(level => level.Key <= experience).Max(level => level.Value);
     }
 }

@@ -22,14 +22,14 @@ public class LoginApplicationUserCommandHandlerTests
             .Setup(service => service.AuthenticateAsync(Email, Password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
         var accessTokens = new Mock<IAccessTokenService>();
-        accessTokens.Setup(service => service.Create(user)).Returns("signed-jwt");
+        accessTokens.Setup(service => service.Create(user, null)).Returns("signed-jwt");
         var handler = new LoginApplicationUserCommandHandler(authentication.Object, accessTokens.Object);
 
         var result = await handler.Handle(CreateCommand(), CancellationToken.None);
 
         Assert.Equal("signed-jwt", result.Token);
         Assert.Equal(LanguageEnum.en, result.Language);
-        accessTokens.Verify(service => service.Create(user), Times.Once);
+        accessTokens.Verify(service => service.Create(user, null), Times.Once);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class LoginApplicationUserCommandHandlerTests
 
         await Assert.ThrowsAsync<InvalidCredentialsException>(() => handler.Handle(CreateCommand(), CancellationToken.None));
 
-        accessTokens.Verify(service => service.Create(It.IsAny<AuthenticatedApplicationUser>()), Times.Never);
+        accessTokens.Verify(service => service.Create(It.IsAny<AuthenticatedApplicationUser>(), It.IsAny<DateTimeOffset?>()), Times.Never);
     }
 
     [Fact]

@@ -36,12 +36,24 @@ public class CurrentUserService : ICurrentUserService
         return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
     }
 
+    public DateTimeOffset? GetAuthenticatedSessionStartedAtUtc()
+    {
+        return GetUnixTimeClaim(SessionTokenPolicy.SessionStartedAtClaim);
+    }
+
     public DateTimeOffset? GetAuthenticatedTokenExpirationUtc()
     {
-        var expirationClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(JwtRegisteredClaimNames.Exp);
+        return GetUnixTimeClaim(JwtRegisteredClaimNames.Exp);
+    }
 
-        return long.TryParse(expirationClaim, NumberStyles.Integer, CultureInfo.InvariantCulture, out var expirationSeconds)
-            ? DateTimeOffset.FromUnixTimeSeconds(expirationSeconds)
+    private DateTimeOffset? GetUnixTimeClaim(string claimType)
+    {
+        var claim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(claimType);
+
+        return long.TryParse(claim, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds)
+            && seconds >= DateTimeOffset.MinValue.ToUnixTimeSeconds()
+            && seconds <= DateTimeOffset.MaxValue.ToUnixTimeSeconds()
+            ? DateTimeOffset.FromUnixTimeSeconds(seconds)
             : null;
     }
 

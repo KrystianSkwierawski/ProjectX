@@ -14,12 +14,14 @@ namespace Assets.Scripts.Areas.Character
 {
     public class UserManager : Singleton<UserManager>
     {
-        private static readonly TimeSpan _sessionRefreshInterval = TimeSpan.FromMinutes(55);
-        private static readonly TimeSpan _sessionRefreshGracePeriod = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan _sessionRefreshInterval = TimeSpan.FromMinutes(56);
+        private static readonly TimeSpan _sessionRefreshGracePeriod = TimeSpan.FromMinutes(4);
         private static readonly TimeSpan _sessionRefreshRetryInterval = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan _sessionMaximumLifetime = TimeSpan.FromHours(24);
 
         private readonly IDictionary<ulong, string> _playerSessionIds = new Dictionary<ulong, string>();
         private CancellationTokenSource _sessionRefreshCancellation;
+        private double _sessionExpiresAtRealtime;
 
         public IDictionary<ulong, CharacterDto> Characters { get; } = new Dictionary<ulong, CharacterDto>();
 
@@ -46,6 +48,7 @@ namespace Assets.Scripts.Areas.Character
 
             Token = result.Token;
             Language = result.Language;
+            _sessionExpiresAtRealtime = Time.realtimeSinceStartupAsDouble + _sessionMaximumLifetime.TotalSeconds;
 
             StartSessionRefresh();
 
@@ -67,7 +70,22 @@ namespace Assets.Scripts.Areas.Character
             {
                 while (true)
                 {
-                    await UniTask.Delay(_sessionRefreshInterval, ignoreTimeScale: true, cancellationToken: cancellationToken);
+                    var sessionRemainingSeconds = _sessionExpiresAtRealtime - Time.realtimeSinceStartupAsDouble;
+
+                    if (sessionRemainingSeconds <= 0)
+                    {
+                        InvalidateSession();
+                        return;
+                    }
+
+                    var refreshDelay = TimeSpan.FromSeconds(Math.Min(_sessionRefreshInterval.TotalSeconds, sessionRemainingSeconds));
+                    await UniTask.Delay(refreshDelay, ignoreTimeScale: true, cancellationToken: cancellationToken);
+
+                    if (Time.realtimeSinceStartupAsDouble >= _sessionExpiresAtRealtime)
+                    {
+                        InvalidateSession();
+                        return;
+                    }
 
                     if (!await RefreshSessionWithRetryAsync(cancellationToken))
                     {
@@ -153,6 +171,7 @@ namespace Assets.Scripts.Areas.Character
             Token = null;
             Language = default;
             OwnerClientId = default;
+            _sessionExpiresAtRealtime = default;
             Characters.Clear();
             _playerSessionIds.Clear();
 

@@ -1,6 +1,7 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Characters.Queries.GetCharacter;
+
 public class CharacterDto
 {
     public required string Name { get; set; }
@@ -36,5 +37,5 @@ public class CharacterDto
     public override string ToString()
     {
         return $"{nameof(CharacterDto)} {{ Name = {Name}, Health = {Health}, MaxHealth = {MaxHealth}, Strength = {Strength}, Dexterity = {Dexterity}, Speed = {Speed}, Intellect = {Intellect}, Armor = {Armor}, HelmetType = {HelmetType}, ChestType = {ChestType}, BootsType = {BootsType}, WeaponType = {WeaponType}, AmmoType = {AmmoType}, AmmoCount = {AmmoCount} }}";
-    }   
+    }
 }

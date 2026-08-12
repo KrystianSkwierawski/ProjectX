@@ -1,6 +1,6 @@
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Models;
 using ProjectX.Application.Common.Security;
@@ -23,11 +23,12 @@ public class JwtAccessTokenServiceTests
         var timeProvider = new ManualTimeProvider(new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero));
         var service = CreateService(timeProvider);
         var user = CreateUser();
+        var sessionStartedAt = timeProvider.GetUtcNow();
         var originalToken = service.Create(user);
 
         timeProvider.Advance(TimeSpan.FromMinutes(55));
-        var renewedToken = service.Create(user);
-        var nextRenewedToken = service.Create(user);
+        var renewedToken = service.Create(user, sessionStartedAt);
+        var nextRenewedToken = service.Create(user, sessionStartedAt);
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = CreateValidationParameters(timeProvider);
@@ -61,6 +62,9 @@ public class JwtAccessTokenServiceTests
             claims:
             [
                 new Claim(ClaimTypes.NameIdentifier, UserId),
+                new Claim(
+                    SessionTokenPolicy.SessionStartedAtClaim,
+                    new DateTimeOffset(now).ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)),
                 new Claim(SessionTokenPolicy.VersionClaim, SessionTokenPolicy.CurrentVersion)
             ],
             notBefore: now,
@@ -70,6 +74,27 @@ public class JwtAccessTokenServiceTests
         Assert.False(JwtAccessTokenService.ValidateLifetime(now, now.AddHours(2), overlongToken, now));
     }
 
+    [Fact]
+    public void Create_PreservesSessionStartAndCapsTokenAtMaximumSessionLifetime()
+    {
+        var sessionStartedAt = new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero);
+        var timeProvider = new ManualTimeProvider(sessionStartedAt.Add(SessionTokenPolicy.MaximumSessionLifetime).AddMinutes(-4));
+        var token = new JwtSecurityTokenHandler().ReadJwtToken(CreateService(timeProvider).Create(CreateUser(), sessionStartedAt));
+
+        Assert.Equal(
+            sessionStartedAt.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture),
+            token.Claims.Single(claim => claim.Type == SessionTokenPolicy.SessionStartedAtClaim).Value);
+        Assert.Equal(sessionStartedAt.Add(SessionTokenPolicy.MaximumSessionLifetime).UtcDateTime, token.ValidTo);
+    }
+
+    [Fact]
+    public void JwtOptions_RejectsSecurityKeysShorterThan256Bits()
+    {
+        var exception = Assert.Throws<ArgumentException>(() => new JwtOptions("too-short", Issuer, Audience));
+
+        Assert.Contains("at least 32 UTF-8 bytes", exception.Message, StringComparison.Ordinal);
+    }
+
     private static JwtAccessTokenService CreateService(TimeProvider timeProvider)
     {
         return new JwtAccessTokenService(new JwtOptions(SecurityKey, Issuer, Audience), timeProvider);
@@ -77,18 +102,9 @@ public class JwtAccessTokenServiceTests
 
     private static TokenValidationParameters CreateValidationParameters(TimeProvider timeProvider)
     {
-        return new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = Issuer,
-            ValidAudience = Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecurityKey)),
-            LifetimeValidator = (notBefore, expires, securityToken, _) => JwtAccessTokenService.ValidateLifetime(notBefore, expires, securityToken, timeProvider.GetUtcNow().UtcDateTime),
-            ClockSkew = TimeSpan.Zero
-        };
+        return JwtAccessTokenService.CreateValidationParameters(
+            new JwtOptions(SecurityKey, Issuer, Audience),
+            timeProvider);
     }
 
     private static AuthenticatedApplicationUser CreateUser()

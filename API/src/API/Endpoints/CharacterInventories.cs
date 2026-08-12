@@ -12,24 +12,20 @@ public class CharacterInventories : EndpointGroupBase
     {
         groupBuilder
             .MapGet(GetCharacterInventory)
-            .WithSummary("Get a character inventory")
-            .WithDescription("Returns the persisted ordered inventory slots and capacity for the authenticated user's character.")
-            .WithParameterDescription("CharacterId", "Identifier of the character whose inventory is requested.")
-            .WithResponseDescription(StatusCodes.Status200OK, "The character inventory was found and returned.")
+            .WithSummary("Get character inventory")
+            .WithDescription("Returns a character's inventory and capacity.")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
             .MapPost(UpdateCharacterInventory)
-            .WithSummary("Update a character inventory")
-            .WithDescription("Applies item additions, removals, a stack split, or a slot move to the persisted character inventory.")
-            .WithRequestBodyDescription("Character identifier and inventory operations to apply.")
-            .WithResponseDescription(StatusCodes.Status204NoContent, "The inventory update was persisted.")
+            .WithSummary("Update character inventory")
+            .WithDescription("Applies inventory changes for a character.")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
-    private static async Task<Ok<CharacterInventoryDto>> GetCharacterInventory(
+    public static async Task<Ok<CharacterInventoryDto>> GetCharacterInventory(
         ISender sender,
         [AsParameters] GetCharacterInventoryQuery query,
         CancellationToken cancellationToken)
@@ -39,7 +35,7 @@ public class CharacterInventories : EndpointGroupBase
         return TypedResults.Ok(result);
     }
 
-    private static async Task<NoContent> UpdateCharacterInventory(
+    public static async Task<NoContent> UpdateCharacterInventory(
         ISender sender,
         UpdateCharacterInventoryCommand command,
         CancellationToken cancellationToken)

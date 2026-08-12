@@ -1,9 +1,9 @@
 using ProjectX.Application.Common.Exceptions;
-using ProjectX.Application.GameSessions;
+using ProjectX.Infrastructure.GameSessions;
 
-namespace ProjectX.Application.UnitTests.GameSessions;
+namespace ProjectX.Infrastructure.IntegrationTests.GameSessions;
 
-public sealed class GameSessionServiceTests
+public sealed class InMemoryGameSessionServiceTests
 {
     private const string ServerUserId = "server-user";
     private const string ClientUserId = "client-user";
@@ -197,11 +197,11 @@ public sealed class GameSessionServiceTests
         Assert.False(service.TryResolvePlayer(ServerUserId, player.PlayerSessionId, out _));
     }
 
-    private static GameSessionService CreateService(out ManualTimeProvider timeProvider, bool allowDirectTransport = true)
+    private static InMemoryGameSessionService CreateService(out ManualTimeProvider timeProvider, bool allowDirectTransport = true)
     {
         timeProvider = new ManualTimeProvider(new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero));
 
-        return new GameSessionService(timeProvider, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(90), allowDirectTransport);
+        return new InMemoryGameSessionService(timeProvider, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(90), allowDirectTransport);
     }
 
     private sealed class ManualTimeProvider : TimeProvider

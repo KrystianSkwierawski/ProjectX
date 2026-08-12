@@ -1,156 +1,73 @@
-﻿using System.Reflection;
-using ProjectX.Domain.Attributes;
+using ProjectX.Domain.Crafting;
 
 namespace ProjectX.Domain.Enums;
 
 public enum CraftingRecipeEnum : short
 {
     None,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Cooking,
-        Requirement = """{ "Items": [ { "Type": 200, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 201, "Count": 1 }, "Experience": 1000 }"""
-    )]
     CookedFish,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Cooking,
-        Requirement = """{ "Items": [ { "Type": 201, "Count": 1 }, { "Type": 202, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 203, "Count": 1 }, "Experience": 1000 }"""
-    )]
     Sushi,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 300, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 304, "Count": 1 }, "Experience": 1000 }"""
-    )]
     PurpleBar,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 301, "Count": 1 } ], "Level": 2 }""",
-        Reward = """{ "Item": { "Type": 305, "Count": 1 }, "Experience": 1000 }"""
-    )]
     WhiteBar,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 302, "Count": 1 } ], "Level": 3 }""",
-        Reward = """{ "Item": { "Type": 306, "Count": 1 }, "Experience": 1000 }"""
-    )]
     CopperBar,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 303, "Count": 1 } ], "Level": 4 }""",
-        Reward = """{ "Item": { "Type": 307, "Count": 1 }, "Experience": 1000 }"""
-    )]
     BlackBar,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Alchemy,
-        Requirement = """{ "Items": [ { "Type": 500, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 501, "Count": 1 }, "Experience": 1000 }"""
-    )]
     HealthPotion,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 400, "Count": 1 }, { "Type": 304, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 1009, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoArrow1,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 400, "Count": 2 }, { "Type": 305, "Count": 2 } ], "Level": 2 }""",
-        Reward = """{ "Item": { "Type": 1010, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoArrow2,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 400, "Count": 3 }, { "Type": 306, "Count": 3 } ], "Level": 3 }""",
-        Reward = """{ "Item": { "Type": 1011, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoArrow3,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 300, "Count": 1 }, { "Type": 304, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 1012, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoRune1,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 301, "Count": 2 }, { "Type": 305, "Count": 2 } ], "Level": 2 }""",
-        Reward = """{ "Item": { "Type": 1013, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoRune2,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 302, "Count": 3 }, { "Type": 306, "Count": 3 } ], "Level": 3 }""",
-        Reward = """{ "Item": { "Type": 1014, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoRune3,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 304, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 1015, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoFeather1,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 305, "Count": 2 } ], "Level": 2 }""",
-        Reward = """{ "Item": { "Type": 1016, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoFeather2,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Blacksmithing,
-        Requirement = """{ "Items": [ { "Type": 306, "Count": 3 } ], "Level": 3 }""",
-        Reward = """{ "Item": { "Type": 1017, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoFeather3,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Alchemy,
-        Requirement = """{ "Items": [ { "Type": 500, "Count": 1 } ], "Level": 1 }""",
-        Reward = """{ "Item": { "Type": 1018, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoOil1,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Alchemy,
-        Requirement = """{ "Items": [ { "Type": 500, "Count": 2 } ], "Level": 2 }""",
-        Reward = """{ "Item": { "Type": 1019, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoOil2,
-
-    [CraftingRecipeParameters(
-        Type = CraftingRecipeTypeEnum.Alchemy,
-        Requirement = """{ "Items": [ { "Type": 500, "Count": 3 } ], "Level": 3 }""",
-        Reward = """{ "Item": { "Type": 1020, "Count": 1 }, "Experience": 1000 }"""
-    )]
     AmmoOil3
 }
 
 public static class CraftingRecipeEnumExtensions
 {
-    public static CraftingRecipeParametersAttribute GetParameters(this CraftingRecipeEnum value)
-    {
-        var member = value
-            .GetType()
-            .GetMember(value.ToString())
-            .First();
+    private const int DefaultExperience = 1000;
 
-        return member.GetCustomAttribute<CraftingRecipeParametersAttribute>() ?? throw new ArgumentNullException(nameof(value));
+    public static CraftingRecipeDefinition GetDefinition(this CraftingRecipeEnum value)
+    {
+        return value switch
+        {
+            CraftingRecipeEnum.CookedFish => Create(CraftingRecipeTypeEnum.Cooking, 1, InventoryItemEnum.CookedFish, (InventoryItemEnum.Fish, 1)),
+            CraftingRecipeEnum.Sushi => Create(CraftingRecipeTypeEnum.Cooking, 1, InventoryItemEnum.Sushi, (InventoryItemEnum.CookedFish, 1), (InventoryItemEnum.Rice, 1)),
+            CraftingRecipeEnum.PurpleBar => Create(CraftingRecipeTypeEnum.Blacksmithing, 1, InventoryItemEnum.PurpleBar, (InventoryItemEnum.PurpleOre, 1)),
+            CraftingRecipeEnum.WhiteBar => Create(CraftingRecipeTypeEnum.Blacksmithing, 2, InventoryItemEnum.WhiteBar, (InventoryItemEnum.WhiteOre, 1)),
+            CraftingRecipeEnum.CopperBar => Create(CraftingRecipeTypeEnum.Blacksmithing, 3, InventoryItemEnum.CopperBar, (InventoryItemEnum.CopperOre, 1)),
+            CraftingRecipeEnum.BlackBar => Create(CraftingRecipeTypeEnum.Blacksmithing, 4, InventoryItemEnum.BlackBar, (InventoryItemEnum.BlackOre, 1)),
+            CraftingRecipeEnum.HealthPotion => Create(CraftingRecipeTypeEnum.Alchemy, 1, InventoryItemEnum.HealthPotion, (InventoryItemEnum.Chamomile, 1)),
+            CraftingRecipeEnum.AmmoArrow1 => Create(CraftingRecipeTypeEnum.Blacksmithing, 1, InventoryItemEnum.AmmoArrow1, (InventoryItemEnum.Wood, 1), (InventoryItemEnum.PurpleBar, 1)),
+            CraftingRecipeEnum.AmmoArrow2 => Create(CraftingRecipeTypeEnum.Blacksmithing, 2, InventoryItemEnum.AmmoArrow2, (InventoryItemEnum.Wood, 2), (InventoryItemEnum.WhiteBar, 2)),
+            CraftingRecipeEnum.AmmoArrow3 => Create(CraftingRecipeTypeEnum.Blacksmithing, 3, InventoryItemEnum.AmmoArrow3, (InventoryItemEnum.Wood, 3), (InventoryItemEnum.CopperBar, 3)),
+            CraftingRecipeEnum.AmmoRune1 => Create(CraftingRecipeTypeEnum.Blacksmithing, 1, InventoryItemEnum.AmmoRune1, (InventoryItemEnum.PurpleOre, 1), (InventoryItemEnum.PurpleBar, 1)),
+            CraftingRecipeEnum.AmmoRune2 => Create(CraftingRecipeTypeEnum.Blacksmithing, 2, InventoryItemEnum.AmmoRune2, (InventoryItemEnum.WhiteOre, 2), (InventoryItemEnum.WhiteBar, 2)),
+            CraftingRecipeEnum.AmmoRune3 => Create(CraftingRecipeTypeEnum.Blacksmithing, 3, InventoryItemEnum.AmmoRune3, (InventoryItemEnum.CopperOre, 3), (InventoryItemEnum.CopperBar, 3)),
+            CraftingRecipeEnum.AmmoFeather1 => Create(CraftingRecipeTypeEnum.Blacksmithing, 1, InventoryItemEnum.AmmoFeather1, (InventoryItemEnum.PurpleBar, 1)),
+            CraftingRecipeEnum.AmmoFeather2 => Create(CraftingRecipeTypeEnum.Blacksmithing, 2, InventoryItemEnum.AmmoFeather2, (InventoryItemEnum.WhiteBar, 2)),
+            CraftingRecipeEnum.AmmoFeather3 => Create(CraftingRecipeTypeEnum.Blacksmithing, 3, InventoryItemEnum.AmmoFeather3, (InventoryItemEnum.CopperBar, 3)),
+            CraftingRecipeEnum.AmmoOil1 => Create(CraftingRecipeTypeEnum.Alchemy, 1, InventoryItemEnum.AmmoOil1, (InventoryItemEnum.Chamomile, 1)),
+            CraftingRecipeEnum.AmmoOil2 => Create(CraftingRecipeTypeEnum.Alchemy, 2, InventoryItemEnum.AmmoOil2, (InventoryItemEnum.Chamomile, 2)),
+            CraftingRecipeEnum.AmmoOil3 => Create(CraftingRecipeTypeEnum.Alchemy, 3, InventoryItemEnum.AmmoOil3, (InventoryItemEnum.Chamomile, 3)),
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown crafting recipe.")
+        };
+    }
+
+    private static CraftingRecipeDefinition Create(
+        CraftingRecipeTypeEnum type,
+        int level,
+        InventoryItemEnum reward,
+        params (InventoryItemEnum Type, int Count)[] requirements)
+    {
+        return new CraftingRecipeDefinition(
+            type,
+            new CraftingRecipeRequirement(
+                requirements.Select(item => new CraftingRecipeItem(item.Type, item.Count)).ToArray(),
+                level),
+            new CraftingRecipeReward(new CraftingRecipeItem(reward, 1), DefaultExperience));
     }
 }
-

@@ -5,6 +5,7 @@ using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuest;
+
 public record GetQuestQuery(QuestEnum QuestId) : IRequest<QuestDto>;
 
 public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>

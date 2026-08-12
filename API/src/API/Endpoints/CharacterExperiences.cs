@@ -12,14 +12,12 @@ public class CharacterExperiences : EndpointGroupBase
         groupBuilder
             .MapPost(AddCharacterExperience)
             .WithSummary("Add character experience")
-            .WithDescription("Adds experience to one progression category and returns the updated total experience and calculated level.")
-            .WithRequestBodyDescription("Character identifier, experience amount, and progression category.")
-            .WithResponseDescription(StatusCodes.Status200OK, "Experience was added and the updated progression values are returned.")
+            .WithDescription("Adds experience and returns the updated progression.")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
-    private static async Task<Ok<AddCharacterExperienceDto>> AddCharacterExperience(
+    public static async Task<Ok<AddCharacterExperienceDto>> AddCharacterExperience(
         ISender sender,
         AddCharacterExperienceCommand command,
         CancellationToken cancellationToken)

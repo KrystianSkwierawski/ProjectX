@@ -4,5 +4,5 @@ namespace ProjectX.Application.Common.Interfaces;
 
 public interface IAccessTokenService
 {
-    string Create(AuthenticatedApplicationUser user);
+    string Create(AuthenticatedApplicationUser user, DateTimeOffset? sessionStartedAtUtc = null);
 }

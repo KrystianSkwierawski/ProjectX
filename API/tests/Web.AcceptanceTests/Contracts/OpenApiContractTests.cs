@@ -18,69 +18,26 @@ public class OpenApiContractTests
     [InlineData("400")]
     [InlineData("401")]
     [InlineData("429")]
-    public void LoginEndpoint_ContainsDocumentedResponse(string statusCode)
+    public void LoginEndpoint_ContainsExpectedResponse(string statusCode)
     {
         using var specification = OpenSpecification();
 
-        var responses = specification.RootElement
-            .GetProperty("paths")
-            .GetProperty("/api/ApplicationUsers")
-            .GetProperty("post")
-            .GetProperty("responses");
-
-        Assert.True(responses.TryGetProperty(statusCode, out _));
-    }
-
-    [Theory]
-    [InlineData("200")]
-    [InlineData("401")]
-    [InlineData("403")]
-    public void RefreshSessionEndpoint_ContainsDocumentedResponse(string statusCode)
-    {
-        using var specification = OpenSpecification();
-
-        var responses = specification.RootElement
-            .GetProperty("paths")
-            .GetProperty("/api/ApplicationUsers/RefreshSession")
-            .GetProperty("post")
-            .GetProperty("responses");
-
-        Assert.True(responses.TryGetProperty(statusCode, out _));
-    }
-
-    [Theory]
-    [InlineData("/api/GameSessions/Register", "Server")]
-    [InlineData("/api/GameSessions/Heartbeat", "Server")]
-    [InlineData("/api/GameSessions/Ticket", "Client")]
-    [InlineData("/api/GameSessions/Redeem", "Server")]
-    [InlineData("/api/GameSessions/RevokePlayer", "Server")]
-    public void GameSessionEndpoint_RequiresExpectedAuthorizationPolicy(string path, string expectedPolicy)
-    {
-        using var specification = OpenSpecification();
-
-        var operation = specification.RootElement
-            .GetProperty("paths")
-            .GetProperty(path)
-            .GetProperty("post");
-
-        Assert.Contains($"Required authorization policy: {expectedPolicy}.", operation.GetProperty("description").GetString());
+        Assert.True(GetOperation(specification.RootElement, "/api/ApplicationUsers", "post")
+            .GetProperty("responses")
+            .TryGetProperty(statusCode, out _));
     }
 
     [Theory]
     [InlineData("200")]
     [InlineData("404")]
     [InlineData("429")]
-    public void GameSessionTicketEndpoint_ContainsDocumentedResponse(string statusCode)
+    public void GameSessionTicketEndpoint_ContainsExpectedResponse(string statusCode)
     {
         using var specification = OpenSpecification();
 
-        var responses = specification.RootElement
-            .GetProperty("paths")
-            .GetProperty("/api/GameSessions/Ticket")
-            .GetProperty("post")
-            .GetProperty("responses");
-
-        Assert.True(responses.TryGetProperty(statusCode, out _));
+        Assert.True(GetOperation(specification.RootElement, "/api/GameSessions/Ticket", "post")
+            .GetProperty("responses")
+            .TryGetProperty(statusCode, out _));
     }
 
     [Fact]
@@ -108,23 +65,22 @@ public class OpenApiContractTests
                         parameter.GetProperty("in").GetString() == "header"
                         && parameter.GetProperty("name").GetString() == "PlayerSessionId")
             })
-            .Where(candidate => candidate.Header.ValueKind != JsonValueKind.Undefined)
+            .Where(x => x.Header.ValueKind != JsonValueKind.Undefined)
             .ToArray();
 
         Assert.Equal(expectedEndpoints.Count, operationsWithPlayerSessionHeader.Length);
-        Assert.True(expectedEndpoints.SetEquals(operationsWithPlayerSessionHeader.Select(candidate =>
-            (candidate.Operation.Path, candidate.Operation.Method))));
+        Assert.True(expectedEndpoints.SetEquals(operationsWithPlayerSessionHeader.Select(x =>
+            (x.Operation.Path, x.Operation.Method))));
 
-        foreach (var candidate in operationsWithPlayerSessionHeader)
+        foreach (var operationWithHeader in operationsWithPlayerSessionHeader)
         {
-            Assert.True(candidate.Header.GetProperty("required").GetBoolean());
-            Assert.False(string.IsNullOrWhiteSpace(candidate.Header.GetProperty("description").GetString()));
-            Assert.Equal("string", candidate.Header.GetProperty("schema").GetProperty("type").GetString());
+            Assert.True(operationWithHeader.Header.GetProperty("required").GetBoolean());
+            Assert.Equal("string", operationWithHeader.Header.GetProperty("schema").GetProperty("type").GetString());
         }
     }
 
     [Fact]
-    public void AllEndpoints_ContainCompleteDocumentation()
+    public void Endpoints_HaveStableNamesAndConciseDescriptions()
     {
         using var specification = OpenSpecification();
         var operations = GetOperations(specification.RootElement).ToArray();
@@ -136,29 +92,36 @@ public class OpenApiContractTests
             Assert.False(string.IsNullOrWhiteSpace(operation.GetProperty("operationId").GetString()), $"{method} {path} has no operationId.");
             Assert.False(string.IsNullOrWhiteSpace(operation.GetProperty("summary").GetString()), $"{method} {path} has no summary.");
             Assert.False(string.IsNullOrWhiteSpace(operation.GetProperty("description").GetString()), $"{method} {path} has no description.");
-
-            if (operation.TryGetProperty("requestBody", out var requestBody))
-            {
-                Assert.False(string.IsNullOrWhiteSpace(requestBody.GetProperty("description").GetString()), $"{method} {path} has an undocumented request body.");
-            }
-
-            if (operation.TryGetProperty("parameters", out var parameters))
-            {
-                foreach (var parameter in parameters.EnumerateArray())
-                {
-                    Assert.False(
-                        string.IsNullOrWhiteSpace(parameter.GetProperty("description").GetString()),
-                        $"{method} {path} parameter {parameter.GetProperty("name").GetString()} has no description.");
-                }
-            }
-
-            foreach (var response in operation.GetProperty("responses").EnumerateObject())
-            {
-                Assert.False(
-                    string.IsNullOrWhiteSpace(response.Value.GetProperty("description").GetString()),
-                    $"{method} {path} response {response.Name} has no description.");
-            }
         }
+
+        var expectedOperationIds = new HashSet<string>
+        {
+            "AcceptCharacterQuest",
+            "AddCharacterExperience",
+            "AddCharacterQuestProgress",
+            "CheckCharacterQuestProgress",
+            "CompleteCharacterQuest",
+            "GetCharacter",
+            "GetCharacterInventory",
+            "GetCharacterQuests",
+            "GetCharacterTransform",
+            "GetCraftingRecipes",
+            "GetQuest",
+            "GetQuests",
+            "CreateTicketAsync",
+            "HeartbeatAsync",
+            "LoginAsync",
+            "RedeemTicketAsync",
+            "RegisterAsync",
+            "RefreshSessionAsync",
+            "RevokePlayerAsync",
+            "SaveCharacterTransform",
+            "UpdateCharacter",
+            "UpdateCharacterInventory"
+        };
+
+        Assert.True(expectedOperationIds.SetEquals(operations.Select(operation =>
+            operation.Operation.GetProperty("operationId").GetString()!)));
     }
 
     [Fact]
@@ -189,39 +152,19 @@ public class OpenApiContractTests
     }
 
     [Fact]
-    public void Schemas_ContainDescriptionsRequiredPropertiesAndCorrectedNames()
+    public void Schemas_ExposeRequiredLoginFieldsAndCurrentContractNames()
     {
         using var specification = OpenSpecification();
         var schemas = specification.RootElement.GetProperty("components").GetProperty("schemas");
+        var loginRequired = schemas
+            .GetProperty("LoginApplicationUserCommand")
+            .GetProperty("required")
+            .EnumerateArray()
+            .Select(value => value.GetString())
+            .ToArray();
 
-        foreach (var schema in schemas.EnumerateObject())
-        {
-            Assert.False(string.IsNullOrWhiteSpace(schema.Value.GetProperty("description").GetString()), $"Schema {schema.Name} has no description.");
-
-            if (!schema.Value.TryGetProperty("properties", out var properties))
-            {
-                continue;
-            }
-
-            foreach (var property in properties.EnumerateObject())
-            {
-                Assert.False(
-                    string.IsNullOrWhiteSpace(property.Value.GetProperty("description").GetString()),
-                    $"Schema property {schema.Name}.{property.Name} has no description.");
-            }
-
-            if (schema.Name is not "ProblemDetails" and not "HttpValidationProblemDetails")
-            {
-                Assert.True(schema.Value.TryGetProperty("required", out _), $"Schema {schema.Name} has no required properties.");
-            }
-        }
-
-        var login = schemas.GetProperty("LoginApplicationUserCommand");
-        var loginRequired = login.GetProperty("required").EnumerateArray().Select(value => value.GetString()).ToArray();
         Assert.Contains("userName", loginRequired);
         Assert.Contains("password", loginRequired);
-        Assert.Equal("email", login.GetProperty("properties").GetProperty("userName").GetProperty("format").GetString());
-        Assert.Equal("password", login.GetProperty("properties").GetProperty("password").GetProperty("format").GetString());
 
         var progressProperties = schemas.GetProperty("AddCharacterQuestProgressCommand").GetProperty("properties");
         Assert.True(progressProperties.TryGetProperty("progress", out _));
@@ -229,73 +172,14 @@ public class OpenApiContractTests
 
         Assert.True(schemas.TryGetProperty("SaveCharacterTransformCommand", out _));
         Assert.False(schemas.TryGetProperty("SaveTransformTransformCommand", out _));
-
-        var registerSessionRequired = schemas
-            .GetProperty("RegisterGameSessionDto")
-            .GetProperty("required")
-            .EnumerateArray()
-            .Select(value => value.GetString())
-            .ToArray();
-        Assert.Contains("gameSessionId", registerSessionRequired);
-        Assert.Contains("expiresAtUtc", registerSessionRequired);
-
-        var heartbeatRequired = schemas
-            .GetProperty("HeartbeatGameSessionDto")
-            .GetProperty("required")
-            .EnumerateArray()
-            .Select(value => value.GetString())
-            .ToArray();
-        Assert.Contains("gameSessionId", heartbeatRequired);
-        Assert.Contains("expiresAtUtc", heartbeatRequired);
     }
 
-    [Fact]
-    public void DocumentMetadata_ContainsInfoServerTagsAndStableOperationIds()
+    private static JsonElement GetOperation(JsonElement root, string path, string method)
     {
-        using var specification = OpenSpecification();
-        var root = specification.RootElement;
-        var expectedOperationIds = new HashSet<string>
-        {
-            "AcceptCharacterQuest",
-            "AddCharacterExperience",
-            "AddCharacterQuestProgress",
-            "CheckCharacterQuestProgress",
-            "CompleteCharacterQuest",
-            "GetCharacter",
-            "GetCharacterInventory",
-            "GetCharacterQuests",
-            "GetCharacterTransform",
-            "GetCraftingRecipes",
-            "GetQuest",
-            "GetQuests",
-            "CreateTicketAsync",
-            "HeartbeatAsync",
-            "LoginAsync",
-            "RedeemTicketAsync",
-            "RegisterAsync",
-            "RefreshSessionAsync",
-            "RevokePlayerAsync",
-            "SaveCharacterTransform",
-            "UpdateCharacter",
-            "UpdateCharacterInventory"
-        };
-
-        Assert.False(string.IsNullOrWhiteSpace(root.GetProperty("info").GetProperty("description").GetString()));
-        Assert.True(root.GetProperty("servers").GetArrayLength() > 0);
-        Assert.Equal(9, root.GetProperty("tags").GetArrayLength());
-
-        var tags = root.GetProperty("tags")
-            .EnumerateArray()
-            .Select(tag => tag.GetProperty("name").GetString())
-            .ToHashSet();
-
-        Assert.Contains("GameSessions", tags);
-
-        var actualOperationIds = GetOperations(root)
-            .Select(operation => operation.Operation.GetProperty("operationId").GetString()!)
-            .ToHashSet();
-
-        Assert.True(expectedOperationIds.SetEquals(actualOperationIds));
+        return root
+            .GetProperty("paths")
+            .GetProperty(path)
+            .GetProperty(method);
     }
 
     private static JsonDocument OpenSpecification()

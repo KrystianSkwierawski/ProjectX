@@ -1,10 +1,10 @@
-﻿using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+
 public record GetCharacterInventoryQuery(int CharacterId) : IRequest<CharacterInventoryDto>;
 
 public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInventoryQuery, CharacterInventoryDto>
@@ -23,24 +23,25 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
         var userId = _currentUserService.GetId();
 
         var result = await _context.CharacterInventories
-            //.Where(x => x.CharacterId == request.CharacterId)
-            .Where(x => x.Character.ApplicationUserId == userId)
-            .Select(x => new
+            .Where(inventory => inventory.Id == request.CharacterId)
+            .Where(inventory => inventory.Character.ApplicationUserId == userId)
+            .Select(inventory => new
             {
-                Id = x.Id,
-                Items = x.Inventory,
-                Count = x.Count
+                inventory.Id,
+                inventory.Inventory,
+                inventory.Count
             })
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
-
-        var inventory = JsonSerializer.Deserialize<InventoryDto>(result.Items);
-
-        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
 
         return new CharacterInventoryDto
         {
             CharacterId = result.Id,
-            Inventory = inventory,
+            Inventory = new InventoryDto
+            {
+                Items = result.Inventory.Items
+                    .Select(slot => new InventoryItemDto { Type = slot.Type, Count = slot.Count })
+                    .ToList()
+            },
             Count = result.Count
         };
     }

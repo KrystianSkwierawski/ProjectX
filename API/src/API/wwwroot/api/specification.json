@@ -6,24 +6,17 @@
     "description": "HTTP API used by the ProjectX Unity client and dedicated game server for authentication and persistent game state.",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "/",
-      "description": "Current ProjectX API host."
-    }
-  ],
   "paths": {
     "/api/ApplicationUsers": {
       "post": {
         "tags": [
           "ApplicationUsers"
         ],
-        "summary": "Authenticate an application user",
-        "description": "Validates an email address and password, then returns a JWT bearer token and the user's preferred language.",
+        "summary": "Log in",
+        "description": "Authenticates a user and returns an access token.",
         "operationId": "LoginAsync",
         "requestBody": {
           "x-name": "command",
-          "description": "Application-user email address and password.",
           "content": {
             "application/json": {
               "schema": {
@@ -36,7 +29,7 @@
         },
         "responses": {
           "200": {
-            "description": "Authentication succeeded and a JWT bearer token was issued.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -46,13 +39,13 @@
             }
           },
           "401": {
-            "description": "The email or password is invalid, or the account is locked out."
+            "description": ""
           },
           "429": {
-            "description": "Too many login attempts were made from the same IP address."
+            "description": ""
           },
           "400": {
-            "description": "The credentials payload failed validation.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -69,12 +62,12 @@
         "tags": [
           "ApplicationUsers"
         ],
-        "summary": "Refresh an authenticated session",
-        "description": "Issues a fresh one-hour JWT bearer token for the authenticated client or dedicated server during the current token's final five minutes. Refreshing does not revoke the current token, so it remains usable until its original expiry during the handover window.\n\nRequired authorization policy: ServerOrClient.",
+        "summary": "Refresh session",
+        "description": "Issues a replacement access token for an eligible session.",
         "operationId": "RefreshSessionAsync",
         "responses": {
           "200": {
-            "description": "The session was refreshed and a new JWT bearer token was issued.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -84,10 +77,10 @@
             }
           },
           "401": {
-            "description": "The current JWT is invalid, expired, or belongs to an unavailable account."
+            "description": ""
           },
           "403": {
-            "description": "The current JWT is valid but is not yet inside its final five-minute refresh window, or the authenticated role cannot refresh sessions."
+            "description": ""
           }
         },
         "security": [
@@ -103,14 +96,14 @@
           "CharacterExperiences"
         ],
         "summary": "Add character experience",
-        "description": "Adds experience to one progression category and returns the updated total experience and calculated level.\n\nRequired authorization policy: ServerPlayerSession.",
+        "description": "Adds experience and returns the updated progression.",
         "operationId": "AddCharacterExperience",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -118,7 +111,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "Character identifier, experience amount, and progression category.",
           "content": {
             "application/json": {
               "schema": {
@@ -131,7 +123,7 @@
         },
         "responses": {
           "200": {
-            "description": "Experience was added and the updated progression values are returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -141,7 +133,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -151,10 +143,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -169,18 +161,16 @@
         "tags": [
           "CharacterInventories"
         ],
-        "summary": "Get a character inventory",
-        "description": "Returns the persisted ordered inventory slots and capacity for the authenticated user's character.\n\nRequired authorization policy: Client.",
+        "summary": "Get character inventory",
+        "description": "Returns a character's inventory and capacity.",
         "operationId": "GetCharacterInventory",
         "parameters": [
           {
             "name": "CharacterId",
             "in": "query",
             "required": true,
-            "description": "Identifier of the character whose inventory is requested.",
             "schema": {
               "type": "integer",
-              "description": "Int32 schema.",
               "format": "int32"
             },
             "x-position": 1
@@ -188,7 +178,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The character inventory was found and returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -198,7 +188,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -208,10 +198,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -224,15 +214,15 @@
         "tags": [
           "CharacterInventories"
         ],
-        "summary": "Update a character inventory",
-        "description": "Applies item additions, removals, a stack split, or a slot move to the persisted character inventory.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Update character inventory",
+        "description": "Applies inventory changes for a character.",
         "operationId": "UpdateCharacterInventory",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -240,7 +230,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "Character identifier and inventory operations to apply.",
           "content": {
             "application/json": {
               "schema": {
@@ -253,10 +242,10 @@
         },
         "responses": {
           "204": {
-            "description": "The inventory update was persisted."
+            "description": ""
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -266,10 +255,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -285,17 +274,15 @@
           "CharacterQuests"
         ],
         "summary": "Get character quests",
-        "description": "Returns the quest lifecycle state and progress assigned to a character.\n\nRequired authorization policy: Client.",
+        "description": "Returns quests assigned to a character.",
         "operationId": "GetCharacterQuests",
         "parameters": [
           {
             "name": "CharacterId",
             "in": "query",
             "required": true,
-            "description": "Identifier of the character whose quests are requested.",
             "schema": {
               "type": "integer",
-              "description": "Int32 schema.",
               "format": "int32"
             },
             "x-position": 1
@@ -303,7 +290,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Character quest states were returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -313,10 +300,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -331,12 +318,11 @@
         "tags": [
           "CharacterQuests"
         ],
-        "summary": "Accept a quest",
-        "description": "Creates an accepted quest state for the authenticated user's character.\n\nRequired authorization policy: Client.",
+        "summary": "Accept quest",
+        "description": "Assigns a quest to the authenticated user's character.",
         "operationId": "AcceptCharacterQuest",
         "requestBody": {
           "x-name": "command",
-          "description": "Identifier of the quest to accept.",
           "content": {
             "application/json": {
               "schema": {
@@ -349,7 +335,7 @@
         },
         "responses": {
           "201": {
-            "description": "The quest was accepted and its initial character state is returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -359,7 +345,7 @@
             }
           },
           "400": {
-            "description": "The request is malformed or failed validation.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -369,7 +355,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -379,10 +365,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -397,15 +383,15 @@
         "tags": [
           "CharacterQuests"
         ],
-        "summary": "Add character quest progress",
-        "description": "Adds a progress increment to an accepted character quest and updates its lifecycle state when the requirement is met.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Add quest progress",
+        "description": "Adds progress to an accepted character quest.",
         "operationId": "AddCharacterQuestProgress",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -413,7 +399,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "Character quest identifier and progress increment.",
           "content": {
             "application/json": {
               "schema": {
@@ -426,7 +411,7 @@
         },
         "responses": {
           "200": {
-            "description": "Quest progress was updated and the resulting state is returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -436,7 +421,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -446,10 +431,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -464,15 +449,15 @@
         "tags": [
           "CharacterQuests"
         ],
-        "summary": "Check and apply quest progress",
-        "description": "Finds an active quest matching a game-server event, applies progress when present, and returns the resulting state.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Check quest progress",
+        "description": "Applies progress to a matching active quest.",
         "operationId": "CheckCharacterQuestProgress",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -480,7 +465,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "Quest identifier, progress increment, and character identifier reported by the game server.",
           "content": {
             "application/json": {
               "schema": {
@@ -493,7 +477,7 @@
         },
         "responses": {
           "200": {
-            "description": "The matching active quest was updated, or an empty result is returned when none is active.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -503,10 +487,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -521,15 +505,15 @@
         "tags": [
           "CharacterQuests"
         ],
-        "summary": "Complete a finished character quest",
-        "description": "Marks a finished character quest as completed, consumes required collection items, and returns its reward.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Complete quest",
+        "description": "Completes a finished quest and returns its reward.",
         "operationId": "CompleteCharacterQuest",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -537,7 +521,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "Identifier of the finished character quest to complete.",
           "content": {
             "application/json": {
               "schema": {
@@ -550,7 +533,7 @@
         },
         "responses": {
           "200": {
-            "description": "The quest was completed and its reward is returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -560,7 +543,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -570,10 +553,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -588,18 +571,16 @@
         "tags": [
           "Characters"
         ],
-        "summary": "Get a character",
-        "description": "Returns current persistent state, attributes, equipment, and progression levels for a character owned by the authenticated user.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Get character",
+        "description": "Returns a character's current state.",
         "operationId": "GetCharacter",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "Identifier of the character to retrieve.",
             "schema": {
               "type": "integer",
-              "description": "Int32 schema.",
               "format": "int32"
             },
             "x-position": 1
@@ -608,7 +589,7 @@
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -616,7 +597,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The character was found and returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -626,7 +607,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -636,10 +617,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -654,15 +635,15 @@
         "tags": [
           "Characters"
         ],
-        "summary": "Update a character",
-        "description": "Partially updates persistent health, attributes, equipment, or ammunition state for a character.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Update character",
+        "description": "Updates a character's persistent state.",
         "operationId": "UpdateCharacter",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -670,7 +651,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "Character identifier and the optional state fields to update.",
           "content": {
             "application/json": {
               "schema": {
@@ -683,10 +663,10 @@
         },
         "responses": {
           "204": {
-            "description": "The character update was persisted."
+            "description": ""
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -696,10 +676,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -714,12 +694,12 @@
         "tags": [
           "CharacterTransforms"
         ],
-        "summary": "Get the latest character transform",
-        "description": "Returns the most recently persisted world position and horizontal rotation for the authenticated user's character.\n\nRequired authorization policy: Client.",
+        "summary": "Get character transform",
+        "description": "Returns the latest saved character transform.",
         "operationId": "GetCharacterTransform",
         "responses": {
           "200": {
-            "description": "The latest character transform was found and returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -729,7 +709,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -739,10 +719,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -755,15 +735,15 @@
         "tags": [
           "CharacterTransforms"
         ],
-        "summary": "Save a character transform",
-        "description": "Persists a new world-position snapshot for the authenticated user's character.\n\nRequired authorization policy: ServerPlayerSession.",
+        "summary": "Save character transform",
+        "description": "Saves a character's world transform.",
         "operationId": "SaveCharacterTransform",
         "parameters": [
           {
             "name": "PlayerSessionId",
             "in": "header",
             "required": true,
-            "description": "Opaque player-session credential issued to the dedicated server after one-time ticket redemption.",
+            "description": "Server-issued player session credential.",
             "schema": {
               "type": "string"
             }
@@ -771,7 +751,6 @@
         ],
         "requestBody": {
           "x-name": "command",
-          "description": "World position and horizontal rotation to persist.",
           "content": {
             "application/json": {
               "schema": {
@@ -784,10 +763,10 @@
         },
         "responses": {
           "201": {
-            "description": "The transform snapshot was persisted."
+            "description": ""
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -797,10 +776,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -816,14 +795,13 @@
           "CraftingRecipes"
         ],
         "summary": "Get crafting recipes",
-        "description": "Returns active crafting recipes for the requested profession, ordered by recipe identifier.\n\nRequired authorization policy: ServerOrClient.",
+        "description": "Returns active recipes for a crafting profession.",
         "operationId": "GetCraftingRecipes",
         "parameters": [
           {
-            "name": "type",
+            "name": "Type",
             "in": "query",
             "required": true,
-            "description": "Crafting profession used to filter active recipes.",
             "schema": {
               "$ref": "#/components/schemas/CraftingRecipeTypeEnum"
             },
@@ -832,7 +810,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Matching active crafting recipes were returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -842,10 +820,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -860,12 +838,11 @@
         "tags": [
           "GameSessions"
         ],
-        "summary": "Register a dedicated game server session",
-        "description": "Registers the dedicated server's current direct or Relay allocation and starts a short UTC lease. A new registration replaces the previous session owned by the same server account.\n\nRequired authorization policy: Server.",
+        "summary": "Register game session",
+        "description": "Registers a dedicated game server session.",
         "operationId": "RegisterAsync",
         "requestBody": {
           "x-name": "command",
-          "description": "Transport mode and Relay join code. The join code is required only for Relay sessions.",
           "content": {
             "application/json": {
               "schema": {
@@ -878,7 +855,7 @@
         },
         "responses": {
           "200": {
-            "description": "The game session was registered and its lease expiry was returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -888,10 +865,10 @@
             }
           },
           "403": {
-            "description": "Direct transport is disabled in this environment, or the authenticated principal is not a server."
+            "description": ""
           },
           "400": {
-            "description": "The request is malformed or failed validation.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -901,7 +878,7 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -916,12 +893,11 @@
         "tags": [
           "GameSessions"
         ],
-        "summary": "Renew a dedicated game server session lease",
-        "description": "Renews an active game-session lease from the current UTC time. An expired lease cannot be revived and the server must register a new session.\n\nRequired authorization policy: Server.",
+        "summary": "Renew game session",
+        "description": "Renews an active game server lease.",
         "operationId": "HeartbeatAsync",
         "requestBody": {
           "x-name": "command",
-          "description": "The active game-session identifier assigned to this dedicated server.",
           "content": {
             "application/json": {
               "schema": {
@@ -934,7 +910,7 @@
         },
         "responses": {
           "200": {
-            "description": "The game-session lease was renewed and its new UTC expiry was returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -944,10 +920,10 @@
             }
           },
           "401": {
-            "description": "The game session is invalid, expired, or belongs to another server account."
+            "description": ""
           },
           "400": {
-            "description": "The request is malformed or failed validation.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -957,7 +933,7 @@
             }
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -972,12 +948,12 @@
         "tags": [
           "GameSessions"
         ],
-        "summary": "Create a one-time game connection ticket",
-        "description": "Returns the active server's connection information and a random ticket that expires quickly and can be redeemed exactly once. Creating another ticket for the same client and game session replaces the previous ticket.\n\nRequired authorization policy: Client.",
+        "summary": "Create connection ticket",
+        "description": "Creates a short-lived one-time connection ticket.",
         "operationId": "CreateTicketAsync",
         "responses": {
           "200": {
-            "description": "A one-time connection ticket was created.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -987,7 +963,7 @@
             }
           },
           "404": {
-            "description": "No active game server session is registered.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -997,13 +973,13 @@
             }
           },
           "429": {
-            "description": "The per-account ticket creation limit of 20 requests per minute was exceeded."
+            "description": ""
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -1018,12 +994,11 @@
         "tags": [
           "GameSessions"
         ],
-        "summary": "Redeem a one-time game connection ticket",
-        "description": "Atomically consumes a ticket assigned to this server session and creates a server-only player-session credential.\n\nRequired authorization policy: Server.",
+        "summary": "Redeem connection ticket",
+        "description": "Redeems a ticket and creates a player session.",
         "operationId": "RedeemTicketAsync",
         "requestBody": {
           "x-name": "command",
-          "description": "Game-session identifier and one-time connection ticket received during NGO connection approval.",
           "content": {
             "application/json": {
               "schema": {
@@ -1036,7 +1011,7 @@
         },
         "responses": {
           "200": {
-            "description": "The ticket was consumed and a player-session credential was issued.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1046,10 +1021,10 @@
             }
           },
           "401": {
-            "description": "The ticket is invalid, expired, already consumed, or belongs to another server session."
+            "description": ""
           },
           "400": {
-            "description": "The request is malformed or failed validation.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1059,7 +1034,7 @@
             }
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -1074,12 +1049,11 @@
         "tags": [
           "GameSessions"
         ],
-        "summary": "Revoke a disconnected player's server session",
-        "description": "Revokes the server-only player-session credential after the corresponding Netcode client disconnects.\n\nRequired authorization policy: Server.",
+        "summary": "Revoke player session",
+        "description": "Revokes a disconnected player's session.",
         "operationId": "RevokePlayerAsync",
         "requestBody": {
           "x-name": "command",
-          "description": "The server-only player-session credential to revoke.",
           "content": {
             "application/json": {
               "schema": {
@@ -1092,10 +1066,10 @@
         },
         "responses": {
           "204": {
-            "description": "The credential was revoked or was already unavailable."
+            "description": ""
           },
           "400": {
-            "description": "The request is malformed or failed validation.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1105,10 +1079,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -1123,15 +1097,14 @@
         "tags": [
           "Quests"
         ],
-        "summary": "Get a quest",
-        "description": "Returns one localized quest definition in the authenticated user's preferred language.\n\nRequired authorization policy: Client.",
+        "summary": "Get quest",
+        "description": "Returns a localized quest.",
         "operationId": "GetQuest",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "Identifier of the quest to retrieve.",
             "schema": {
               "$ref": "#/components/schemas/QuestEnum"
             },
@@ -1140,7 +1113,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The localized quest definition was found and returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1150,7 +1123,7 @@
             }
           },
           "404": {
-            "description": "The requested resource was not found.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1160,10 +1133,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -1178,12 +1151,12 @@
         "tags": [
           "Quests"
         ],
-        "summary": "Get active quests",
-        "description": "Returns all active quest definitions localized to the authenticated user's preferred language.\n\nRequired authorization policy: ServerOrClient.",
+        "summary": "Get quests",
+        "description": "Returns active localized quests.",
         "operationId": "GetQuests",
         "responses": {
           "200": {
-            "description": "Active localized quest definitions were returned.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1193,10 +1166,10 @@
             }
           },
           "401": {
-            "description": "A valid JWT access token is required."
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "The authenticated principal does not satisfy the required authorization policy."
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -1211,35 +1184,25 @@
     "schemas": {
       "LoginApplicationUserDto": {
         "type": "object",
-        "description": "Successful authentication result containing an access token and preferred language.",
         "additionalProperties": false,
         "required": [
-          "token",
-          "language"
+          "token"
         ],
         "properties": {
           "token": {
-            "type": "string",
-            "description": "JWT bearer access token.",
-            "example": "eyJhbGciOiJIUzI1NiJ9..."
+            "type": "string"
           },
           "language": {
-            "description": "Preferred interface language.",
-            "example": 0,
             "$ref": "#/components/schemas/LanguageEnum"
           }
         }
       },
       "LanguageEnum": {
         "type": "integer",
-        "description": "Supported interface languages.",
+        "description": "",
         "x-enumNames": [
           "pl",
           "en"
-        ],
-        "x-enum-descriptions": [
-          "pl.",
-          "en."
         ],
         "enum": [
           0,
@@ -1247,7 +1210,6 @@
         ]
       },
       "HttpValidationProblemDetails": {
-        "description": "RFC 7807 validation problem containing errors grouped by field.",
         "allOf": [
           {
             "$ref": "#/components/schemas/ProblemDetails"
@@ -1255,19 +1217,15 @@
           {
             "type": "object",
             "additionalProperties": {
-              "description": "Object schema.",
               "nullable": true
             },
             "properties": {
               "errors": {
                 "type": "object",
-                "description": "I Dictionary`2 schema.",
                 "additionalProperties": {
                   "type": "array",
-                  "description": "String[] schema.",
                   "items": {
-                    "type": "string",
-                    "description": "String schema."
+                    "type": "string"
                   }
                 }
               }
@@ -1277,48 +1235,35 @@
       },
       "ProblemDetails": {
         "type": "object",
-        "description": "RFC 7807 machine-readable API error.",
         "additionalProperties": {
-          "description": "Object schema.",
           "nullable": true
         },
         "properties": {
           "type": {
             "type": "string",
-            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
-            "nullable": true,
-            "example": "string"
+            "nullable": true
           },
           "title": {
             "type": "string",
-            "description": "Localized quest title or problem title.",
-            "nullable": true,
-            "example": "string"
+            "nullable": true
           },
           "status": {
             "type": "integer",
-            "description": "Current resource or error status.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "detail": {
             "type": "string",
-            "description": "Detail value.",
-            "nullable": true,
-            "example": "string"
+            "nullable": true
           },
           "instance": {
             "type": "string",
-            "description": "Instance value.",
-            "nullable": true,
-            "example": "string"
+            "nullable": true
           }
         }
       },
       "LoginApplicationUserCommand": {
         "type": "object",
-        "description": "Credentials used to authenticate an application user.",
         "additionalProperties": false,
         "required": [
           "userName",
@@ -1326,99 +1271,62 @@
         ],
         "properties": {
           "userName": {
-            "type": "string",
-            "description": "Application user email address.",
-            "format": "email",
-            "maxLength": 256,
-            "minLength": 3,
-            "example": "user@example.com"
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "description": "Application user password.",
-            "format": "password",
-            "maxLength": 256,
-            "minLength": 6,
-            "example": "P@ssw0rd!"
+            "type": "string"
           }
         }
       },
       "RefreshSessionDto": {
         "type": "object",
-        "description": "Successful session-refresh result containing a replacement access token and preferred language.",
         "additionalProperties": false,
         "required": [
-          "token",
-          "language"
+          "token"
         ],
         "properties": {
           "token": {
-            "type": "string",
-            "description": "JWT bearer access token.",
-            "example": "eyJhbGciOiJIUzI1NiJ9..."
+            "type": "string"
           },
           "language": {
-            "description": "Preferred interface language.",
-            "example": 0,
             "$ref": "#/components/schemas/LanguageEnum"
           }
         }
       },
       "AddCharacterExperienceDto": {
         "type": "object",
-        "description": "Character experience and calculated level after an experience update.",
         "additionalProperties": false,
-        "required": [
-          "level",
-          "experience"
-        ],
         "properties": {
           "level": {
             "type": "integer",
-            "description": "Calculated character or required profession level.",
-            "format": "byte",
-            "example": 1
+            "format": "byte"
           },
           "experience": {
             "type": "integer",
-            "description": "Experience amount.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "AddCharacterExperienceCommand": {
         "type": "object",
-        "description": "Experience amount to add to a character progression category.",
         "additionalProperties": false,
-        "required": [
-          "characterId",
-          "amount",
-          "type"
-        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "description": "Character identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "amount": {
             "type": "integer",
-            "description": "Experience amount to add.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "type": {
-            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
-            "example": 0,
             "$ref": "#/components/schemas/ExperienceTypeEnum"
           }
         }
       },
       "ExperienceTypeEnum": {
         "type": "integer",
-        "description": "Character progression and profession categories.",
+        "description": "",
         "x-enumNames": [
           "None",
           "Main",
@@ -1429,17 +1337,6 @@
           "Cooking",
           "Blacksmithing",
           "Alchemy"
-        ],
-        "x-enum-descriptions": [
-          "None.",
-          "Main.",
-          "Fishing.",
-          "Mining.",
-          "Lumberjack.",
-          "Herbalism.",
-          "Cooking.",
-          "Blacksmithing.",
-          "Alchemy."
         ],
         "enum": [
           0,
@@ -1455,35 +1352,25 @@
       },
       "CharacterInventoryDto": {
         "type": "object",
-        "description": "Persisted character inventory and slot capacity.",
         "additionalProperties": false,
         "required": [
-          "inventory",
-          "characterId",
-          "count"
+          "inventory"
         ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "description": "Character identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "inventory": {
-            "description": "Ordered inventory contents.",
-            "example": {},
             "$ref": "#/components/schemas/InventoryDto"
           },
           "count": {
-            "type": "integer",
-            "description": "Stack count or inventory slot capacity, depending on the containing schema.",
-            "example": 1
+            "type": "integer"
           }
         }
       },
       "InventoryDto": {
         "type": "object",
-        "description": "Ordered collection of inventory slots.",
         "additionalProperties": false,
         "required": [
           "items"
@@ -1491,8 +1378,6 @@
         "properties": {
           "items": {
             "type": "array",
-            "description": "Ordered inventory items or required crafting items.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
@@ -1501,29 +1386,20 @@
       },
       "InventoryItemDto": {
         "type": "object",
-        "description": "Inventory item type and stack count.",
         "additionalProperties": false,
-        "required": [
-          "type",
-          "count"
-        ],
         "properties": {
           "type": {
-            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
-            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "count": {
             "type": "integer",
-            "description": "Stack count or inventory slot capacity, depending on the containing schema.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "InventoryItemEnum": {
         "type": "integer",
-        "description": "Persisted inventory item identifiers.",
+        "description": "",
         "x-enumNames": [
           "None",
           "Can",
@@ -1566,49 +1442,6 @@
           "AmmoOil3",
           "IronWand",
           "IronBow"
-        ],
-        "x-enum-descriptions": [
-          "None.",
-          "Can.",
-          "Currency.",
-          "Fish.",
-          "Cooked Fish.",
-          "Rice.",
-          "Sushi.",
-          "Purple Ore.",
-          "White Ore.",
-          "Copper Ore.",
-          "Black Ore.",
-          "Purple Bar.",
-          "White Bar.",
-          "Copper Bar.",
-          "Black Bar.",
-          "Wood.",
-          "Chamomile.",
-          "Health Potion.",
-          "Helmet Template.",
-          "Chest Template.",
-          "Boots Template.",
-          "Weapon Template.",
-          "Ammo Template.",
-          "Iron Helmet.",
-          "Iron Chest.",
-          "Iron Boots.",
-          "Iron Sword.",
-          "Ammo Arrow1.",
-          "Ammo Arrow2.",
-          "Ammo Arrow3.",
-          "Ammo Rune1.",
-          "Ammo Rune2.",
-          "Ammo Rune3.",
-          "Ammo Feather1.",
-          "Ammo Feather2.",
-          "Ammo Feather3.",
-          "Ammo Oil1.",
-          "Ammo Oil2.",
-          "Ammo Oil3.",
-          "Iron Wand.",
-          "Iron Bow."
         ],
         "enum": [
           0,
@@ -1656,62 +1489,43 @@
       },
       "UpdateCharacterInventoryCommand": {
         "type": "object",
-        "description": "Inventory additions, removals, stack splits, or slot moves.",
         "additionalProperties": false,
-        "required": [
-          "characterId",
-          "add",
-          "remove"
-        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "description": "Character identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "add": {
             "type": "array",
-            "description": "Inventory item stacks to add.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
           },
           "remove": {
             "type": "array",
-            "description": "Inventory item stacks to remove.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
           },
           "splitSlotIndex": {
             "type": "integer",
-            "description": "Zero-based slot index of the stack to split.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "moveSourceSlotIndex": {
             "type": "integer",
-            "description": "Zero-based source slot index for an inventory move.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "moveTargetSlotIndex": {
             "type": "integer",
-            "description": "Zero-based target slot index for an inventory move.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           }
         }
       },
       "GetCharacterQuestsDto": {
         "type": "object",
-        "description": "Quest state assigned to a character.",
         "additionalProperties": false,
         "required": [
           "characterQuests"
@@ -1719,8 +1533,6 @@
         "properties": {
           "characterQuests": {
             "type": "array",
-            "description": "Quest states assigned to the character.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/CharacterQuestDto"
             }
@@ -1729,42 +1541,27 @@
       },
       "CharacterQuestDto": {
         "type": "object",
-        "description": "A character's progress and status for one quest.",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "questId",
-          "status",
-          "progress"
-        ],
         "properties": {
           "id": {
             "type": "integer",
-            "description": "Resource identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "questId": {
-            "description": "Quest identifier.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "status": {
-            "description": "Current resource or error status.",
-            "example": 0,
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           },
           "progress": {
             "type": "integer",
-            "description": "Quest progress value or increment.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "QuestEnum": {
         "type": "integer",
-        "description": "Persisted quest identifiers.",
+        "description": "",
         "x-enumNames": [
           "None",
           "Kill2Beans",
@@ -1783,25 +1580,6 @@
           "Collect2CopperBars",
           "Collect2BlackBars",
           "Collect2HealthPotions"
-        ],
-        "x-enum-descriptions": [
-          "None.",
-          "Kill2 Beans.",
-          "Collect2 Cans.",
-          "Collect2 Fish.",
-          "Collect2 Purple Ores.",
-          "Collect2 White Ores.",
-          "Collect2 Copper Ores.",
-          "Collect2 Black Ores.",
-          "Collect2 Chamomile.",
-          "Collect2 Woods.",
-          "Collect2 Cooked Fish.",
-          "Collect2 Sushi.",
-          "Collect2 Purple Bars.",
-          "Collect2 White Bars.",
-          "Collect2 Copper Bars.",
-          "Collect2 Black Bars.",
-          "Collect2 Health Potions."
         ],
         "enum": [
           0,
@@ -1825,20 +1603,13 @@
       },
       "CharacterQuestStatusEnum": {
         "type": "integer",
-        "description": "Lifecycle state of a character quest.",
+        "description": "",
         "x-enumNames": [
           "None",
           "Accepted",
           "Finished",
           "Completed",
           "Abandoned"
-        ],
-        "x-enum-descriptions": [
-          "None.",
-          "Accepted.",
-          "Finished.",
-          "Completed.",
-          "Abandoned."
         ],
         "enum": [
           0,
@@ -1850,325 +1621,198 @@
       },
       "AcceptCharacterQuestCommand": {
         "type": "object",
-        "description": "Quest to accept for the authenticated user's character.",
         "additionalProperties": false,
-        "required": [
-          "questId"
-        ],
         "properties": {
           "questId": {
-            "description": "Quest identifier.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           }
         }
       },
       "AddCharacterQuestProgressDto": {
         "type": "object",
-        "description": "Quest state after progress is added.",
         "additionalProperties": false,
-        "required": [
-          "status",
-          "reward"
-        ],
         "properties": {
           "status": {
-            "description": "Current resource or error status.",
-            "example": 0,
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           },
           "reward": {
             "type": "integer",
-            "description": "Quest or crafting reward, depending on the containing schema.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "AddCharacterQuestProgressCommand": {
         "type": "object",
-        "description": "Progress increment for an accepted character quest.",
         "additionalProperties": false,
-        "required": [
-          "characterQuestId",
-          "progress"
-        ],
         "properties": {
           "characterQuestId": {
             "type": "integer",
-            "description": "Character quest identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "progress": {
             "type": "integer",
-            "description": "Quest progress value or increment.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "CheckCharacterQuestProgressDto": {
         "type": "object",
-        "description": "Result of checking character quest progress.",
         "additionalProperties": false,
-        "required": [
-          "questId",
-          "characterQuestId",
-          "status"
-        ],
         "properties": {
           "questId": {
-            "description": "Quest identifier.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "characterQuestId": {
             "type": "integer",
-            "description": "Character quest identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "status": {
-            "description": "Current resource or error status.",
-            "example": 0,
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           }
         }
       },
       "CheckCharacterQuestProgressCommand": {
         "type": "object",
-        "description": "Quest progress reported by the game server.",
         "additionalProperties": false,
-        "required": [
-          "questId",
-          "progress",
-          "characterId"
-        ],
         "properties": {
           "questId": {
-            "description": "Quest identifier.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "progress": {
             "type": "integer",
-            "description": "Quest progress value or increment.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "characterId": {
             "type": "integer",
-            "description": "Character identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "CompleteCharacterQuestDto": {
         "type": "object",
-        "description": "Reward granted for completing a finished quest.",
         "additionalProperties": false,
-        "required": [
-          "reward"
-        ],
         "properties": {
           "reward": {
             "type": "integer",
-            "description": "Quest or crafting reward, depending on the containing schema.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "CompleteCharacterQuestCommand": {
         "type": "object",
-        "description": "Finished character quest to complete.",
         "additionalProperties": false,
-        "required": [
-          "characterQuestId"
-        ],
         "properties": {
           "characterQuestId": {
             "type": "integer",
-            "description": "Character quest identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "CharacterDto": {
         "type": "object",
-        "description": "Current character state, attributes, equipment, and progression levels.",
         "additionalProperties": false,
         "required": [
           "name",
-          "levels",
-          "health",
-          "maxHealth",
-          "strength",
-          "dexterity",
-          "speed",
-          "intellect",
-          "armor",
-          "helmetType",
-          "chestType",
-          "bootsType",
-          "weaponType",
-          "ammoType",
-          "ammoCount"
+          "levels"
         ],
         "properties": {
           "name": {
-            "type": "string",
-            "description": "Character name.",
-            "example": "string"
+            "type": "string"
           },
           "levels": {
             "type": "object",
-            "description": "Calculated level for each progression category.",
-            "example": [],
             "x-dictionaryKey": {
               "$ref": "#/components/schemas/ExperienceTypeEnum"
             },
             "additionalProperties": {
               "type": "integer",
-              "description": "Byte schema.",
               "format": "byte"
             }
           },
           "health": {
             "type": "integer",
-            "description": "Current character health.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "maxHealth": {
             "type": "integer",
-            "description": "Maximum character health.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "strength": {
-            "type": "integer",
-            "description": "Character strength attribute value.",
-            "example": 1
+            "type": "integer"
           },
           "dexterity": {
-            "type": "integer",
-            "description": "Character dexterity attribute value.",
-            "example": 1
+            "type": "integer"
           },
           "speed": {
-            "type": "integer",
-            "description": "Character speed attribute value.",
-            "example": 1
+            "type": "integer"
           },
           "intellect": {
-            "type": "integer",
-            "description": "Character intellect attribute value.",
-            "example": 1
+            "type": "integer"
           },
           "armor": {
-            "type": "integer",
-            "description": "Character armor attribute value.",
-            "example": 1
+            "type": "integer"
           },
           "helmetType": {
-            "description": "Equipped helmet item type.",
-            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "chestType": {
-            "description": "Equipped chest item type.",
-            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "bootsType": {
-            "description": "Equipped boots item type.",
-            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "weaponType": {
-            "description": "Equipped weapon item type.",
-            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "ammoType": {
-            "description": "Equipped ammunition item type.",
-            "example": 0,
             "$ref": "#/components/schemas/InventoryItemEnum"
           },
           "ammoCount": {
             "type": "integer",
-            "description": "Number of items in the equipped ammunition stack.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "UpdateCharacterCommand": {
         "type": "object",
-        "description": "Partial update of character state, attributes, or equipped items.",
         "additionalProperties": false,
-        "required": [
-          "characterId"
-        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "description": "Character identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "health": {
             "type": "integer",
-            "description": "Current character health.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "maxHealth": {
             "type": "integer",
-            "description": "Maximum character health.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "strength": {
             "type": "integer",
-            "description": "Character strength attribute value.",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "dexterity": {
             "type": "integer",
-            "description": "Character dexterity attribute value.",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "speed": {
             "type": "integer",
-            "description": "Character speed attribute value.",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "intellect": {
             "type": "integer",
-            "description": "Character intellect attribute value.",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "armor": {
             "type": "integer",
-            "description": "Character armor attribute value.",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           },
           "helmetType": {
-            "description": "Equipped helmet item type.",
             "nullable": true,
-            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -2176,9 +1820,7 @@
             ]
           },
           "chestType": {
-            "description": "Equipped chest item type.",
             "nullable": true,
-            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -2186,9 +1828,7 @@
             ]
           },
           "bootsType": {
-            "description": "Equipped boots item type.",
             "nullable": true,
-            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -2196,9 +1836,7 @@
             ]
           },
           "weaponType": {
-            "description": "Equipped weapon item type.",
             "nullable": true,
-            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -2206,9 +1844,7 @@
             ]
           },
           "ammoType": {
-            "description": "Equipped ammunition item type.",
             "nullable": true,
-            "example": 0,
             "oneOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemEnum"
@@ -2217,97 +1853,61 @@
           },
           "ammoCount": {
             "type": "integer",
-            "description": "Number of items in the equipped ammunition stack.",
             "format": "int32",
-            "nullable": true,
-            "example": 1
+            "nullable": true
           }
         }
       },
       "CharacterTransformDto": {
         "type": "object",
-        "description": "Latest persisted world position and horizontal rotation of a character.",
         "additionalProperties": false,
-        "required": [
-          "characterId",
-          "positionX",
-          "positionY",
-          "positionZ",
-          "rotationY"
-        ],
         "properties": {
           "characterId": {
             "type": "integer",
-            "description": "Character identifier.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "positionX": {
             "type": "number",
-            "description": "World-space X coordinate.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           },
           "positionY": {
             "type": "number",
-            "description": "World-space Y coordinate.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           },
           "positionZ": {
             "type": "number",
-            "description": "World-space Z coordinate.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           },
           "rotationY": {
             "type": "number",
-            "description": "Horizontal world rotation around the Y axis.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           }
         }
       },
       "SaveCharacterTransformCommand": {
         "type": "object",
-        "description": "World position and horizontal rotation to persist for a character.",
         "additionalProperties": false,
-        "required": [
-          "positionX",
-          "positionY",
-          "positionZ",
-          "rotationY"
-        ],
         "properties": {
           "positionX": {
             "type": "number",
-            "description": "World-space X coordinate.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           },
           "positionY": {
             "type": "number",
-            "description": "World-space Y coordinate.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           },
           "positionZ": {
             "type": "number",
-            "description": "World-space Z coordinate.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           },
           "rotationY": {
             "type": "number",
-            "description": "Horizontal world rotation around the Y axis.",
-            "format": "float",
-            "example": 0.0
+            "format": "float"
           }
         }
       },
       "GetCraftingRecipesDto": {
         "type": "object",
-        "description": "Available crafting recipes.",
         "additionalProperties": false,
         "required": [
           "craftingRecipes"
@@ -2315,8 +1915,6 @@
         "properties": {
           "craftingRecipes": {
             "type": "array",
-            "description": "Crafting recipes matching the requested profession.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/CraftingRecipeDto"
             }
@@ -2325,34 +1923,26 @@
       },
       "CraftingRecipeDto": {
         "type": "object",
-        "description": "Crafting recipe definition with requirements and reward.",
         "additionalProperties": false,
         "required": [
           "requirement",
-          "reward",
-          "id"
+          "reward"
         ],
         "properties": {
           "id": {
-            "description": "Resource identifier.",
-            "example": 0,
             "$ref": "#/components/schemas/CraftingRecipeEnum"
           },
           "requirement": {
-            "description": "Quest target amount or crafting requirements, depending on the containing schema.",
-            "example": {},
             "$ref": "#/components/schemas/CraftingRecipeRequirementDto"
           },
           "reward": {
-            "description": "Quest or crafting reward, depending on the containing schema.",
-            "example": {},
             "$ref": "#/components/schemas/CraftingRecipeRewardDto"
           }
         }
       },
       "CraftingRecipeEnum": {
         "type": "integer",
-        "description": "Persisted crafting recipe identifiers.",
+        "description": "",
         "x-enumNames": [
           "None",
           "CookedFish",
@@ -2374,28 +1964,6 @@
           "AmmoOil1",
           "AmmoOil2",
           "AmmoOil3"
-        ],
-        "x-enum-descriptions": [
-          "None.",
-          "Cooked Fish.",
-          "Sushi.",
-          "Purple Bar.",
-          "White Bar.",
-          "Copper Bar.",
-          "Black Bar.",
-          "Health Potion.",
-          "Ammo Arrow1.",
-          "Ammo Arrow2.",
-          "Ammo Arrow3.",
-          "Ammo Rune1.",
-          "Ammo Rune2.",
-          "Ammo Rune3.",
-          "Ammo Feather1.",
-          "Ammo Feather2.",
-          "Ammo Feather3.",
-          "Ammo Oil1.",
-          "Ammo Oil2.",
-          "Ammo Oil3."
         ],
         "enum": [
           0,
@@ -2422,54 +1990,42 @@
       },
       "CraftingRecipeRequirementDto": {
         "type": "object",
-        "description": "Items and profession level required by a crafting recipe.",
         "additionalProperties": false,
         "required": [
-          "items",
-          "level"
+          "items"
         ],
         "properties": {
           "items": {
             "type": "array",
-            "description": "Ordered inventory items or required crafting items.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/InventoryItemDto"
             }
           },
           "level": {
             "type": "integer",
-            "description": "Calculated character or required profession level.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "CraftingRecipeRewardDto": {
         "type": "object",
-        "description": "Item and experience granted by a crafting recipe.",
         "additionalProperties": false,
         "required": [
-          "item",
-          "experience"
+          "item"
         ],
         "properties": {
           "item": {
-            "description": "Inventory item granted as the crafting reward.",
-            "example": {},
             "$ref": "#/components/schemas/InventoryItemDto"
           },
           "experience": {
             "type": "integer",
-            "description": "Experience amount.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "CraftingRecipeTypeEnum": {
         "type": "integer",
-        "description": "Crafting profession used to filter recipes.",
+        "description": "",
         "x-enumNames": [
           "None",
           "Alchemy",
@@ -2478,15 +2034,6 @@
           "Leatherworking",
           "Tailoring",
           "Cooking"
-        ],
-        "x-enum-descriptions": [
-          "None.",
-          "Alchemy.",
-          "Blacksmithing.",
-          "Enchanting.",
-          "Leatherworking.",
-          "Tailoring.",
-          "Cooking."
         ],
         "enum": [
           0,
@@ -2500,131 +2047,84 @@
       },
       "RegisterGameSessionDto": {
         "type": "object",
-        "description": "Identifier and UTC lease expiry assigned to a registered dedicated-server game session.",
         "additionalProperties": false,
-        "required": [
-          "gameSessionId",
-          "expiresAtUtc"
-        ],
         "properties": {
           "gameSessionId": {
             "type": "string",
-            "description": "Unique game-session identifier assigned by the API.",
-            "format": "guid",
-            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+            "format": "guid"
           },
           "expiresAtUtc": {
             "type": "string",
-            "description": "UTC instant after which the credential or game-session lease is no longer valid.",
-            "format": "date-time",
-            "example": "2026-08-10T14:01:00Z"
+            "format": "date-time"
           }
         }
       },
       "RegisterGameSessionCommand": {
         "type": "object",
-        "description": "Dedicated-server transport registration. Relay registrations include a Relay join code.",
         "additionalProperties": false,
-        "required": [
-          "usesRelay"
-        ],
         "properties": {
           "usesRelay": {
-            "type": "boolean",
-            "description": "Whether the session connects through Unity Relay instead of the local direct transport.",
-            "example": true
+            "type": "boolean"
           },
           "relayJoinCode": {
             "type": "string",
-            "description": "Unity Relay allocation join code; present only for Relay sessions.",
-            "nullable": true,
-            "example": "AB12CD"
+            "nullable": true
           }
         }
       },
       "HeartbeatGameSessionDto": {
         "type": "object",
-        "description": "Renewed dedicated-server game-session lease and its UTC expiry.",
         "additionalProperties": false,
-        "required": [
-          "gameSessionId",
-          "expiresAtUtc"
-        ],
         "properties": {
           "gameSessionId": {
             "type": "string",
-            "description": "Unique game-session identifier assigned by the API.",
-            "format": "guid",
-            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+            "format": "guid"
           },
           "expiresAtUtc": {
             "type": "string",
-            "description": "UTC instant after which the credential or game-session lease is no longer valid.",
-            "format": "date-time",
-            "example": "2026-08-10T14:01:00Z"
+            "format": "date-time"
           }
         }
       },
       "HeartbeatGameSessionCommand": {
         "type": "object",
-        "description": "Active dedicated-server game session whose lease should be renewed.",
         "additionalProperties": false,
-        "required": [
-          "gameSessionId"
-        ],
         "properties": {
           "gameSessionId": {
             "type": "string",
-            "description": "Unique game-session identifier assigned by the API.",
-            "format": "guid",
-            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+            "format": "guid"
           }
         }
       },
       "CreateGameSessionTicketDto": {
         "type": "object",
-        "description": "Short-lived, one-time connection ticket and transport details for the active game session.",
         "additionalProperties": false,
         "required": [
-          "ticket",
-          "gameSessionId",
-          "usesRelay",
-          "expiresAtUtc"
+          "ticket"
         ],
         "properties": {
           "gameSessionId": {
             "type": "string",
-            "description": "Unique game-session identifier assigned by the API.",
-            "format": "guid",
-            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+            "format": "guid"
           },
           "usesRelay": {
-            "type": "boolean",
-            "description": "Whether the session connects through Unity Relay instead of the local direct transport.",
-            "example": true
+            "type": "boolean"
           },
           "relayJoinCode": {
             "type": "string",
-            "description": "Unity Relay allocation join code; present only for Relay sessions.",
-            "nullable": true,
-            "example": "AB12CD"
+            "nullable": true
           },
           "ticket": {
-            "type": "string",
-            "description": "Random one-time game connection ticket.",
-            "example": "base64url-secret"
+            "type": "string"
           },
           "expiresAtUtc": {
             "type": "string",
-            "description": "UTC instant after which the credential or game-session lease is no longer valid.",
-            "format": "date-time",
-            "example": "2026-08-10T14:01:00Z"
+            "format": "date-time"
           }
         }
       },
       "RedeemGameSessionTicketDto": {
         "type": "object",
-        "description": "Server-only player-session credential issued after successful ticket redemption.",
         "additionalProperties": false,
         "required": [
           "userId",
@@ -2632,128 +2132,89 @@
         ],
         "properties": {
           "userId": {
-            "type": "string",
-            "description": "User Id value.",
-            "example": "string"
+            "type": "string"
           },
           "playerSessionId": {
-            "type": "string",
-            "description": "Opaque server-only credential representing an approved player connection.",
-            "example": "base64url-secret"
+            "type": "string"
           }
         }
       },
       "RedeemGameSessionTicketCommand": {
         "type": "object",
-        "description": "One-time connection ticket presented by the dedicated server during connection approval.",
         "additionalProperties": false,
         "required": [
-          "ticket",
-          "gameSessionId"
+          "ticket"
         ],
         "properties": {
           "gameSessionId": {
             "type": "string",
-            "description": "Unique game-session identifier assigned by the API.",
-            "format": "guid",
-            "example": "2f5de532-cf36-48e5-aef6-d31c9f459273"
+            "format": "guid"
           },
           "ticket": {
-            "type": "string",
-            "description": "Random one-time game connection ticket.",
-            "example": "base64url-secret"
+            "type": "string"
           }
         }
       },
       "RevokePlayerSessionCommand": {
         "type": "object",
-        "description": "Server-only player-session credential to revoke after disconnect.",
         "additionalProperties": false,
         "required": [
           "playerSessionId"
         ],
         "properties": {
           "playerSessionId": {
-            "type": "string",
-            "description": "Opaque server-only credential representing an approved player connection.",
-            "example": "base64url-secret"
+            "type": "string"
           }
         }
       },
       "QuestDto": {
         "type": "object",
-        "description": "Localized quest definition and completion requirements.",
         "additionalProperties": false,
         "required": [
           "title",
           "description",
           "completeDescription",
           "statusText",
-          "gameObjectName",
-          "id",
-          "previousQuestId",
-          "type",
-          "requirement",
-          "reward"
+          "gameObjectName"
         ],
         "properties": {
           "id": {
-            "description": "Resource identifier.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "previousQuestId": {
-            "description": "Identifier of the prerequisite quest, or None when there is no prerequisite.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestEnum"
           },
           "type": {
-            "description": "Resource type or RFC 7807 problem type, depending on the containing schema.",
-            "example": 0,
             "$ref": "#/components/schemas/QuestTypeEnum"
           },
           "title": {
-            "type": "string",
-            "description": "Localized quest title or problem title.",
-            "example": "string"
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "description": "Localized quest description.",
-            "example": "string"
+            "type": "string"
           },
           "completeDescription": {
-            "type": "string",
-            "description": "Localized text shown after completing the quest.",
-            "example": "string"
+            "type": "string"
           },
           "statusText": {
-            "type": "string",
-            "description": "Localized quest progress text.",
-            "example": "string"
+            "type": "string"
           },
           "gameObjectName": {
-            "type": "string",
-            "description": "Unity GameObject or item name associated with the quest objective.",
-            "example": "string"
+            "type": "string"
           },
           "requirement": {
             "type": "integer",
-            "description": "Quest target amount or crafting requirements, depending on the containing schema.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           },
           "reward": {
             "type": "integer",
-            "description": "Quest or crafting reward, depending on the containing schema.",
-            "format": "int32",
-            "example": 1
+            "format": "int32"
           }
         }
       },
       "QuestTypeEnum": {
         "type": "integer",
-        "description": "Supported quest objective categories.",
+        "description": "",
         "x-enumNames": [
           "Indefinite",
           "Kill",
@@ -2763,16 +2224,6 @@
           "Drop",
           "Collect",
           "Craft"
-        ],
-        "x-enum-descriptions": [
-          "Indefinite.",
-          "Kill.",
-          "Explore.",
-          "Find.",
-          "Gather.",
-          "Drop.",
-          "Collect.",
-          "Craft."
         ],
         "enum": [
           0,
@@ -2787,7 +2238,6 @@
       },
       "GetQuestsDto": {
         "type": "object",
-        "description": "Localized quest definitions available to the caller.",
         "additionalProperties": false,
         "required": [
           "quests"
@@ -2795,8 +2245,6 @@
         "properties": {
           "quests": {
             "type": "array",
-            "description": "Localized quest definitions.",
-            "example": [],
             "items": {
               "$ref": "#/components/schemas/QuestDto"
             }
@@ -2812,43 +2260,5 @@
         "bearerFormat": "JWT"
       }
     }
-  },
-  "tags": [
-    {
-      "name": "ApplicationUsers",
-      "description": "Application-user authentication."
-    },
-    {
-      "name": "CharacterExperiences",
-      "description": "Character experience and profession progression."
-    },
-    {
-      "name": "CharacterInventories",
-      "description": "Persistent character inventory state."
-    },
-    {
-      "name": "CharacterQuests",
-      "description": "Quest lifecycle and character progress."
-    },
-    {
-      "name": "Characters",
-      "description": "Persistent character state and attributes."
-    },
-    {
-      "name": "CharacterTransforms",
-      "description": "Persistent character world transforms."
-    },
-    {
-      "name": "CraftingRecipes",
-      "description": "Available crafting recipes and requirements."
-    },
-    {
-      "name": "GameSessions",
-      "description": "Dedicated-server registration and one-time player connection tickets."
-    },
-    {
-      "name": "Quests",
-      "description": "Localized quest definitions."
-    }
-  ]
+  }
 }

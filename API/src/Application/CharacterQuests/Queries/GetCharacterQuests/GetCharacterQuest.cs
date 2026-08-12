@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
+
 public record GetCharacterQuestsQuery(int CharacterId) : IRequest<GetCharacterQuestsDto>;
 
 public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery, GetCharacterQuestsDto>
@@ -21,7 +22,7 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
         var userId = _currentUserService.GetId();
 
         var result = await _context.CharacterQuests
-            //.Where(x => x.CharacterId == request.CharacterId)
+            .Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .Select(x => new CharacterQuestDto
             {

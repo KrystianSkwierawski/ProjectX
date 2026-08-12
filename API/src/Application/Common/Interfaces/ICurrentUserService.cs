@@ -1,11 +1,14 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Common.Interfaces;
+
 public interface ICurrentUserService
 {
     string GetId();
 
     string GetAuthenticatedUserId();
+
+    DateTimeOffset? GetAuthenticatedSessionStartedAtUtc();
 
     DateTimeOffset? GetAuthenticatedTokenExpirationUtc();
 

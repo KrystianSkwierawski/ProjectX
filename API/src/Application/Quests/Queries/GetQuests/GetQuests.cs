@@ -5,6 +5,7 @@ using ProjectX.Application.Quests.Queries.GetQuest;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuests;
+
 public record GetQuestsQuery : IRequest<GetQuestsDto>;
 
 public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDto>
@@ -31,7 +32,7 @@ public class GetQuestsQueryHandler : IRequestHandler<GetQuestsQuery, GetQuestsDt
                 x.Type,
                 x.GameObjectName,
                 x.Requirement,
-                x.Reward   
+                x.Reward
             })
             .ToListAsync(cancellationToken);
 

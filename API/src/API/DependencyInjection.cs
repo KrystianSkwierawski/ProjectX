@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using ProjectX.API.Infrastructure;
@@ -19,6 +19,9 @@ public static class DependencyInjection
         builder.Services.AddSingleton<IAuthorizationHandler, PlayerSessionAuthorizationHandler>();
         builder.Services.AddAuthorization(options =>
         {
+            options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
             options.AddPolicy(AuthorizationPolicies.Server, policy => policy.RequireRole(ApplicationRoles.Server));
             options.AddPolicy(AuthorizationPolicies.Client, policy => policy.RequireRole(ApplicationRoles.Client));
             options.AddPolicy(AuthorizationPolicies.ServerOrClient, policy => policy.RequireRole(ApplicationRoles.Server, ApplicationRoles.Client));
@@ -50,30 +53,9 @@ public static class DependencyInjection
             });
 
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
-            configure.OperationProcessors.Add(new OpenApiDocumentationOperationProcessor());
-            configure.SchemaSettings.SchemaProcessors.Add(new OpenApiSchemaDocumentationProcessor());
+            configure.OperationProcessors.Add(new OpenApiOperationProcessor());
 
-            configure.PostProcess = document =>
-            {
-                document.Security.Clear();
-                document.Servers.Clear();
-                document.Servers.Add(new OpenApiServer
-                {
-                    Url = "/",
-                    Description = "Current ProjectX API host."
-                });
-
-                document.Tags.Clear();
-                document.Tags.Add(new OpenApiTag { Name = "ApplicationUsers", Description = "Application-user authentication." });
-                document.Tags.Add(new OpenApiTag { Name = "CharacterExperiences", Description = "Character experience and profession progression." });
-                document.Tags.Add(new OpenApiTag { Name = "CharacterInventories", Description = "Persistent character inventory state." });
-                document.Tags.Add(new OpenApiTag { Name = "CharacterQuests", Description = "Quest lifecycle and character progress." });
-                document.Tags.Add(new OpenApiTag { Name = "Characters", Description = "Persistent character state and attributes." });
-                document.Tags.Add(new OpenApiTag { Name = "CharacterTransforms", Description = "Persistent character world transforms." });
-                document.Tags.Add(new OpenApiTag { Name = "CraftingRecipes", Description = "Available crafting recipes and requirements." });
-                document.Tags.Add(new OpenApiTag { Name = "GameSessions", Description = "Dedicated-server registration and one-time player connection tickets." });
-                document.Tags.Add(new OpenApiTag { Name = "Quests", Description = "Localized quest definitions." });
-            };
+            configure.PostProcess = document => document.Security.Clear();
         });
 
         builder.Services.AddMemoryCache();

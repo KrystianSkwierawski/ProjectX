@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ProjectX.API.Services;
+using ProjectX.Application.Common.Security;
 
 namespace ProjectX.Web.AcceptanceTests.Services;
 
@@ -42,5 +43,23 @@ public sealed class CurrentUserServiceTests
         var service = new CurrentUserService(new HttpContextAccessor { HttpContext = httpContext });
 
         Assert.Null(service.GetAuthenticatedTokenExpirationUtc());
+    }
+
+    [Fact]
+    public void GetAuthenticatedSessionStartedAtUtc_ParsesSessionClaim()
+    {
+        var expectedSessionStart = new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero);
+        var claims = new[]
+        {
+            new Claim(SessionTokenPolicy.SessionStartedAtClaim, expectedSessionStart.ToUnixTimeSeconds().ToString())
+        };
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(claims))
+        };
+
+        var service = new CurrentUserService(new HttpContextAccessor { HttpContext = httpContext });
+
+        Assert.Equal(expectedSessionStart, service.GetAuthenticatedSessionStartedAtUtc());
     }
 }

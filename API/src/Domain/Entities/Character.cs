@@ -1,9 +1,9 @@
-﻿using ProjectX.Domain.Enums;
-
+﻿using ProjectX.Domain.Characters;
 using ProjectX.Domain.Common;
-using ProjectX.Domain.Characters;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
+
 public class Character : BaseAuditableEntity
 {
     public int Id { get; set; }

@@ -21,7 +21,8 @@ public class LayerDependencyTests
             "ProjectX.Infrastructure",
             "ProjectX.API",
             "Microsoft.AspNetCore",
-            "Microsoft.EntityFrameworkCore");
+            "Microsoft.EntityFrameworkCore",
+            "System.Text.Json");
     }
 
     [Fact]
@@ -40,7 +41,8 @@ public class LayerDependencyTests
             "Microsoft.AspNetCore.Identity",
             "Serilog",
             "Newtonsoft.Json",
-            "System.IdentityModel.Tokens.Jwt");
+            "System.IdentityModel.Tokens.Jwt",
+            "System.Text.Json");
     }
 
     [Fact]
@@ -128,6 +130,18 @@ public class LayerDependencyTests
         Assert.StartsWith("10.0.", sdk.GetProperty("version").GetString());
         Assert.Equal("latestFeature", sdk.GetProperty("rollForward").GetString());
         Assert.False(sdk.GetProperty("allowPrerelease").GetBoolean());
+
+        using var toolManifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            SolutionDirectory,
+            ".config",
+            "dotnet-tools.json")));
+        Assert.Equal(
+            "10.0.11",
+            toolManifest.RootElement
+                .GetProperty("tools")
+                .GetProperty("dotnet-ef")
+                .GetProperty("version")
+                .GetString());
     }
 
     [Fact]
@@ -156,6 +170,44 @@ public class LayerDependencyTests
 
         Assert.Equal(expectedProjects, actualProjects);
         Assert.False(File.Exists(Path.Combine(SolutionDirectory, "ProjectX.sln")));
+    }
+
+    [Fact]
+    public void ApiConfiguration_KeepsDevelopmentSettingsAndSecretsOutOfBaseConfiguration()
+    {
+        using var baseConfiguration = JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            SolutionDirectory,
+            "src",
+            "API",
+            "appsettings.json")));
+        using var developmentConfiguration = JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            SolutionDirectory,
+            "src",
+            "API",
+            "appsettings.Development.json")));
+
+        var root = baseConfiguration.RootElement;
+        var jwtSettings = root.GetProperty("JwtSettings");
+
+        Assert.False(root.TryGetProperty("UseInMemoryDatabase", out _));
+        Assert.False(root.TryGetProperty("API", out _));
+        Assert.False(jwtSettings.TryGetProperty("SecurityKey", out _));
+        Assert.True(developmentConfiguration.RootElement.GetProperty("UseInMemoryDatabase").GetBoolean());
+
+        var apiProject = XDocument.Load(Path.Combine(SolutionDirectory, "src", "API", "API.csproj"));
+        Assert.False(string.IsNullOrWhiteSpace(GetPropertyValue(apiProject, "UserSecretsId")));
+        Assert.DoesNotContain("JwtSettings__SecurityKey=", apiProject.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EditorConfig_FollowsCleanArchitectureFormattingConventions()
+    {
+        var editorConfig = File.ReadAllText(Path.Combine(SolutionDirectory, ".editorconfig"));
+
+        Assert.Contains("end_of_line = lf", editorConfig, StringComparison.Ordinal);
+        Assert.Contains("dotnet_sort_system_directives_first = true", editorConfig, StringComparison.Ordinal);
+        Assert.Contains("csharp_style_namespace_declarations = file_scoped", editorConfig, StringComparison.Ordinal);
+        Assert.Contains("csharp_new_line_before_open_brace = all", editorConfig, StringComparison.Ordinal);
     }
 
     private static void AssertDoesNotReference(Assembly assembly, params string[] forbiddenPrefixes)

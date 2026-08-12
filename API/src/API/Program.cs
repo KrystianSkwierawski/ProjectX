@@ -24,12 +24,8 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets<Program>();
-}
-
-if (!builder.Configuration.GetValue<bool>("SkipDatabaseInitialization"))
+if (app.Environment.IsDevelopment()
+    && !app.Configuration.GetValue<bool>("SkipDatabaseInitialization"))
 {
     await app.InitialiseDatabaseAsync();
 }
@@ -40,7 +36,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 
-if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))
+if (app.Environment.IsDevelopment())
 {
     app.UseStaticFiles();
 
@@ -49,11 +45,16 @@ if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"])
         settings.Path = "/api";
         settings.DocumentPath = "/api/specification.json";
     });
+
+    app.Map("/", () => Results.Redirect("/api"));
 }
 
-app.Map("/", () => Results.Redirect("/api"));
 app.MapEndpoints();
 
 Log.Information("Starting ProjectX API");
 
 app.Run();
+
+public partial class Program
+{
+}

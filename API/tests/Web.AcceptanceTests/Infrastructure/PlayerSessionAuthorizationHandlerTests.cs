@@ -22,7 +22,7 @@ public sealed class PlayerSessionAuthorizationHandlerTests
         var service = new Mock<IGameSessionService>();
         var resolvedUserId = ClientUserId;
 
-        service.Setup(candidate => candidate.TryResolvePlayer(ServerUserId, PlayerSessionId, out resolvedUserId)).Returns(true);
+        service.Setup(x => x.TryResolvePlayer(ServerUserId, PlayerSessionId, out resolvedUserId)).Returns(true);
 
         var authorizationContext = CreateAuthorizationContext();
         var handler = CreateHandler(httpContext, service.Object);
@@ -56,7 +56,7 @@ public sealed class PlayerSessionAuthorizationHandlerTests
         var service = new Mock<IGameSessionService>();
         var ignoredUserId = string.Empty;
 
-        service.Setup(candidate => candidate.TryResolvePlayer(ServerUserId, PlayerSessionId, out ignoredUserId)).Returns(false);
+        service.Setup(x => x.TryResolvePlayer(ServerUserId, PlayerSessionId, out ignoredUserId)).Returns(false);
 
         var authorizationContext = CreateAuthorizationContext();
         var handler = CreateHandler(httpContext, service.Object);

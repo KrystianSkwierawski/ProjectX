@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +5,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Application.GameSessions;
+using ProjectX.Infrastructure.GameSessions;
 using ProjectX.Infrastructure.Identity;
 using ProjectX.Infrastructure.Localization;
 using ProjectX.Infrastructure.Persistance;
@@ -47,7 +45,7 @@ public static class DependencyInjection
         }
 
         var allowDirectTransport = builder.Configuration.GetValue<bool?>("GameSessionSettings:AllowDirectTransport") ?? builder.Environment.IsDevelopment();
-        var gameSessionService = new GameSessionService(
+        var gameSessionService = new InMemoryGameSessionService(
             timeProvider,
             TimeSpan.FromSeconds(ticketLifetimeSeconds),
             TimeSpan.FromSeconds(serverLeaseSeconds),
@@ -92,18 +90,7 @@ public static class DependencyInjection
             jwtSettings["ValidIssuer"] ?? throw new InvalidOperationException("JwtSettings:ValidIssuer is required."),
             jwtSettings["ValidAudience"] ?? throw new InvalidOperationException("JwtSettings:ValidAudience is required."));
 
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtOptions.ValidIssuer,
-            ValidAudience = jwtOptions.ValidAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecurityKey)),
-            LifetimeValidator = (notBefore, expires, securityToken, _) => JwtAccessTokenService.ValidateLifetime(notBefore, expires, securityToken, timeProvider.GetUtcNow().UtcDateTime),
-            ClockSkew = TimeSpan.Zero
-        };
+        var tokenValidationParameters = JwtAccessTokenService.CreateValidationParameters(jwtOptions, timeProvider);
 
         builder.Services.AddSingleton(jwtOptions);
         builder.Services.AddSingleton(tokenValidationParameters);

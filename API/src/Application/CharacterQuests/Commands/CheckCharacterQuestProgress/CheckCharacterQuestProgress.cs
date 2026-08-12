@@ -22,10 +22,11 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
     {
         var userId = _currentUserService.GetId();
         var characterQuest = await _context.CharacterQuests
-            .Include(candidate => candidate.Quest)
-            .Where(candidate => candidate.QuestId == request.QuestId)
-            .Where(candidate => candidate.Character.ApplicationUserId == userId)
-            .Where(candidate => candidate.Status == CharacterQuestStatusEnum.Accepted)
+            .Include(x => x.Quest)
+            .Where(x => x.QuestId == request.QuestId)
+            .Where(x => x.CharacterId == request.CharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
+            .Where(x => x.Status == CharacterQuestStatusEnum.Accepted)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (characterQuest is null)

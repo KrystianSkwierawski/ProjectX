@@ -1,4 +1,5 @@
 ﻿namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
+
 public class AddCharacterExperienceDto
 {
     public byte Level { get; set; }

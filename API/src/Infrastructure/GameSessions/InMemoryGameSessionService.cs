@@ -4,9 +4,9 @@ using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.GameSessions.Models;
 
-namespace ProjectX.Application.GameSessions;
+namespace ProjectX.Infrastructure.GameSessions;
 
-public sealed class GameSessionService : IGameSessionService
+public sealed class InMemoryGameSessionService : IGameSessionService
 {
     private const int SecretSizeBytes = 32;
 
@@ -19,7 +19,7 @@ public sealed class GameSessionService : IGameSessionService
     private readonly TimeSpan _serverLeaseLifetime;
     private readonly bool _allowDirectTransport;
 
-    public GameSessionService(TimeProvider timeProvider, TimeSpan ticketLifetime, TimeSpan serverLeaseLifetime, bool allowDirectTransport)
+    public InMemoryGameSessionService(TimeProvider timeProvider, TimeSpan ticketLifetime, TimeSpan serverLeaseLifetime, bool allowDirectTransport)
     {
         if (ticketLifetime <= TimeSpan.Zero)
         {
@@ -103,11 +103,14 @@ public sealed class GameSessionService : IGameSessionService
             RemoveExpiredState(now);
 
             var session = _sessions.Values
-                .OrderByDescending(candidate => candidate.RegisteredAtUtc)
+                .OrderByDescending(x => x.RegisteredAtUtc)
                 .FirstOrDefault()
                 ?? throw new NotFoundException("active game session");
 
-            var existingTickets = _tickets.Where(pair => pair.Value.GameSessionId == session.GameSessionId && string.Equals(pair.Value.ClientUserId, clientUserId, StringComparison.Ordinal)).ToArray();
+            var existingTickets = _tickets
+                .Where(pair => pair.Value.GameSessionId == session.GameSessionId)
+                .Where(pair => string.Equals(pair.Value.ClientUserId, clientUserId, StringComparison.Ordinal))
+                .ToArray();
 
             foreach (var existingTicket in existingTickets)
             {

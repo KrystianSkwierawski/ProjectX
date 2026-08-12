@@ -1,6 +1,7 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+
 public class CharacterInventoryDto
 {
     public int CharacterId { get; set; }

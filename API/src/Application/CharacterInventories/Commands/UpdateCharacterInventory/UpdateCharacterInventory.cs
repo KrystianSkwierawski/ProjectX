@@ -1,9 +1,7 @@
-using System.Text.Json;
 using MediatR;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
-using ProjectX.Domain.Inventory;
 
 namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
@@ -30,13 +28,10 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
     {
         var userId = _currentUserService.GetId();
         var entity = await _context.CharacterInventories
+            .Where(inventory => inventory.Id == request.CharacterId)
             .Where(inventory => inventory.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
-
-        var dto = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
-        ArgumentNullException.ThrowIfNull(dto);
-
-        var inventory = new InventoryState(dto.Items.Select(item => new InventorySlot(item.Type, Math.Max(0, item.Count))));
+        var inventory = entity.Inventory;
 
         if (request.SplitSlotIndex.HasValue)
         {
@@ -61,13 +56,6 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         {
             EnsureApplied(inventory.Remove(item.Type, item.Count), "remove inventory item");
         }
-
-        entity.Inventory = JsonSerializer.Serialize(new InventoryDto
-        {
-            Items = inventory.Items
-                .Select(slot => new InventoryItemDto { Type = slot.Type, Count = slot.Count })
-                .ToList()
-        });
 
         await _context.SaveChangesAsync(cancellationToken);
     }

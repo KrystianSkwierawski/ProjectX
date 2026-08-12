@@ -17,10 +17,14 @@ public static class WebApplicationExtensions
     {
         var groupName = group.GroupName ?? group.GetType().Name;
 
-        return app
+        var routeGroup = app
             .MapGroup($"/api/{groupName}")
             .WithGroupName(groupName)
             .WithTags(groupName);
+
+        routeGroup.RequireAuthorization();
+
+        return routeGroup;
     }
 
     public static WebApplication MapEndpoints(this WebApplication app)

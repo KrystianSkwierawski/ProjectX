@@ -1,12 +1,12 @@
-﻿using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
 
-public record GetCraftingRecipesQuery(CraftingRecipeTypeEnum type) : IRequest<GetCraftingRecipesDto>;
+public record GetCraftingRecipesQuery(CraftingRecipeTypeEnum Type) : IRequest<GetCraftingRecipesDto>;
 
 public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQuery, GetCraftingRecipesDto>
 {
@@ -20,24 +20,42 @@ public class CraftingRecipesQueryHandler : IRequestHandler<GetCraftingRecipesQue
     public async Task<GetCraftingRecipesDto> Handle(GetCraftingRecipesQuery request, CancellationToken cancellationToken)
     {
         var craftingRecipes = await _context.CraftingRecipes
-            .Where(x => x.Type == request.type)
-            .Where(x => x.Status == StatusEnum.Active)
-            .OrderBy(x => x.Id)
-            .Select(x => new
+            .Where(recipe => recipe.Type == request.Type)
+            .Where(recipe => recipe.Status == StatusEnum.Active)
+            .OrderBy(recipe => recipe.Id)
+            .Select(recipe => new
             {
-                x.Id,
-                x.Requirement,
-                x.Reward,
+                recipe.Id,
+                recipe.Requirement,
+                recipe.Reward
             })
             .ToListAsync(cancellationToken);
 
         return new GetCraftingRecipesDto
         {
-            CraftingRecipes = craftingRecipes.Select(x => new CraftingRecipeDto
+            CraftingRecipes = craftingRecipes.Select(recipe => new CraftingRecipeDto
             {
-                Id = x.Id,
-                Requirement = JsonSerializer.Deserialize<CraftingRecipeRequirementDto>(x.Requirement)!,
-                Reward = JsonSerializer.Deserialize<CraftingRecipeRewardDto>(x.Reward)!,
+                Id = recipe.Id,
+                Requirement = new CraftingRecipeRequirementDto
+                {
+                    Items = recipe.Requirement.Items
+                        .Select(item => new InventoryItemDto
+                        {
+                            Type = item.Type,
+                            Count = item.Count
+                        })
+                        .ToArray(),
+                    Level = recipe.Requirement.Level
+                },
+                Reward = new CraftingRecipeRewardDto
+                {
+                    Item = new InventoryItemDto
+                    {
+                        Type = recipe.Reward.Item.Type,
+                        Count = recipe.Reward.Item.Count
+                    },
+                    Experience = recipe.Reward.Experience
+                }
             }).ToArray()
         };
     }

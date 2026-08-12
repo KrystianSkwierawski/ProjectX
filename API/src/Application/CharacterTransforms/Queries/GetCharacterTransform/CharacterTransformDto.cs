@@ -1,4 +1,5 @@
 ﻿namespace ProjectX.Application.CharacterTransforms.Queries.GetCharacterTransform;
+
 public class CharacterTransformDto
 {
     public int CharacterId { get; set; }

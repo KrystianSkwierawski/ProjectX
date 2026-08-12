@@ -10,7 +10,8 @@ public class RequestLoggingConventionTests
     {
         var requestTypesWithoutToString = typeof(LoginApplicationUserCommand).Assembly
             .GetTypes()
-            .Where(type => !type.IsAbstract && typeof(IBaseRequest).IsAssignableFrom(type))
+            .Where(type => !type.IsAbstract)
+            .Where(type => typeof(IBaseRequest).IsAssignableFrom(type))
             .Where(type => type.GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != type)
             .Select(type => type.FullName)
             .OrderBy(typeName => typeName)

@@ -47,7 +47,7 @@ public sealed class InventoryState
             return false;
         }
 
-        var matchingSlots = _items.Where(candidate => candidate.Type == type).ToArray();
+        var matchingSlots = _items.Where(x => x.Type == type).ToArray();
 
         if (matchingSlots.Sum(slot => slot.Count) < count)
         {
