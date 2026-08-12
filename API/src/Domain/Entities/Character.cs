@@ -51,6 +51,7 @@ public class Character : BaseAuditableEntity
     public void AddTransform(CharacterTransform transform)
     {
         ArgumentNullException.ThrowIfNull(transform);
+
         CharacterTransforms.Add(transform);
     }
 

@@ -34,6 +34,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                     ReleasePoolSubscription.Instance.Subscribe(instanceId, (e) =>
                     {
                         Debug.Log($"Releasing to pool. GameObjectName: {result.name}, InstanceId: {instanceId}");
+
                         _pool.Release(result);
                     });
 
@@ -58,6 +59,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             if (init || inactive > 0)
             {
                 _isSpawning = true;
+
                 await RespawnAsync(init ? _count : inactive);
             }
         }
@@ -65,6 +67,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private async UniTask RespawnAsync(int count)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(5));
+
             SpawnBeans(count);
         }
 
@@ -82,6 +85,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
 
             _isSpawning = false;
+
             Debug.Log($"{count} {_prefab.name} spawned");
         }
 #endif

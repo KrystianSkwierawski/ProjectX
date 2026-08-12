@@ -135,6 +135,7 @@ public class LayerDependencyTests
             SolutionDirectory,
             ".config",
             "dotnet-tools.json")));
+
         Assert.Equal(
             "10.0.11",
             toolManifest.RootElement
@@ -155,6 +156,7 @@ public class LayerDependencyTests
             .Cast<string>()
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
+
         var expectedProjects = new[]
         {
             "src/API/API.csproj",
@@ -195,6 +197,7 @@ public class LayerDependencyTests
         Assert.True(developmentConfiguration.RootElement.GetProperty("UseInMemoryDatabase").GetBoolean());
 
         var apiProject = XDocument.Load(Path.Combine(SolutionDirectory, "src", "API", "API.csproj"));
+
         Assert.False(string.IsNullOrWhiteSpace(GetPropertyValue(apiProject, "UserSecretsId")));
         Assert.DoesNotContain("JwtSettings__SecurityKey=", apiProject.ToString(), StringComparison.Ordinal);
     }

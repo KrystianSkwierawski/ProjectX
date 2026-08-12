@@ -74,8 +74,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
             if (IsOwner)
             {
                 CheckSfx();
+
                 CheckInput();
+
                 CheckMining();
+
                 CheckInterrupt();
             }
         }
@@ -185,6 +188,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _sfxTimer = 0f;
 
             PlayerUI.Instance.UpdateCastBar(_castingTimer / _castingTime);
+
             _thirdPersonController.LockCameraToTarget(_target.transform, 0f);
         }
 
@@ -197,6 +201,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _castingTimer = 0f;
             _sfxTimer = 0f;
             PlayerUI.Instance.HideCastBar();
+
             _thirdPersonController.UnlockCamera();
         }
 
@@ -207,6 +212,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _interruptTimer = 0f;
 
             PlayerUI.Instance.FailCastBar();
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
             SetActiveServerRpc(false);

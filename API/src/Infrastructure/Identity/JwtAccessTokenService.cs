@@ -47,6 +47,7 @@ public sealed class JwtAccessTokenService : IAccessTokenService
         }
 
         var issuedAt = issuedAtUtc.UtcDateTime;
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
@@ -146,6 +147,7 @@ public sealed class JwtAccessTokenService : IAccessTokenService
     private SigningCredentials CreateSigningCredentials()
     {
         var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecurityKey));
+
         return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
     }
 }

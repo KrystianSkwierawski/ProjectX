@@ -29,6 +29,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     public async Task<AddCharacterExperienceDto> Handle(AddCharacterExperienceCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var character = await _context.Characters
             .Include(x => x.CharacterExperiences.Where(experience => experience.Type == request.Type))
             .Where(x => x.Id == request.CharacterId)
@@ -36,6 +37,7 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
             .SingleOrNotFoundAsync("character", cancellationToken);
 
         character.CharacterExperiences.Add(new CharacterExperience { Amount = request.Amount, Type = request.Type });
+
         var experience = character.CharacterExperiences.Sum(entry => entry.Amount);
 
         await _context.SaveChangesAsync(cancellationToken);

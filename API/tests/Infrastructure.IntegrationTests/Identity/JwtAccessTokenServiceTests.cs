@@ -22,11 +22,13 @@ public class JwtAccessTokenServiceTests
     {
         var timeProvider = new ManualTimeProvider(new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero));
         var service = CreateService(timeProvider);
+
         var user = CreateUser();
         var sessionStartedAt = timeProvider.GetUtcNow();
         var originalToken = service.Create(user);
 
         timeProvider.Advance(TimeSpan.FromMinutes(55));
+
         var renewedToken = service.Create(user, sessionStartedAt);
         var nextRenewedToken = service.Create(user, sessionStartedAt);
 
@@ -40,13 +42,19 @@ public class JwtAccessTokenServiceTests
 
         tokenHandler.ValidateToken(originalToken, validationParameters, out _);
         tokenHandler.ValidateToken(renewedToken, validationParameters, out _);
+
         var middlewareValidation = await new JsonWebTokenHandler().ValidateTokenAsync(renewedToken, validationParameters);
+
         Assert.True(middlewareValidation.IsValid, middlewareValidation.Exception?.ToString());
 
         timeProvider.Advance(TimeSpan.FromMinutes(4) + TimeSpan.FromSeconds(59));
+
         tokenHandler.ValidateToken(originalToken, validationParameters, out _);
+
         timeProvider.Advance(TimeSpan.FromSeconds(2));
+
         Assert.Throws<SecurityTokenInvalidLifetimeException>(() => tokenHandler.ValidateToken(originalToken, validationParameters, out _));
+
         tokenHandler.ValidateToken(renewedToken, validationParameters, out _);
     }
 
@@ -54,10 +62,12 @@ public class JwtAccessTokenServiceTests
     public void ValidateLifetime_RejectsLegacyAndOverlongTokens()
     {
         var now = new DateTime(2026, 8, 10, 12, 0, 0, DateTimeKind.Utc);
+
         var legacyToken = new JwtSecurityToken(
             claims: [new Claim(ClaimTypes.NameIdentifier, UserId)],
             notBefore: now,
             expires: now.AddHours(1));
+
         var overlongToken = new JwtSecurityToken(
             claims:
             [
@@ -79,6 +89,7 @@ public class JwtAccessTokenServiceTests
     {
         var sessionStartedAt = new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero);
         var timeProvider = new ManualTimeProvider(sessionStartedAt.Add(SessionTokenPolicy.MaximumSessionLifetime).AddMinutes(-4));
+
         var token = new JwtSecurityTokenHandler().ReadJwtToken(CreateService(timeProvider).Create(CreateUser(), sessionStartedAt));
 
         Assert.Equal(
@@ -122,7 +133,9 @@ public class JwtAccessTokenServiceTests
         private DateTimeOffset _utcNow;
 
         public ManualTimeProvider(DateTimeOffset utcNow) => _utcNow = utcNow;
+
         public override DateTimeOffset GetUtcNow() => _utcNow;
+
         public void Advance(TimeSpan duration) => _utcNow = _utcNow.Add(duration);
     }
 }

@@ -26,9 +26,11 @@ public class CharacterScopeTests
     public async Task CharacterHandlers_DoNotReadOrModifyAnotherUsersCharacter()
     {
         await using var context = CreateContext();
+
         context.Characters.AddRange(
             CreateCharacter(CurrentCharacterId, CurrentUserId),
             CreateCharacter(ForeignCharacterId, "other-user"));
+
         await context.SaveChangesAsync();
 
         var currentUser = new TestCurrentUserService();
@@ -36,19 +38,23 @@ public class CharacterScopeTests
         await Assert.ThrowsAsync<NotFoundException>(() =>
             new GetCharacterQueryHandler(context, currentUser)
                 .Handle(new GetCharacterQuery(ForeignCharacterId), CancellationToken.None));
+
         await Assert.ThrowsAsync<NotFoundException>(() =>
             new GetCharacterInventoryQueryHandler(context, currentUser)
                 .Handle(new GetCharacterInventoryQuery(ForeignCharacterId), CancellationToken.None));
+
         await Assert.ThrowsAsync<NotFoundException>(() =>
             new UpdateCharacterInventoryCommandHandler(context, currentUser)
                 .Handle(
                     new UpdateCharacterInventoryCommand(ForeignCharacterId, [], []),
                     CancellationToken.None));
+
         await Assert.ThrowsAsync<NotFoundException>(() =>
             new UpdateCharacterCommandHandler(context, currentUser)
                 .Handle(
                     new UpdateCharacterCommand { CharacterId = ForeignCharacterId, Health = 1 },
                     CancellationToken.None));
+
         await Assert.ThrowsAsync<NotFoundException>(() =>
             new AddCharacterExperienceCommandHandler(context, currentUser)
                 .Handle(
@@ -71,12 +77,15 @@ public class CharacterScopeTests
     public async Task CharacterHandlers_ReadAndModifyOwnedCharacter()
     {
         await using var context = CreateContext();
+
         context.Characters.AddRange(
             CreateCharacter(CurrentCharacterId, CurrentUserId),
             CreateCharacter(ForeignCharacterId, "other-user"));
+
         await context.SaveChangesAsync();
 
         var currentUser = new TestCurrentUserService();
+
         await new UpdateCharacterCommandHandler(context, currentUser)
             .Handle(
                 new UpdateCharacterCommand
@@ -86,6 +95,7 @@ public class CharacterScopeTests
                     Strength = 9
                 },
                 CancellationToken.None);
+
         var experience = await new AddCharacterExperienceCommandHandler(context, currentUser)
             .Handle(
                 new AddCharacterExperienceCommand
@@ -95,6 +105,7 @@ public class CharacterScopeTests
                     Type = ExperienceTypeEnum.Cooking
                 },
                 CancellationToken.None);
+
         var character = await new GetCharacterQueryHandler(context, currentUser)
             .Handle(new GetCharacterQuery(CurrentCharacterId), CancellationToken.None);
 
@@ -117,6 +128,7 @@ public class CharacterScopeTests
     public async Task InventoryHandlers_ReadAndModifyOwnedInventory()
     {
         await using var context = CreateContext();
+
         context.Characters.AddRange(
             CreateCharacter(
                 CurrentCharacterId,
@@ -127,9 +139,11 @@ public class CharacterScopeTests
                 ForeignCharacterId,
                 "other-user",
                 new InventorySlot(InventoryItemEnum.Fish, 7)));
+
         await context.SaveChangesAsync();
 
         var currentUser = new TestCurrentUserService();
+
         await new UpdateCharacterInventoryCommandHandler(context, currentUser)
             .Handle(
                 new UpdateCharacterInventoryCommand(
@@ -142,6 +156,7 @@ public class CharacterScopeTests
 
         var inventory = await new GetCharacterInventoryQueryHandler(context, currentUser)
             .Handle(new GetCharacterInventoryQuery(CurrentCharacterId), CancellationToken.None);
+
         var foreignInventory = await context.CharacterInventories
             .Where(x => x.Id == ForeignCharacterId)
             .SingleAsync();
@@ -157,8 +172,10 @@ public class CharacterScopeTests
     public async Task QuestHandlers_ReadAndModifyOnlyOwnedQuests()
     {
         await using var context = CreateContext();
+
         var currentCharacter = CreateCharacter(CurrentCharacterId, CurrentUserId);
         var foreignCharacter = CreateCharacter(ForeignCharacterId, "other-user");
+
         var quest = new Quest
         {
             Id = QuestEnum.Kill2Beans,
@@ -169,13 +186,17 @@ public class CharacterScopeTests
             Reward = 1000,
             Status = StatusEnum.Active
         };
+
         var currentQuest = CreateCharacterQuest(10, currentCharacter, quest, CharacterQuestStatusEnum.Accepted);
         var foreignAcceptedQuest = CreateCharacterQuest(20, foreignCharacter, quest, CharacterQuestStatusEnum.Accepted);
         var foreignFinishedQuest = CreateCharacterQuest(21, foreignCharacter, quest, CharacterQuestStatusEnum.Finished);
+
         context.AddRange(currentCharacter, foreignCharacter, quest, currentQuest, foreignAcceptedQuest, foreignFinishedQuest);
+
         await context.SaveChangesAsync();
 
         var currentUser = new TestCurrentUserService();
+
         var initialQuests = await new GetCharacterQuestsHandler(context, currentUser)
             .Handle(new GetCharacterQuestsQuery(CurrentCharacterId), CancellationToken.None);
 
@@ -183,7 +204,9 @@ public class CharacterScopeTests
             .Handle(
                 new CheckCharacterQuestProgressCommand(QuestEnum.Kill2Beans, 2, CurrentCharacterId),
                 CancellationToken.None);
+
         var completedAtUtc = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
+
         var completion = await new CompleteCharacterQuestCommandHandler(context, currentUser, new FixedTimeProvider(completedAtUtc))
             .Handle(new CompleteCharacterQuestCommand(currentQuest.Id), CancellationToken.None);
 

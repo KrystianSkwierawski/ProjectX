@@ -178,6 +178,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (type == ExperienceTypeEnum.Main)
             {
                 PlayerUI.Instance.SetMainLevel(level);
+
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
 
                 var message = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.LevelUp), level);
@@ -247,6 +248,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     character.AmmoCount = 0;
 
                     GearUI.Instance.UpdateRightPanel();
+
                     PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
                 }
 

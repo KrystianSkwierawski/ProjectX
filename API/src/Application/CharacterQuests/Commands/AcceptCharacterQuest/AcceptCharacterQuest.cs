@@ -26,6 +26,7 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
     public async Task<CharacterQuestDto> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var characterId = await _context.Characters
             .Where(character => character.ApplicationUserId == userId)
             .Select(character => (int?)character.Id)
@@ -41,6 +42,7 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
         };
 
         _context.CharacterQuests.Add(entity);
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return new CharacterQuestDto

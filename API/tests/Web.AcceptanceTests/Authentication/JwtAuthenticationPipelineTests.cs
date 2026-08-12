@@ -88,6 +88,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     public async Task ExpiredToken_IsRejected()
     {
         var now = DateTimeOffset.UtcNow;
+
         var token = CreateToken(
             notBeforeUtc: now.AddHours(-2),
             expiresAtUtc: now.AddHours(-1),
@@ -102,6 +103,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     public async Task TokenExtendingPastMaximumSessionLifetime_IsRejected()
     {
         var now = DateTimeOffset.UtcNow;
+
         var token = CreateToken(
             notBeforeUtc: now.AddMinutes(-1),
             expiresAtUtc: now.AddMinutes(4),
@@ -160,6 +162,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     public async Task RefreshBeforeFinalFiveMinutes_IsRejected()
     {
         await _factory.EnsureClientUserExistsAsync();
+
         var token = CreateToken();
 
         var response = await SendAuthorizedAsync(HttpMethod.Post, "/api/ApplicationUsers/RefreshSession", token);
@@ -171,6 +174,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     public async Task RefreshWithoutUserIdentifier_IsRejected()
     {
         var now = DateTimeOffset.UtcNow;
+
         var token = CreateToken(
             notBeforeUtc: now.AddMinutes(-56),
             expiresAtUtc: now.AddMinutes(4),
@@ -186,8 +190,10 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     public async Task NearExpiryToken_CanBeRenewedWithoutResettingSessionStart()
     {
         await _factory.EnsureClientUserExistsAsync();
+
         var now = DateTimeOffset.UtcNow;
         var sessionStartedAt = now.AddMinutes(-56);
+
         var token = CreateToken(
             notBeforeUtc: sessionStartedAt,
             expiresAtUtc: now.AddMinutes(4),
@@ -212,9 +218,11 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     public async Task RenewalCannotExtendSessionPast24Hours()
     {
         await _factory.EnsureClientUserExistsAsync();
+
         var now = DateTimeOffset.UtcNow;
         var sessionStartedAt = now.Subtract(SessionTokenPolicy.MaximumSessionLifetime).AddMinutes(4);
         var sessionExpiresAt = sessionStartedAt.Add(SessionTokenPolicy.MaximumSessionLifetime);
+
         var token = CreateToken(
             notBeforeUtc: now.AddMinutes(-56),
             expiresAtUtc: sessionExpiresAt,
@@ -260,6 +268,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
         var notBefore = notBeforeUtc ?? now.AddMinutes(-1);
         var expiresAt = expiresAtUtc ?? now.AddMinutes(59);
         var sessionStartedAt = sessionStartedAtUtc ?? notBefore;
+
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Email, JwtApiFactory.Email),
@@ -294,6 +303,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
         var credentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey)),
             algorithm);
+
         var token = new JwtSecurityToken(
             issuer,
             audience,
@@ -342,6 +352,7 @@ public sealed class JwtApiFactory : WebApplicationFactory<Program>
     public async Task EnsureClientUserExistsAsync()
     {
         using var scope = Services.CreateScope();
+
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 

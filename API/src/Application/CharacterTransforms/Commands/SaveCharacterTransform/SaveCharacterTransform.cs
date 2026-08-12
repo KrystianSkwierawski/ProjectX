@@ -28,6 +28,7 @@ public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacte
     public async Task Handle(SaveCharacterTransformCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var characterId = await _context.Characters
             .Where(character => character.ApplicationUserId == userId)
             .OrderByDescending(character => character.ModDate)

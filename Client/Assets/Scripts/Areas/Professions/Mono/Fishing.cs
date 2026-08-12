@@ -127,14 +127,18 @@ public class Fishing : NetworkBehaviour
         if (IsOwner)
         {
             CheckFishOut();
+
             CheckInterrupt();
+
             CheckInput();
+
             CheckCasting();
         }
 
         if (IsServer)
         {
             CheckCanFishOut();
+
             CheckFishBrokeOff();
         }
     }
@@ -303,14 +307,18 @@ public class Fishing : NetworkBehaviour
             if (!TryGetNearestWater(out var water, out var waterCollider))
             {
                 Debug.Log("Not near water");
+
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+
                 return;
             }
 
             if (!TryFindSpawnPointInWater(transform.position, ClampAimAngle(_maxCastAngleDegrees), water, waterCollider, out var spawnPos))
             {
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+
                 Debug.Log("Not found spawn point in water");
+
                 return;
             }
 
@@ -378,6 +386,7 @@ public class Fishing : NetworkBehaviour
         _castTimer = 0f;
 
         PlayerUI.Instance.HideCastBar();
+
         AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.FishingBobber, 1f);
 
         DespawnServerRpc();
@@ -390,6 +399,7 @@ public class Fishing : NetworkBehaviour
         _interruptTimer = 0f;
 
         PlayerUI.Instance.FailCastBar();
+
         AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
         DespawnServerRpc();

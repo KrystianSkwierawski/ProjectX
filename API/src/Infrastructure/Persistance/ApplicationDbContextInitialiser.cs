@@ -33,9 +33,11 @@ public class ApplicationDbContextInitialiser
         _logger.LogInformation("Starting development database initialization");
 
         await _context.Database.EnsureDeletedAsync();
+
         await _context.Database.EnsureCreatedAsync();
 
         await SeedCatalogsAsync();
+
         await SeedIdentityAsync();
 
         _logger.LogInformation("Development database initialization completed");
@@ -100,6 +102,7 @@ public class ApplicationDbContextInitialiser
 
         await CreateUserAsync("server1@localhost", "Server1!", Roles.Server, LanguageEnum.en);
         await CreateUserAsync("server2@localhost", "Server2!", Roles.Server, LanguageEnum.pl);
+
         await CreateUserAsync("user1@localhost", "User1!", Roles.Client, LanguageEnum.en);
         await CreateUserAsync("user2@localhost", "User2!", Roles.Client, LanguageEnum.pl);
     }
@@ -127,6 +130,7 @@ public class ApplicationDbContextInitialiser
         };
 
         await _userManager.CreateAsync(user, password);
+
         await _userManager.AddToRoleAsync(user, role);
 
         var character = new Character
@@ -165,6 +169,7 @@ public class ApplicationDbContextInitialiser
         });
 
         _context.Characters.Add(character);
+
         await _context.SaveChangesAsync();
 
         _logger.LogDebug(

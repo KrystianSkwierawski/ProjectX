@@ -45,6 +45,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                         // TODO: update one item and update prices?
                         MerchantUI.Instance.ClearOffers();
+
                         MerchantUI.Instance.AddOffers(_merchantNpc.Items);
                     }
 
@@ -59,6 +60,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                         // TODO: update one item and update prices?
                         MerchantUI.Instance.ClearOffers();
+
                         MerchantUI.Instance.AddOffers(_merchantNpc.Items);
 
                         SellItemServerRpc(e.Item);
@@ -72,6 +74,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 CheckHide();
+
                 CheckNpcClicked();
             }
         }

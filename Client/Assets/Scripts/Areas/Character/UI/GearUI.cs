@@ -68,6 +68,7 @@ namespace Assets.Scripts.Areas.Character.UI
             Gear.SetActive(true);
 
             UpdateLeftPanel();
+
             UpdateRightPanel();
         }
 
@@ -262,6 +263,7 @@ namespace Assets.Scripts.Areas.Character.UI
             if (Gear.activeSelf)
             {
                 InventoryUI.Instance.CancelDrag();
+
                 Gear.SetActive(false);
             }
         }

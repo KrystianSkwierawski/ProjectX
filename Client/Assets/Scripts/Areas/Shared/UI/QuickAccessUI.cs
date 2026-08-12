@@ -21,8 +21,11 @@ namespace Assets.Scripts.Areas.Shared.UI
             _bar ??= transform.Find("QuickAccessBar");
 
             ConfigureSlot("Gear", "Gear (TAB)", () => GearUI.Instance.Toggle());
+
             ConfigureSlot("Inventory", "Inventory (B)", () => InventoryUI.Instance.Toggle());
+
             ConfigureSlot("Character", "Character (C)", () => CharacterUI.Instance.Toggle());
+
             ConfigureSlot("Chat", "Chat (Z)", () => ChatUI.Instance.Toggle());
         }
 

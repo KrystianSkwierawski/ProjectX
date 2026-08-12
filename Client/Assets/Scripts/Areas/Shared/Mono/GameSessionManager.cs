@@ -36,6 +36,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         public static async UniTask StartServerAsync()
         {
             var networkManager = GetNetworkManager();
+
             _serverGameSessionId = Guid.Empty;
             _disconnectedDuringApproval.Clear();
             _pendingApprovals.Clear();
@@ -59,6 +60,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             try
             {
                 var command = new RegisterGameSessionCommand { UsesRelay = usesRelay, RelayJoinCode = relayJoinCode };
+
                 var registration = await UnityWebRequestHelper.ExecutePostAsync<RegisterGameSessionDto>("GameSessions/Register", command, log: false);
 
                 if (registration == null || registration.GameSessionId == Guid.Empty
@@ -93,6 +95,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
 
             var ticket = await RequestTicketAsync();
+
             await ConfigureClientTransportAsync(networkManager, ticket);
 
             if (TicketExpiresSoon(ticket))
@@ -115,8 +118,11 @@ namespace Assets.Scripts.Areas.Shared.Mono
             networkManager.NetworkConfig.ConnectionApproval = true;
             networkManager.NetworkConfig.ClientConnectionBufferTimeout = _connectionApprovalTimeoutSeconds;
             networkManager.NetworkConfig.ConnectionData = Encoding.UTF8.GetBytes(ticket.Ticket);
+
             var disconnected = false;
+
             void HandleClientDisconnected(ulong _) => disconnected = true;
+
             networkManager.OnClientDisconnectCallback += HandleClientDisconnected;
 
             try
@@ -172,6 +178,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         {
             _disconnectedDuringApproval.Remove(request.ClientNetworkId);
             _pendingApprovals.Add(request.ClientNetworkId);
+
             response.Approved = false;
             response.CreatePlayerObject = false;
             response.Pending = true;
@@ -196,6 +203,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 }
 
                 var command = new RedeemGameSessionTicketCommand { GameSessionId = _serverGameSessionId, Ticket = ticket };
+
                 var redeemed = await UnityWebRequestHelper.ExecutePostAsync<RedeemGameSessionTicketDto>("GameSessions/Redeem", command, log: false);
 
                 if (redeemed == null || string.IsNullOrWhiteSpace(redeemed.PlayerSessionId))
@@ -219,6 +227,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             catch (Exception exception)
             {
                 Debug.LogWarning($"Connection approval rejected for client {request.ClientNetworkId}: {exception.Message}");
+
                 response.Approved = false;
                 response.CreatePlayerObject = false;
                 response.Reason = "Game session authentication failed.";
@@ -227,6 +236,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             {
                 _disconnectedDuringApproval.Remove(request.ClientNetworkId);
                 _pendingApprovals.Remove(request.ClientNetworkId);
+
                 response.Pending = false;
             }
         }
@@ -285,7 +295,9 @@ namespace Assets.Scripts.Areas.Shared.Mono
             await InitializeUnityServicesAsync();
 
             var allocation = await RelayService.Instance.CreateAllocationAsync(_maxConnections);
+
             var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+
             var transport = GetUnityTransport(networkManager);
 
             transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, _dtlsConnectionType));
@@ -298,6 +310,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             await InitializeUnityServicesAsync();
 
             var allocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
+
             var transport = GetUnityTransport(networkManager);
 
             transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, _dtlsConnectionType));
@@ -348,6 +361,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private static void HandleServerTransportFailure()
         {
             Debug.LogError("The dedicated server transport failed; terminating for supervised restart.");
+
             Application.Quit(1);
         }
 

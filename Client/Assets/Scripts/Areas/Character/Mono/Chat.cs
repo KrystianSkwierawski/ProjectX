@@ -22,7 +22,9 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 CheckEnter();
+
                 CheckHide();
+
                 CheckToggle();
             }
         }

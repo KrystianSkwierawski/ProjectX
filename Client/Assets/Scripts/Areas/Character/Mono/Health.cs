@@ -20,6 +20,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
                     Network.Value -= e.Value;
+
                     Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
 
                     var targetSelectorSubscriptionsEvent = new UpdateTargetSelectorSubscriptionsEvent

@@ -89,6 +89,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             await UniTask.Delay(delay);
 
             _pool.Release(obj);
+
             _objects.Remove(message);
 
             if (_objects.Count == 0)

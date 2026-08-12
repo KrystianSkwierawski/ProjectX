@@ -48,8 +48,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
             if (IsOwner)
             {
                 CheckHide();
+
                 CheckCraftingClicked();
+
                 CheckCrafting();
+
                 CheckSfx();
             }
         }

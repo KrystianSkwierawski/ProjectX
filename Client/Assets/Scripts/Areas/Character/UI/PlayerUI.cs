@@ -77,8 +77,11 @@ namespace Assets.Scripts.Areas.Character.UI
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
 
             SetName(character.Name);
+
             SetHealth(character.Health);
+
             SetMaxHealth(character.MaxHealth);
+
             SetMainLevel(character.Levels[ExperienceTypeEnum.Main]);
         }
 

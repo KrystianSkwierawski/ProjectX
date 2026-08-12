@@ -198,6 +198,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
             if (_questNpc != null && _input.Move != Vector2.zero && _questNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance) || Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 _questNpc = null;
+
                 QuestUI.Instance.Hide();
 
                 return;

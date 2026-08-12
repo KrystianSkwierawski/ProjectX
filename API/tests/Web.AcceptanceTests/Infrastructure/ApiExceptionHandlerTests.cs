@@ -15,11 +15,13 @@ public class ApiExceptionHandlerTests
             .AddLogging()
             .AddProblemDetails()
             .BuildServiceProvider();
+
         var httpContext = new DefaultHttpContext
         {
             RequestServices = services,
             Response = { Body = new MemoryStream() }
         };
+
         var handler = new ApiExceptionHandler();
 
         var handled = await handler.TryHandleAsync(httpContext, exception, CancellationToken.None);

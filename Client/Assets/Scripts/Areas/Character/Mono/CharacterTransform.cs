@@ -38,6 +38,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (_period > _saveInterval)
             {
                 SaveTransformServerRpc();
+
                 _period = 0;
             }
 

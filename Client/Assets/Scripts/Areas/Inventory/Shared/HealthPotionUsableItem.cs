@@ -31,9 +31,9 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
 #if UNITY_EDITOR
             PlayerUI.Instance.SetHealth(character.Health);
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);
 #endif
-
 
 #if UNITY_SERVER && !UNITY_EDITOR
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand

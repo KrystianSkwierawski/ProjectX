@@ -55,7 +55,9 @@ namespace Assets.Scripts.Areas.Shared.UI
             base.Awake();
 
             CacheViewReferences();
+
             BindEvents();
+
             ConfigureView();
         }
 

@@ -22,18 +22,21 @@ namespace Assets.Scripts.Areas.Shared.UI
             }
 
             CursorUI.Instance.ShowPointer();
+
             OnPointerEnterSubscription.Instance.Invoke(_key, new OnPointerEnterEvent());
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             CursorUI.Instance.ShowDefault();
+
             OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
         }
 
         public void OnDisable()
         {
             CursorUI.Instance.ShowDefault();
+
             OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
         }
     }

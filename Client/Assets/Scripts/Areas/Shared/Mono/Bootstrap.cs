@@ -36,6 +36,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             catch (Exception exception)
             {
                 Debug.LogException(exception);
+
                 Application.Quit(1);
             }
 #else
@@ -172,6 +173,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             try
             {
                 await QuestManager.Instance.LoadAsync();
+
                 await QuestManager.Instance.LoadAsync(1);
 
                 foreach (var sceneName in _clientSceneNames)
@@ -201,6 +203,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private static async UniTask LoadSceneAdditivelyAsync(string sceneName, List<string> loadedSceneNames)
         {
             await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
             loadedSceneNames.Add(sceneName);
 
             Debug.Log($"{sceneName} Loaded");
@@ -241,12 +244,15 @@ namespace Assets.Scripts.Areas.Shared.Mono
             await QuestManager.Instance.LoadAsync();
 
             await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
+
             Debug.Log("MainScene Loaded");
 
             await SceneManager.LoadSceneAsync("ServerScene", LoadSceneMode.Additive);
+
             Debug.Log("ServerScene Loaded");
 
             await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
+
             Debug.Log("EnvironmentScene Loaded");
 
             await GameSessionManager.StartServerAsync();

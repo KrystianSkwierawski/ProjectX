@@ -27,6 +27,7 @@ public sealed class ApplicationUserAuthenticationService : IApplicationUserAuthe
         if (!await _userManager.CheckPasswordAsync(user, password))
         {
             await _userManager.AccessFailedAsync(user);
+
             return null;
         }
 
@@ -52,6 +53,7 @@ public sealed class ApplicationUserAuthenticationService : IApplicationUserAuthe
     private async Task<AuthenticatedApplicationUser> CreateAuthenticatedUserAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         var roles = await _userManager.GetRolesAsync(user);
+
         cancellationToken.ThrowIfCancellationRequested();
 
         return new AuthenticatedApplicationUser(

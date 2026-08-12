@@ -21,6 +21,7 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
     public async Task<CheckCharacterQuestProgressDto> Handle(CheckCharacterQuestProgressCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var characterQuest = await _context.CharacterQuests
             .Include(x => x.Quest)
             .Where(x => x.QuestId == request.QuestId)
@@ -35,6 +36,7 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
         }
 
         characterQuest.AddProgress(request.Progress, characterQuest.Quest.Requirement);
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return new CheckCharacterQuestProgressDto

@@ -27,6 +27,7 @@ public class CraftingRecipes : EndpointGroupBase
         return await memoryCache.GetOrCreateAsync(ApiCacheKeys.CraftingRecipes(query.Type), async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = ApiCacheKeys.Lifetime;
+
             var result = await sender.Send(query, cancellationToken);
 
             return TypedResults.Ok(result);

@@ -52,6 +52,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             if (!bootstrapScene.IsValid() || !bootstrapScene.isLoaded)
             {
                 await SceneManager.LoadSceneAsync(_bootstrapSceneName, LoadSceneMode.Additive);
+
                 bootstrapScene = SceneManager.GetSceneByName(_bootstrapSceneName);
             }
 

@@ -40,6 +40,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     }
                 }
             },
+
             {
                 nameof(InventoryItemEnum.Fish),
                 new LootItem[]
@@ -53,6 +54,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "BlackRock(Clone)",
                 new LootItem[]
@@ -66,6 +68,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "CopperRock(Clone)",
                 new LootItem[]
@@ -79,6 +82,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "WhiteRock(Clone)",
                 new LootItem[]
@@ -92,6 +96,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "PurpleRock(Clone)",
                 new LootItem[]
@@ -105,6 +110,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "Chamomile(Clone)",
                 new LootItem[]
@@ -118,8 +124,9 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
-            "Tree(Clone)",
+                "Tree(Clone)",
                 new LootItem[]
                 {
                     new LootItem
@@ -291,7 +298,9 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             // TODO: UpdatedInventorySubscription?
             InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
             CraftingUI.Instance.UpdateRequirements();
+
             MerchantUI.Instance.UpdatePriceValidation();
         }
 
@@ -303,6 +312,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }
 
             InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
             //CraftingUI.Instance.UpdateRequirements();
             //MerchantUI.Instance.UpdatePriceValidation();

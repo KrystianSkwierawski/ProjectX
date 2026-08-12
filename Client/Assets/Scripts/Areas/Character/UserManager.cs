@@ -79,6 +79,7 @@ namespace Assets.Scripts.Areas.Character
                     }
 
                     var refreshDelay = TimeSpan.FromSeconds(Math.Min(_sessionRefreshInterval.TotalSeconds, sessionRemainingSeconds));
+
                     await UniTask.Delay(refreshDelay, ignoreTimeScale: true, cancellationToken: cancellationToken);
 
                     if (Time.realtimeSinceStartupAsDouble >= _sessionExpiresAtRealtime)
@@ -137,6 +138,7 @@ namespace Assets.Scripts.Areas.Character
                     if (exception.ResponseCode >= 400 && exception.ResponseCode < 500)
                     {
                         Debug.LogWarning($"Session refresh was rejected. HTTP: {exception.ResponseCode}, Error: {exception.Message}.");
+
                         InvalidateSession();
 
                         return false;
@@ -179,6 +181,7 @@ namespace Assets.Scripts.Areas.Character
 
 #if UNITY_SERVER && !UNITY_EDITOR
             Debug.LogError(message);
+
             Application.Quit(1);
 #else
             SessionInvalidated?.Invoke(message);

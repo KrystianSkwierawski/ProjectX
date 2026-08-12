@@ -25,6 +25,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
     public async Task<CompleteCharacterQuestDto> Handle(CompleteCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var characterQuest = await _context.CharacterQuests
             .Include(x => x.Quest)
             .Where(x => x.Id == request.CharacterQuestId)
@@ -38,6 +39,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
         }
 
         characterQuest.Complete(_timeProvider.GetUtcNow());
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return new CompleteCharacterQuestDto { Reward = characterQuest.Quest.Reward };
@@ -46,6 +48,7 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
     private async Task CollectItemsAsync(string userId, CharacterQuest characterQuest, CancellationToken cancellationToken)
     {
         var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
+
         var characterInventory = await _context.CharacterInventories
             .Where(inventory => inventory.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);

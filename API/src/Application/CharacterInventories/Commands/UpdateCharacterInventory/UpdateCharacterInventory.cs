@@ -27,10 +27,12 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
     public async Task Handle(UpdateCharacterInventoryCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var entity = await _context.CharacterInventories
             .Where(inventory => inventory.Id == request.CharacterId)
             .Where(inventory => inventory.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
+
         var inventory = entity.Inventory;
 
         if (request.SplitSlotIndex.HasValue)

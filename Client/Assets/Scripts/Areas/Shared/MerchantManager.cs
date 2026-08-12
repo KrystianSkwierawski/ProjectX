@@ -12,40 +12,49 @@ namespace Assets.Scripts.Areas.Shared.Mono
         {
             { InventoryItemEnum.Can, 10 },
             { InventoryItemEnum.Currency, 1 },
+
             { InventoryItemEnum.Fish, 20 },
             { InventoryItemEnum.CookedFish, 50 },
             { InventoryItemEnum.Rice, 15 },
             { InventoryItemEnum.Sushi, 80 },
+
             { InventoryItemEnum.PurpleOre, 100 },
             { InventoryItemEnum.WhiteOre, 60 },
             { InventoryItemEnum.CopperOre, 40 },
             { InventoryItemEnum.BlackOre, 120 },
+
             { InventoryItemEnum.PurpleBar, 300 },
             { InventoryItemEnum.WhiteBar, 180 },
             { InventoryItemEnum.CopperBar, 120 },
             { InventoryItemEnum.BlackBar, 360 },
+
             { InventoryItemEnum.Wood, 8 },
             { InventoryItemEnum.Chamomile, 25 },
             { InventoryItemEnum.HealthPotion, 10 },
+
             { InventoryItemEnum.IronHelmet, 20 },
             { InventoryItemEnum.IronChest, 30 },
             { InventoryItemEnum.IronBoots, 10 },
+
             { InventoryItemEnum.IronSword, 40 },
             { InventoryItemEnum.IronWand, 40 },
             { InventoryItemEnum.IronBow, 40 },
+
             { InventoryItemEnum.AmmoArrow1, 5 },
             { InventoryItemEnum.AmmoArrow2, 10 },
             { InventoryItemEnum.AmmoArrow3, 15 },
+
             { InventoryItemEnum.AmmoRune1, 5 },
             { InventoryItemEnum.AmmoRune2, 10 },
             { InventoryItemEnum.AmmoRune3, 15 },
+
             { InventoryItemEnum.AmmoFeather1, 5 },
             { InventoryItemEnum.AmmoFeather2, 10 },
             { InventoryItemEnum.AmmoFeather3, 15 },
+
             { InventoryItemEnum.AmmoOil1, 5 },
             { InventoryItemEnum.AmmoOil2, 10 },
             { InventoryItemEnum.AmmoOil3, 15 },
-
         };
 
         public bool HasCurrency(InventoryItemDto item) => HasCurrency(GetPurchasePrice(item));

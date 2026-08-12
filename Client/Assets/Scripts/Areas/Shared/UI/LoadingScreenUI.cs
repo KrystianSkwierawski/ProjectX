@@ -22,6 +22,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             base.Awake();
 
             CacheViewReferences();
+
             RefreshView();
         }
 

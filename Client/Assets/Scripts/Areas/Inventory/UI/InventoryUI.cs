@@ -75,6 +75,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             InventoryContent = Inventory.transform.Find("Viewport/Content").gameObject;
             Loot = InventoryCanvas.transform.Find("Loot").gameObject;
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
+
             InitTextures();
 
             _lootObjectPool = new ObjectPool<InventorySlot>(
@@ -771,6 +772,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 });
 
             _lootPoolObjects.Remove(type);
+
             _lootObjectPool.Release(slot);
 
             if (_lootPoolObjects.Count == 0)

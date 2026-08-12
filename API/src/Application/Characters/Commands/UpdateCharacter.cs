@@ -38,6 +38,7 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
     public async Task Handle(UpdateCharacterCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+
         var character = await _context.Characters
             .Where(x => x.Id == request.CharacterId)
             .Where(x => x.ApplicationUserId == userId)

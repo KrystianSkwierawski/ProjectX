@@ -44,6 +44,7 @@ public class OpenApiContractTests
     public void ServerPlayerSessionEndpoints_RequirePlayerSessionIdHeader()
     {
         using var specification = OpenSpecification();
+
         var expectedEndpoints = new HashSet<(string Path, string Method)>
         {
             ("/api/CharacterExperiences", "POST"),
@@ -83,6 +84,7 @@ public class OpenApiContractTests
     public void Endpoints_HaveStableNamesAndConciseDescriptions()
     {
         using var specification = OpenSpecification();
+
         var operations = GetOperations(specification.RootElement).ToArray();
 
         Assert.Equal(22, operations.Length);
@@ -128,6 +130,7 @@ public class OpenApiContractTests
     public void AuthenticationContract_UsesBearerJwtAndKeepsLoginAnonymous()
     {
         using var specification = OpenSpecification();
+
         var root = specification.RootElement;
         var jwt = root.GetProperty("components").GetProperty("securitySchemes").GetProperty("JWT");
 
@@ -155,6 +158,7 @@ public class OpenApiContractTests
     public void Schemas_ExposeRequiredLoginFieldsAndCurrentContractNames()
     {
         using var specification = OpenSpecification();
+
         var schemas = specification.RootElement.GetProperty("components").GetProperty("schemas");
         var loginRequired = schemas
             .GetProperty("LoginApplicationUserCommand")

@@ -118,8 +118,11 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner && UserManager.Instance.Characters.ContainsKey(OwnerClientId))
             {
                 CheckCurrentTarget();
+
                 HandleSelectionInput();
+
                 CheckCasting();
+
                 UpdateCasting();
             }
         }

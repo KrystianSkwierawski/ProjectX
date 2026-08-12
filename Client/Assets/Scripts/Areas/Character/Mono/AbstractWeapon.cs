@@ -183,6 +183,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             _caster = null;
 
             base.OnNetworkDespawn();
+
             gameObject.SetActive(false);
         }
     }

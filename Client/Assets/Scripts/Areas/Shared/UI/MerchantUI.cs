@@ -238,6 +238,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             if (Merchant.activeSelf)
             {
                 InventoryUI.Instance.CancelDrag();
+
                 Merchant.SetActive(false);
             }
         }

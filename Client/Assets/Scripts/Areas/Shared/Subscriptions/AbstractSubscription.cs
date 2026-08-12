@@ -57,6 +57,7 @@ namespace Assets.Scripts.Areas.Shared.Subscriptions
         public virtual void InvokeAndUnsubscribe(string key, J e)
         {
             Invoke(key, e);
+
             Unsubscribe(key);
         }
     }
