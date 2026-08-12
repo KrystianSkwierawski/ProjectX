@@ -188,6 +188,69 @@ public class InventoryStateTests
     }
 
     [Fact]
+    public void Add_MergesWithExistingStack()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2),
+            InventorySlot.Empty());
+
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 3);
+
+        Assert.True(result);
+        Assert.Equal(5, inventory.Items[0].Count);
+        Assert.True(inventory.Items[1].IsEmpty);
+    }
+
+    [Theory]
+    [InlineData(InventoryItemEnum.None, 1)]
+    [InlineData(InventoryItemEnum.HealthPotion, 0)]
+    [InlineData(InventoryItemEnum.HealthPotion, -1)]
+    public void Add_DoesNotChangeInventoryForInvalidItem(InventoryItemEnum type, int count)
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.Currency, 10));
+
+        var result = inventory.Add(type, count);
+
+        Assert.False(result);
+        Assert.Single(inventory.Items);
+        Assert.Equal(InventoryItemEnum.Currency, inventory.Items[0].Type);
+        Assert.Equal(10, inventory.Items[0].Count);
+    }
+
+    [Fact]
+    public void Split_FillsFirstExistingEmptySlot()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 8),
+            InventorySlot.Empty(),
+            new InventorySlot(InventoryItemEnum.Currency, 10));
+
+        var result = inventory.Split(0, 3);
+
+        Assert.True(result);
+        Assert.Equal(3, inventory.Items.Count);
+        Assert.Equal(4, inventory.Items[0].Count);
+        Assert.Equal(InventoryItemEnum.HealthPotion, inventory.Items[1].Type);
+        Assert.Equal(4, inventory.Items[1].Count);
+    }
+
+    [Fact]
+    public void Move_DoesNotChangeInventoryWhenSourceSlotIsEmpty()
+    {
+        var inventory = CreateInventory(
+            InventorySlot.Empty(),
+            new InventorySlot(InventoryItemEnum.Currency, 10));
+
+        var result = inventory.Move(0, 1, 2);
+
+        Assert.False(result);
+        Assert.True(inventory.Items[0].IsEmpty);
+        Assert.Equal(InventoryItemEnum.Currency, inventory.Items[1].Type);
+        Assert.Equal(10, inventory.Items[1].Count);
+    }
+
+    [Fact]
     public void Remove_ConsumesMultipleStacks()
     {
         var inventory = CreateInventory(

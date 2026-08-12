@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
+using ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
+using ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
+using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Application.Characters.Commands;
 using ProjectX.Application.Characters.Queries.GetCharacter;
 using ProjectX.Application.Common.Exceptions;
@@ -36,6 +40,11 @@ public class CharacterScopeTests
             new GetCharacterInventoryQueryHandler(context, currentUser)
                 .Handle(new GetCharacterInventoryQuery(ForeignCharacterId), CancellationToken.None));
         await Assert.ThrowsAsync<NotFoundException>(() =>
+            new UpdateCharacterInventoryCommandHandler(context, currentUser)
+                .Handle(
+                    new UpdateCharacterInventoryCommand(ForeignCharacterId, [], []),
+                    CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() =>
             new UpdateCharacterCommandHandler(context, currentUser)
                 .Handle(
                     new UpdateCharacterCommand { CharacterId = ForeignCharacterId, Health = 1 },
@@ -58,6 +67,140 @@ public class CharacterScopeTests
         Assert.Equal(100, currentCharacter.Health);
     }
 
+    [Fact]
+    public async Task CharacterHandlers_ReadAndModifyOwnedCharacter()
+    {
+        await using var context = CreateContext();
+        context.Characters.AddRange(
+            CreateCharacter(CurrentCharacterId, CurrentUserId),
+            CreateCharacter(ForeignCharacterId, "other-user"));
+        await context.SaveChangesAsync();
+
+        var currentUser = new TestCurrentUserService();
+        await new UpdateCharacterCommandHandler(context, currentUser)
+            .Handle(
+                new UpdateCharacterCommand
+                {
+                    CharacterId = CurrentCharacterId,
+                    Health = 75,
+                    Strength = 9
+                },
+                CancellationToken.None);
+        var experience = await new AddCharacterExperienceCommandHandler(context, currentUser)
+            .Handle(
+                new AddCharacterExperienceCommand
+                {
+                    CharacterId = CurrentCharacterId,
+                    Amount = 100,
+                    Type = ExperienceTypeEnum.Cooking
+                },
+                CancellationToken.None);
+        var character = await new GetCharacterQueryHandler(context, currentUser)
+            .Handle(new GetCharacterQuery(CurrentCharacterId), CancellationToken.None);
+
+        Assert.Equal(75, character.Health);
+        Assert.Equal(9, character.Strength);
+        Assert.Equal(100, experience.Experience);
+        Assert.Equal(2, experience.Level);
+        Assert.Equal(2, character.Levels[ExperienceTypeEnum.Cooking]);
+
+        var foreignCharacter = await context.Characters
+            .Include(x => x.CharacterExperiences)
+            .Where(x => x.Id == ForeignCharacterId)
+            .SingleAsync();
+
+        Assert.Equal(100, foreignCharacter.Health);
+        Assert.Empty(foreignCharacter.CharacterExperiences);
+    }
+
+    [Fact]
+    public async Task InventoryHandlers_ReadAndModifyOwnedInventory()
+    {
+        await using var context = CreateContext();
+        context.Characters.AddRange(
+            CreateCharacter(
+                CurrentCharacterId,
+                CurrentUserId,
+                new InventorySlot(InventoryItemEnum.HealthPotion, 2),
+                new InventorySlot(InventoryItemEnum.Currency, 10)),
+            CreateCharacter(
+                ForeignCharacterId,
+                "other-user",
+                new InventorySlot(InventoryItemEnum.Fish, 7)));
+        await context.SaveChangesAsync();
+
+        var currentUser = new TestCurrentUserService();
+        await new UpdateCharacterInventoryCommandHandler(context, currentUser)
+            .Handle(
+                new UpdateCharacterInventoryCommand(
+                    CurrentCharacterId,
+                    [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 3 }],
+                    [new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 4 }]),
+                CancellationToken.None);
+
+        context.ChangeTracker.Clear();
+
+        var inventory = await new GetCharacterInventoryQueryHandler(context, currentUser)
+            .Handle(new GetCharacterInventoryQuery(CurrentCharacterId), CancellationToken.None);
+        var foreignInventory = await context.CharacterInventories
+            .Where(x => x.Id == ForeignCharacterId)
+            .SingleAsync();
+
+        Assert.Collection(
+            inventory.Inventory.Items,
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 5), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.Currency, 6), (x.Type, x.Count)));
+        Assert.Equal((InventoryItemEnum.Fish, 7), (foreignInventory.Inventory.Items.Single().Type, foreignInventory.Inventory.Items.Single().Count));
+    }
+
+    [Fact]
+    public async Task QuestHandlers_ReadAndModifyOnlyOwnedQuests()
+    {
+        await using var context = CreateContext();
+        var currentCharacter = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        var foreignCharacter = CreateCharacter(ForeignCharacterId, "other-user");
+        var quest = new Quest
+        {
+            Id = QuestEnum.Kill2Beans,
+            Name = nameof(QuestEnum.Kill2Beans),
+            Type = QuestTypeEnum.Kill,
+            GameObjectName = "Bean(Clone)",
+            Requirement = 2,
+            Reward = 1000,
+            Status = StatusEnum.Active
+        };
+        var currentQuest = CreateCharacterQuest(10, currentCharacter, quest, CharacterQuestStatusEnum.Accepted);
+        var foreignAcceptedQuest = CreateCharacterQuest(20, foreignCharacter, quest, CharacterQuestStatusEnum.Accepted);
+        var foreignFinishedQuest = CreateCharacterQuest(21, foreignCharacter, quest, CharacterQuestStatusEnum.Finished);
+        context.AddRange(currentCharacter, foreignCharacter, quest, currentQuest, foreignAcceptedQuest, foreignFinishedQuest);
+        await context.SaveChangesAsync();
+
+        var currentUser = new TestCurrentUserService();
+        var initialQuests = await new GetCharacterQuestsHandler(context, currentUser)
+            .Handle(new GetCharacterQuestsQuery(CurrentCharacterId), CancellationToken.None);
+
+        var progress = await new CheckCharacterQuestProgressCommandHandler(context, currentUser)
+            .Handle(
+                new CheckCharacterQuestProgressCommand(QuestEnum.Kill2Beans, 2, CurrentCharacterId),
+                CancellationToken.None);
+        var completedAtUtc = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
+        var completion = await new CompleteCharacterQuestCommandHandler(context, currentUser, new FixedTimeProvider(completedAtUtc))
+            .Handle(new CompleteCharacterQuestCommand(currentQuest.Id), CancellationToken.None);
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            new CompleteCharacterQuestCommandHandler(context, currentUser, new FixedTimeProvider(completedAtUtc))
+                .Handle(new CompleteCharacterQuestCommand(foreignFinishedQuest.Id), CancellationToken.None));
+
+        Assert.Collection(initialQuests.CharacterQuests, x => Assert.Equal(currentQuest.Id, x.Id));
+        Assert.Equal(CharacterQuestStatusEnum.Finished, progress.Status);
+        Assert.Equal(1000, completion.Reward);
+        Assert.Equal(CharacterQuestStatusEnum.Completed, currentQuest.Status);
+        Assert.Equal(completedAtUtc, currentQuest.EndDate);
+        Assert.Equal(CharacterQuestStatusEnum.Accepted, foreignAcceptedQuest.Status);
+        Assert.Equal(0, foreignAcceptedQuest.Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Finished, foreignFinishedQuest.Status);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -67,7 +210,7 @@ public class CharacterScopeTests
         return new ApplicationDbContext(options);
     }
 
-    private static Character CreateCharacter(int id, string userId)
+    private static Character CreateCharacter(int id, string userId, params InventorySlot[] inventory)
     {
         return new Character
         {
@@ -80,9 +223,27 @@ public class CharacterScopeTests
             CharacterInventory = new CharacterInventory
             {
                 Id = id,
-                Inventory = new InventoryState([]),
+                Inventory = new InventoryState(inventory),
                 Count = 15
             }
+        };
+    }
+
+    private static CharacterQuest CreateCharacterQuest(
+        int id,
+        Character character,
+        Quest quest,
+        CharacterQuestStatusEnum status)
+    {
+        return new CharacterQuest
+        {
+            Id = id,
+            CharacterId = character.Id,
+            Character = character,
+            QuestId = quest.Id,
+            Quest = quest,
+            Status = status,
+            StartDate = new DateTimeOffset(2026, 8, 12, 10, 0, 0, TimeSpan.Zero)
         };
     }
 
@@ -110,6 +271,21 @@ public class CharacterScopeTests
         public DateTimeOffset? GetAuthenticatedTokenExpirationUtc()
         {
             return null;
+        }
+    }
+
+    private sealed class FixedTimeProvider : TimeProvider
+    {
+        private readonly DateTimeOffset _utcNow;
+
+        public FixedTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _utcNow;
         }
     }
 }

@@ -122,6 +122,20 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task TokenWithoutRequiredSessionClaim_IsRejected(bool includeSessionStart, bool includeVersion)
+    {
+        var token = CreateToken(
+            includeSessionStartedAtClaim: includeSessionStart,
+            includeVersionClaim: includeVersion);
+
+        var response = await SendAuthorizedAsync(HttpMethod.Get, "/api/Quests", token);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     [Fact]
     public async Task ClientRole_CannotAccessServerEndpoint()
     {
@@ -140,6 +154,32 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
         var response = await SendAuthorizedAsync(HttpMethod.Get, "/api/Characters/1", token);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RefreshBeforeFinalFiveMinutes_IsRejected()
+    {
+        await _factory.EnsureClientUserExistsAsync();
+        var token = CreateToken();
+
+        var response = await SendAuthorizedAsync(HttpMethod.Post, "/api/ApplicationUsers/RefreshSession", token);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RefreshWithoutUserIdentifier_IsRejected()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var token = CreateToken(
+            notBeforeUtc: now.AddMinutes(-56),
+            expiresAtUtc: now.AddMinutes(4),
+            sessionStartedAtUtc: now.AddMinutes(-56),
+            includeUserIdClaim: false);
+
+        var response = await SendAuthorizedAsync(HttpMethod.Post, "/api/ApplicationUsers/RefreshSession", token);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -211,15 +251,17 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
         string algorithm = SecurityAlgorithms.HmacSha256,
         DateTimeOffset? notBeforeUtc = null,
         DateTimeOffset? expiresAtUtc = null,
-        DateTimeOffset? sessionStartedAtUtc = null)
+        DateTimeOffset? sessionStartedAtUtc = null,
+        bool includeUserIdClaim = true,
+        bool includeSessionStartedAtClaim = true,
+        bool includeVersionClaim = true)
     {
         var now = DateTimeOffset.UtcNow;
         var notBefore = notBeforeUtc ?? now.AddMinutes(-1);
         var expiresAt = expiresAtUtc ?? now.AddMinutes(59);
         var sessionStartedAt = sessionStartedAtUtc ?? notBefore;
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, JwtApiFactory.UserId),
             new Claim(ClaimTypes.Email, JwtApiFactory.Email),
             new Claim(ClaimTypes.Name, JwtApiFactory.Email),
             new Claim(ClaimTypes.Role, role),
@@ -228,13 +270,27 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
             new Claim(
                 JwtRegisteredClaimNames.Iat,
                 now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture),
-                ClaimValueTypes.Integer64),
-            new Claim(
+                ClaimValueTypes.Integer64)
+        };
+
+        if (includeUserIdClaim)
+        {
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, JwtApiFactory.UserId));
+        }
+
+        if (includeSessionStartedAtClaim)
+        {
+            claims.Add(new Claim(
                 SessionTokenPolicy.SessionStartedAtClaim,
                 sessionStartedAt.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture),
-                ClaimValueTypes.Integer64),
-            new Claim(SessionTokenPolicy.VersionClaim, SessionTokenPolicy.CurrentVersion)
-        };
+                ClaimValueTypes.Integer64));
+        }
+
+        if (includeVersionClaim)
+        {
+            claims.Add(new Claim(SessionTokenPolicy.VersionClaim, SessionTokenPolicy.CurrentVersion));
+        }
+
         var credentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey)),
             algorithm);
