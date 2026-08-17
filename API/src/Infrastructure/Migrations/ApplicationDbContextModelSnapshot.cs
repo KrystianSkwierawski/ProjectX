@@ -17,7 +17,7 @@ namespace ProjectX.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -221,7 +221,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Characters");
+                    b.ToTable("Characters", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterExperience", b =>
@@ -248,7 +248,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("CharacterId");
 
-                    b.ToTable("CharacterExperiences");
+                    b.ToTable("CharacterExperiences", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>
@@ -268,7 +268,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CharacterInventories");
+                    b.ToTable("CharacterInventories", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
@@ -306,7 +306,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("QuestId");
 
-                    b.ToTable("CharacterQuests");
+                    b.ToTable("CharacterQuests", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
@@ -339,7 +339,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("CharacterId");
 
-                    b.ToTable("CharacterTransforms");
+                    b.ToTable("CharacterTransforms", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CraftingRecipe", b =>
@@ -373,7 +373,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasIndex("Type", "Status")
                         .HasDatabaseName("IX.CraftingRecipe.Type.Status");
 
-                    b.ToTable("CraftingRecipes");
+                    b.ToTable("CraftingRecipes", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
@@ -393,7 +393,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InventoryItems");
+                    b.ToTable("InventoryItems", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
@@ -433,7 +433,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("IX.Quests.Status");
 
-                    b.ToTable("Quests");
+                    b.ToTable("Quests", (string)null);
                 });
 
             modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>

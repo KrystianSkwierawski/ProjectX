@@ -8,7 +8,6 @@ namespace ProjectX.Application.Characters.Commands;
 
 public record UpdateCharacterCommand : IRequest
 {
-    public int CharacterId { get; init; }
     public int? Health { get; init; }
     public int? MaxHealth { get; init; }
     public short? Strength { get; init; }
@@ -38,9 +37,10 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
     public async Task Handle(UpdateCharacterCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var character = await _context.Characters
-            .Where(x => x.Id == request.CharacterId)
+            .Where(x => x.Id == selectedCharacterId)
             .Where(x => x.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character", cancellationToken);
 

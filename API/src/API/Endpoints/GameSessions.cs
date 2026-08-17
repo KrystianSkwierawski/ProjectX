@@ -32,8 +32,9 @@ public class GameSessions : EndpointGroupBase
         groupBuilder
             .MapPost(CreateTicketAsync, "Ticket")
             .WithSummary("Create connection ticket")
-            .WithDescription("Creates a short-lived one-time connection ticket.")
+            .WithDescription("Creates a short-lived one-time connection ticket for a selected character.")
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesValidationProblem()
             .Produces(StatusCodes.Status429TooManyRequests)
             .RequireAuthorization(AuthorizationPolicies.Client)
             .RequireRateLimiting(RateLimitPolicies.GameSessionTicket);
@@ -66,9 +67,10 @@ public class GameSessions : EndpointGroupBase
 
     public static async Task<Ok<CreateGameSessionTicketDto>> CreateTicketAsync(
         ISender sender,
+        CreateGameSessionTicketCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new CreateGameSessionTicketCommand(), cancellationToken);
+        var result = await sender.Send(command, cancellationToken);
 
         return TypedResults.Ok(result);
     }

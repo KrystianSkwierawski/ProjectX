@@ -92,7 +92,7 @@ public sealed class InMemoryGameSessionService : IGameSessionService
         }
     }
 
-    public GameConnectionTicket CreateTicket(string clientUserId)
+    public GameConnectionTicket CreateTicket(string clientUserId, int characterId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(clientUserId);
 
@@ -119,9 +119,9 @@ public sealed class InMemoryGameSessionService : IGameSessionService
 
             var ticket = CreateUniqueSecret(_tickets);
             var expiresAtUtc = now.Add(_ticketLifetime);
-            _tickets.Add(Hash(ticket), new TicketState(session.GameSessionId, clientUserId, expiresAtUtc));
+            _tickets.Add(Hash(ticket), new TicketState(session.GameSessionId, clientUserId, characterId, expiresAtUtc));
 
-            return new GameConnectionTicket(session.GameSessionId, session.UsesRelay, session.RelayJoinCode, ticket, expiresAtUtc);
+            return new GameConnectionTicket(session.GameSessionId, characterId, session.UsesRelay, session.RelayJoinCode, ticket, expiresAtUtc);
         }
     }
 
@@ -149,15 +149,17 @@ public sealed class InMemoryGameSessionService : IGameSessionService
             _tickets.Remove(ticketHash);
 
             var playerSessionId = CreateUniqueSecret(_playerSessions);
-            _playerSessions.Add(Hash(playerSessionId), new PlayerSessionState(gameSessionId, serverUserId, ticketState.ClientUserId));
+            _playerSessions.Add(
+                Hash(playerSessionId),
+                new PlayerSessionState(gameSessionId, serverUserId, ticketState.ClientUserId, ticketState.CharacterId));
 
-            return new RedeemedGameSessionTicket(ticketState.ClientUserId, playerSessionId);
+            return new RedeemedGameSessionTicket(ticketState.ClientUserId, ticketState.CharacterId, playerSessionId);
         }
     }
 
-    public bool TryResolvePlayer(string serverUserId, string playerSessionId, out string userId)
+    public bool TryResolvePlayer(string serverUserId, string playerSessionId, out ResolvedPlayerSession playerSession)
     {
-        userId = string.Empty;
+        playerSession = new ResolvedPlayerSession(string.Empty, default);
 
         if (string.IsNullOrWhiteSpace(serverUserId) || string.IsNullOrWhiteSpace(playerSessionId))
         {
@@ -168,14 +170,14 @@ public sealed class InMemoryGameSessionService : IGameSessionService
         {
             RemoveExpiredState(GetUtcNow());
 
-            if (!_playerSessions.TryGetValue(Hash(playerSessionId), out var playerSession)
-                || !string.Equals(playerSession.ServerUserId, serverUserId, StringComparison.Ordinal)
-                || !_sessions.ContainsKey(playerSession.GameSessionId))
+            if (!_playerSessions.TryGetValue(Hash(playerSessionId), out var state)
+                || !string.Equals(state.ServerUserId, serverUserId, StringComparison.Ordinal)
+                || !_sessions.ContainsKey(state.GameSessionId))
             {
                 return false;
             }
 
-            userId = playerSession.ClientUserId;
+            playerSession = new ResolvedPlayerSession(state.ClientUserId, state.CharacterId);
             return true;
         }
     }
@@ -276,7 +278,7 @@ public sealed class InMemoryGameSessionService : IGameSessionService
 
     private sealed record SessionState(Guid GameSessionId, string ServerUserId, bool UsesRelay, string? RelayJoinCode, DateTimeOffset RegisteredAtUtc, DateTimeOffset ExpiresAtUtc);
 
-    private sealed record TicketState(Guid GameSessionId, string ClientUserId, DateTimeOffset ExpiresAtUtc);
+    private sealed record TicketState(Guid GameSessionId, string ClientUserId, int CharacterId, DateTimeOffset ExpiresAtUtc);
 
-    private sealed record PlayerSessionState(Guid GameSessionId, string ServerUserId, string ClientUserId);
+    private sealed record PlayerSessionState(Guid GameSessionId, string ServerUserId, string ClientUserId, int CharacterId);
 }

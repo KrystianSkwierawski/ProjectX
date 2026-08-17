@@ -6,6 +6,7 @@ namespace ProjectX.API.Infrastructure;
 
 public sealed class PlayerSessionAuthorizationHandler : AuthorizationHandler<PlayerSessionAuthorizationRequirement>
 {
+    public const string DelegatedCharacterIdItemKey = "ProjectX.DelegatedCharacterId";
     public const string DelegatedUserIdItemKey = "ProjectX.DelegatedUserId";
     public const string HeaderName = "PlayerSessionId";
 
@@ -26,9 +27,10 @@ public sealed class PlayerSessionAuthorizationHandler : AuthorizationHandler<Pla
 
         if (!string.IsNullOrWhiteSpace(serverUserId)
             && !string.IsNullOrWhiteSpace(playerSessionId)
-            && _gameSessionService.TryResolvePlayer(serverUserId, playerSessionId, out var userId))
+            && _gameSessionService.TryResolvePlayer(serverUserId, playerSessionId, out var playerSession))
         {
-            httpContext!.Items[DelegatedUserIdItemKey] = userId;
+            httpContext!.Items[DelegatedUserIdItemKey] = playerSession.UserId;
+            httpContext.Items[DelegatedCharacterIdItemKey] = playerSession.CharacterId;
             context.Succeed(requirement);
         }
 

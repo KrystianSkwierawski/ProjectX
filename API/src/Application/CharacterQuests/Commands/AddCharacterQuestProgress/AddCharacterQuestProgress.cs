@@ -22,12 +22,14 @@ public class AddCharacterQuestProgressCommandHandler : IRequestHandler<AddCharac
     public async Task<AddCharacterQuestProgressDto> Handle(AddCharacterQuestProgressCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var characterQuest = await _context.CharacterQuests
-            .Include(characterQuest => characterQuest.Quest)
-            .Where(characterQuest => characterQuest.Id == request.CharacterQuestId)
-            .Where(characterQuest => characterQuest.Status == CharacterQuestStatusEnum.Accepted)
-            .Where(characterQuest => characterQuest.Character.ApplicationUserId == userId)
+            .Include(x => x.Quest)
+            .Where(x => x.Id == request.CharacterQuestId)
+            .Where(x => x.CharacterId == selectedCharacterId)
+            .Where(x => x.Status == CharacterQuestStatusEnum.Accepted)
+            .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("accepted character quest", cancellationToken);
 
         characterQuest.AddProgress(request.Progress, characterQuest.Quest.Requirement);

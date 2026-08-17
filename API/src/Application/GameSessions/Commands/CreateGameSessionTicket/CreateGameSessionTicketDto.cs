@@ -4,6 +4,8 @@ public class CreateGameSessionTicketDto
 {
     public Guid GameSessionId { get; set; }
 
+    public int CharacterId { get; set; }
+
     public bool UsesRelay { get; set; }
 
     public string? RelayJoinCode { get; set; }
@@ -14,6 +16,6 @@ public class CreateGameSessionTicketDto
 
     public override string ToString()
     {
-        return $"{nameof(CreateGameSessionTicketDto)} {{ GameSessionId = {GameSessionId}, UsesRelay = {UsesRelay}, ExpiresAtUtc = {ExpiresAtUtc:O} }}";
+        return $"{nameof(CreateGameSessionTicketDto)} {{ GameSessionId = {GameSessionId}, CharacterId = {CharacterId}, UsesRelay = {UsesRelay}, ExpiresAtUtc = {ExpiresAtUtc:O} }}";
     }
 }

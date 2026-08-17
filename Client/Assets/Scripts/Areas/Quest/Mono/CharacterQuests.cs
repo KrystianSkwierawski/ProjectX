@@ -36,12 +36,65 @@ namespace Assets.Scripts.Areas.Quest.Mono
             CompleteQuestAsync(questId, characterQuestId, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
         }
 
+        [ServerRpc]
+        private void AcceptQuestServerRpc(QuestEnum questId)
+        {
+            AcceptQuestAsync(questId, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
+        }
+
+        private async UniTask AcceptQuestAsync(QuestEnum questId, string playerSessionId)
+        {
+            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(questId, playerSessionId);
+
+            AcceptQuestClientRpc(
+                characterQuest.Id,
+                characterQuest.QuestId,
+                characterQuest.Status,
+                characterQuest.Progress,
+                new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+        }
+
+        [ClientRpc]
+        private void AcceptQuestClientRpc(
+            int characterQuestId,
+            QuestEnum questId,
+            CharacterQuestStatusEnum status,
+            int progress,
+            ClientRpcParams rpcParams = default)
+        {
+            var characterQuest = new CharacterQuestDto
+            {
+                Id = characterQuestId,
+                QuestId = questId,
+                Status = status,
+                Progress = progress
+            };
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
+
+            QuestManager.Instance.CharacterQuests.Add(characterQuest);
+
+            QuestUI.Instance.Accept(characterQuest);
+
+            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(questId.ToString(), new AddQuestSubscriptionEvent
+            {
+                CharacterQuest = characterQuest
+            });
+        }
+
         private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string playerSessionId)
         {
-            // TODO: validate and get type from complete?
             var quest = QuestManager.Instance.Quests
                 .Where(x => x.Id == questId)
                 .Single();
+
+            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, playerSessionId);
 
             if (quest.Type == QuestTypeEnum.Collect)
             {
@@ -49,7 +102,6 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 {
                     Request = new UpdateCharacterInventoryCommand
                     {
-                        CharacterId = 1,
                         Remove = new InventoryItemDto[]
                         {
                             new InventoryItemDto
@@ -60,10 +112,9 @@ namespace Assets.Scripts.Areas.Quest.Mono
                         }
                     },
                     PlayerSessionId = playerSessionId,
+                    PersistInApi = false,
                 });
             }
-
-            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, playerSessionId);
 
             AddExperienceSubscription.Instance.Invoke(OwnerClientId.ToString(), new AddExperienceSubscriptionEvent
             {
@@ -73,7 +124,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
             });
         }
 
-        private async void Start()
+        private void Start()
         {
             if (IsOwner)
             {
@@ -81,7 +132,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
                 QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.Hide());
 
-                QuestUI.Instance.QuestAcceptButton.onClick.AddListener(async () =>
+                QuestUI.Instance.QuestAcceptButton.onClick.AddListener(() =>
                 {
                     QuestUI.Instance.Hide();
 
@@ -95,7 +146,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     }
                     else
                     {
-                        await AcceptQuestAsync();
+                        AcceptQuestServerRpc(_questNpc.Quest.Id);
                     }
                 });
             }
@@ -120,7 +171,10 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            var result = await QuestManager.Instance.CheckProgressAsync(quest.Id, progress, 1, UserManager.Instance.GetPlayerSessionId(clientId));
+            var result = await QuestManager.Instance.CheckProgressAsync(
+                quest.Id,
+                progress,
+                UserManager.Instance.GetPlayerSessionId(clientId));
 
             if (result.Status != CharacterQuestStatusEnum.None)
             {
@@ -152,23 +206,6 @@ namespace Assets.Scripts.Areas.Quest.Mono
             {
                 FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.QuestId.ToString(), new FinishCharacterQuestSubscriptionEvent());
             }
-        }
-
-        private async UniTask AcceptQuestAsync()
-        {
-            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
-
-            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(_questNpc.Quest.Id);
-
-            QuestManager.Instance.CharacterQuests.Add(characterQuest);
-
-            QuestUI.Instance.Accept(characterQuest);
-
-            // TODO: server rpc + validation
-            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(_questNpc.Quest.Id.ToString(), new AddQuestSubscriptionEvent
-            {
-                CharacterQuest = characterQuest
-            });
         }
 
         private void CompleteQuest(CharacterQuestDto characterQuest)

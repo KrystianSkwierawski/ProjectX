@@ -10,7 +10,6 @@ namespace ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperie
 
 public record AddCharacterExperienceCommand : IRequest<AddCharacterExperienceDto>
 {
-    public int CharacterId { get; set; }
     public int Amount { get; set; }
     public ExperienceTypeEnum Type { get; init; }
 }
@@ -29,10 +28,11 @@ public class AddCharacterExperienceCommandHandler : IRequestHandler<AddCharacter
     public async Task<AddCharacterExperienceDto> Handle(AddCharacterExperienceCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var character = await _context.Characters
             .Include(x => x.CharacterExperiences.Where(experience => experience.Type == request.Type))
-            .Where(x => x.Id == request.CharacterId)
+            .Where(x => x.Id == selectedCharacterId)
             .Where(x => x.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character", cancellationToken);
 

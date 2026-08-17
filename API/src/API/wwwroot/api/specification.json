@@ -321,6 +321,17 @@
         "summary": "Accept quest",
         "description": "Assigns a quest to the authenticated user's character.",
         "operationId": "AcceptCharacterQuest",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "x-name": "command",
           "content": {
@@ -566,52 +577,21 @@
         ]
       }
     },
-    "/api/Characters/{id}": {
+    "/api/Characters": {
       "get": {
         "tags": [
           "Characters"
         ],
-        "summary": "Get character",
-        "description": "Returns a character's current state.",
-        "operationId": "GetCharacter",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "PlayerSessionId",
-            "in": "header",
-            "required": true,
-            "description": "Server-issued player session credential.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Get characters",
+        "description": "Returns the authenticated user's playable characters.",
+        "operationId": "GetCharacters",
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CharacterDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/GetCharactersDto"
                 }
               }
             }
@@ -628,9 +608,7 @@
             "JWT": []
           }
         ]
-      }
-    },
-    "/api/Characters": {
+      },
       "post": {
         "tags": [
           "Characters"
@@ -689,6 +667,60 @@
         ]
       }
     },
+    "/api/Characters/Current": {
+      "get": {
+        "tags": [
+          "Characters"
+        ],
+        "summary": "Get character",
+        "description": "Returns the selected character's current state.",
+        "operationId": "GetCharacter",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterTransforms": {
       "get": {
         "tags": [
@@ -697,6 +729,18 @@
         "summary": "Get character transform",
         "description": "Returns the latest saved character transform.",
         "operationId": "GetCharacterTransform",
+        "parameters": [
+          {
+            "name": "CharacterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -949,8 +993,20 @@
           "GameSessions"
         ],
         "summary": "Create connection ticket",
-        "description": "Creates a short-lived one-time connection ticket.",
+        "description": "Creates a short-lived one-time connection ticket for a selected character.",
         "operationId": "CreateTicketAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGameSessionTicketCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "200": {
             "description": "",
@@ -968,6 +1024,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1311,10 +1377,6 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "amount": {
             "type": "integer",
             "format": "int32"
@@ -1491,10 +1553,6 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "add": {
             "type": "array",
             "items": {
@@ -1681,10 +1739,6 @@
           "progress": {
             "type": "integer",
             "format": "int32"
-          },
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
           }
         }
       },
@@ -1708,6 +1762,37 @@
           }
         }
       },
+      "GetCharactersDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "characters"
+        ],
+        "properties": {
+          "characters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CharacterSummaryDto"
+            }
+          }
+        }
+      },
+      "CharacterSummaryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "CharacterDto": {
         "type": "object",
         "additionalProperties": false,
@@ -1716,6 +1801,10 @@
           "levels"
         ],
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "name": {
             "type": "string"
           },
@@ -1777,10 +1866,6 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "characterId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "health": {
             "type": "integer",
             "format": "int32",
@@ -2107,6 +2192,10 @@
             "type": "string",
             "format": "guid"
           },
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "usesRelay": {
             "type": "boolean"
           },
@@ -2123,6 +2212,16 @@
           }
         }
       },
+      "CreateGameSessionTicketCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "RedeemGameSessionTicketDto": {
         "type": "object",
         "additionalProperties": false,
@@ -2133,6 +2232,10 @@
         "properties": {
           "userId": {
             "type": "string"
+          },
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
           },
           "playerSessionId": {
             "type": "string"

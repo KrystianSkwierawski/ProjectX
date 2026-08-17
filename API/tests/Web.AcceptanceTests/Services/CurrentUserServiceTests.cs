@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using ProjectX.API.Infrastructure;
 using ProjectX.API.Services;
 using ProjectX.Application.Common.Security;
 
@@ -8,6 +9,23 @@ namespace ProjectX.Web.AcceptanceTests.Services;
 
 public sealed class CurrentUserServiceTests
 {
+    [Fact]
+    public void GetCharacterId_ReturnsCharacterDelegatedByPlayerSession()
+    {
+        const int characterId = 42;
+
+        var claims = new[] { new Claim(ClaimTypes.Role, ApplicationRoles.Server) };
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(claims, "Bearer"))
+        };
+        httpContext.Items[PlayerSessionAuthorizationHandler.DelegatedCharacterIdItemKey] = characterId;
+
+        var service = new CurrentUserService(new HttpContextAccessor { HttpContext = httpContext });
+
+        Assert.Equal(characterId, service.GetCharacterId());
+    }
+
     [Fact]
     public void GetAuthenticatedTokenExpirationUtc_ParsesJwtExpirationClaim()
     {

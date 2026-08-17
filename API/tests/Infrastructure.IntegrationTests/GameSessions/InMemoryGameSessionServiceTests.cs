@@ -7,6 +7,7 @@ public sealed class InMemoryGameSessionServiceTests
 {
     private const string ServerUserId = "server-user";
     private const string ClientUserId = "client-user";
+    private const int CharacterId = 42;
 
     [Fact]
     public void Register_ReturnsUtcLeaseExpiry()
@@ -52,15 +53,15 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out var timeProvider);
         var session = service.Register(ServerUserId, false, null);
-        var redeemedTicket = service.CreateTicket(ClientUserId);
+        var redeemedTicket = service.CreateTicket(ClientUserId, CharacterId);
         var player = service.Redeem(ServerUserId, session.GameSessionId, redeemedTicket.Ticket);
-        var outstandingTicket = service.CreateTicket("another-client");
+        var outstandingTicket = service.CreateTicket("another-client", 43);
 
         timeProvider.Advance(TimeSpan.FromSeconds(90));
 
         Assert.False(service.TryResolvePlayer(ServerUserId, player.PlayerSessionId, out _));
         Assert.Throws<InvalidGameSessionCredentialException>(() => service.Redeem(ServerUserId, session.GameSessionId, outstandingTicket.Ticket));
-        Assert.Throws<NotFoundException>(() => service.CreateTicket(ClientUserId));
+        Assert.Throws<NotFoundException>(() => service.CreateTicket(ClientUserId, CharacterId));
     }
 
     [Fact]
@@ -79,16 +80,19 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var session = service.Register(ServerUserId, true, "AB12CD");
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
 
         var redeemed = service.Redeem(ServerUserId, session.GameSessionId, ticket.Ticket);
 
         Assert.Equal(session.GameSessionId, ticket.GameSessionId);
+        Assert.Equal(CharacterId, ticket.CharacterId);
         Assert.True(ticket.UsesRelay);
         Assert.Equal("AB12CD", ticket.RelayJoinCode);
         Assert.Equal(ClientUserId, redeemed.UserId);
-        Assert.True(service.TryResolvePlayer(ServerUserId, redeemed.PlayerSessionId, out var userId));
-        Assert.Equal(ClientUserId, userId);
+        Assert.Equal(CharacterId, redeemed.CharacterId);
+        Assert.True(service.TryResolvePlayer(ServerUserId, redeemed.PlayerSessionId, out var playerSession));
+        Assert.Equal(ClientUserId, playerSession.UserId);
+        Assert.Equal(CharacterId, playerSession.CharacterId);
         Assert.False(service.TryResolvePlayer("another-server", redeemed.PlayerSessionId, out _));
     }
 
@@ -97,7 +101,7 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var session = service.Register(ServerUserId, false, null);
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
 
         service.Redeem(ServerUserId, session.GameSessionId, ticket.Ticket);
 
@@ -109,7 +113,7 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var session = service.Register(ServerUserId, false, null);
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
 
         var successfulRedemptions = Enumerable.Range(0, 16)
             .AsParallel()
@@ -134,7 +138,7 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out var timeProvider);
         var session = service.Register(ServerUserId, false, null);
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
 
         timeProvider.Advance(TimeSpan.FromSeconds(60));
 
@@ -147,7 +151,7 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var session = service.Register(ServerUserId, false, null);
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
 
         Assert.Throws<InvalidGameSessionCredentialException>(() => service.Redeem("another-server", session.GameSessionId, ticket.Ticket));
 
@@ -160,10 +164,10 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var session = service.Register(ServerUserId, false, null);
-        var replacedTicket = service.CreateTicket(ClientUserId);
-        var otherClientTicket = service.CreateTicket("another-client");
+        var replacedTicket = service.CreateTicket(ClientUserId, CharacterId);
+        var otherClientTicket = service.CreateTicket("another-client", 43);
 
-        var currentTicket = service.CreateTicket(ClientUserId);
+        var currentTicket = service.CreateTicket(ClientUserId, CharacterId);
 
         Assert.Throws<InvalidGameSessionCredentialException>(() => service.Redeem(ServerUserId, session.GameSessionId, replacedTicket.Ticket));
         Assert.Equal("another-client", service.Redeem(ServerUserId, session.GameSessionId, otherClientTicket.Ticket).UserId);
@@ -175,7 +179,7 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var oldSession = service.Register(ServerUserId, false, null);
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
         var player = service.Redeem(ServerUserId, oldSession.GameSessionId, ticket.Ticket);
 
         var newSession = service.Register(ServerUserId, true, "NEW123");
@@ -189,7 +193,7 @@ public sealed class InMemoryGameSessionServiceTests
     {
         var service = CreateService(out _);
         var session = service.Register(ServerUserId, false, null);
-        var ticket = service.CreateTicket(ClientUserId);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
         var player = service.Redeem(ServerUserId, session.GameSessionId, ticket.Ticket);
 
         service.RevokePlayer(ServerUserId, player.PlayerSessionId);

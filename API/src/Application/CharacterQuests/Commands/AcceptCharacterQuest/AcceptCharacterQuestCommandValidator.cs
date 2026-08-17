@@ -7,7 +7,7 @@ public sealed class AcceptCharacterQuestCommandValidator : AbstractValidator<Acc
 {
     public AcceptCharacterQuestCommandValidator()
     {
-        RuleFor(command => command.QuestId)
-            .Must(questId => questId != QuestEnum.None && Enum.IsDefined(questId));
+        RuleFor(x => x.QuestId)
+            .Must(x => x != QuestEnum.None && Enum.IsDefined(x));
     }
 }

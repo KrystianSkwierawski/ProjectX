@@ -11,13 +11,22 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using ProjectX.API.Infrastructure;
 using ProjectX.Application.ApplicationUsers.Commands.RefreshSession;
+using ProjectX.Application.Characters.Queries.GetCharacter;
 using ProjectX.Application.Common.Security;
+using ProjectX.Application.GameSessions.Commands.CreateGameSessionTicket;
+using ProjectX.Application.GameSessions.Commands.RedeemGameSessionTicket;
+using ProjectX.Application.GameSessions.Commands.RegisterGameSession;
+using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
+using ProjectX.Domain.Inventory;
 using ProjectX.Infrastructure.Identity;
+using ProjectX.Infrastructure.Persistance;
 using JsonWebTokenHandler = Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler;
 
 namespace ProjectX.Web.AcceptanceTests.Authentication;
@@ -153,9 +162,74 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
     {
         var token = CreateToken(role: ApplicationRoles.Server);
 
-        var response = await SendAuthorizedAsync(HttpMethod.Get, "/api/Characters/1", token);
+        var response = await SendAuthorizedAsync(HttpMethod.Get, "/api/Characters/Current", token);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DelegatedPlayerEndpoint_ResolvesOwnedCharacterWithoutAssumingIdOne()
+    {
+        const int characterId = 42;
+
+        await _factory.EnsureClientUserExistsAsync();
+        await _factory.EnsureCharacterExistsAsync(characterId);
+
+        var serverToken = CreateToken(
+            role: ApplicationRoles.Server,
+            userId: JwtApiFactory.ServerUserId);
+        var clientToken = CreateToken(role: ApplicationRoles.Client);
+
+        using var registerRequest = CreateAuthorizedRequest(
+            HttpMethod.Post,
+            "/api/GameSessions/Register",
+            serverToken,
+            JsonContent.Create(new RegisterGameSessionCommand()));
+        using var registerResponse = await _client.SendAsync(registerRequest);
+
+        registerResponse.EnsureSuccessStatusCode();
+
+        var registration = await registerResponse.Content.ReadFromJsonAsync<RegisterGameSessionDto>();
+
+        using var ticketRequest = CreateAuthorizedRequest(
+            HttpMethod.Post,
+            "/api/GameSessions/Ticket",
+            clientToken,
+            JsonContent.Create(new CreateGameSessionTicketCommand { CharacterId = characterId }));
+        using var ticketResponse = await _client.SendAsync(ticketRequest);
+
+        ticketResponse.EnsureSuccessStatusCode();
+
+        var ticket = await ticketResponse.Content.ReadFromJsonAsync<CreateGameSessionTicketDto>();
+
+        using var redeemRequest = CreateAuthorizedRequest(
+            HttpMethod.Post,
+            "/api/GameSessions/Redeem",
+            serverToken,
+            JsonContent.Create(new RedeemGameSessionTicketCommand
+            {
+                GameSessionId = registration!.GameSessionId,
+                Ticket = ticket!.Ticket
+            }));
+        using var redeemResponse = await _client.SendAsync(redeemRequest);
+
+        redeemResponse.EnsureSuccessStatusCode();
+
+        var redeemed = await redeemResponse.Content.ReadFromJsonAsync<RedeemGameSessionTicketDto>();
+
+        Assert.Equal(characterId, redeemed!.CharacterId);
+
+        using var characterRequest = CreateAuthorizedRequest(HttpMethod.Get, "/api/Characters/Current", serverToken);
+        characterRequest.Headers.Add(PlayerSessionAuthorizationHandler.HeaderName, redeemed!.PlayerSessionId);
+
+        using var characterResponse = await _client.SendAsync(characterRequest);
+
+        characterResponse.EnsureSuccessStatusCode();
+
+        var character = await characterResponse.Content.ReadFromJsonAsync<CharacterDto>();
+
+        Assert.Equal(characterId, character!.Id);
+        Assert.Equal("jwt-pipeline-character", character.Name);
     }
 
     [Fact]
@@ -240,10 +314,21 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
 
     private async Task<HttpResponseMessage> SendAuthorizedAsync(HttpMethod method, string path, string token)
     {
-        using var request = new HttpRequestMessage(method, path);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using var request = CreateAuthorizedRequest(method, path, token);
 
         return await _client.SendAsync(request);
+    }
+
+    private static HttpRequestMessage CreateAuthorizedRequest(HttpMethod method, string path, string token, HttpContent? content = null)
+    {
+        return new HttpRequestMessage(method, path)
+        {
+            Content = content,
+            Headers =
+            {
+                Authorization = new AuthenticationHeaderValue("Bearer", token)
+            }
+        };
     }
 
     public void Dispose()
@@ -262,7 +347,8 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
         DateTimeOffset? sessionStartedAtUtc = null,
         bool includeUserIdClaim = true,
         bool includeSessionStartedAtClaim = true,
-        bool includeVersionClaim = true)
+        bool includeVersionClaim = true,
+        string userId = JwtApiFactory.UserId)
     {
         var now = DateTimeOffset.UtcNow;
         var notBefore = notBeforeUtc ?? now.AddMinutes(-1);
@@ -284,7 +370,7 @@ public sealed class JwtAuthenticationPipelineTests : IClassFixture<JwtApiFactory
 
         if (includeUserIdClaim)
         {
-            claims.Add(new Claim(ClaimTypes.NameIdentifier, JwtApiFactory.UserId));
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, userId));
         }
 
         if (includeSessionStartedAtClaim)
@@ -323,6 +409,7 @@ public sealed class JwtApiFactory : WebApplicationFactory<Program>
     public const string Issuer = "ProjectX.Web.AcceptanceTests";
     public const string SecurityKey = "projectx-web-acceptance-tests-security-key-with-more-than-64-bytes";
     public const string AlternativeSecurityKey = "projectx-web-acceptance-tests-alternative-key-with-more-than-64-bytes";
+    public const string ServerUserId = "jwt-pipeline-server";
     public const string UserId = "jwt-pipeline-user";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -380,6 +467,36 @@ public sealed class JwtApiFactory : WebApplicationFactory<Program>
         {
             EnsureSucceeded(await userManager.AddToRoleAsync(user, ApplicationRoles.Client));
         }
+    }
+
+    public async Task EnsureCharacterExistsAsync(int characterId)
+    {
+        using var scope = Services.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        if (await context.Characters.AnyAsync(x => x.ApplicationUserId == UserId))
+        {
+            return;
+        }
+
+        context.Characters.Add(new Character
+        {
+            Id = characterId,
+            ApplicationUserId = UserId,
+            Name = "jwt-pipeline-character",
+            Health = 100,
+            MaxHealth = 100,
+            Status = StatusEnum.Active,
+            CharacterInventory = new CharacterInventory
+            {
+                Id = characterId,
+                Inventory = new InventoryState([]),
+                Count = 15
+            }
+        });
+
+        await context.SaveChangesAsync();
     }
 
     private static void EnsureSucceeded(IdentityResult result)

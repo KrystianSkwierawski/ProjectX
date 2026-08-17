@@ -11,9 +11,9 @@ namespace Assets.Scripts.Areas.Inventory
     {
         public CharacterInventoryDto Dto { get; private set; }
 
-        public async UniTask LoadAsync()
+        public async UniTask LoadAsync(int characterId)
         {
-            Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>("CharacterInventories?CharacterId=1");
+            Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>($"CharacterInventories?CharacterId={characterId}");
         }
 
         public async UniTask UpdateAsync(UpdateCharacterInventoryCommand request, string playerSessionId)

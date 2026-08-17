@@ -1,11 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 
-public record CheckCharacterQuestProgressCommand(QuestEnum QuestId, int Progress, int CharacterId) : IRequest<CheckCharacterQuestProgressDto>;
+public record CheckCharacterQuestProgressCommand(QuestEnum QuestId, int Progress) : IRequest<CheckCharacterQuestProgressDto>;
 
 public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCharacterQuestProgressCommand, CheckCharacterQuestProgressDto>
 {
@@ -21,11 +22,12 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
     public async Task<CheckCharacterQuestProgressDto> Handle(CheckCharacterQuestProgressCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var characterQuest = await _context.CharacterQuests
             .Include(x => x.Quest)
             .Where(x => x.QuestId == request.QuestId)
-            .Where(x => x.CharacterId == request.CharacterId)
+            .Where(x => x.CharacterId == selectedCharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .Where(x => x.Status == CharacterQuestStatusEnum.Accepted)
             .FirstOrDefaultAsync(cancellationToken);

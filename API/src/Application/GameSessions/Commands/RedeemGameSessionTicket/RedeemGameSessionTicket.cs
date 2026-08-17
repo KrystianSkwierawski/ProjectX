@@ -35,6 +35,7 @@ public class RedeemGameSessionTicketCommandHandler : IRequestHandler<RedeemGameS
         return Task.FromResult(new RedeemGameSessionTicketDto
         {
             UserId = redeemed.UserId,
+            CharacterId = redeemed.CharacterId,
             PlayerSessionId = redeemed.PlayerSessionId
         });
     }

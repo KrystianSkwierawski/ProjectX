@@ -19,19 +19,19 @@ namespace Assets.Scripts.Areas.Quest
             Quests = result.Quests;
         }
 
-        public async UniTask LoadAsync(int characterId)
+        public async UniTask LoadCharacterQuestsAsync(int characterId)
         {
             var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>($"CharacterQuests?CharacterId={characterId}");
 
             CharacterQuests = result.CharacterQuests;
         }
 
-        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId)
+        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId, string playerSessionId)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests/Accept", new AcceptCharacterQuestCommand
             {
                 QuestId = questId
-            });
+            }, playerSessionId);
         }
 
         public async UniTask<AddCharacterQuestProgressDto> AddCharacterQuestProgressAsync(int progress, int characterQuestId, string playerSessionId)
@@ -43,13 +43,12 @@ namespace Assets.Scripts.Areas.Quest
             }, playerSessionId);
         }
 
-        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(QuestEnum questId, int progress, int characterId, string playerSessionId)
+        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(QuestEnum questId, int progress, string playerSessionId)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgressDto>("CharacterQuests/CheckProgress", new CheckCharacterQuestProgressCommand
             {
                 QuestId = questId,
                 Progress = progress,
-                CharacterId = characterId,
             }, playerSessionId);
         }
 

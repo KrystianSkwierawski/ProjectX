@@ -29,6 +29,7 @@ public class OpenApiContractTests
 
     [Theory]
     [InlineData("200")]
+    [InlineData("400")]
     [InlineData("404")]
     [InlineData("429")]
     public void GameSessionTicketEndpoint_ContainsExpectedResponse(string statusCode)
@@ -49,10 +50,11 @@ public class OpenApiContractTests
         {
             ("/api/CharacterExperiences", "POST"),
             ("/api/CharacterInventories", "POST"),
+            ("/api/CharacterQuests/Accept", "POST"),
             ("/api/CharacterQuests/Progress", "POST"),
             ("/api/CharacterQuests/CheckProgress", "POST"),
             ("/api/CharacterQuests/Complete", "POST"),
-            ("/api/Characters/{id}", "GET"),
+            ("/api/Characters/Current", "GET"),
             ("/api/Characters", "POST"),
             ("/api/CharacterTransforms", "POST")
         };
@@ -80,6 +82,28 @@ public class OpenApiContractTests
         }
     }
 
+    [Theory]
+    [InlineData("AddCharacterExperienceCommand")]
+    [InlineData("UpdateCharacterInventoryCommand")]
+    [InlineData("AcceptCharacterQuestCommand")]
+    [InlineData("AddCharacterQuestProgressCommand")]
+    [InlineData("CheckCharacterQuestProgressCommand")]
+    [InlineData("CompleteCharacterQuestCommand")]
+    [InlineData("UpdateCharacterCommand")]
+    [InlineData("SaveCharacterTransformCommand")]
+    public void ServerPlayerSessionCommand_DoesNotExposeCharacterId(string schemaName)
+    {
+        using var specification = OpenSpecification();
+
+        var properties = specification.RootElement
+            .GetProperty("components")
+            .GetProperty("schemas")
+            .GetProperty(schemaName)
+            .GetProperty("properties");
+
+        Assert.False(properties.TryGetProperty("characterId", out _));
+    }
+
     [Fact]
     public void Endpoints_HaveStableNamesAndConciseDescriptions()
     {
@@ -87,7 +111,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(22, operations.Length);
+        Assert.Equal(23, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -104,6 +128,7 @@ public class OpenApiContractTests
             "CheckCharacterQuestProgress",
             "CompleteCharacterQuest",
             "GetCharacter",
+            "GetCharacters",
             "GetCharacterInventory",
             "GetCharacterQuests",
             "GetCharacterTransform",

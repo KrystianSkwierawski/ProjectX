@@ -7,7 +7,7 @@ using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Characters.Queries.GetCharacter;
 
-public record GetCharacterQuery(int CharacterId) : IRequest<CharacterDto>;
+public record GetCharacterQuery : IRequest<CharacterDto>;
 
 public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, CharacterDto>
 {
@@ -23,11 +23,11 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
     public async Task<CharacterDto> Handle(GetCharacterQuery request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var character = await _context.Characters
-            .Where(x => x.Id == request.CharacterId)
+            .Where(x => x.Id == selectedCharacterId)
             .Where(x => x.ApplicationUserId == userId)
-            .OrderByDescending(x => x.ModDate)
             .Select(x => new
             {
                 x.Id,
@@ -56,6 +56,7 @@ public class GetCharacterQueryHandler : IRequestHandler<GetCharacterQuery, Chara
 
         return new CharacterDto
         {
+            Id = character.Id,
             Name = character.Name,
             Health = character.Health,
             MaxHealth = character.MaxHealth,

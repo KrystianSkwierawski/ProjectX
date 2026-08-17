@@ -126,7 +126,6 @@ namespace Assets.Scripts.Areas.Professions.Mono
             {
                 Request = new UpdateCharacterInventoryCommand
                 {
-                    CharacterId = 1,
                     Add = new InventoryItemDto[] { recipe.Reward.Item },
                     Remove = recipe.Requirement.Items
                 },

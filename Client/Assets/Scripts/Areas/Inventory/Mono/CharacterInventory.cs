@@ -148,7 +148,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             if (IsOwner)
             {
-                await InventoryManager.Instance.LoadAsync();
+                await InventoryManager.Instance.LoadAsync(UserManager.Instance.SelectedCharacterId);
 
                 InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
@@ -164,7 +164,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 {
                     if (SplitInventory(e.SourceSlotIndex))
                     {
-                        SplitInventoryServerRpc(e.CharacterId, e.SourceSlotIndex);
+                        SplitInventoryServerRpc(e.SourceSlotIndex);
                     }
                 });
 
@@ -172,7 +172,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 {
                     if (MoveInventory(e.SourceSlotIndex, e.TargetSlotIndex))
                     {
-                        MoveInventoryServerRpc(e.CharacterId, e.SourceSlotIndex, e.TargetSlotIndex);
+                        MoveInventoryServerRpc(e.SourceSlotIndex, e.TargetSlotIndex);
                     }
                 });
 
@@ -201,7 +201,10 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         }
                     });
 
-                    UpdateInventoryAsync(e.Request, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
+                    if (e.PersistInApi)
+                    {
+                        UpdateInventoryAsync(e.Request, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
+                    }
                 });
 
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
@@ -355,33 +358,31 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         }
 
         [ServerRpc]
-        private void SplitInventoryServerRpc(int characterId, int sourceSlotIndex)
+        private void SplitInventoryServerRpc(int sourceSlotIndex)
         {
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
-            SplitInventoryAsync(characterId, sourceSlotIndex, playerSessionId).Forget();
+            SplitInventoryAsync(sourceSlotIndex, playerSessionId).Forget();
         }
 
         [ServerRpc]
-        private void MoveInventoryServerRpc(int characterId, int sourceSlotIndex, int targetSlotIndex)
+        private void MoveInventoryServerRpc(int sourceSlotIndex, int targetSlotIndex)
         {
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
-            MoveInventoryAsync(characterId, sourceSlotIndex, targetSlotIndex, playerSessionId).Forget();
+            MoveInventoryAsync(sourceSlotIndex, targetSlotIndex, playerSessionId).Forget();
         }
 
-        private async UniTask SplitInventoryAsync(int characterId, int sourceSlotIndex, string playerSessionId)
+        private async UniTask SplitInventoryAsync(int sourceSlotIndex, string playerSessionId)
         {
-            await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
+            await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
             {
-                CharacterId = characterId,
                 SplitSlotIndex = sourceSlotIndex,
             }, playerSessionId);
         }
 
-        private async UniTask MoveInventoryAsync(int characterId, int sourceSlotIndex, int targetSlotIndex, string playerSessionId)
+        private async UniTask MoveInventoryAsync(int sourceSlotIndex, int targetSlotIndex, string playerSessionId)
         {
-            await InventoryManager.Instance.UpdateAsync(new UpdateCharacterInventoryCommand
+            await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
             {
-                CharacterId = characterId,
                 MoveSourceSlotIndex = sourceSlotIndex,
                 MoveTargetSlotIndex = targetSlotIndex,
             }, playerSessionId);

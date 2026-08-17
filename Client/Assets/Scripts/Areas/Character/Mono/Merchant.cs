@@ -131,7 +131,6 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 Request = new UpdateCharacterInventoryCommand
                 {
-                    CharacterId = 1,
                     Add = new[] { item },
                     Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetPurchasePrice(item) } },
                 },
@@ -150,7 +149,6 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 Request = new UpdateCharacterInventoryCommand
                 {
-                    CharacterId = 1,
                     Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetSellPrice(item) } },
                     Remove = new[] { item },
                 },

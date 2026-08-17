@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Characters.Commands;
 using ProjectX.Application.Characters.Queries.GetCharacter;
+using ProjectX.Application.Characters.Queries.GetCharacters;
 
 namespace ProjectX.API.Endpoints;
 
@@ -11,9 +12,15 @@ public class Characters : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder
-            .MapGet(GetCharacter, "{id}")
+            .MapGet(GetCharacters)
+            .WithSummary("Get characters")
+            .WithDescription("Returns the authenticated user's playable characters.")
+            .RequireAuthorization(AuthorizationPolicies.Client);
+
+        groupBuilder
+            .MapGet(GetCharacter, "Current")
             .WithSummary("Get character")
-            .WithDescription("Returns a character's current state.")
+            .WithDescription("Returns the selected character's current state.")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
@@ -25,9 +32,16 @@ public class Characters : EndpointGroupBase
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
-    public static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, int id, CancellationToken cancellationToken)
+    public static async Task<Ok<GetCharactersDto>> GetCharacters(ISender sender, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetCharacterQuery(id), cancellationToken);
+        var result = await sender.Send(new GetCharactersQuery(), cancellationToken);
+
+        return TypedResults.Ok(result);
+    }
+
+    public static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetCharacterQuery(), cancellationToken);
 
         return TypedResults.Ok(result);
     }

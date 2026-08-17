@@ -36,6 +36,17 @@ public class CurrentUserService : ICurrentUserService
         return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
     }
 
+    public int? GetCharacterId()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+
+        return httpContext?.User?.IsInRole(ApplicationRoles.Server) == true
+            && httpContext.Items.TryGetValue(PlayerSessionAuthorizationHandler.DelegatedCharacterIdItemKey, out var delegatedCharacterId)
+            && delegatedCharacterId is int characterId
+                ? characterId
+                : null;
+    }
+
     public DateTimeOffset? GetAuthenticatedSessionStartedAtUtc()
     {
         return GetUnixTimeClaim(SessionTokenPolicy.SessionStartedAtClaim);

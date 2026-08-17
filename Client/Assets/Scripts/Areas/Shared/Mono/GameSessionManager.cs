@@ -84,7 +84,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
         }
 
-        public static async UniTask StartClientAsync()
+        public static async UniTask StartClientAsync(int characterId)
         {
             var networkManager = GetNetworkManager();
 
@@ -94,13 +94,13 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 await InitializeUnityServicesAsync();
             }
 
-            var ticket = await RequestTicketAsync();
+            var ticket = await RequestTicketAsync(characterId);
 
             await ConfigureClientTransportAsync(networkManager, ticket);
 
             if (TicketExpiresSoon(ticket))
             {
-                var freshTicket = await RequestTicketAsync();
+                var freshTicket = await RequestTicketAsync(characterId);
 
                 if (!UsesSameRoute(ticket, freshTicket))
                 {
@@ -206,7 +206,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
                 var redeemed = await UnityWebRequestHelper.ExecutePostAsync<RedeemGameSessionTicketDto>("GameSessions/Redeem", command, log: false);
 
-                if (redeemed == null || string.IsNullOrWhiteSpace(redeemed.PlayerSessionId))
+                if (redeemed == null || redeemed.CharacterId <= 0 || string.IsNullOrWhiteSpace(redeemed.PlayerSessionId))
                 {
                     throw new InvalidOperationException("The API did not create a player session.");
                 }
@@ -218,7 +218,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                     throw new InvalidOperationException("The client disconnected before connection approval completed.");
                 }
 
-                UserManager.Instance.SetPlayerSessionId(request.ClientNetworkId, redeemed.PlayerSessionId);
+                UserManager.Instance.SetPlayerSession(request.ClientNetworkId, redeemed.PlayerSessionId, redeemed.CharacterId);
 
                 response.Approved = true;
                 response.CreatePlayerObject = true;
@@ -241,12 +241,13 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
         }
 
-        private static async UniTask<GameSessionTicketDto> RequestTicketAsync()
+        private static async UniTask<GameSessionTicketDto> RequestTicketAsync(int characterId)
         {
-            var ticket = await UnityWebRequestHelper.ExecutePostAsync<GameSessionTicketDto>("GameSessions/Ticket", log: false);
+            var command = new CreateGameSessionTicketCommand { CharacterId = characterId };
+            var ticket = await UnityWebRequestHelper.ExecutePostAsync<GameSessionTicketDto>("GameSessions/Ticket", command, log: false);
 
             if (ticket == null || ticket.GameSessionId == Guid.Empty || string.IsNullOrWhiteSpace(ticket.Ticket)
-                || ticket.ExpiresAtUtc == default)
+                || ticket.ExpiresAtUtc == default || ticket.CharacterId != characterId)
             {
                 throw new InvalidOperationException("The API did not return a valid game connection ticket.");
             }

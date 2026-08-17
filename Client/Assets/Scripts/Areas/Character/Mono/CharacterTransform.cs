@@ -18,7 +18,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             if (IsOwner)
             {
-                var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterTransformDto>("CharacterTransforms");
+                var characterId = UserManager.Instance.SelectedCharacterId;
+                var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterTransformDto>($"CharacterTransforms?CharacterId={characterId}");
 
                 transform.position = new Vector3(result.PositionX, result.PositionY, result.PositionZ);
                 transform.rotation.Set(0, result.RotationY, 0, 0);

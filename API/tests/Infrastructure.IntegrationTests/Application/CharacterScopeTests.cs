@@ -2,11 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterExperiences.Commands.AddCharacterExperience;
 using ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+using ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
 using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 using ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Application.Characters.Commands;
 using ProjectX.Application.Characters.Queries.GetCharacter;
+using ProjectX.Application.Characters.Queries.GetCharacters;
 using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
@@ -19,11 +21,12 @@ namespace ProjectX.Infrastructure.IntegrationTests.Application;
 public class CharacterScopeTests
 {
     private const string CurrentUserId = "current-user";
-    private const int CurrentCharacterId = 1;
-    private const int ForeignCharacterId = 2;
+    private const int CurrentCharacterId = 42;
+    private const int OtherOwnedCharacterId = 43;
+    private const int ForeignCharacterId = 1;
 
     [Fact]
-    public async Task CharacterHandlers_DoNotReadOrModifyAnotherUsersCharacter()
+    public async Task ClientQueries_DoNotReadAnotherUsersCharacterData()
     {
         await using var context = CreateContext();
 
@@ -36,39 +39,13 @@ public class CharacterScopeTests
         var currentUser = new TestCurrentUserService();
 
         await Assert.ThrowsAsync<NotFoundException>(() =>
-            new GetCharacterQueryHandler(context, currentUser)
-                .Handle(new GetCharacterQuery(ForeignCharacterId), CancellationToken.None));
-
-        await Assert.ThrowsAsync<NotFoundException>(() =>
             new GetCharacterInventoryQueryHandler(context, currentUser)
                 .Handle(new GetCharacterInventoryQuery(ForeignCharacterId), CancellationToken.None));
 
-        await Assert.ThrowsAsync<NotFoundException>(() =>
-            new UpdateCharacterInventoryCommandHandler(context, currentUser)
-                .Handle(
-                    new UpdateCharacterInventoryCommand(ForeignCharacterId, [], []),
-                    CancellationToken.None));
-
-        await Assert.ThrowsAsync<NotFoundException>(() =>
-            new UpdateCharacterCommandHandler(context, currentUser)
-                .Handle(
-                    new UpdateCharacterCommand { CharacterId = ForeignCharacterId, Health = 1 },
-                    CancellationToken.None));
-
-        await Assert.ThrowsAsync<NotFoundException>(() =>
-            new AddCharacterExperienceCommandHandler(context, currentUser)
-                .Handle(
-                    new AddCharacterExperienceCommand
-                    {
-                        CharacterId = ForeignCharacterId,
-                        Amount = 100,
-                        Type = ExperienceTypeEnum.Cooking
-                    },
-                    CancellationToken.None));
-
         var currentCharacter = await new GetCharacterQueryHandler(context, currentUser)
-            .Handle(new GetCharacterQuery(CurrentCharacterId), CancellationToken.None);
+            .Handle(new GetCharacterQuery(), CancellationToken.None);
 
+        Assert.Equal(CurrentCharacterId, currentCharacter.Id);
         Assert.Equal("current-user-character", currentCharacter.Name);
         Assert.Equal(100, currentCharacter.Health);
     }
@@ -90,7 +67,6 @@ public class CharacterScopeTests
             .Handle(
                 new UpdateCharacterCommand
                 {
-                    CharacterId = CurrentCharacterId,
                     Health = 75,
                     Strength = 9
                 },
@@ -100,15 +76,15 @@ public class CharacterScopeTests
             .Handle(
                 new AddCharacterExperienceCommand
                 {
-                    CharacterId = CurrentCharacterId,
                     Amount = 100,
                     Type = ExperienceTypeEnum.Cooking
                 },
                 CancellationToken.None);
 
         var character = await new GetCharacterQueryHandler(context, currentUser)
-            .Handle(new GetCharacterQuery(CurrentCharacterId), CancellationToken.None);
+            .Handle(new GetCharacterQuery(), CancellationToken.None);
 
+        Assert.Equal(CurrentCharacterId, character.Id);
         Assert.Equal(75, character.Health);
         Assert.Equal(9, character.Strength);
         Assert.Equal(100, experience.Experience);
@@ -147,7 +123,6 @@ public class CharacterScopeTests
         await new UpdateCharacterInventoryCommandHandler(context, currentUser)
             .Handle(
                 new UpdateCharacterInventoryCommand(
-                    CurrentCharacterId,
                     [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 3 }],
                     [new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 4 }]),
                 CancellationToken.None);
@@ -202,7 +177,7 @@ public class CharacterScopeTests
 
         var progress = await new CheckCharacterQuestProgressCommandHandler(context, currentUser)
             .Handle(
-                new CheckCharacterQuestProgressCommand(QuestEnum.Kill2Beans, 2, CurrentCharacterId),
+                new CheckCharacterQuestProgressCommand(QuestEnum.Kill2Beans, 2),
                 CancellationToken.None);
 
         var completedAtUtc = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
@@ -222,6 +197,136 @@ public class CharacterScopeTests
         Assert.Equal(CharacterQuestStatusEnum.Accepted, foreignAcceptedQuest.Status);
         Assert.Equal(0, foreignAcceptedQuest.Progress);
         Assert.Equal(CharacterQuestStatusEnum.Finished, foreignFinishedQuest.Status);
+    }
+
+    [Fact]
+    public async Task CompleteCollectQuest_RemovesRequiredItemsExactlyOnce()
+    {
+        await using var context = CreateContext();
+
+        var character = CreateCharacter(
+            CurrentCharacterId,
+            CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, 3));
+
+        var quest = new Quest
+        {
+            Id = QuestEnum.Collect2Cans,
+            Name = nameof(QuestEnum.Collect2Cans),
+            Type = QuestTypeEnum.Collect,
+            GameObjectName = nameof(InventoryItemEnum.Can),
+            Requirement = 2,
+            Reward = 1000,
+            Status = StatusEnum.Active
+        };
+
+        var characterQuest = CreateCharacterQuest(
+            30,
+            character,
+            quest,
+            CharacterQuestStatusEnum.Finished);
+
+        context.AddRange(character, quest, characterQuest);
+
+        await context.SaveChangesAsync();
+
+        var completedAtUtc = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
+
+        var result = await new CompleteCharacterQuestCommandHandler(
+                context,
+                new TestCurrentUserService(),
+                new FixedTimeProvider(completedAtUtc))
+            .Handle(new CompleteCharacterQuestCommand(characterQuest.Id), CancellationToken.None);
+
+        var remainingItem = Assert.Single(character.CharacterInventory.Inventory.Items);
+
+        Assert.Equal(1000, result.Reward);
+        Assert.Equal(CharacterQuestStatusEnum.Completed, characterQuest.Status);
+        Assert.Equal((InventoryItemEnum.Can, 1), (remainingItem.Type, remainingItem.Count));
+    }
+
+    [Fact]
+    public async Task GetCharacters_ReturnsAllActiveCharactersOwnedByUser()
+    {
+        await using var context = CreateContext();
+
+        var removedCharacter = CreateCharacter(44, CurrentUserId);
+        removedCharacter.Status = StatusEnum.Removed;
+
+        context.Characters.AddRange(
+            CreateCharacter(CurrentCharacterId, CurrentUserId),
+            CreateCharacter(OtherOwnedCharacterId, CurrentUserId),
+            removedCharacter,
+            CreateCharacter(ForeignCharacterId, "other-user"));
+
+        await context.SaveChangesAsync();
+
+        var result = await new GetCharactersQueryHandler(context, new TestCurrentUserService())
+            .Handle(new GetCharactersQuery(), CancellationToken.None);
+
+        Assert.Collection(
+            result.Characters,
+            x => Assert.Equal(CurrentCharacterId, x.Id),
+            x => Assert.Equal(OtherOwnedCharacterId, x.Id));
+    }
+
+    [Fact]
+    public async Task ServerHandlers_UseCharacterSelectedByPlayerSession()
+    {
+        await using var context = CreateContext();
+
+        var currentCharacter = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        var otherOwnedCharacter = CreateCharacter(OtherOwnedCharacterId, CurrentUserId);
+        var quest = new Quest
+        {
+            Id = QuestEnum.Kill2Beans,
+            Name = nameof(QuestEnum.Kill2Beans),
+            Type = QuestTypeEnum.Kill,
+            GameObjectName = "Bean(Clone)",
+            Requirement = 2,
+            Reward = 1000,
+            Status = StatusEnum.Active
+        };
+
+        context.AddRange(currentCharacter, otherOwnedCharacter, quest);
+
+        await context.SaveChangesAsync();
+
+        var currentUser = new TestCurrentUserService();
+
+        await new UpdateCharacterCommandHandler(context, currentUser)
+            .Handle(
+                new UpdateCharacterCommand { Health = 75 },
+                CancellationToken.None);
+
+        await new UpdateCharacterInventoryCommandHandler(context, currentUser)
+            .Handle(
+                new UpdateCharacterInventoryCommand(
+                    [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 1 }],
+                    []),
+                CancellationToken.None);
+
+        var acceptedQuest = await new AcceptCharacterQuestCommandHandler(
+                context,
+                currentUser,
+                new FixedTimeProvider(new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero)))
+            .Handle(
+                new AcceptCharacterQuestCommand(QuestEnum.Kill2Beans),
+                CancellationToken.None);
+
+        var selectedCharacter = await new GetCharacterQueryHandler(context, currentUser)
+            .Handle(new GetCharacterQuery(), CancellationToken.None);
+
+        var persistedQuest = await context.CharacterQuests
+            .Where(x => x.Id == acceptedQuest.Id)
+            .SingleAsync();
+
+        Assert.Equal(CurrentCharacterId, selectedCharacter.Id);
+        Assert.Equal(75, currentCharacter.Health);
+        Assert.Equal(100, otherOwnedCharacter.Health);
+        Assert.Single(currentCharacter.CharacterInventory.Inventory.Items);
+        Assert.Empty(otherOwnedCharacter.CharacterInventory.Inventory.Items);
+        Assert.Equal(CurrentCharacterId, persistedQuest.CharacterId);
     }
 
     private static ApplicationDbContext CreateContext()
@@ -284,6 +389,11 @@ public class CharacterScopeTests
         public string GetAuthenticatedUserId()
         {
             return CurrentUserId;
+        }
+
+        public int? GetCharacterId()
+        {
+            return CurrentCharacterId;
         }
 
         public DateTimeOffset? GetAuthenticatedSessionStartedAtUtc()

@@ -6,7 +6,6 @@ using ProjectX.Application.Common.Interfaces;
 namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
 public record UpdateCharacterInventoryCommand(
-    int CharacterId,
     InventoryItemDto[] Add,
     InventoryItemDto[] Remove,
     int? SplitSlotIndex = null,
@@ -27,10 +26,11 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
     public async Task Handle(UpdateCharacterInventoryCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var entity = await _context.CharacterInventories
-            .Where(inventory => inventory.Id == request.CharacterId)
-            .Where(inventory => inventory.Character.ApplicationUserId == userId)
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
         var inventory = entity.Inventory;

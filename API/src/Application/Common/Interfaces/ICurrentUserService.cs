@@ -8,6 +8,8 @@ public interface ICurrentUserService
 
     string GetAuthenticatedUserId();
 
+    int? GetCharacterId();
+
     DateTimeOffset? GetAuthenticatedSessionStartedAtUtc();
 
     DateTimeOffset? GetAuthenticatedTokenExpirationUtc();

@@ -5,8 +5,6 @@ namespace Assets.Scripts.Areas.Inventory.Models
 {
     public class UpdateCharacterInventoryCommand : INetworkSerializable
     {
-        public int CharacterId { get; set; }
-
         public InventoryItemDto[] Add { get; set; } = Array.Empty<InventoryItemDto>();
 
         public InventoryItemDto[] Remove { get; set; } = Array.Empty<InventoryItemDto>();
@@ -19,14 +17,6 @@ namespace Assets.Scripts.Areas.Inventory.Models
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            // Serialize CharacterId via a local so we can pass by ref
-            int characterId = CharacterId;
-            serializer.SerializeValue(ref characterId);
-            if (serializer.IsReader)
-            {
-                CharacterId = characterId;
-            }
-
             // Serialize Add array length and elements
             int addLength = Add?.Length ?? 0;
             serializer.SerializeValue(ref addLength);

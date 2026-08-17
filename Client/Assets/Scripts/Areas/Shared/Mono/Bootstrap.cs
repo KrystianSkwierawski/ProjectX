@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Quest;
 using Assets.Scripts.Areas.Shared.UI;
@@ -172,9 +173,20 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
             try
             {
+                await UserManager.Instance.LoadCharactersAsync();
+
+                #region Temporary automatic character selection
+
+                var character = UserManager.Instance.AvailableCharacters.FirstOrDefault()
+                    ?? throw new InvalidOperationException("The authenticated user has no playable characters.");
+
+                UserManager.Instance.SelectCharacter(character.Id);
+
+                #endregion
+
                 await QuestManager.Instance.LoadAsync();
 
-                await QuestManager.Instance.LoadAsync(1);
+                await QuestManager.Instance.LoadCharacterQuestsAsync(UserManager.Instance.SelectedCharacterId);
 
                 foreach (var sceneName in _clientSceneNames)
                 {
@@ -186,7 +198,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                     throw new InvalidOperationException("MainScene could not be activated.");
                 }
 
-                await GameSessionManager.StartClientAsync();
+                await GameSessionManager.StartClientAsync(UserManager.Instance.SelectedCharacterId);
 
                 Debug.Log("Client started");
 

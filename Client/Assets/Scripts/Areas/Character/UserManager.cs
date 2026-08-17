@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
@@ -19,11 +20,15 @@ namespace Assets.Scripts.Areas.Character
         private static readonly TimeSpan _sessionRefreshRetryInterval = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan _sessionMaximumLifetime = TimeSpan.FromHours(24);
 
-        private readonly IDictionary<ulong, string> _playerSessionIds = new Dictionary<ulong, string>();
+        private readonly IDictionary<ulong, AuthenticatedPlayerSession> _playerSessions = new Dictionary<ulong, AuthenticatedPlayerSession>();
         private CancellationTokenSource _sessionRefreshCancellation;
         private double _sessionExpiresAtRealtime;
 
         public IDictionary<ulong, CharacterDto> Characters { get; } = new Dictionary<ulong, CharacterDto>();
+
+        public IReadOnlyList<CharacterSummaryDto> AvailableCharacters { get; private set; } = Array.Empty<CharacterSummaryDto>();
+
+        public int SelectedCharacterId { get; private set; }
 
         public string Token { get; private set; }
 
@@ -32,6 +37,23 @@ namespace Assets.Scripts.Areas.Character
         public ulong OwnerClientId { get; set; } // TODO: replace all references
 
         public event Action<string> SessionInvalidated;
+
+        public async UniTask LoadCharactersAsync()
+        {
+            var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharactersDto>("Characters");
+
+            AvailableCharacters = result?.Characters?.ToArray() ?? Array.Empty<CharacterSummaryDto>();
+        }
+
+        public void SelectCharacter(int characterId)
+        {
+            if (!AvailableCharacters.Any(x => x.Id == characterId))
+            {
+                throw new InvalidOperationException($"Character {characterId} is not available to the authenticated user.");
+            }
+
+            SelectedCharacterId = characterId;
+        }
 
         public async UniTask LoginAsync(string userName, string password, CancellationToken cancellationToken = default)
         {
@@ -174,8 +196,10 @@ namespace Assets.Scripts.Areas.Character
             Language = default;
             OwnerClientId = default;
             _sessionExpiresAtRealtime = default;
+            AvailableCharacters = Array.Empty<CharacterSummaryDto>();
+            SelectedCharacterId = default;
             Characters.Clear();
-            _playerSessionIds.Clear();
+            _playerSessions.Clear();
 
             const string message = "Your session could not be refreshed. Please sign in again.";
 
@@ -188,31 +212,46 @@ namespace Assets.Scripts.Areas.Character
 #endif
         }
 
-        public void SetPlayerSessionId(ulong clientId, string playerSessionId)
+        public void SetPlayerSession(ulong clientId, string playerSessionId, int characterId)
         {
             if (string.IsNullOrWhiteSpace(playerSessionId))
             {
                 throw new ArgumentException("A player session ID is required.", nameof(playerSessionId));
             }
 
-            _playerSessionIds[clientId] = playerSessionId;
+            if (characterId <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(characterId));
+            }
+
+            _playerSessions[clientId] = new AuthenticatedPlayerSession(playerSessionId, characterId);
         }
 
         public string GetPlayerSessionId(ulong clientId)
         {
-            return _playerSessionIds.TryGetValue(clientId, out var playerSessionId)
-                ? playerSessionId
+            return _playerSessions.TryGetValue(clientId, out var playerSession)
+                ? playerSession.PlayerSessionId
+                : throw new InvalidOperationException($"No authenticated player session exists for network client {clientId}.");
+        }
+
+        public int GetPlayerCharacterId(ulong clientId)
+        {
+            return _playerSessions.TryGetValue(clientId, out var playerSession)
+                ? playerSession.CharacterId
                 : throw new InvalidOperationException($"No authenticated player session exists for network client {clientId}.");
         }
 
         public bool TryTakePlayerSessionId(ulong clientId, out string playerSessionId)
         {
-            if (!_playerSessionIds.TryGetValue(clientId, out playerSessionId))
+            if (!_playerSessions.TryGetValue(clientId, out var playerSession))
             {
+                playerSessionId = null;
+
                 return false;
             }
 
-            _playerSessionIds.Remove(clientId);
+            playerSessionId = playerSession.PlayerSessionId;
+            _playerSessions.Remove(clientId);
 
             return true;
         }
@@ -238,6 +277,19 @@ namespace Assets.Scripts.Areas.Character
             }
 
             return Characters[clientId].Levels[type];
+        }
+
+        private sealed class AuthenticatedPlayerSession
+        {
+            public AuthenticatedPlayerSession(string playerSessionId, int characterId)
+            {
+                PlayerSessionId = playerSessionId;
+                CharacterId = characterId;
+            }
+
+            public string PlayerSessionId { get; }
+
+            public int CharacterId { get; }
         }
     }
 }

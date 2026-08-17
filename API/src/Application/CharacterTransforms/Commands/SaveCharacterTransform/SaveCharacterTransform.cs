@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ProjectX.Application.Common.Exceptions;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 
@@ -28,13 +28,12 @@ public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacte
     public async Task Handle(SaveCharacterTransformCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
-        var characterId = await _context.Characters
-            .Where(character => character.ApplicationUserId == userId)
-            .OrderByDescending(character => character.ModDate)
-            .Select(character => (int?)character.Id)
-            .FirstOrDefaultAsync(cancellationToken)
-            ?? throw new NotFoundException("character");
+        var character = await _context.Characters
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.ApplicationUserId == userId)
+            .SingleOrNotFoundAsync("character", cancellationToken);
 
         _context.CharacterTransforms.Add(new CharacterTransform
         {
@@ -42,7 +41,7 @@ public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacte
             PositionY = request.PositionY,
             PositionZ = request.PositionZ,
             RotationY = request.RotationY,
-            CharacterId = characterId
+            CharacterId = character.Id
         });
 
         await _context.SaveChangesAsync(cancellationToken);

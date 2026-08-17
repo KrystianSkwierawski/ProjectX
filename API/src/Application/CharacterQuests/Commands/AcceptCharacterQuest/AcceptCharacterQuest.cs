@@ -1,7 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
-using ProjectX.Application.Common.Exceptions;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
@@ -26,17 +25,18 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
     public async Task<CharacterQuestDto> Handle(AcceptCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
-        var characterId = await _context.Characters
-            .Where(character => character.ApplicationUserId == userId)
-            .Select(character => (int?)character.Id)
-            .FirstOrDefaultAsync(cancellationToken)
-            ?? throw new NotFoundException("character");
+        var character = await _context.Characters
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.ApplicationUserId == userId)
+            .Where(x => x.Status == StatusEnum.Active)
+            .SingleOrNotFoundAsync("character", cancellationToken);
 
         var entity = new CharacterQuest
         {
             QuestId = request.QuestId,
-            CharacterId = characterId,
+            CharacterId = character.Id,
             Status = CharacterQuestStatusEnum.Accepted,
             StartDate = _timeProvider.GetUtcNow()
         };

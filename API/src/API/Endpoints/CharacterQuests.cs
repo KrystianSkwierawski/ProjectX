@@ -25,7 +25,7 @@ public class CharacterQuests : EndpointGroupBase
             .WithDescription("Assigns a quest to the authenticated user's character.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(AuthorizationPolicies.Client);
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
             .MapPost(AddCharacterQuestProgress, "Progress")

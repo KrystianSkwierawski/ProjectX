@@ -25,17 +25,19 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
     public async Task<CompleteCharacterQuestDto> Handle(CompleteCharacterQuestCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var characterQuest = await _context.CharacterQuests
             .Include(x => x.Quest)
             .Where(x => x.Id == request.CharacterQuestId)
+            .Where(x => x.CharacterId == selectedCharacterId)
             .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
             .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("finished character quest", cancellationToken);
 
         if (characterQuest.Quest.Type == QuestTypeEnum.Collect)
         {
-            await CollectItemsAsync(userId, characterQuest, cancellationToken);
+            await CollectItemsAsync(userId, selectedCharacterId, characterQuest, cancellationToken);
         }
 
         characterQuest.Complete(_timeProvider.GetUtcNow());
@@ -45,12 +47,17 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
         return new CompleteCharacterQuestDto { Reward = characterQuest.Quest.Reward };
     }
 
-    private async Task CollectItemsAsync(string userId, CharacterQuest characterQuest, CancellationToken cancellationToken)
+    private async Task CollectItemsAsync(
+        string userId,
+        int selectedCharacterId,
+        CharacterQuest characterQuest,
+        CancellationToken cancellationToken)
     {
         var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
 
         var characterInventory = await _context.CharacterInventories
-            .Where(inventory => inventory.Character.ApplicationUserId == userId)
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
         if (!characterInventory.Inventory.Remove(itemType, characterQuest.Quest.Requirement))

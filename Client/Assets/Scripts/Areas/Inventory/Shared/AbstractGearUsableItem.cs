@@ -69,7 +69,6 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         {
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
-                CharacterId = 1,
                 MaxHealth = character.MaxHealth,
                 Strength = character.Strength,
                 Dexterity = character.Dexterity,

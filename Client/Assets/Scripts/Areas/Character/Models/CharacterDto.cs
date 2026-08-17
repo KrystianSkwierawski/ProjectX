@@ -9,6 +9,8 @@ namespace Assets.Scripts.Areas.Character.Models
 {
     public class CharacterDto : INetworkSerializable
     {
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
         public IDictionary<ExperienceTypeEnum, byte> Levels { get; set; }
@@ -43,6 +45,10 @@ namespace Assets.Scripts.Areas.Character.Models
         {
             if (serializer.IsReader)
             {
+                int id = default;
+                serializer.SerializeValue(ref id);
+                Id = id;
+
                 // Read Name
                 string name = default;
                 serializer.SerializeValue(ref name);
@@ -121,6 +127,9 @@ namespace Assets.Scripts.Areas.Character.Models
             }
             else
             {
+                int id = Id;
+                serializer.SerializeValue(ref id);
+
                 // Write Name
                 string name = Name ?? string.Empty;
                 serializer.SerializeValue(ref name);

@@ -446,7 +446,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     UserManager.Instance.OwnerClientId.ToString(),
                     new MoveInventorySubscriptionEvent
                     {
-                        CharacterId = InventoryManager.Instance.Dto.CharacterId,
                         SourceSlotIndex = sourceSlotIndex,
                         TargetSlotIndex = targetInventorySlot.Index,
                     });
@@ -663,7 +662,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             SplitInventorySubscription.Instance.Invoke(UserManager.Instance.OwnerClientId.ToString(), new SplitInventorySubscriptionEvent
             {
-                CharacterId = InventoryManager.Instance.Dto.CharacterId,
                 SourceSlotIndex = sourceSlotIndex,
             });
         }
@@ -766,7 +764,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 {
                     Request = new UpdateCharacterInventoryCommand
                     {
-                        CharacterId = InventoryManager.Instance.Dto.CharacterId,
                         Add = new[] { item },
                     },
                 });

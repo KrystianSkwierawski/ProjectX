@@ -4,8 +4,6 @@ namespace Assets.Scripts.Areas.Character.Models
 {
     public class UpdateCharacterCommand
     {
-        public int CharacterId { get; set; }
-
         public int? Health { get; set; }
 
         public int? MaxHealth { get; set; }

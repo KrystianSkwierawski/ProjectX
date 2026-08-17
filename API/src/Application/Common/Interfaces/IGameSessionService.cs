@@ -8,11 +8,11 @@ public interface IGameSessionService
 
     RegisteredGameSession Heartbeat(string serverUserId, Guid gameSessionId);
 
-    GameConnectionTicket CreateTicket(string clientUserId);
+    GameConnectionTicket CreateTicket(string clientUserId, int characterId);
 
     RedeemedGameSessionTicket Redeem(string serverUserId, Guid gameSessionId, string ticket);
 
-    bool TryResolvePlayer(string serverUserId, string playerSessionId, out string userId);
+    bool TryResolvePlayer(string serverUserId, string playerSessionId, out ResolvedPlayerSession playerSession);
 
     void RevokePlayer(string serverUserId, string playerSessionId);
 }

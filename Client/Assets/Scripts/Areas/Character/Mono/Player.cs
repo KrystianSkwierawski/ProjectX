@@ -33,14 +33,13 @@ namespace Assets.Scripts.Areas.Character.Mono
                 AddExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
                     var playerSessionId = GetCurrentPlayerSessionId();
+                    var character = UserManager.Instance.Characters[OwnerClientId];
+
                     var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
-                        CharacterId = 1,
                         Amount = e.Amount,
                         type = e.Type,
                     }, playerSessionId);
-
-                    var character = UserManager.Instance.Characters[OwnerClientId];
 
                     if (result.Level > character.Levels[e.Type])
                     {
@@ -87,7 +86,6 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                     {
-                        CharacterId = 1,
                         Health = character.Health
                     }, playerSessionId)
                     .Forget();
@@ -147,7 +145,14 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private async UniTask LoadCharacterAsync(string playerSessionId)
         {
-            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", playerSessionId);
+            var characterId = UserManager.Instance.GetPlayerCharacterId(OwnerClientId);
+            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/Current", playerSessionId);
+
+            if (character.Id != characterId)
+            {
+                throw new InvalidOperationException("The API returned a different character than the authenticated player session.");
+            }
+
             UserManager.Instance.Characters[OwnerClientId] = character;
 
             UpdatePlayerClientRpc(character, new ClientRpcParams
@@ -217,7 +222,6 @@ namespace Assets.Scripts.Areas.Character.Mono
                 // TODO: split to smaller commands
                 UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                 {
-                    CharacterId = 1,
                     MaxHealth = character.MaxHealth,
                     Strength = character.Strength,
                     Dexterity = character.Dexterity,

@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;

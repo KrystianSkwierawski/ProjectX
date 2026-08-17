@@ -38,7 +38,6 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 #if UNITY_SERVER && !UNITY_EDITOR
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
-                CharacterId = 1,
                 Health = character.Health
             }, PlayerSessionId)
             .Forget();

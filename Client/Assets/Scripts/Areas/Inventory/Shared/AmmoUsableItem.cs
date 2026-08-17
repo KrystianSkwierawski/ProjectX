@@ -41,11 +41,13 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
             if (weaponCategory != character.WeaponType.GetWeaponCategory())
             {
+#if !UNITY_SERVER || UNITY_EDITOR
                 LogUI.Instance.ShowAsync
                 (
                     $"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(weaponCategory.ToString())}", 
                     color: ColorUI.Red
                 ).Forget();
+#endif
 
                 return false;
             }
