@@ -215,7 +215,7 @@
           "CharacterInventories"
         ],
         "summary": "Update character inventory",
-        "description": "Applies inventory changes for a character.",
+        "description": "Atomically applies inventory changes and reports when the resulting items do not fit.",
         "operationId": "UpdateCharacterInventory",
         "parameters": [
           {
@@ -241,8 +241,15 @@
           "x-position": 1
         },
         "responses": {
-          "204": {
-            "description": ""
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCharacterInventoryDto"
+                }
+              }
+            }
           },
           "404": {
             "description": "",
@@ -1547,6 +1554,27 @@
           1020,
           1021,
           1022
+        ]
+      },
+      "UpdateCharacterInventoryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/UpdateCharacterInventoryStatusEnum"
+          }
+        }
+      },
+      "UpdateCharacterInventoryStatusEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Applied",
+          "InventoryFull"
+        ],
+        "enum": [
+          0,
+          1
         ]
       },
       "UpdateCharacterInventoryCommand": {

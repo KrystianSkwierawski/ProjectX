@@ -19,12 +19,13 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - Inventory management should support direct drag-and-drop organization, including exact empty-slot placement, swapping different items, merging matching stacks, and equipping/unequipping through Gear with clear visual feedback while dragging. Any Gear slot may receive an equippable item; the item type determines its actual equipment slot.
 - Loot should be transferable into inventory by drag-and-drop as well as right-click. While an item is being dragged from Inventory, Gear, Merchant, or Loot, its source item/count should be replaced by the appropriate empty-slot appearance (black inventory-style background or the matching Gear template) so only the cursor-following preview represents the item; cancellation restores the source.
 - Merchant interaction should support direct transactions: dragging an offer into inventory buys it, while dragging an inventory item onto the Merchant panel sells it, using the same prices, currency checks, and persistence as the existing click actions.
+- Inventory additions should cap each stack at 1024, distribute overflow across matching/free slots, and fail atomically with a visible message when the complete transaction cannot fit.
 - UI should expose character, gear/stat totals, inventory, item stat previews, quest, crafting, hover/target, cursor, quick-access, chat, and translation behavior through Unity scenes and prefabs.
 - Client/server behavior should feel consistent across play sessions.
 
 ## Open Product Questions
 - Near-term development is systems/mechanics-first for one programmer working without an artist; visual polish is deferred. The current roadmap also defers a real character selector and price/recipe/drop balancing.
-- Planned systems include Gear Score, timed consumable buffs starting with a craftable Strength Potion, maximum item-stack rules, explicit full-inventory handling, Party quest/experience sharing, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, and visible item/experience quest rewards.
+- Planned systems include Gear Score, timed craftable consumable buffs, Party quest/experience sharing, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, and visible item/experience quest rewards.
 - The exact genre, target platform, multiplayer session model, and release goals are not documented yet.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.

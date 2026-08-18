@@ -4,9 +4,11 @@ namespace ProjectX.Domain.Inventory;
 
 public sealed class InventorySlot
 {
+    public const int MaxStackSize = 1024;
+
     public InventorySlot(InventoryItemEnum type, int count)
     {
-        if (count < 0)
+        if (count is < 0 or > MaxStackSize)
         {
             throw new ArgumentOutOfRangeException(nameof(count));
         }
@@ -22,7 +24,7 @@ public sealed class InventorySlot
 
     public void Add(int count)
     {
-        if (count <= 0)
+        if (count <= 0 || count > MaxStackSize - Count)
         {
             throw new ArgumentOutOfRangeException(nameof(count));
         }

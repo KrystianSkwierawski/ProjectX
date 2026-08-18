@@ -62,4 +62,15 @@ namespace Assets.Scripts.Areas.Inventory.Models
             }
         }
     }
+
+    public class UpdateCharacterInventoryDto
+    {
+        public UpdateCharacterInventoryStatusEnum Status { get; set; }
+    }
+
+    public enum UpdateCharacterInventoryStatusEnum
+    {
+        Applied,
+        InventoryFull
+    }
 }

@@ -33,6 +33,13 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
             })
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
+        var effectiveCapacity = Math.Max(result.Count, result.Inventory.Items.Count);
+
+        if (effectiveCapacity > short.MaxValue)
+        {
+            throw new InvalidOperationException("The character inventory exceeds the supported capacity.");
+        }
+
         return new CharacterInventoryDto
         {
             CharacterId = result.Id,
@@ -42,7 +49,7 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
                     .Select(slot => new InventoryItemDto { Type = slot.Type, Count = slot.Count })
                     .ToList()
             },
-            Count = result.Count
+            Count = (short)effectiveCapacity
         };
     }
 }

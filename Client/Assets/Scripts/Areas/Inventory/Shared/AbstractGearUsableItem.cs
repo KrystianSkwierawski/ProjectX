@@ -10,6 +10,7 @@ using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
+using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
@@ -30,19 +31,31 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         public override void Use(UsableItemFromEnum from)
         {
+            TryUse(from);
+        }
+
+        public bool TryUse(UsableItemFromEnum from)
+        {
+            var character = UserManager.Instance.Characters[OwnerClientId];
+            var snapshot = new CharacterSnapshot(character);
             var oldItem = CharacterItem;
 
             var success = from == UsableItemFromEnum.Inventory ? Wear() : Unwear();
 
-            if (success)
+            if (!success)
             {
-                var character = UserManager.Instance.Characters[OwnerClientId];
+                return false;
+            }
 
-                if (oldItem.Type != TemplateType)
-                {
-                    UnequipItems.Add(oldItem);
-                }
+            var mergesWithEquippedItem = from == UsableItemFromEnum.Inventory && oldItem.Type == Item.Type;
 
+            if (!mergesWithEquippedItem && oldItem.Type != TemplateType)
+            {
+                UnequipItems.Add(oldItem);
+            }
+
+            if (!mergesWithEquippedItem)
+            {
                 foreach (var item in UnequipItems)
                 {
                     RemoveStats(character, item.Type);
@@ -52,20 +65,69 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 {
                     AddStats(character, Item.Type);
                 }
+            }
+
+            var inventoryRequest = new UpdateCharacterInventoryCommand
+            {
+                Add = UnequipItems.ToArray(),
+                Remove = from == UsableItemFromEnum.Inventory
+                    ? new InventoryItemDto[] { Item }
+                    : Array.Empty<InventoryItemDto>(),
+            };
+
+#if !UNITY_SERVER || UNITY_EDITOR
+            if (!InventoryManager.Instance.CanApply(inventoryRequest))
+            {
+                snapshot.Restore(character);
+                RestoreClientState();
+
+                return false;
+            }
+#endif
 
 #if UNITY_EDITOR
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Wear, 0.5f);
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Wear, 0.5f);
 
-                UpdateUI(from, character);
+            UpdateUI(from, character);
 #endif
 
 #if UNITY_SERVER && !UNITY_EDITOR
-                UpdateCharacter(from, character);
-#endif 
-            }
+            UpdateCharacter(character, snapshot, inventoryRequest);
+#endif
+
+            return true;
         }
 
-        private void UpdateCharacter(UsableItemFromEnum from, CharacterDto character)
+        private void UpdateCharacter(
+            CharacterDto character,
+            CharacterSnapshot snapshot,
+            UpdateCharacterInventoryCommand inventoryRequest)
+        {
+            UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
+            {
+                Request = inventoryRequest,
+                PlayerSessionId = PlayerSessionId,
+                OnSucceeded = () => PersistCharacter(character),
+                OnRejected = () => snapshot.Restore(character),
+                ResynchronizeCharacterOnRejected = true,
+            });
+        }
+
+#if !UNITY_SERVER || UNITY_EDITOR
+        private static void RestoreClientState()
+        {
+            GearUI.Instance.UpdateLeftPanel();
+            GearUI.Instance.UpdateRightPanel();
+            PlayerUI.Instance.SetPlayer();
+
+            LogUI.Instance.ShowAsync(
+                TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                color: ColorUI.Red)
+                .Forget();
+        }
+#endif
+
+        private void PersistCharacter(CharacterDto character)
         {
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
@@ -83,21 +145,11 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 AmmoCount = character.AmmoCount,
             }, PlayerSessionId)
             .Forget();
-
-            UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
-            {
-                Request = new UpdateCharacterInventoryCommand
-                {
-                    Add = UnequipItems.ToArray(),
-                    Remove = from == UsableItemFromEnum.Inventory ? new InventoryItemDto[] { Item } : Array.Empty<InventoryItemDto>(),
-                },
-                PlayerSessionId = PlayerSessionId,
-            });
         }
 
         private void UpdateUI(UsableItemFromEnum from, CharacterDto character)
         {
-            GearUI.Instance.Wear(Slot, from == UsableItemFromEnum.Inventory ? Item : new InventoryItemDto
+            GearUI.Instance.Wear(Slot, from == UsableItemFromEnum.Inventory ? CharacterItem : new InventoryItemDto
             {
                 Type = TemplateType,
                 Count = 0
@@ -135,5 +187,53 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         protected abstract bool Wear();
 
         protected abstract bool Unwear();
+
+        private sealed class CharacterSnapshot
+        {
+            private readonly int _maxHealth;
+            private readonly short _strength;
+            private readonly short _dexterity;
+            private readonly short _speed;
+            private readonly short _intellect;
+            private readonly short _armor;
+            private readonly InventoryItemEnum _helmetType;
+            private readonly InventoryItemEnum _chestType;
+            private readonly InventoryItemEnum _bootsType;
+            private readonly InventoryItemEnum _weaponType;
+            private readonly InventoryItemEnum _ammoType;
+            private readonly int _ammoCount;
+
+            public CharacterSnapshot(CharacterDto character)
+            {
+                _maxHealth = character.MaxHealth;
+                _strength = character.Strength;
+                _dexterity = character.Dexterity;
+                _speed = character.Speed;
+                _intellect = character.Intellect;
+                _armor = character.Armor;
+                _helmetType = character.HelmetType;
+                _chestType = character.ChestType;
+                _bootsType = character.BootsType;
+                _weaponType = character.WeaponType;
+                _ammoType = character.AmmoType;
+                _ammoCount = character.AmmoCount;
+            }
+
+            public void Restore(CharacterDto character)
+            {
+                character.MaxHealth = _maxHealth;
+                character.Strength = _strength;
+                character.Dexterity = _dexterity;
+                character.Speed = _speed;
+                character.Intellect = _intellect;
+                character.Armor = _armor;
+                character.HelmetType = _helmetType;
+                character.ChestType = _chestType;
+                character.BootsType = _bootsType;
+                character.WeaponType = _weaponType;
+                character.AmmoType = _ammoType;
+                character.AmmoCount = _ammoCount;
+            }
+        }
     }
 }

@@ -11,6 +11,7 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -757,15 +758,26 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             var item = CloneItem(slot.Item);
             var type = slot.Type;
+            var request = new UpdateCharacterInventoryCommand
+            {
+                Add = new[] { item },
+            };
+
+            if (!InventoryManager.Instance.CanApply(request))
+            {
+                LogUI.Instance.ShowAsync(
+                    TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                    color: ColorUI.Red)
+                    .Forget();
+
+                return;
+            }
 
             UpdateInventorySubscription.Instance.Invoke(
                 slot.LootClientId.ToString(),
                 new UpdateInventorySubscriptionEvent
                 {
-                    Request = new UpdateCharacterInventoryCommand
-                    {
-                        Add = new[] { item },
-                    },
+                    Request = request,
                 });
 
             _lootPoolObjects.Remove(type);

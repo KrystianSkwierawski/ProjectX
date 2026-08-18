@@ -21,30 +21,66 @@ public sealed class InventoryState
             .Sum(x => x.Count);
     }
 
-    public bool Add(InventoryItemEnum type, int count)
+    public InventoryState Clone()
     {
-        if (type == InventoryItemEnum.None || count <= 0)
+        return new InventoryState(_items.Select(x => new InventorySlot(x.Type, x.Count)));
+    }
+
+    public bool Add(InventoryItemEnum type, int count, int capacity)
+    {
+        if (type == InventoryItemEnum.None
+            || count <= 0
+            || capacity <= 0
+            || _items.Count > capacity)
         {
             return false;
         }
 
-        var existingSlot = _items.FirstOrDefault(slot => !slot.IsEmpty && slot.Type == type);
+        var availableInExistingStacks = _items
+            .Where(x => !x.IsEmpty)
+            .Where(x => x.Type == type)
+            .Sum(x => InventorySlot.MaxStackSize - x.Count);
 
-        if (existingSlot is not null)
+        var availableSlots = _items.Count(x => x.IsEmpty) + capacity - _items.Count;
+        var availableCapacity = (long)availableInExistingStacks + (long)availableSlots * InventorySlot.MaxStackSize;
+
+        if (count > availableCapacity)
         {
-            existingSlot.Add(count);
-            return true;
+            return false;
         }
 
-        var emptySlotIndex = FindEmptySlotIndex();
+        var remaining = count;
 
-        if (emptySlotIndex >= 0)
+        foreach (var slot in _items.Where(x => !x.IsEmpty && x.Type == type && x.Count < InventorySlot.MaxStackSize))
         {
-            _items[emptySlotIndex] = new InventorySlot(type, count);
-            return true;
+            var added = Math.Min(InventorySlot.MaxStackSize - slot.Count, remaining);
+            slot.Add(added);
+            remaining -= added;
+
+            if (remaining == 0)
+            {
+                return true;
+            }
         }
 
-        _items.Add(new InventorySlot(type, count));
+        while (remaining > 0)
+        {
+            var stackCount = Math.Min(InventorySlot.MaxStackSize, remaining);
+            var newSlot = new InventorySlot(type, stackCount);
+            var emptySlotIndex = FindEmptySlotIndex();
+
+            if (emptySlotIndex >= 0)
+            {
+                _items[emptySlotIndex] = newSlot;
+            }
+            else
+            {
+                _items.Add(newSlot);
+            }
+
+            remaining -= stackCount;
+        }
+
         return true;
     }
 
@@ -133,8 +169,16 @@ public sealed class InventoryState
 
         if (!target.IsEmpty && target.Type == source.Type)
         {
-            target.Add(source.Count);
-            _items[sourceSlotIndex] = InventorySlot.Empty();
+            var moved = Math.Min(InventorySlot.MaxStackSize - target.Count, source.Count);
+
+            if (moved == 0)
+            {
+                return false;
+            }
+
+            target.Add(moved);
+            source.Remove(moved);
+
             return true;
         }
 

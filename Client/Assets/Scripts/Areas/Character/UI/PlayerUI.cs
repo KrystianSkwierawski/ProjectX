@@ -1,11 +1,10 @@
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 using Assets.Scripts.Areas.Character.Enums;
-using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using TMPro;
 using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Character.UI
 {

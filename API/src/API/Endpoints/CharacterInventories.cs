@@ -20,7 +20,7 @@ public class CharacterInventories : EndpointGroupBase
         groupBuilder
             .MapPost(UpdateCharacterInventory)
             .WithSummary("Update character inventory")
-            .WithDescription("Applies inventory changes for a character.")
+            .WithDescription("Atomically applies inventory changes and reports when the resulting items do not fit.")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
@@ -35,13 +35,13 @@ public class CharacterInventories : EndpointGroupBase
         return TypedResults.Ok(result);
     }
 
-    public static async Task<NoContent> UpdateCharacterInventory(
+    public static async Task<Ok<UpdateCharacterInventoryDto>> UpdateCharacterInventory(
         ISender sender,
         UpdateCharacterInventoryCommand command,
         CancellationToken cancellationToken)
     {
-        await sender.Send(command, cancellationToken);
+        var result = await sender.Send(command, cancellationToken);
 
-        return TypedResults.NoContent();
+        return TypedResults.Ok(result);
     }
 }

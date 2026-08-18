@@ -31,7 +31,7 @@ public class JsonValueConverterTests
             inventory.Items.Select(slot => (slot.Type, slot.Count)),
             restored.Items.Select(slot => (slot.Type, slot.Count)));
 
-        inventory.Add(InventoryItemEnum.Currency, 10);
+        inventory.Add(InventoryItemEnum.Currency, 10, capacity: 15);
 
         Assert.False(comparer.Equals(inventory, snapshot));
     }
@@ -51,6 +51,24 @@ public class JsonValueConverterTests
 
         Assert.Equal((InventoryItemEnum.HealthPotion, 4), (restoredLegacy.Items.Single().Type, restoredLegacy.Items.Single().Count));
         Assert.Equal((InventoryItemEnum.HealthPotion, 4), (restoredTemporary.Items.Single().Type, restoredTemporary.Items.Single().Count));
+    }
+
+    [Fact]
+    public void CharacterInventoryConverter_SplitsLegacyOversizedStacksAndUsesEmptySlotsFirst()
+    {
+        using var context = CreateContext();
+        var converter = context.Model.FindEntityType(typeof(CharacterInventory))!
+            .FindProperty(nameof(CharacterInventory.Inventory))!
+            .GetValueConverter()!;
+        const string legacyInventory = """{"items":[{"type":101,"count":2500},{"type":0,"count":0}]}""";
+
+        var restored = Assert.IsType<InventoryState>(converter.ConvertFromProvider(legacyInventory));
+
+        Assert.Collection(
+            restored.Items,
+            x => Assert.Equal((InventoryItemEnum.Currency, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.Currency, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.Currency, 452), (x.Type, x.Count)));
     }
 
     [Fact]

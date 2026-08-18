@@ -46,7 +46,7 @@
   - `ProjectX > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
   - `ProjectX > Build And Run` invokes `Client/Automation/run.bat`.
 - Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
-- At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 350 passing domain/application unit, infrastructure integration, web acceptance/contract, and architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
+- At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 360 passing domain/application unit, infrastructure integration, web acceptance/contract, and architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
 
 ## Current Repo Notes
 - On 2026-08-11, the post-migration Clean Architecture pass aligned backend formatting with the current upstream `.editorconfig`, scoped destructive database reset/seeding and Swagger to Development, moved the JWT signing key to User Secrets, moved the concrete in-memory game-session registry to Infrastructure, removed JSON persistence concerns from Domain/Application, replaced crafting JSON attributes with typed Domain definitions, enforced owner-plus-`CharacterId` queries, and simplified NSwag metadata to typed results plus concise endpoint descriptions. OpenAPI regenerated, EF reported no pending model changes, build/format completed with zero warnings/errors, and all 288 tests passed.

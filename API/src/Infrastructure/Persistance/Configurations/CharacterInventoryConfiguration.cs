@@ -64,7 +64,52 @@ public class CharacterInventoryConfiguration : IEntityTypeConfiguration<Characte
             _ => throw new JsonException("The persisted inventory must be a JSON object or array.")
         };
 
-        return new InventoryState(items.Select(item => new InventorySlot(item.Type, item.Count)));
+        return new InventoryState(NormalizeSlots(items));
+    }
+
+    private static IEnumerable<InventorySlot> NormalizeSlots(IEnumerable<PersistedInventorySlot> items)
+    {
+        var slots = new List<InventorySlot>();
+        var overflow = new Queue<InventorySlot>();
+
+        foreach (var item in items)
+        {
+            if (item.Count < 0 || item.Type == InventoryItemEnum.None && item.Count > 0)
+            {
+                throw new JsonException("The persisted inventory contains an invalid slot.");
+            }
+
+            if (item.Count == 0)
+            {
+                slots.Add(InventorySlot.Empty());
+
+                continue;
+            }
+
+            var firstStackCount = Math.Min(item.Count, InventorySlot.MaxStackSize);
+            slots.Add(new InventorySlot(item.Type, firstStackCount));
+
+            var remaining = item.Count - firstStackCount;
+
+            while (remaining > 0)
+            {
+                var stackCount = Math.Min(remaining, InventorySlot.MaxStackSize);
+                overflow.Enqueue(new InventorySlot(item.Type, stackCount));
+                remaining -= stackCount;
+            }
+        }
+
+        for (var index = 0; index < slots.Count && overflow.Count > 0; index++)
+        {
+            if (slots[index].IsEmpty)
+            {
+                slots[index] = overflow.Dequeue();
+            }
+        }
+
+        slots.AddRange(overflow);
+
+        return slots;
     }
 
     private static bool HaveEqualItems(InventoryState? left, InventoryState? right)

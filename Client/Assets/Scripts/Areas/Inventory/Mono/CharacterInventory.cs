@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
@@ -152,10 +154,19 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
                 InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
-                // TODO: only server rpc?
                 UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
-                    UpdateInventory(e.Request);
+                    if (!string.IsNullOrWhiteSpace(e.PlayerSessionId))
+                    {
+                        return;
+                    }
+
+                    if (!InventoryManager.Instance.CanApply(e.Request))
+                    {
+                        ShowInventoryFull();
+
+                        return;
+                    }
 
                     UpdateInventoryServerRpc(e.Request);
                 });
@@ -183,29 +194,16 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         return;
                     }
 
-                    UseItem(e.Item, e.From, null);
-
-                    UseItemServerRpc(e.Item, e.From);
+                    if (UseItem(e.Item, e.From, null))
+                    {
+                        UseItemServerRpc(e.Item, e.From);
+                    }
                 });
             }
 
             if (IsServer)
             {
-                UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
-                {
-                    UpdateInventoryClientRpc(e.Request, new ClientRpcParams
-                    {
-                        Send = new ClientRpcSendParams
-                        {
-                            TargetClientIds = new ulong[] { OwnerClientId }
-                        }
-                    });
-
-                    if (e.PersistInApi)
-                    {
-                        UpdateInventoryAsync(e.Request, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
-                    }
-                });
+                UpdateInventorySubscription.Instance.Subscribe(key, (e) => ProcessInventoryUpdateAsync(e).Forget());
 
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
                 {
@@ -279,24 +277,28 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ClientRpc]
         private void UpdateInventoryClientRpc(UpdateCharacterInventoryCommand request, ClientRpcParams rpcParams = default)
         {
-            UpdateInventory(request);
+            if (!UpdateInventory(request))
+            {
+                ReloadInventoryAsync().Forget();
+            }
         }
 
-        private void UpdateInventory(UpdateCharacterInventoryCommand request)
+        [ClientRpc]
+        private void ShowInventoryFullClientRpc(ClientRpcParams rpcParams = default)
         {
-            if (request.Add.Length > 0)
-            {
-                foreach (var item in request.Add)
-                {
-                    InventoryManager.Instance.Add(item);
-                }
+            ShowInventoryFull();
+        }
 
-                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+        private bool UpdateInventory(UpdateCharacterInventoryCommand request)
+        {
+            if (!InventoryManager.Instance.Apply(request))
+            {
+                return false;
             }
 
-            foreach (var item in request.Remove)
+            if (request.Add.Length > 0)
             {
-                InventoryManager.Instance.Remove(item);
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
             }
 
             // TODO: UpdatedInventorySubscription?
@@ -304,6 +306,17 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             CraftingUI.Instance.UpdateRequirements();
 
+            MerchantUI.Instance.UpdatePriceValidation();
+
+            return true;
+        }
+
+        private async UniTask ReloadInventoryAsync()
+        {
+            await InventoryManager.Instance.LoadAsync(UserManager.Instance.SelectedCharacterId);
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+            CraftingUI.Instance.UpdateRequirements();
             MerchantUI.Instance.UpdatePriceValidation();
         }
 
@@ -342,7 +355,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             {
                 return _currentLoot
                     .Where(c => c.Type == x.Type)
-                    // TODO: count?
+                    .Where(c => c.Count >= x.Count)
                     .Any();
             });
 
@@ -351,9 +364,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             if (isValid)
             {
                 var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
-                UpdateInventoryAsync(request, playerSessionId).Forget();
-
-                _currentLoot.Clear();
+                ProcessLootInventoryUpdateAsync(request, playerSessionId).Forget();
             }
         }
 
@@ -388,9 +399,94 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }, playerSessionId);
         }
 
-        private async UniTask UpdateInventoryAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
+        private async UniTask ProcessInventoryUpdateAsync(UpdateInventorySubscriptionEvent e)
         {
-            await InventoryManager.Instance.UpdateAsync(request, playerSessionId);
+            if (!e.PersistInApi)
+            {
+                SendInventoryUpdateToOwner(e.Request);
+                e.OnSucceeded?.Invoke();
+
+                return;
+            }
+
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            UpdateCharacterInventoryStatusEnum status;
+
+            try
+            {
+                status = await UpdateInventoryAsync(e.Request, playerSessionId);
+            }
+            catch
+            {
+                RejectInventoryUpdate(e);
+
+                throw;
+            }
+
+            if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+            {
+                RejectInventoryUpdate(e);
+                SendInventoryFullToOwner();
+
+                return;
+            }
+
+            SendInventoryUpdateToOwner(e.Request);
+            e.OnSucceeded?.Invoke();
+        }
+
+        private void RejectInventoryUpdate(UpdateInventorySubscriptionEvent e)
+        {
+            e.OnRejected?.Invoke();
+
+            if (!e.ResynchronizeCharacterOnRejected)
+            {
+                return;
+            }
+
+            ResynchronizeCharacterClientRpc(
+                UserManager.Instance.Characters[OwnerClientId],
+                new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+        }
+
+        private async UniTask ProcessLootInventoryUpdateAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
+        {
+            var status = await UpdateInventoryAsync(request, playerSessionId);
+
+            if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+            {
+                SendInventoryFullToOwner();
+                ShowLootClientRpc(_currentLoot.ToArray(), new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+
+                return;
+            }
+
+            SendInventoryUpdateToOwner(request);
+            _currentLoot.Clear();
+        }
+
+        private async UniTask<UpdateCharacterInventoryStatusEnum> UpdateInventoryAsync(
+            UpdateCharacterInventoryCommand request,
+            string playerSessionId)
+        {
+            var result = await InventoryManager.Instance.UpdateAsync(request, playerSessionId);
+
+            if (result.Status != UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                return result.Status;
+            }
 
             var changedItemTypes = request.Add
                 .Concat(request.Remove)
@@ -409,6 +505,48 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     PlayerSessionId = playerSessionId,
                 });
             }
+
+            return result.Status;
+        }
+
+        private void SendInventoryUpdateToOwner(UpdateCharacterInventoryCommand request)
+        {
+            UpdateInventoryClientRpc(request, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+
+        private void SendInventoryFullToOwner()
+        {
+            ShowInventoryFullClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+
+        private static void ShowInventoryFull()
+        {
+            LogUI.Instance.ShowAsync(
+                TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                color: ColorUI.Red)
+                .Forget();
+        }
+
+        [ClientRpc]
+        private void ResynchronizeCharacterClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
+        {
+            UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId] = character;
+
+            PlayerUI.Instance.SetPlayer();
+            GearUI.Instance.UpdateLeftPanel();
+            GearUI.Instance.UpdateRightPanel();
         }
 
         [ServerRpc]
@@ -417,36 +555,49 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             UseItem(item, from, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
         }
 
-        private void UseItem(InventoryItemDto item, UsableItemFromEnum from, string playerSessionId)
+        private bool UseItem(InventoryItemDto item, UsableItemFromEnum from, string playerSessionId)
         {
+            AbstractGearUsableItem gearItem = null;
+
             if (item.Type.IsAmmo())
             {
-                new AmmoUsableItem(item, playerSessionId, OwnerClientId).Use(from);
-
-                return;
+                gearItem = new AmmoUsableItem(item, playerSessionId, OwnerClientId);
+            }
+            else if (item.Type.IsWeapon())
+            {
+                gearItem = new WeaponUsableItem(item, playerSessionId, OwnerClientId);
+            }
+            else
+            {
+                gearItem = item.Type switch
+                {
+                    InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.IronChest => new ChestUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.IronBoots => new BootsUsableItem(item, playerSessionId, OwnerClientId),
+                    _ => null
+                };
             }
 
-            if (item.Type.IsWeapon())
+            if (gearItem != null)
             {
-                new WeaponUsableItem(item, playerSessionId, OwnerClientId).Use(from);
-
-                return;
+                return gearItem.TryUse(from);
             }
 
             IUsableItem usableItem = item.Type switch
             {
                 InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, playerSessionId, OwnerClientId),
                 InventoryItemEnum.Currency => new CurrencyUsableItem(item, playerSessionId, OwnerClientId),
-                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, playerSessionId, OwnerClientId),
-                InventoryItemEnum.IronChest => new ChestUsableItem(item, playerSessionId, OwnerClientId),
-                InventoryItemEnum.IronBoots => new BootsUsableItem(item, playerSessionId, OwnerClientId),
                 _ => null
             };
 
-            if (usableItem != null)
+            if (usableItem == null)
             {
-                usableItem.Use(from);
+                return false;
             }
+
+            usableItem.Use(from);
+
+            return true;
         }
 
         public override void OnNetworkDespawn()

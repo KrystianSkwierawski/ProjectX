@@ -155,7 +155,8 @@ public class ApplicationDbContextInitialiser
                 Inventory = new InventoryState(
                 [
                     new InventorySlot(InventoryItemEnum.HealthPotion, 4),
-                    new InventorySlot(InventoryItemEnum.Currency, 9999)
+                    new InventorySlot(InventoryItemEnum.Currency, InventorySlot.MaxStackSize),
+                    new InventorySlot(InventoryItemEnum.Currency, InventorySlot.MaxStackSize),
                 ]),
                 Count = 15
             }

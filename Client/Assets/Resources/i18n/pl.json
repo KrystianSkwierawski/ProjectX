@@ -101,5 +101,6 @@
     "Required": "Wymagania",
     "Sword": "Miecz",
     "Wand": "Różdżka",
-    "Bow": "Łuk"
+    "Bow": "Łuk",
+    "InventoryFull": "Brak wolnego miejsca w ekwipunku."
 }

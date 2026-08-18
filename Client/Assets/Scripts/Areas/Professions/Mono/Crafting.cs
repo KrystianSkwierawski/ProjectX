@@ -3,6 +3,7 @@ using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Inventory;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Professions.Enums;
@@ -59,6 +60,22 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void StartCrafting()
         {
+            var inventoryRequest = new UpdateCharacterInventoryCommand
+            {
+                Add = new[] { CraftingUI.Instance.CurrentRecipe.Reward.Item },
+                Remove = CraftingUI.Instance.CurrentRecipe.Requirement.Items
+            };
+
+            if (!InventoryManager.Instance.CanApply(inventoryRequest))
+            {
+                LogUI.Instance.ShowAsync(
+                    TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                    color: ColorUI.Red)
+                    .Forget();
+
+                return;
+            }
+
             _sfxTimer = CraftingUI.Instance.CurrentType switch
             {
                 CraftingRecipeTypeEnum.Cooking => AudioManager.Instance.AudioClips[AudioTypeEnum.CookingPrepare].length,
@@ -139,6 +156,13 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 .Single();
 
             var key = OwnerClientId.ToString();
+            var experienceType = type switch
+            {
+                CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
+                CraftingRecipeTypeEnum.Blacksmithing => ExperienceTypeEnum.Blacksmithing,
+                CraftingRecipeTypeEnum.Alchemy => ExperienceTypeEnum.Alchemy,
+                _ => ExperienceTypeEnum.None,
+            };
 
             UpdateInventorySubscription.Instance.Invoke(key, new UpdateInventorySubscriptionEvent
             {
@@ -148,25 +172,19 @@ namespace Assets.Scripts.Areas.Professions.Mono
                     Remove = recipe.Requirement.Items
                 },
                 PlayerSessionId = playerSessionId,
-            });
-
-            var experienceType = type switch
-            {
-                CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
-                CraftingRecipeTypeEnum.Blacksmithing => ExperienceTypeEnum.Blacksmithing,
-                CraftingRecipeTypeEnum.Alchemy => ExperienceTypeEnum.Alchemy,
-                _ => ExperienceTypeEnum.None,
-            };
-
-            if (experienceType != ExperienceTypeEnum.None)
-            {
-                AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
+                OnSucceeded = () =>
                 {
-                    Amount = recipe.Reward.Experience,
-                    Type = experienceType,
-                    PlayerSessionId = playerSessionId,
-                });
-            }
+                    if (experienceType != ExperienceTypeEnum.None)
+                    {
+                        AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
+                        {
+                            Amount = recipe.Reward.Experience,
+                            Type = experienceType,
+                            PlayerSessionId = playerSessionId,
+                        });
+                    }
+                }
+            });
         }
 
         private void CheckHide()

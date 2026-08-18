@@ -120,7 +120,7 @@ public class CharacterScopeTests
 
         var currentUser = new TestCurrentUserService();
 
-        await new UpdateCharacterInventoryCommandHandler(context, currentUser)
+        var update = await new UpdateCharacterInventoryCommandHandler(context, currentUser)
             .Handle(
                 new UpdateCharacterInventoryCommand(
                     [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 3 }],
@@ -140,7 +140,98 @@ public class CharacterScopeTests
             inventory.Inventory.Items,
             x => Assert.Equal((InventoryItemEnum.HealthPotion, 5), (x.Type, x.Count)),
             x => Assert.Equal((InventoryItemEnum.Currency, 6), (x.Type, x.Count)));
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, update.Status);
         Assert.Equal((InventoryItemEnum.Fish, 7), (foreignInventory.Inventory.Items.Single().Type, foreignInventory.Inventory.Items.Single().Count));
+    }
+
+    [Fact]
+    public async Task UpdateInventory_SplitsAddedItemsAtTheMaximumStackSize()
+    {
+        await using var context = CreateContext();
+
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.CharacterInventory.Count = 3;
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(
+                new UpdateCharacterInventoryCommand(
+                    [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 2500 }],
+                    []),
+                CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, result.Status);
+
+        Assert.Collection(
+            character.CharacterInventory.Inventory.Items,
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 452), (x.Type, x.Count)));
+    }
+
+    [Fact]
+    public async Task InventoryHandlers_ExposeAndPersistCapacityRequiredByNormalizedLegacySlots()
+    {
+        await using var context = CreateContext();
+
+        var character = CreateCharacter(
+            CurrentCharacterId,
+            CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HealthPotion, 10),
+            new InventorySlot(InventoryItemEnum.Currency, 10),
+            new InventorySlot(InventoryItemEnum.Fish, 10));
+
+        character.CharacterInventory.Count = 2;
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var currentUser = new TestCurrentUserService();
+        var inventory = await new GetCharacterInventoryQueryHandler(context, currentUser)
+            .Handle(new GetCharacterInventoryQuery(CurrentCharacterId), CancellationToken.None);
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, currentUser)
+            .Handle(
+                new UpdateCharacterInventoryCommand(
+                    [],
+                    [new InventoryItemDto { Type = InventoryItemEnum.Fish, Count = 1 }]),
+                CancellationToken.None);
+
+        Assert.Equal(3, inventory.Count);
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, result.Status);
+        Assert.Equal(3, character.CharacterInventory.Count);
+        Assert.Equal(9, character.CharacterInventory.Inventory.Items[2].Count);
+    }
+
+    [Fact]
+    public async Task UpdateInventory_RejectsTheWholeTransactionWhenInventoryIsFull()
+    {
+        await using var context = CreateContext();
+
+        var character = CreateCharacter(
+            CurrentCharacterId,
+            CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1000),
+            new InventorySlot(InventoryItemEnum.Currency, 1024));
+
+        character.CharacterInventory.Count = 2;
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(
+                new UpdateCharacterInventoryCommand(
+                    [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 25 }],
+                    [new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = 1 }]),
+                CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.InventoryFull, result.Status);
+        Assert.Equal(1000, character.CharacterInventory.Inventory.Items[0].Count);
+        Assert.Equal(1024, character.CharacterInventory.Inventory.Items[1].Count);
     }
 
     [Fact]

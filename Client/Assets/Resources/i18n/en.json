@@ -101,5 +101,6 @@
     "Required": "Required",
     "Sword": "Sword",
     "Wand": "Wand",
-    "Bow": "Bow"
+    "Bow": "Bow",
+    "InventoryFull": "Your inventory is full."
 }

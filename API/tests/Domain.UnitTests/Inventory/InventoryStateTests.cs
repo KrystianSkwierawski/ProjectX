@@ -177,7 +177,7 @@ public class InventoryStateTests
             InventorySlot.Empty(),
             new InventorySlot(InventoryItemEnum.Currency, 10));
 
-        var result = inventory.Add(InventoryItemEnum.HealthPotion, 4);
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 4, capacity: 2);
 
         Assert.True(result);
         Assert.Equal(2, inventory.Items.Count);
@@ -192,7 +192,7 @@ public class InventoryStateTests
         var inventory = CreateInventory(
             new InventorySlot(InventoryItemEnum.Currency, 10));
 
-        var result = inventory.Add(InventoryItemEnum.HealthPotion, 4);
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 4, capacity: 2);
 
         Assert.True(result);
         Assert.Equal(2, inventory.Items.Count);
@@ -207,7 +207,7 @@ public class InventoryStateTests
             new InventorySlot(InventoryItemEnum.HealthPotion, 2),
             InventorySlot.Empty());
 
-        var result = inventory.Add(InventoryItemEnum.HealthPotion, 3);
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 3, capacity: 2);
 
         Assert.True(result);
         Assert.Equal(5, inventory.Items[0].Count);
@@ -223,7 +223,7 @@ public class InventoryStateTests
         var inventory = CreateInventory(
             new InventorySlot(InventoryItemEnum.Currency, 10));
 
-        var result = inventory.Add(type, count);
+        var result = inventory.Add(type, count, capacity: 2);
 
         Assert.False(result);
         Assert.Single(inventory.Items);
@@ -289,6 +289,83 @@ public class InventoryStateTests
         Assert.False(result);
         Assert.Equal(2, inventory.Items[0].Count);
         Assert.Equal(1, inventory.Items[1].Count);
+    }
+
+    [Fact]
+    public void Add_SplitsOverflowAcrossMultipleStacks()
+    {
+        var inventory = CreateInventory();
+
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 2500, capacity: 3);
+
+        Assert.True(result);
+        Assert.Collection(
+            inventory.Items,
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 452), (x.Type, x.Count)));
+    }
+
+    [Fact]
+    public void Add_FillsPartialStackBeforeUsingAnotherSlot()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1000),
+            InventorySlot.Empty(),
+            InventorySlot.Empty());
+
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 1100, capacity: 3);
+
+        Assert.True(result);
+        Assert.Collection(
+            inventory.Items,
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 1024), (x.Type, x.Count)),
+            x => Assert.Equal((InventoryItemEnum.HealthPotion, 52), (x.Type, x.Count)));
+    }
+
+    [Fact]
+    public void Add_DoesNotMutateInventoryWhenCapacityCannotFitTheWholeAmount()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1000),
+            new InventorySlot(InventoryItemEnum.Currency, 1024));
+
+        var result = inventory.Add(InventoryItemEnum.HealthPotion, 25, capacity: 2);
+
+        Assert.False(result);
+        Assert.Equal(1000, inventory.Items[0].Count);
+        Assert.Equal(1024, inventory.Items[1].Count);
+    }
+
+    [Fact]
+    public void Move_FillsTargetStackAndLeavesOverflowInSource()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 100),
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1000));
+
+        var result = inventory.Move(0, 1, capacity: 2);
+
+        Assert.True(result);
+        Assert.Equal(76, inventory.Items[0].Count);
+        Assert.Equal(1024, inventory.Items[1].Count);
+    }
+
+    [Fact]
+    public void InventorySlot_RejectsAStackAboveTheMaximum()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new InventorySlot(InventoryItemEnum.HealthPotion, 1025));
+    }
+
+    [Fact]
+    public void InventorySlot_AddRejectsAnIntegerOverflow()
+    {
+        var slot = new InventorySlot(InventoryItemEnum.HealthPotion, 1);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => slot.Add(int.MaxValue));
+        Assert.Equal(1, slot.Count);
     }
 
     private static InventoryState CreateInventory(params InventorySlot[] items)
