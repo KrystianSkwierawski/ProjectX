@@ -13,6 +13,14 @@ public sealed class InventoryState
 
     public IReadOnlyList<InventorySlot> Items => _items;
 
+    public int GetCount(InventoryItemEnum type)
+    {
+        return _items
+            .Where(x => !x.IsEmpty)
+            .Where(x => x.Type == type)
+            .Sum(x => x.Count);
+    }
+
     public bool Add(InventoryItemEnum type, int count)
     {
         if (type == InventoryItemEnum.None || count <= 0)

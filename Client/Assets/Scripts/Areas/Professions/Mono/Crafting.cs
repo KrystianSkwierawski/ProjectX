@@ -83,8 +83,15 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 return;
             }
 
-            // TODO: interrupt
-            //PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
+            if (_input.Move != Vector2.zero
+                || _crafting == null
+                || !CraftingUI.Instance.Crafting.activeSelf
+                || _crafting.transform.IsFarToTarget(transform.gameObject, _maxDistance))
+            {
+                InterruptCrafting();
+
+                return;
+            }
 
             _craftingTimer += Time.deltaTime;
             PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
@@ -100,8 +107,19 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             _isCrafting = false;
             _craftingTimer = 0f;
+            PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
             PlayerUI.Instance.HideCastBar();
-            CraftingUI.Instance.CraftButton.interactable = true;
+            CraftingUI.Instance.CraftButton.interactable = CraftingUI.Instance.HasAllRequirements;
+        }
+
+        public void InterruptCrafting()
+        {
+            if (!_isCrafting)
+            {
+                return;
+            }
+
+            StopCrafting();
         }
 
         [ServerRpc]
@@ -153,10 +171,12 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void CheckHide()
         {
-            if (_crafting != null && _input.Move != Vector2.zero && _crafting.transform.IsFarToTarget(transform.gameObject, _maxDistance) || Keyboard.current.escapeKey.wasPressedThisFrame)
+            var leftCraftingStation = _crafting != null
+                && _crafting.transform.IsFarToTarget(transform.gameObject, _maxDistance);
+
+            if (leftCraftingStation || Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                CraftingUI.Instance.Hide();
-                _crafting = null;
+                Exit();
             }
         }
 
@@ -242,6 +262,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void Exit()
         {
+            InterruptCrafting();
             CraftingUI.Instance.Hide();
             _crafting = null;
         }

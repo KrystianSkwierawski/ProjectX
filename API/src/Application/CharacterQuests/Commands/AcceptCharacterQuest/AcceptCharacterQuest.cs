@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
@@ -28,10 +29,16 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
         var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var character = await _context.Characters
+            .Include(x => x.CharacterInventory)
             .Where(x => x.Id == selectedCharacterId)
             .Where(x => x.ApplicationUserId == userId)
             .Where(x => x.Status == StatusEnum.Active)
             .SingleOrNotFoundAsync("character", cancellationToken);
+
+        var quest = await _context.Quests
+            .Where(x => x.Id == request.QuestId)
+            .Where(x => x.Status == StatusEnum.Active)
+            .SingleOrNotFoundAsync("quest", cancellationToken);
 
         var entity = new CharacterQuest
         {
@@ -40,6 +47,14 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
             Status = CharacterQuestStatusEnum.Accepted,
             StartDate = _timeProvider.GetUtcNow()
         };
+
+        if (quest.Type == QuestTypeEnum.Collect)
+        {
+            var itemType = Enum.Parse<InventoryItemEnum>(quest.GameObjectName);
+            var progress = character.CharacterInventory.Inventory.GetCount(itemType);
+
+            entity.SetProgress(progress, quest.Requirement);
+        }
 
         _context.CharacterQuests.Add(entity);
 

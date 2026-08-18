@@ -6,6 +6,7 @@ using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
+using Assets.Scripts.Areas.Professions.Mono;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Models;
@@ -121,7 +122,10 @@ namespace Assets.Scripts.Areas.Character.Mono
         private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
             character.Health = health;
+
+            GetComponent<Crafting>()?.InterruptCrafting();
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 

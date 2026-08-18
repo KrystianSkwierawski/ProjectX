@@ -180,6 +180,10 @@ namespace Assets.Scripts.Areas.Quest.UI
                 {
                     questLogObject.Mesh.color = ColorUI.Green;
                 }
+                else
+                {
+                    questLogObject.Mesh.color = ColorUI.White;
+                }
             }
         }
 

@@ -43,6 +43,24 @@ public class CharacterQuest : BaseAuditableEntity
         }
     }
 
+    public void SetProgress(int progress, int requiredProgress)
+    {
+        if (progress < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(progress));
+        }
+
+        if (Status is not CharacterQuestStatusEnum.Accepted and not CharacterQuestStatusEnum.Finished)
+        {
+            throw new InvalidOperationException("Only an active quest can synchronize progress.");
+        }
+
+        Progress = progress;
+        Status = progress >= requiredProgress
+            ? CharacterQuestStatusEnum.Finished
+            : CharacterQuestStatusEnum.Accepted;
+    }
+
     public void Complete(DateTimeOffset completedAtUtc)
     {
         if (Status != CharacterQuestStatusEnum.Finished)

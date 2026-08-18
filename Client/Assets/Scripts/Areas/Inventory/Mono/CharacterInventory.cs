@@ -392,12 +392,20 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             await InventoryManager.Instance.UpdateAsync(request, playerSessionId);
 
-            foreach (var item in request.Add)
+            var changedItemTypes = request.Add
+                .Concat(request.Remove)
+                .Select(x => x.Type)
+                .Where(x => x != InventoryItemEnum.None)
+                .Distinct();
+
+            foreach (var itemType in changedItemTypes)
             {
                 CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
                 {
-                    Progress = item.Count,
-                    GameObjectName = item.Type.ToString(),
+                    Progress = request.Add
+                        .Where(x => x.Type == itemType)
+                        .Sum(x => x.Count),
+                    GameObjectName = itemType.ToString(),
                     PlayerSessionId = playerSessionId,
                 });
             }

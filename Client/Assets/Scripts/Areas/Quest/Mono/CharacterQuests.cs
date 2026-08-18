@@ -86,6 +86,14 @@ namespace Assets.Scripts.Areas.Quest.Mono
             {
                 CharacterQuest = characterQuest
             });
+
+            if (status == CharacterQuestStatusEnum.Finished)
+            {
+                FinishCharacterQuestSubscription.Instance.Invoke(questId.ToString(), new FinishCharacterQuestSubscriptionEvent
+                {
+                    IsFinished = true
+                });
+            }
         }
 
         private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string playerSessionId)
@@ -178,7 +186,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             if (result.Status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestClientRpc(result.CharacterQuestId, progress, result.Status, new ClientRpcParams
+                UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
@@ -197,14 +205,19 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 .Where(x => x.Id == characterQuestId)
                 .Single();
 
-            characterQuest.Progress += progress;
+            var previousStatus = characterQuest.Status;
+
+            characterQuest.Progress = progress;
             characterQuest.Status = status;
 
             QuestUI.Instance.UpdateProgress(characterQuest);
 
-            if (status == CharacterQuestStatusEnum.Finished)
+            if (status != previousStatus)
             {
-                FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.QuestId.ToString(), new FinishCharacterQuestSubscriptionEvent());
+                FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.QuestId.ToString(), new FinishCharacterQuestSubscriptionEvent
+                {
+                    IsFinished = status == CharacterQuestStatusEnum.Finished
+                });
             }
         }
 

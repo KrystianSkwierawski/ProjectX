@@ -37,7 +37,7 @@ public class CharacterQuests : EndpointGroupBase
         groupBuilder
             .MapPost(CheckCharacterQuestProgress, "CheckProgress")
             .WithSummary("Check quest progress")
-            .WithDescription("Applies progress to a matching active quest.")
+            .WithDescription("Adds event progress or synchronizes a matching collect quest with the current inventory.")
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder

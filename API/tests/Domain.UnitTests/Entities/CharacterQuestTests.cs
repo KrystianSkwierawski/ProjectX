@@ -43,6 +43,33 @@ public class CharacterQuestTests
         Assert.Equal(CharacterQuestStatusEnum.Finished, quest.Status);
     }
 
+    [Theory]
+    [InlineData(0, CharacterQuestStatusEnum.Accepted)]
+    [InlineData(1, CharacterQuestStatusEnum.Accepted)]
+    [InlineData(2, CharacterQuestStatusEnum.Finished)]
+    [InlineData(3, CharacterQuestStatusEnum.Finished)]
+    public void SetProgress_SynchronizesCurrentProgressAndStatus(int progress, CharacterQuestStatusEnum expectedStatus)
+    {
+        var quest = CreateQuest(CharacterQuestStatusEnum.Accepted);
+
+        quest.SetProgress(progress, requiredProgress: 2);
+
+        Assert.Equal(progress, quest.Progress);
+        Assert.Equal(expectedStatus, quest.Status);
+    }
+
+    [Fact]
+    public void SetProgress_ReopensFinishedQuestWhenProgressFallsBelowRequirement()
+    {
+        var quest = CreateQuest(CharacterQuestStatusEnum.Finished);
+        quest.Progress = 2;
+
+        quest.SetProgress(1, requiredProgress: 2);
+
+        Assert.Equal(1, quest.Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Accepted, quest.Status);
+    }
+
     [Fact]
     public void Complete_SetsCompletionStateAndTimestamp()
     {

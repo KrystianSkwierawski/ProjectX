@@ -23,6 +23,8 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - Client/server behavior should feel consistent across play sessions.
 
 ## Open Product Questions
+- Near-term development is systems/mechanics-first for one programmer working without an artist; visual polish is deferred. The current roadmap also defers a real character selector and price/recipe/drop balancing.
+- Planned systems include Gear Score, timed consumable buffs starting with a craftable Strength Potion, maximum item-stack rules, explicit full-inventory handling, Party quest/experience sharing, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, and visible item/experience quest rewards.
 - The exact genre, target platform, multiplayer session model, and release goals are not documented yet.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.

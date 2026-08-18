@@ -461,7 +461,7 @@
           "CharacterQuests"
         ],
         "summary": "Check quest progress",
-        "description": "Applies progress to a matching active quest.",
+        "description": "Adds event progress or synchronizes a matching collect quest with the current inventory.",
         "operationId": "CheckCharacterQuestProgress",
         "parameters": [
           {
@@ -1721,6 +1721,10 @@
             "$ref": "#/components/schemas/QuestEnum"
           },
           "characterQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "progress": {
             "type": "integer",
             "format": "int32"
           },

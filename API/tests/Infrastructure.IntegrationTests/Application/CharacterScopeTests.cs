@@ -246,6 +246,69 @@ public class CharacterScopeTests
     }
 
     [Fact]
+    public async Task AcceptCollectQuest_UsesCurrentInventoryAsInitialProgress()
+    {
+        await using var context = CreateContext();
+
+        var character = CreateCharacter(
+            CurrentCharacterId,
+            CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, 2));
+
+        var quest = CreateCollectQuest();
+
+        context.AddRange(character, quest);
+
+        await context.SaveChangesAsync();
+
+        var result = await new AcceptCharacterQuestCommandHandler(
+                context,
+                new TestCurrentUserService(),
+                new FixedTimeProvider(new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero)))
+            .Handle(new AcceptCharacterQuestCommand(QuestEnum.Collect2Cans), CancellationToken.None);
+
+        Assert.Equal(2, result.Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Finished, result.Status);
+    }
+
+    [Fact]
+    public async Task CheckCollectQuestProgress_TracksCurrentInventoryAndReopensAfterItemLoss()
+    {
+        await using var context = CreateContext();
+
+        var character = CreateCharacter(
+            CurrentCharacterId,
+            CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, 2));
+
+        var quest = CreateCollectQuest();
+        var characterQuest = CreateCharacterQuest(31, character, quest, CharacterQuestStatusEnum.Accepted);
+
+        context.AddRange(character, quest, characterQuest);
+
+        await context.SaveChangesAsync();
+
+        var handler = new CheckCharacterQuestProgressCommandHandler(context, new TestCurrentUserService());
+
+        var finished = await handler.Handle(
+            new CheckCharacterQuestProgressCommand(QuestEnum.Collect2Cans, 0),
+            CancellationToken.None);
+
+        character.CharacterInventory.Inventory.Remove(InventoryItemEnum.Can, 1);
+
+        await context.SaveChangesAsync();
+
+        var reopened = await handler.Handle(
+            new CheckCharacterQuestProgressCommand(QuestEnum.Collect2Cans, 0),
+            CancellationToken.None);
+
+        Assert.Equal(2, finished.Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Finished, finished.Status);
+        Assert.Equal(1, reopened.Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Accepted, reopened.Status);
+    }
+
+    [Fact]
     public async Task GetCharacters_ReturnsAllActiveCharactersOwnedByUser()
     {
         await using var context = CreateContext();
@@ -372,6 +435,20 @@ public class CharacterScopeTests
             Quest = quest,
             Status = status,
             StartDate = new DateTimeOffset(2026, 8, 12, 10, 0, 0, TimeSpan.Zero)
+        };
+    }
+
+    private static Quest CreateCollectQuest()
+    {
+        return new Quest
+        {
+            Id = QuestEnum.Collect2Cans,
+            Name = nameof(QuestEnum.Collect2Cans),
+            Type = QuestTypeEnum.Collect,
+            GameObjectName = nameof(InventoryItemEnum.Can),
+            Requirement = 2,
+            Reward = 1000,
+            Status = StatusEnum.Active
         };
     }
 

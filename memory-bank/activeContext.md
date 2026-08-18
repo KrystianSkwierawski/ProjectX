@@ -1,6 +1,7 @@
 # Active Context
 
 ## Current Focus
+- 2026-08-17: Shifted the near-term product focus from infrastructure work to programmer-owned gameplay systems and mechanics; visual polish is intentionally deferred because the project currently has no artist. Fixed four gameplay-state gaps: crafting now interrupts on movement, actual damage, UI closure, or leaving the station; player health renders as `current/max`; Collect quest progress is synchronized from authoritative inventory state and can move from Finished back to Accepted after item loss; and accepting a Collect quest initializes progress from items already owned. Kill quest progress remains event-additive. The API returns the resulting absolute progress to Unity, inventory additions and removals both trigger quest synchronization, quest log/NPC state follows regressions as well as completion, and the OpenAPI contract was regenerated. All 350 backend tests pass and the Unity runtime project compiles with zero errors and its seven existing warnings.
 - 2026-08-12: Fixed two dedicated-server runtime failures. Incompatible ammo validation no longer accesses `LogUI` in a `UNITY_SERVER` build, so rejecting ammo cannot throw a `NullReferenceException`. Collect-quest completion now has one persistence owner: the API atomically removes the requirement and completes the quest, then the Unity server sends a non-persisting inventory update to the owning client. This removes the former double-write race that produced `500` responses. A regression proves the API removes the required stack exactly once; all 334 backend tests and the Unity runtime build pass.
 - 2026-08-12: Fixed an inventory persistence `404` introduced while removing the single-character assumption. Consumable and gear paths now populate `UpdateCharacterInventoryCommand.CharacterId`; more importantly, the dedicated server overwrites every outgoing inventory command with the character ID bound to the authenticated `PlayerSessionId`. Split/move RPCs no longer accept a client-provided character ID. This keeps inventory writes aligned with the selected character and prevents both accidental `CharacterId = 0` requests and cross-character tampering. Unity runtime compilation passes with zero errors.
 - 2026-08-12: Removed the assumption that a user has one character or that a character always has database ID `1`. The database keeps the one-to-many `ApplicationUser -> Characters` relationship, `GET /api/Characters` returns every active character owned by the client, and character/inventory/quest/transform reads require an explicit `CharacterId`. Until the creator and selector UI is added, Unity loads the list and temporarily selects its first entry in a marked `#region`. The selected ID is embedded in the one-time connection ticket, redeemed player session, authorization context, and dedicated-server cache; every delegated gameplay handler verifies both the effective owner and the session-selected character. This fixes the former character `404`/movement failure without preventing multiple characters per account. A WebApplicationFactory regression uses different server/player subjects and character ID `42`, and integration tests prove a session for one character cannot mutate another character on the same account. All 334 backend tests pass, and the Unity runtime project compiles with zero errors.
@@ -110,6 +111,11 @@
 - 2026-07-15: Added combat ammo consumption across Unity server, owner client, Gear UI, and API persistence. `AmmoCount` decrements once per applicable hit; reaching zero subtracts all item parameters and replaces the equipped ammo with `AmmoTemplate`. The Unity server owns this transition; the API only persists the submitted `AmmoType`, `AmmoCount`, and stat values without deriving or normalizing them.
 
 ## Active Decisions
+- Near-term planning prioritizes systems and mechanics that one programmer can build and validate without new art. Defer presentation polish, broad content production, and art-dependent work until the gameplay systems are coherent.
+- Do not schedule a real character-selector screen in the current gameplay roadmap; keep the isolated temporary first-character selection until the user reintroduces that scope.
+- Do not schedule price, recipe, or drop-rate balancing yet. Implement correct rules and data flow first, then balance after the systems can be exercised together.
+- Treat Kill quest progress as additive event history. Treat Collect quest progress as the absolute count currently present in the authoritative character inventory: accepting initializes it from existing items, every persisted add/remove resynchronizes it, and losing items may return a Finished quest to Accepted until the requirement is held again.
+- An active craft is client-interrupted by movement input, actual received damage, closing/replacing its UI, or leaving the crafting-station radius. The server-side recipe/material/station validation remains separate future hardening work.
 - Treat the repository as two cooperating applications:
   - `Client/`: Unity 6000.1 project using Netcode for GameObjects.
   - `API/`: ASP.NET Core API using clean/layered architecture.
@@ -143,6 +149,16 @@
 - Append new `TranslateKeyEnum` values at the end of the enum, and append matching API/client `en.json`/`pl.json` entries at the end in the same order; do not insert new translation keys in the middle of existing enum values or localization files.
 
 ## Next Steps
+- Near-term mechanics roadmap, excluding character-selection UI, art polish, and economic balance:
+  - add one centralized Escape/UI-close policy for Character, Gear, Inventory, Chat focus, Quest, Merchant, and Crafting; the last three already have partial Escape handling, while Character/Gear/Inventory do not;
+  - display quest rewards before acceptance/completion, covering item rewards and/or experience rather than only the current numeric main-experience reward path;
+  - introduce per-item maximum stack sizes and an explicit atomic `inventory full`/partial-fit result before expanding inventory-dependent systems;
+  - add Gear Score derived from equipped item data and expose it to character/gear contracts and UI;
+  - add temporary timed buffs through the usable-item pipeline, starting with a craftable Strength Potion and defining stacking, replacement, expiry, reconnect, and server-authority behavior;
+  - build Party membership/invitations first, then shared quest credit and configurable experience sharing;
+  - build secure player-to-player trade as a server-owned two-party transaction with reservations and atomic commit/cancel;
+  - build Guilds on persistent membership/roles/invitations after Party identity/social patterns are stable;
+  - build the Auction House after max-stack, inventory-capacity, item-transfer, and transactional ownership rules are established.
 - For future implementation tasks, first refresh this file with the current working focus.
 - Confirm product-level goals with the user when changes require design or gameplay decisions not already implied by code.
 - Keep `progress.md` updated after meaningful changes.
@@ -152,7 +168,7 @@
 - Add focused tests for weapon-based damage stat selection, first ammo equip, same-type merge, type switch, unequip/reload, health-potion persistence, and crafting ordering; only translation-service unit tests are currently present.
 - Before replacing the intentional database reset with persistent upgrades, create a data-migration plan for ammo IDs `1010`-`1012`, whose meanings were repurposed when tiered ammo was introduced.
 - Keep each new or moved Unity asset/script together with its tracked `.meta` file so GUIDs and import settings remain stable; the current repo-level `.gitignore` does not exclude `*.meta`.
-- Review `PlayerUI.SetPlayer()` before health UI work; it currently writes current health and then max health to the same text field.
+- Runtime-smoke-test the new `current/max` health text and crafting interruption paths in Unity; generated-project compilation does not exercise input, distance, or damage timing.
 - Full Polish client localization can be planned later; current English content in client `pl.json` is a deliberate temporary development fallback.
 - Be cautious with API data while running locally because startup intentionally deletes and recreates the database for the current development workflow.
 

@@ -6,6 +6,19 @@ namespace ProjectX.Domain.UnitTests.Inventory;
 public class InventoryStateTests
 {
     [Fact]
+    public void GetCount_SumsMatchingStacksAndIgnoresOtherItems()
+    {
+        var inventory = CreateInventory(
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2),
+            new InventorySlot(InventoryItemEnum.Currency, 10),
+            new InventorySlot(InventoryItemEnum.HealthPotion, 3));
+
+        var count = inventory.GetCount(InventoryItemEnum.HealthPotion);
+
+        Assert.Equal(5, count);
+    }
+
+    [Fact]
     public void Split_AppendsHalfOfEvenStackToNextFreeSlot()
     {
         var inventory = CreateInventory(
