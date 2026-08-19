@@ -55,12 +55,12 @@ namespace Assets.Scripts.Areas.Inventory
 
         public bool CanSplit(int sourceSlotIndex)
         {
-            return Dto?.Inventory?.Items != null
-                && sourceSlotIndex >= 0
-                && sourceSlotIndex < Dto.Inventory.Items.Count
-                && !IsEmpty(Dto.Inventory.Items[sourceSlotIndex])
-                && (Dto.Inventory.Items.Count < Dto.Count || FindEmptySlotIndex() >= 0)
-                && Dto.Inventory.Items[sourceSlotIndex].Count > 1;
+            return HasSplittableSource(sourceSlotIndex) && HasFreeSlot();
+        }
+
+        public bool IsSplitBlockedByInventoryCapacity(int sourceSlotIndex)
+        {
+            return HasSplittableSource(sourceSlotIndex) && !HasFreeSlot();
         }
 
         public bool Split(int sourceSlotIndex)
@@ -265,6 +265,21 @@ namespace Assets.Scripts.Areas.Inventory
         private int FindEmptySlotIndex()
         {
             return FindEmptySlotIndex(Dto.Inventory.Items);
+        }
+
+        private bool HasSplittableSource(int sourceSlotIndex)
+        {
+            return Dto?.Inventory?.Items != null
+                && sourceSlotIndex >= 0
+                && sourceSlotIndex < Dto.Inventory.Items.Count
+                && !IsEmpty(Dto.Inventory.Items[sourceSlotIndex])
+                && Dto.Inventory.Items[sourceSlotIndex].Count > 1;
+        }
+
+        private bool HasFreeSlot()
+        {
+            return Dto?.Inventory?.Items != null
+                && (Dto.Inventory.Items.Count < Dto.Count || FindEmptySlotIndex() >= 0);
         }
 
         private static int FindEmptySlotIndex(IList<InventoryItemDto> items)

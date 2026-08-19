@@ -658,6 +658,14 @@ namespace Assets.Scripts.Areas.Inventory.UI
         {
             if (!InventoryManager.Instance.CanSplit(sourceSlotIndex))
             {
+                if (InventoryManager.Instance.IsSplitBlockedByInventoryCapacity(sourceSlotIndex))
+                {
+                    LogUI.Instance.ShowAsync(
+                        TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                        color: ColorUI.Red)
+                        .Forget();
+                }
+
                 return;
             }
 
