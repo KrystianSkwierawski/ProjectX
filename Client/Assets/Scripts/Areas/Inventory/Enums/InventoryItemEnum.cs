@@ -48,6 +48,8 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         Chamomile = 500,
         HealthPotion = 501,
+        StrengthPotion = 502,
+        SpeedPotion = 503,
 
         #endregion
 

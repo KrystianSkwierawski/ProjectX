@@ -102,5 +102,9 @@
     "Sword": "Miecz",
     "Wand": "Różdżka",
     "Bow": "Łuk",
-    "InventoryFull": "Brak wolnego miejsca w ekwipunku."
+    "InventoryFull": "Brak wolnego miejsca w ekwipunku.",
+    "StrengthPotionTitle": "Mikstura siły",
+    "StrengthPotionDescription": "Skoncentrowana mikstura alchemiczna, która tymczasowo zwiększa Siłę. Wypicie kolejnej podczas działania efektu odnawia jego czas.",
+    "SpeedPotionTitle": "Mikstura szybkości",
+    "SpeedPotionDescription": "Lekka mikstura alchemiczna, która tymczasowo zwiększa Szybkość. Wypicie kolejnej podczas działania efektu odnawia jego czas."
 }

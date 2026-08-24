@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
@@ -21,9 +22,10 @@ using UnityEngine.InputSystem;
 
 namespace Assets.Scripts.Areas.Inventory.Mono
 {
-    public class CharacterInventory : NetworkBehaviour
+    public class CharacterInventory : NetworkBehaviour, ICharacterBuffController
     {
         private IList<InventoryItemDto> _currentLoot = new List<InventoryItemDto>();
+        private readonly IDictionary<InventoryItemEnum, ActiveBuff> _activeBuffs = new Dictionary<InventoryItemEnum, ActiveBuff>();
 
         #region LootDictionary
 
@@ -262,6 +264,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private void Update()
         {
+            UpdateActiveBuffs();
+
             if (IsOwner && Keyboard.current.bKey.wasPressedThisFrame)
             {
                 InventoryUI.Instance.Toggle();
@@ -542,6 +546,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ClientRpc]
         private void ResynchronizeCharacterClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
         {
+            RestoreActiveBuffs(character);
             UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId] = character;
 
             PlayerUI.Instance.SetPlayer();
@@ -586,6 +591,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             IUsableItem usableItem = item.Type switch
             {
                 InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, playerSessionId, OwnerClientId),
+                InventoryItemEnum.StrengthPotion => new StrengthPotionUsableItem(item, playerSessionId, OwnerClientId, this),
+                InventoryItemEnum.SpeedPotion => new SpeedPotionUsableItem(item, playerSessionId, OwnerClientId, this),
                 InventoryItemEnum.Currency => new CurrencyUsableItem(item, playerSessionId, OwnerClientId),
                 _ => null
             };
@@ -600,8 +607,153 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             return true;
         }
 
+        public void ApplyOrRefreshBuff(
+            InventoryItemEnum type,
+            float durationSeconds,
+            Action<CharacterDto, bool> setActive)
+        {
+            ApplyOrRefreshBuffLocal(type, durationSeconds, setActive);
+
+            if (!IsServer)
+            {
+                return;
+            }
+
+            ApplyOrRefreshBuffClientRpc(
+                type,
+                durationSeconds,
+                new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+        }
+
+        [ClientRpc]
+        private void ApplyOrRefreshBuffClientRpc(
+            InventoryItemEnum type,
+            float durationSeconds,
+            ClientRpcParams rpcParams = default)
+        {
+            Action<CharacterDto, bool> setActive = type switch
+            {
+                InventoryItemEnum.StrengthPotion => StrengthPotionUsableItem.ApplyBuff,
+                InventoryItemEnum.SpeedPotion => SpeedPotionUsableItem.ApplyBuff,
+                _ => null
+            };
+
+            if (setActive == null)
+            {
+                Debug.LogWarning($"CharacterInventory -> Unsupported buff type. Type: {type}");
+
+                return;
+            }
+
+            ApplyOrRefreshBuffLocal(type, durationSeconds, setActive);
+        }
+
+        private void ApplyOrRefreshBuffLocal(
+            InventoryItemEnum type,
+            float durationSeconds,
+            Action<CharacterDto, bool> setActive)
+        {
+            if (durationSeconds <= 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(durationSeconds));
+            }
+
+            if (setActive == null)
+            {
+                throw new ArgumentNullException(nameof(setActive));
+            }
+
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (!_activeBuffs.TryGetValue(type, out var buff))
+            {
+                buff = new ActiveBuff
+                {
+                    SetActive = setActive
+                };
+                _activeBuffs.Add(type, buff);
+                setActive(character, true);
+            }
+
+            buff.ExpiresAt = Time.unscaledTime + durationSeconds;
+            buff.SetActive = setActive;
+
+            if (IsOwner)
+            {
+                BuffUI.Instance?.ShowOrRefresh(type, durationSeconds);
+                GearUI.Instance?.UpdateRightPanel();
+            }
+        }
+
+        private void UpdateActiveBuffs()
+        {
+            if (_activeBuffs.Count == 0)
+            {
+                return;
+            }
+
+            var now = Time.unscaledTime;
+
+            foreach (var pair in _activeBuffs.ToArray())
+            {
+                var remaining = pair.Value.ExpiresAt - now;
+
+                if (remaining > 0f)
+                {
+                    if (IsOwner)
+                    {
+                        BuffUI.Instance?.SetRemaining(pair.Key, remaining);
+                    }
+
+                    continue;
+                }
+
+                RemoveBuff(pair.Key, pair.Value);
+            }
+        }
+
+        private void RemoveBuff(InventoryItemEnum type, ActiveBuff buff)
+        {
+            if (UserManager.Instance.Characters.TryGetValue(OwnerClientId, out var character))
+            {
+                buff.SetActive(character, false);
+            }
+
+            _activeBuffs.Remove(type);
+
+            if (IsOwner)
+            {
+                BuffUI.Instance?.Hide(type);
+                GearUI.Instance?.UpdateRightPanel();
+            }
+        }
+
+        private void RestoreActiveBuffs(CharacterDto character)
+        {
+            foreach (var buff in _activeBuffs.Values)
+            {
+                buff.SetActive(character, true);
+            }
+        }
+
+        private void ClearActiveBuffs()
+        {
+            foreach (var pair in _activeBuffs.ToArray())
+            {
+                RemoveBuff(pair.Key, pair.Value);
+            }
+        }
+
         public override void OnNetworkDespawn()
         {
+            ClearActiveBuffs();
+
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
@@ -611,6 +763,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         public override void OnDestroy()
         {
+            ClearActiveBuffs();
+
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
@@ -627,6 +781,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             public int Min { get; set; }
 
             public int Max { get; set; }
+        }
+
+        private sealed class ActiveBuff
+        {
+            public float ExpiresAt { get; set; }
+
+            public Action<CharacterDto, bool> SetActive { get; set; }
         }
     }
 }

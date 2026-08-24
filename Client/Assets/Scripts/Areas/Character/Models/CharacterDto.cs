@@ -21,9 +21,13 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public short Strength { get; set; }
 
+        public short StrengthBuff { get; set; }
+
         public short Dexterity { get; set; }
 
         public short Speed { get; set; }
+
+        public short SpeedBuff { get; set; }
 
         public short Intellect { get; set; }
 
@@ -40,6 +44,10 @@ namespace Assets.Scripts.Areas.Character.Models
         public InventoryItemEnum AmmoType { get; set; }
 
         public int AmmoCount { get; set; }
+
+        public int EffectiveStrength => Strength + StrengthBuff;
+
+        public int EffectiveSpeed => Speed + SpeedBuff;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -199,10 +207,10 @@ namespace Assets.Scripts.Areas.Character.Models
         {
             var value = character.WeaponType.GetWeaponCategory() switch
             {
-                WeaponCategoryEnum.Sword => character.Strength,
+                WeaponCategoryEnum.Sword => character.EffectiveStrength,
                 WeaponCategoryEnum.Wand => character.Intellect,
                 WeaponCategoryEnum.Bow => character.Dexterity,
-                _ => (short)0
+                _ => 0
             };
 
             return Mathf.Max(0f, damage) * GetIncreaseMultiplier(value);
@@ -215,7 +223,7 @@ namespace Assets.Scripts.Areas.Character.Models
 
         public static float ApplySpeed(this CharacterDto character, float speed)
         {
-            return Mathf.Max(0f, speed) * GetIncreaseMultiplier(character.Speed);
+            return Mathf.Max(0f, speed) * GetIncreaseMultiplier(character.EffectiveSpeed);
         }
 
         public static int ApplyArmor(this CharacterDto character, int damage)
@@ -225,7 +233,7 @@ namespace Assets.Scripts.Areas.Character.Models
             return Mathf.RoundToInt(reducedDamage);
         }
 
-        private static float GetIncreaseMultiplier(short value)
+        private static float GetIncreaseMultiplier(int value)
         {
             return 1f + Mathf.Max(0, value) / 100f;
         }

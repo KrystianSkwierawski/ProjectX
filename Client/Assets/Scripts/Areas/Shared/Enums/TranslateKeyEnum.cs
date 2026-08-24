@@ -107,6 +107,10 @@ namespace Assets.Scripts.Areas.Shared.Enums
         Sword,
         Wand,
         Bow,
-        InventoryFull
+        InventoryFull,
+        StrengthPotionTitle,
+        StrengthPotionDescription,
+        SpeedPotionTitle,
+        SpeedPotionDescription
     }
 }

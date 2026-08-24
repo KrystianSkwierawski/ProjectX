@@ -12,6 +12,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - Applies early runtime stat behavior: equipped Iron Sword/Wand/Bow select Strength/Intellect/Dexterity for fireball damage scaling, Dexterity provides dodge chance, Speed scales movement, and Armor reduces incoming damage.
 - Exposes tiered ammo items through merchant stock and Blacksmithing/Alchemy recipes, with weapon-compatible equip rules, whole-stack transfers, and server-authoritative per-hit consumption synchronized to the API and owner UI.
 - Lets health potions restore up to 20 health, persist the resulting health from dedicated-server builds, and remain unconsumed when the character is already at max health.
+- Lets craftable Strength and Speed potions apply server-authoritative, refreshable temporary bonuses with visible upper-right timers and normal item-slot hover previews that state the exact bonus.
 - Supports multiple languages through i18n resources and translation services.
 
 ## User Experience Goals
@@ -25,11 +26,11 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 
 ## Open Product Questions
 - Near-term development is systems/mechanics-first for one programmer working without an artist; visual polish is deferred. The current roadmap also defers a real character selector and price/recipe/drop balancing.
-- Planned systems include Gear Score, timed craftable consumable buffs, Party quest/experience sharing, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, and visible item/experience quest rewards.
+- Planned systems include Gear Score, Party quest/experience sharing, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, and visible item/experience quest rewards.
 - The exact genre, target platform, multiplayer session model, and release goals are not documented yet.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.
 - Weapon-specific combat behavior beyond selecting the damage-scaling stat is not documented or implemented yet.
 - Ammo equip semantics use explicit `Inventory`/`Gear` origins and weapon categories. First equip, same-type merge, different-type swap, weapon-triggered auto-unequip, and gear unequip transfer whole stacks and corresponding stat bonuses. Current combat consumption is one Feather on a non-dodged incoming hit or one Arrow/Rune/Oil on an outgoing hit; additional ammo-specific effects beyond their stat bonuses remain open product work.
-- Broader consumable-item behavior beyond the current server-persisted health potion is not yet documented.
+- Broader consumable-item behavior beyond the current health, Strength, and Speed potions is not yet documented.
 - Full Polish client localization remains a future product task; current English content in client `pl.json` is an intentional temporary fallback for development.

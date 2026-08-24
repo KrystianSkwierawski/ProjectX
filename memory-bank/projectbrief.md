@@ -10,6 +10,7 @@ ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core b
 - Inventory slots support persisted drag-and-drop positioning: different items swap, matching stacks merge, empty positions are represented by `None` placeholders, and Loot can be picked up by dropping it onto inventory.
 - Gear currently includes helmet, chest, boots, weapon, and ammo slots plus stat bonuses that affect persisted character totals.
 - Tiered Arrow, Rune, Feather, and Oil ammo content is represented in inventory, merchant, localization, icon, and crafting data. Ammo equip, merge, swap, and unequip paths preserve whole stacks; Arrows require bows, Runes require wands, and Feathers/Oils require swords. Feather armor ammo is consumed on a non-dodged incoming hit, while Arrow/Rune/Oil damage ammo is consumed on an outgoing hit.
+- Craftable Strength and Speed potions grant server-authoritative runtime-only timed bonuses; reuse refreshes rather than stacks the effect, and upper-right inventory-slot visuals expose the remaining time plus the normal item preview.
 
 ## Core Goals
 - Provide a playable Unity client backed by persistent API services.

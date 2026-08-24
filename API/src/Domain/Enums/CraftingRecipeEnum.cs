@@ -23,7 +23,9 @@ public enum CraftingRecipeEnum : short
     AmmoFeather3,
     AmmoOil1,
     AmmoOil2,
-    AmmoOil3
+    AmmoOil3,
+    StrengthPotion,
+    SpeedPotion
 }
 
 public static class CraftingRecipeEnumExtensions
@@ -53,6 +55,8 @@ public static class CraftingRecipeEnumExtensions
             CraftingRecipeEnum.AmmoOil1 => Create(CraftingRecipeTypeEnum.Alchemy, 1, InventoryItemEnum.AmmoOil1, (InventoryItemEnum.Chamomile, 1)),
             CraftingRecipeEnum.AmmoOil2 => Create(CraftingRecipeTypeEnum.Alchemy, 2, InventoryItemEnum.AmmoOil2, (InventoryItemEnum.Chamomile, 2)),
             CraftingRecipeEnum.AmmoOil3 => Create(CraftingRecipeTypeEnum.Alchemy, 3, InventoryItemEnum.AmmoOil3, (InventoryItemEnum.Chamomile, 3)),
+            CraftingRecipeEnum.StrengthPotion => Create(CraftingRecipeTypeEnum.Alchemy, 1, InventoryItemEnum.StrengthPotion, (InventoryItemEnum.Chamomile, 2)),
+            CraftingRecipeEnum.SpeedPotion => Create(CraftingRecipeTypeEnum.Alchemy, 1, InventoryItemEnum.SpeedPotion, (InventoryItemEnum.Chamomile, 2)),
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown crafting recipe.")
         };
     }

@@ -21,6 +21,8 @@ namespace Assets.Scripts.Areas.Professions.Enums
         AmmoFeather3,
         AmmoOil1,
         AmmoOil2,
-        AmmoOil3
+        AmmoOil3,
+        StrengthPotion,
+        SpeedPotion
     }
 }

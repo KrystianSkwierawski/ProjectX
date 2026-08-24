@@ -163,9 +163,9 @@ namespace Assets.Scripts.Areas.Character.UI
                 RightPanel.GetComponent<TextMeshProUGUI>().text = string.Format(
                     TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearRightPanelDescription),
                     character.MaxHealth,
-                    character.Strength,
+                    character.EffectiveStrength,
                     character.Dexterity,
-                    character.Speed,
+                    character.EffectiveSpeed,
                     character.Intellect,
                     character.Armor
                 );

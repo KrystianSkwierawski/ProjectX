@@ -43,6 +43,8 @@ public enum InventoryItemEnum
 
     Chamomile = 500,
     HealthPotion = 501,
+    StrengthPotion = 502,
+    SpeedPotion = 503,
 
     #endregion
 

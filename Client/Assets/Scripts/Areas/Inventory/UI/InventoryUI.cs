@@ -6,6 +6,7 @@ using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
+using Assets.Scripts.Areas.Inventory.Shared;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
@@ -723,6 +724,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 {
                     sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(parameters.WeaponCategory.ToString())}");
                 }
+            }
+
+            if (item.Type == InventoryItemEnum.StrengthPotion)
+            {
+                sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Strength)}: {StrengthPotionUsableItem.Bonus}");
+            }
+
+            if (item.Type == InventoryItemEnum.SpeedPotion)
+            {
+                sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Speed)}: {SpeedPotionUsableItem.Bonus}");
             }
 
             return sb.ToString();

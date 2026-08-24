@@ -1488,6 +1488,8 @@
           "Wood",
           "Chamomile",
           "HealthPotion",
+          "StrengthPotion",
+          "SpeedPotion",
           "HelmetTemplate",
           "ChestTemplate",
           "BootsTemplate",
@@ -1531,6 +1533,8 @@
           400,
           500,
           501,
+          502,
+          503,
           1000,
           1001,
           1002,
@@ -2080,7 +2084,9 @@
           "AmmoFeather3",
           "AmmoOil1",
           "AmmoOil2",
-          "AmmoOil3"
+          "AmmoOil3",
+          "StrengthPotion",
+          "SpeedPotion"
         ],
         "enum": [
           0,
@@ -2102,7 +2108,9 @@
           16,
           17,
           18,
-          19
+          19,
+          20,
+          21
         ]
       },
       "CraftingRecipeRequirementDto": {

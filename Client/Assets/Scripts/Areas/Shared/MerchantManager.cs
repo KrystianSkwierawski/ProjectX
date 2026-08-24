@@ -31,6 +31,8 @@ namespace Assets.Scripts.Areas.Shared.Mono
             { InventoryItemEnum.Wood, 8 },
             { InventoryItemEnum.Chamomile, 25 },
             { InventoryItemEnum.HealthPotion, 10 },
+            { InventoryItemEnum.StrengthPotion, 25 },
+            { InventoryItemEnum.SpeedPotion, 25 },
 
             { InventoryItemEnum.IronHelmet, 20 },
             { InventoryItemEnum.IronChest, 30 },

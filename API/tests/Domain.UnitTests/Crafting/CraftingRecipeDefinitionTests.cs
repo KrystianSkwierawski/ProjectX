@@ -31,4 +31,19 @@ public class CraftingRecipeDefinitionTests
             [(InventoryItemEnum.Wood, 3), (InventoryItemEnum.CopperBar, 3)],
             definition.Requirement.Items.Select(item => (item.Type, item.Count)));
     }
+
+    [Theory]
+    [InlineData(CraftingRecipeEnum.StrengthPotion, InventoryItemEnum.StrengthPotion)]
+    [InlineData(CraftingRecipeEnum.SpeedPotion, InventoryItemEnum.SpeedPotion)]
+    public void BuffPotions_AreAlchemyRecipesUsingChamomile(CraftingRecipeEnum recipe, InventoryItemEnum reward)
+    {
+        var definition = recipe.GetDefinition();
+
+        Assert.Equal(CraftingRecipeTypeEnum.Alchemy, definition.Type);
+        Assert.Equal(reward, definition.Reward.Item.Type);
+        Assert.Equal(1, definition.Requirement.Level);
+        Assert.Equal(
+            [(InventoryItemEnum.Chamomile, 2)],
+            definition.Requirement.Items.Select(item => (item.Type, item.Count)));
+    }
 }
