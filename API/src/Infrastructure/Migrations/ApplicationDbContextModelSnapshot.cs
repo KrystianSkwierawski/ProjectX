@@ -17,150 +17,10 @@ namespace ProjectX.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.DeviceFlowCodes", b =>
-                {
-                    b.Property<string>("UserCode")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasMaxLength(50000)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("DeviceCode")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("Expiration")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SessionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SubjectId")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("UserCode");
-
-                    b.HasIndex("DeviceCode")
-                        .IsUnique();
-
-                    b.HasIndex("Expiration");
-
-                    b.ToTable("DeviceCodes", (string)null);
-                });
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.Key", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Algorithm")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("DataProtected")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsX509Certificate")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Use")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Use");
-
-                    b.ToTable("Keys", (string)null);
-                });
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.PersistedGrant", b =>
-                {
-                    b.Property<string>("Key")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("ConsumedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasMaxLength(50000)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("Expiration")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SessionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SubjectId")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Key");
-
-                    b.HasIndex("ConsumedTime");
-
-                    b.HasIndex("Expiration");
-
-                    b.HasIndex("SubjectId", "ClientId", "Type");
-
-                    b.HasIndex("SubjectId", "SessionId", "Type");
-
-                    b.ToTable("PersistedGrants", (string)null);
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -295,7 +155,288 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AmmoCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AmmoType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<short>("Armor")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("BootsType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChestType")
+                        .HasColumnType("int");
+
+                    b.Property<short>("Dexterity")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("Health")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HelmetType")
+                        .HasColumnType("int");
+
+                    b.Property<short>("Intellect")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("MaxHealth")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<short>("Speed")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<short>("Strength")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("WeaponType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("Characters", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterExperience", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.ToTable("CharacterExperiences", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<short>("Count")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Inventory")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CharacterInventories", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("int");
+
+                    b.Property<short>("QuestId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("QuestId");
+
+                    b.ToTable("CharacterQuests", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<float>("PositionX")
+                        .HasColumnType("real");
+
+                    b.Property<float>("PositionY")
+                        .HasColumnType("real");
+
+                    b.Property<float>("PositionZ")
+                        .HasColumnType("real");
+
+                    b.Property<float>("RotationY")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.ToTable("CharacterTransforms", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CraftingRecipe", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Requirement")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reward")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type", "Status")
+                        .HasDatabaseName("IX.CraftingRecipe.Type.Status");
+
+                    b.ToTable("CraftingRecipes", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("MaxCount")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InventoryItems", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("GameObjectName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short>("PreviousQuestId")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("Requirement")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Reward")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX.Quests.Status");
+
+                    b.ToTable("Quests", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -363,288 +504,6 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<short>("Armor")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("AmmoType")
-                        .HasDefaultValue(1008)
-                        .HasColumnType("int");
-
-                    b.Property<int>("AmmoCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BootsType")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChestType")
-                        .HasColumnType("int");
-
-                    b.Property<short>("Dexterity")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("Health")
-                        .HasColumnType("int");
-
-                    b.Property<int>("HelmetType")
-                        .HasColumnType("int");
-
-                    b.Property<short>("Intellect")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("MaxHealth")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<short>("Speed")
-                        .HasColumnType("smallint");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
-
-                    b.Property<short>("Strength")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("WeaponType")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.ToTable("Characters");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterExperience", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte>("Type")
-                        .HasColumnType("tinyint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CharacterId");
-
-                    b.ToTable("CharacterExperiences");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<short>("Count")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("Inventory")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CharacterInventories");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Progress")
-                        .HasColumnType("int");
-
-                    b.Property<short>("QuestId")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CharacterId");
-
-                    b.HasIndex("QuestId");
-
-                    b.ToTable("CharacterQuests");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<float>("PositionX")
-                        .HasColumnType("real");
-
-                    b.Property<float>("PositionY")
-                        .HasColumnType("real");
-
-                    b.Property<float>("PositionZ")
-                        .HasColumnType("real");
-
-                    b.Property<float>("RotationY")
-                        .HasColumnType("real");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CharacterId");
-
-                    b.ToTable("CharacterTransforms");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.CraftingRecipe", b =>
-                {
-                    b.Property<short>("Id")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Requirement")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Reward")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
-
-                    b.Property<byte>("Type")
-                        .HasColumnType("tinyint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Type", "Status")
-                        .HasDatabaseName("IX.CraftingRecipe.Type.Status");
-
-                    b.ToTable("CraftingRecipes");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<byte>("MaxCount")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("InventoryItems");
-                });
-
-            modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
-                {
-                    b.Property<short>("Id")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("GameObjectName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime>("ModDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<short>("PreviousQuestId")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("Requirement")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Reward")
-                        .HasColumnType("int");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
-
-                    b.Property<byte>("Type")
-                        .HasColumnType("tinyint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX.Quests.Status");
-
-                    b.ToTable("Quests");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -656,7 +515,7 @@ namespace ProjectX.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ProjectX.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -665,7 +524,7 @@ namespace ProjectX.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ProjectX.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -680,7 +539,7 @@ namespace ProjectX.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectX.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -689,7 +548,7 @@ namespace ProjectX.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ProjectX.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -698,13 +557,11 @@ namespace ProjectX.Infrastructure.Migrations
 
             modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
                 {
-                    b.HasOne("ProjectX.Domain.Entities.ApplicationUser", "ApplicationUser")
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany("Characters")
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterExperience", b =>
@@ -759,11 +616,6 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("Character");
                 });
 
-            modelBuilder.Entity("ProjectX.Domain.Entities.ApplicationUser", b =>
-                {
-                    b.Navigation("Characters");
-                });
-
             modelBuilder.Entity("ProjectX.Domain.Entities.Character", b =>
                 {
                     b.Navigation("CharacterExperiences");
@@ -779,6 +631,11 @@ namespace ProjectX.Infrastructure.Migrations
             modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
                 {
                     b.Navigation("CharacterQuests");
+                });
+
+            modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("Characters");
                 });
 #pragma warning restore 612, 618
         }

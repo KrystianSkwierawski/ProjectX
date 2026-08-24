@@ -1,6 +1,7 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuest;
+
 public class QuestDto
 {
     public QuestEnum Id { get; set; }

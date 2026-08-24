@@ -13,7 +13,7 @@ namespace Assets.Scripts.Areas.Character.Subscriptions
 
         public float Value { get; set; }
 
-        public string ClientToken { get; set; }
+        public string PlayerSessionId { get; set; }
 
         public GameObject Player { get; set; }
     }

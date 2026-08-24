@@ -1,11 +1,10 @@
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 using Assets.Scripts.Areas.Character.Enums;
-using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using TMPro;
 using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Character.UI
 {
@@ -77,8 +76,9 @@ namespace Assets.Scripts.Areas.Character.UI
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
 
             SetName(character.Name);
-            SetHealth(character.Health);
-            SetMaxHealth(character.MaxHealth);
+
+            SetHealthText(character.Health, character.MaxHealth);
+
             SetMainLevel(character.Levels[ExperienceTypeEnum.Main]);
         }
 
@@ -89,17 +89,26 @@ namespace Assets.Scripts.Areas.Character.UI
 
         public void SetHealth(int health)
         {
-            PlayerHealthPointsText.text = health.ToString();
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            SetHealthText(health, character.MaxHealth);
         }
 
         public void SetMaxHealth(int maxHealth)
         {
-            PlayerHealthPointsText.text = maxHealth.ToString();
+            var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
+            SetHealthText(character.Health, maxHealth);
         }
 
         public void SetMainLevel(int level)
         {
             PlayerLevelText.text = $"Level: {level}";
+        }
+
+        private void SetHealthText(int health, int maxHealth)
+        {
+            PlayerHealthPointsText.text = $"{health}/{maxHealth}";
         }
     }
 }

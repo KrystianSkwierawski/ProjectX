@@ -3,6 +3,7 @@ using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Inventory;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Professions.Enums;
@@ -48,14 +49,33 @@ namespace Assets.Scripts.Areas.Professions.Mono
             if (IsOwner)
             {
                 CheckHide();
+
                 CheckCraftingClicked();
+
                 CheckCrafting();
+
                 CheckSfx();
             }
         }
 
         private void StartCrafting()
         {
+            var inventoryRequest = new UpdateCharacterInventoryCommand
+            {
+                Add = new[] { CraftingUI.Instance.CurrentRecipe.Reward.Item },
+                Remove = CraftingUI.Instance.CurrentRecipe.Requirement.Items
+            };
+
+            if (!InventoryManager.Instance.CanApply(inventoryRequest))
+            {
+                LogUI.Instance.ShowAsync(
+                    TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                    color: ColorUI.Red)
+                    .Forget();
+
+                return;
+            }
+
             _sfxTimer = CraftingUI.Instance.CurrentType switch
             {
                 CraftingRecipeTypeEnum.Cooking => AudioManager.Instance.AudioClips[AudioTypeEnum.CookingPrepare].length,
@@ -80,8 +100,15 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 return;
             }
 
-            // TODO: interrupt
-            //PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
+            if (_input.Move != Vector2.zero
+                || _crafting == null
+                || !CraftingUI.Instance.Crafting.activeSelf
+                || _crafting.transform.IsFarToTarget(transform.gameObject, _maxDistance))
+            {
+                InterruptCrafting();
+
+                return;
+            }
 
             _craftingTimer += Time.deltaTime;
             PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
@@ -89,7 +116,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             if (_craftingTimer >= _craftingTime)
             {
                 StopCrafting();
-                CraftServerRpc(CraftingUI.Instance.CurrentRecipe.Id, CraftingUI.Instance.CurrentType, UserManager.Instance.Token);
+                CraftServerRpc(CraftingUI.Instance.CurrentRecipe.Id, CraftingUI.Instance.CurrentType);
             }
         }
 
@@ -97,18 +124,30 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             _isCrafting = false;
             _craftingTimer = 0f;
+            PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
             PlayerUI.Instance.HideCastBar();
-            CraftingUI.Instance.CraftButton.interactable = true;
+            CraftingUI.Instance.CraftButton.interactable = CraftingUI.Instance.HasAllRequirements;
+        }
+
+        public void InterruptCrafting()
+        {
+            if (!_isCrafting)
+            {
+                return;
+            }
+
+            StopCrafting();
         }
 
         [ServerRpc]
-        private void CraftServerRpc(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string clientToken)
+        private void CraftServerRpc(CraftingRecipeEnum id, CraftingRecipeTypeEnum type)
         {
             // TODO: validate
-            CraftAsync(id, type, clientToken).Forget();
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            CraftAsync(id, type, playerSessionId).Forget();
         }
 
-        private async UniTaskVoid CraftAsync(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string clientToken)
+        private async UniTaskVoid CraftAsync(CraftingRecipeEnum id, CraftingRecipeTypeEnum type, string playerSessionId)
         {
             var dto = await CraftingRecipeManager.Instance.GetAsync(type);
 
@@ -117,18 +156,6 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 .Single();
 
             var key = OwnerClientId.ToString();
-
-            UpdateInventorySubscription.Instance.Invoke(key, new UpdateInventorySubscriptionEvent
-            {
-                Request = new UpdateCharacterInventoryCommand
-                {
-                    CharacterId = 1,
-                    Add = new InventoryItemDto[] { recipe.Reward.Item },
-                    Remove = recipe.Requirement.Items
-                },
-                ClientToken = clientToken,
-            });
-
             var experienceType = type switch
             {
                 CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
@@ -137,23 +164,37 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 _ => ExperienceTypeEnum.None,
             };
 
-            if (experienceType != ExperienceTypeEnum.None)
+            UpdateInventorySubscription.Instance.Invoke(key, new UpdateInventorySubscriptionEvent
             {
-                AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
+                Request = new UpdateCharacterInventoryCommand
                 {
-                    Amount = recipe.Reward.Experience,
-                    Type = experienceType,
-                    ClientToken = clientToken,
-                });
-            }
+                    Add = new InventoryItemDto[] { recipe.Reward.Item },
+                    Remove = recipe.Requirement.Items
+                },
+                PlayerSessionId = playerSessionId,
+                OnSucceeded = () =>
+                {
+                    if (experienceType != ExperienceTypeEnum.None)
+                    {
+                        AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
+                        {
+                            Amount = recipe.Reward.Experience,
+                            Type = experienceType,
+                            PlayerSessionId = playerSessionId,
+                        });
+                    }
+                }
+            });
         }
 
         private void CheckHide()
         {
-            if (_crafting != null && _input.Move != Vector2.zero && _crafting.transform.IsFarToTarget(transform.gameObject, _maxDistance) || Keyboard.current.escapeKey.wasPressedThisFrame)
+            var leftCraftingStation = _crafting != null
+                && _crafting.transform.IsFarToTarget(transform.gameObject, _maxDistance);
+
+            if (leftCraftingStation || Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                CraftingUI.Instance.Hide();
-                _crafting = null;
+                Exit();
             }
         }
 
@@ -239,6 +280,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void Exit()
         {
+            InterruptCrafting();
             CraftingUI.Instance.Hide();
             _crafting = null;
         }

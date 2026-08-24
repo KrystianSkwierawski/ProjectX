@@ -18,7 +18,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             if (IsOwner)
             {
-                var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterTransformDto>("CharacterTransforms");
+                var characterId = UserManager.Instance.SelectedCharacterId;
+                var result = await UnityWebRequestHelper.ExecuteGetAsync<CharacterTransformDto>($"CharacterTransforms?CharacterId={characterId}");
 
                 transform.position = new Vector3(result.PositionX, result.PositionY, result.PositionZ);
                 transform.rotation.Set(0, result.RotationY, 0, 0);
@@ -37,7 +38,8 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             if (_period > _saveInterval)
             {
-                SaveTransformServerRpc(UserManager.Instance.Token);
+                SaveTransformServerRpc();
+
                 _period = 0;
             }
 
@@ -45,15 +47,17 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ServerRpc]
-        private void SaveTransformServerRpc(string clientToken)
+        private void SaveTransformServerRpc()
         {
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("CharacterTransforms", new CharacterTransformDto
             {
                 PositionX = transform.position.x,
                 PositionY = transform.position.y,
                 PositionZ = transform.position.z,
                 RotationY = transform.rotation.y,
-            }, clientToken, log: false)
+            }, playerSessionId, log: false)
             .Forget();
         }
     }

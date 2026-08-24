@@ -2,17 +2,19 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
+using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Shared.Models;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using Assets.Scripts.Areas.Character;
-using Assets.Scripts.Areas.Shared.Models;
 
 namespace Assets.Scripts.Areas.Shared.Mono
 {
     public static class UnityWebRequestHelper
     {
-        private const string _baseUrl = "https://localhost:5001/api"; // FIXME: config/secret
+        private const string _developmentBaseUrl = "https://localhost:5001/api";
+        internal const int RequestTimeoutSeconds = 15;
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -20,47 +22,72 @@ namespace Assets.Scripts.Areas.Shared.Mono
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string clientToken = "", bool log = true, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string playerSessionId = null, bool log = true, [CallerMemberName] string memberName = "")
         {
-            using var request = UnityWebRequest.Get($"{_baseUrl}/{endpoint}");
-
+            using var request = UnityWebRequest.Get(GetUrl(endpoint));
             request.downloadHandler = new DownloadHandlerBuffer();
 
-            return await SendWebRequestAsync<T>(request, clientToken, log, memberName);
+            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName);
         }
 
-        public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object obj, string clientToken = null, bool log = true, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object body, string playerSessionId = null, bool log = true,
+            CancellationToken cancellationToken = default, [CallerMemberName] string memberName = "")
         {
-            var bodyBytes = JsonSerializer.SerializeToUtf8Bytes(obj, _jsonOptions);
+            var bodyBytes = JsonSerializer.SerializeToUtf8Bytes(body, _jsonOptions);
 
-            using var request = new UnityWebRequest($"{_baseUrl}/{endpoint}", UnityWebRequest.kHttpVerbPOST)
+            using var request = new UnityWebRequest(GetUrl(endpoint), UnityWebRequest.kHttpVerbPOST)
             {
                 uploadHandler = new UploadHandlerRaw(bodyBytes) { contentType = "application/json" },
                 downloadHandler = new DownloadHandlerBuffer()
             };
 
-            return await SendWebRequestAsync<T>(request, clientToken, log, memberName);
+            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName, cancellationToken);
         }
 
-        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string clientToken = null, bool log = false, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecutePostAsync<T>(string endpoint, bool log = true, CancellationToken cancellationToken = default,
+            [CallerMemberName] string memberName = "")
         {
-            using var request = UnityWebRequest.Delete($"{_baseUrl}/{endpoint}");
+            using var request = new UnityWebRequest(GetUrl(endpoint), UnityWebRequest.kHttpVerbPOST)
+            {
+                downloadHandler = new DownloadHandlerBuffer()
+            };
 
+            return await SendWebRequestAsync<T>(request, null, log, memberName, cancellationToken);
+        }
+
+        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string playerSessionId = null, bool log = false, [CallerMemberName] string memberName = "")
+        {
+            using var request = UnityWebRequest.Delete(GetUrl(endpoint));
             request.downloadHandler = new DownloadHandlerBuffer();
 
-            return await SendWebRequestAsync<T>(request, clientToken, log, memberName);
+            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName);
         }
 
-        private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string clientToken, bool log = false, string memberName = "")
+        private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string playerSessionId, bool log = false,
+            string memberName = "", CancellationToken cancellationToken = default)
         {
-            request.SetRequestHeader("Authorization", $"Bearer {UserManager.Instance.Token}");
+            request.timeout = RequestTimeoutSeconds;
 
-            if (clientToken != null)
+            var userToken = UserManager.Instance.Token;
+
+            if (!string.IsNullOrWhiteSpace(userToken))
             {
-                request.SetRequestHeader("ClientToken", clientToken);
+                request.SetRequestHeader("Authorization", $"Bearer {userToken}");
             }
 
-            await request.SendWebRequest();
+            if (!string.IsNullOrWhiteSpace(playerSessionId))
+            {
+                request.SetRequestHeader("PlayerSessionId", playerSessionId);
+            }
+
+            try
+            {
+                await request.SendWebRequest().ToUniTask(cancellationToken: cancellationToken);
+            }
+            catch (UnityWebRequestException) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw CreateRequestException(request);
+            }
 
             if (log)
             {
@@ -68,22 +95,85 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 Debug.Log($"{memberName} text: {request.downloadHandler?.text}");
             }
 
-            if (request.result == UnityWebRequest.Result.Success)
+            if (EmptyResponse.Instance is T empty)
             {
-                if (EmptyResponse.Instance is T empty)
-                {
-                    return empty;
-                }
-
-                if ((request.downloadHandler?.data?.Length ?? 0) == 0)
-                {
-                    return default;
-                }
-
-                return JsonSerializer.Deserialize<T>(request.downloadHandler.data, _jsonOptions);
+                return empty;
             }
 
-            throw new Exception(request.error);
+            if ((request.downloadHandler?.data?.Length ?? 0) == 0)
+            {
+                return default;
+            }
+
+            return JsonSerializer.Deserialize<T>(request.downloadHandler.data, _jsonOptions);
+        }
+
+        private static ApiRequestException CreateRequestException(UnityWebRequest request)
+        {
+            return new ApiRequestException(request.result, request.responseCode, request.error, request.downloadHandler?.text);
+        }
+
+        private static string GetUrl(string endpoint)
+        {
+            return $"{GetBaseUrl()}/{endpoint.TrimStart('/')}";
+        }
+
+        private static string GetBaseUrl()
+        {
+            var configuredUrl = Environment.GetEnvironmentVariable("PROJECTX_API_URL");
+
+            if (string.IsNullOrWhiteSpace(configuredUrl))
+            {
+                configuredUrl = GetCommandLineValue("-projectx-api-url");
+            }
+
+            if (string.IsNullOrWhiteSpace(configuredUrl) && (Application.isEditor || HasCommandLineSwitch("-projectx-direct")))
+            {
+                configuredUrl = _developmentBaseUrl;
+            }
+
+            if (string.IsNullOrWhiteSpace(configuredUrl))
+            {
+                throw new InvalidOperationException("PROJECTX_API_URL or -projectx-api-url is required outside local development.");
+            }
+
+            configuredUrl = configuredUrl.Trim().TrimEnd('/');
+
+            if (!Uri.TryCreate(configuredUrl, UriKind.Absolute, out var uri)
+                || (uri.Scheme != Uri.UriSchemeHttps && (uri.Scheme != Uri.UriSchemeHttp || !uri.IsLoopback)))
+            {
+                throw new InvalidOperationException("The ProjectX API URL must be an absolute HTTPS URL (HTTP is allowed only for loopback development).");
+            }
+
+            return configuredUrl;
+        }
+
+        private static bool HasCommandLineSwitch(string value)
+        {
+            foreach (var argument in Environment.GetCommandLineArgs())
+            {
+                if (string.Equals(argument, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string GetCommandLineValue(string name)
+        {
+            var arguments = Environment.GetCommandLineArgs();
+
+            for (var index = 0; index < arguments.Length - 1; index++)
+            {
+                if (string.Equals(arguments[index], name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return arguments[index + 1];
+                }
+            }
+
+            return null;
         }
     }
 }

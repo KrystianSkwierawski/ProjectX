@@ -8,6 +8,6 @@ namespace Assets.Scripts.Areas.Quest.Subscriptions
 
     public class FinishCharacterQuestSubscriptionEvent
     {
-
+        public bool IsFinished { get; set; }
     }
 }

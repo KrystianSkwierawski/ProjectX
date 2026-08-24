@@ -1,41 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProjectX.Domain.Entities;
-using ProjectX.Domain.Enums;
 
 namespace ProjectX.Infrastructure.Persistance.Configurations;
+
 public class CharacterConfiguration : IEntityTypeConfiguration<Character>
 {
     public void Configure(EntityTypeBuilder<Character> builder)
     {
-        builder
-            .Property(builder => builder.Name)
-            .IsRequired()
-            .HasMaxLength(100);
+        builder.Property(character => character.Name).IsRequired().HasMaxLength(100);
 
         builder
-            .HasOne(x => x.ApplicationUser)
-            .WithMany(x => x.Characters)
-            .HasForeignKey(x => x.ApplicationUserId);
+            .HasOne(character => character.CharacterInventory)
+            .WithOne(inventory => inventory.Character)
+            .HasForeignKey<CharacterInventory>(inventory => inventory.Id);
 
         builder
-            .HasOne(x => x.CharacterInventory)
-            .WithOne(x => x.Character)
-            .HasForeignKey<CharacterInventory>(x => x.Id);
+            .HasMany(character => character.CharacterTransforms)
+            .WithOne(transform => transform.Character)
+            .HasForeignKey(transform => transform.CharacterId);
 
         builder
-            .HasMany(x => x.CharacterTransforms)
-            .WithOne(x => x.Character)
-            .HasForeignKey(x => x.CharacterId);
+            .HasMany(character => character.CharacterExperiences)
+            .WithOne(experience => experience.Character)
+            .HasForeignKey(experience => experience.CharacterId);
 
         builder
-            .HasMany(x => x.CharacterExperiences)
-            .WithOne(x => x.Character)
-            .HasForeignKey(x => x.CharacterId);
-
-        builder
-            .HasMany(x => x.CharacterQuests)
-            .WithOne(x => x.Character)
-            .HasForeignKey(x => x.CharacterId);
+            .HasMany(character => character.CharacterQuests)
+            .WithOne(characterQuest => characterQuest.Character)
+            .HasForeignKey(characterQuest => characterQuest.CharacterId);
     }
 }

@@ -1,18 +1,20 @@
-﻿using System.Text.Json;
-using System.Transactions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterInventories.Commands.UpdateCharacterInventory;
 
-public record UpdateCharacterInventoryCommand(int CharacterId, InventoryItemDto[] Add, InventoryItemDto[] Remove) : IRequest;
+public record UpdateCharacterInventoryCommand(
+    InventoryItemDto[] Add,
+    InventoryItemDto[] Remove,
+    int? SplitSlotIndex = null,
+    int? MoveSourceSlotIndex = null,
+    int? MoveTargetSlotIndex = null) : IRequest<UpdateCharacterInventoryDto>;
 
-public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand>
+public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand, UpdateCharacterInventoryDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<UpdateCharacterInventoryCommandHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -22,90 +24,81 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         _currentUserService = currentUserService;
     }
 
-    public async Task Handle(UpdateCharacterInventoryCommand request, CancellationToken cancellationToken)
+    public async Task<UpdateCharacterInventoryDto> Handle(UpdateCharacterInventoryCommand request, CancellationToken cancellationToken)
     {
         var userId = _currentUserService.GetId();
+        var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var entity = await _context.CharacterInventories
-          //.Where(x => x.CharacterId == request.CharacterId)
-          .Where(x => x.Character.ApplicationUserId == userId)
-          .SingleAsync(cancellationToken);
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
+            .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
-        Log.Debug("Found inventory for Id: {0}", entity.Id);
+        var inventory = entity.Inventory.Clone();
+        var effectiveCapacity = Math.Max(entity.Count, inventory.Items.Count);
 
-        var inventory = JsonSerializer.Deserialize<InventoryDto>(entity.Inventory);
-
-        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
-
-        foreach (var item in request.Add)
+        if (effectiveCapacity > short.MaxValue)
         {
-            var result = Add(item, inventory);
+            throw new InvalidOperationException("The character inventory exceeds the supported capacity.");
+        }
 
-            Log.Debug("Added item for inventory Id: {0}, Type: {1}, Count: {2}, Result: {3}", entity.Id, item.Type, item.Count, result);
+        if (request.SplitSlotIndex.HasValue)
+        {
+            EnsureApplied(
+                inventory.Split(request.SplitSlotIndex.Value, effectiveCapacity),
+                "split inventory stack");
+        }
+
+        if (request.MoveSourceSlotIndex.HasValue && request.MoveTargetSlotIndex.HasValue)
+        {
+            EnsureApplied(
+                inventory.Move(request.MoveSourceSlotIndex.Value, request.MoveTargetSlotIndex.Value, effectiveCapacity),
+                "move inventory item");
         }
 
         foreach (var item in request.Remove)
         {
-            var result = Remove(item, inventory);
-
-            Log.Debug("Removed item for inventory Id: {0}, Type: {1}, Count: {2}, Result: {3}", entity.Id, item.Type, item.Count, result);
+            EnsureValidItem(item, "remove inventory item");
+            EnsureApplied(inventory.Remove(item.Type, item.Count), "remove inventory item");
         }
 
-        entity.Inventory = JsonSerializer.Serialize(inventory);
+        foreach (var item in request.Add)
+        {
+            EnsureValidItem(item, "add inventory item");
+
+            if (!inventory.Add(item.Type, item.Count, effectiveCapacity))
+            {
+                return new UpdateCharacterInventoryDto
+                {
+                    Status = UpdateCharacterInventoryStatusEnum.InventoryFull
+                };
+            }
+        }
+
+        entity.Inventory = inventory;
+        entity.Count = (short)effectiveCapacity;
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        Log.Debug("Saved inventory for Id: {0}", entity.Id);
+        return new UpdateCharacterInventoryDto
+        {
+            Status = UpdateCharacterInventoryStatusEnum.Applied
+        };
     }
 
-    public static bool Add(InventoryItemDto item, InventoryDto inventory)
+    private static void EnsureValidItem(InventoryItemDto item, string operation)
     {
-        var slot = inventory.Items
-            .Where(x => x.Type == item.Type)
-            .FirstOrDefault();
-
-        if (slot == null)
+        if (item.Type == InventoryItemEnum.None || item.Count <= 0)
         {
-            inventory.Items.Add(item);
-
-            return true;
+            throw new InvalidOperationException($"The game server requested an invalid operation: {operation}.");
         }
-
-        if (slot != null)
-        {
-            slot.Count += item.Count;
-
-            return true;
-        }
-
-        // TODO: out of slots
-
-        return false;
     }
 
-    public static bool Remove(InventoryItemDto item, InventoryDto inventory)
+    private static void EnsureApplied(bool applied, string operation)
     {
-        var slot = inventory.Items
-            .Where(x => x.Type == item.Type)
-            .Where(x => x.Count >= item.Count)
-            .First();
-
-        if (slot.Count == item.Count)
+        if (!applied)
         {
-            inventory.Items.Remove(slot);
-
-            return true;
+            throw new InvalidOperationException($"The game server requested an invalid operation: {operation}.");
         }
-
-        if (slot.Count > item.Count)
-        {
-            slot.Count -= item.Count;
-
-            return true;
-        }
-
-        // TODO: multiple stacks
-
-        return false;
     }
 }

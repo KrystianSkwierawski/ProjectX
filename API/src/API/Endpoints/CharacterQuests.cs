@@ -2,12 +2,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
-using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgres;
 using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
-using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgres;
+using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 using ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
 using ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
-using ProjectX.Domain.Constants;
 
 namespace ProjectX.API.Endpoints;
 
@@ -17,56 +15,85 @@ public class CharacterQuests : EndpointGroupBase
     {
         groupBuilder
             .MapGet(GetCharacterQuests)
-            .RequireAuthorization(Policies.Client);
+            .WithSummary("Get character quests")
+            .WithDescription("Returns quests assigned to a character.")
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
-            .MapPost("Accept", AcceptCharacterQuest)
-            .RequireAuthorization(Policies.Client);
+            .MapPost(AcceptCharacterQuest, "Accept")
+            .WithSummary("Accept quest")
+            .WithDescription("Assigns a quest to the authenticated user's character.")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
-            .MapPost("Progress", AddCharacterQuestProgress)
-            .RequireAuthorization(Policies.Server);
+            .MapPost(AddCharacterQuestProgress, "Progress")
+            .WithSummary("Add quest progress")
+            .WithDescription("Adds progress to an accepted character quest.")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
-            .MapPost("CheckProgress", CheckCharacterQuestProgress)
-            .RequireAuthorization(Policies.Server);
+            .MapPost(CheckCharacterQuestProgress, "CheckProgress")
+            .WithSummary("Check quest progress")
+            .WithDescription("Adds event progress or synchronizes a matching collect quest with the current inventory.")
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
-            .MapPost("Complete", CompleteCharacterQuest)
-            .RequireAuthorization(Policies.Server);
+            .MapPost(CompleteCharacterQuest, "Complete")
+            .WithSummary("Complete quest")
+            .WithDescription("Completes a finished quest and returns its reward.")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
-    private static async Task<Ok<GetCharacterQuestsDto>> GetCharacterQuests(ISender sender, [AsParameters] GetCharacterQuestsQuery query)
+    public static async Task<Ok<GetCharacterQuestsDto>> GetCharacterQuests(
+        ISender sender,
+        [AsParameters] GetCharacterQuestsQuery query,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(query);
+        var result = await sender.Send(query, cancellationToken);
 
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Created<CharacterQuestDto>> AcceptCharacterQuest(ISender sender, AcceptCharacterQuestCommand command)
+    public static async Task<Created<CharacterQuestDto>> AcceptCharacterQuest(
+        ISender sender,
+        AcceptCharacterQuestCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command);
+        var result = await sender.Send(command, cancellationToken);
 
-        return TypedResults.Created(string.Empty, result);
+        return TypedResults.Created("/api/CharacterQuests", result);
     }
 
-    private static async Task<Ok<AddCharacterQuestProgressDto>> AddCharacterQuestProgress(ISender sender, AddCharacterQuestProgressCommand command)
+    public static async Task<Ok<AddCharacterQuestProgressDto>> AddCharacterQuestProgress(
+        ISender sender,
+        AddCharacterQuestProgressCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command);
+        var result = await sender.Send(command, cancellationToken);
 
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Ok<CheckCharacterQuestProgressDto>> CheckCharacterQuestProgress(ISender sender, CheckCharacterQuestProgressCommand command)
+    public static async Task<Ok<CheckCharacterQuestProgressDto>> CheckCharacterQuestProgress(
+        ISender sender,
+        CheckCharacterQuestProgressCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command);
+        var result = await sender.Send(command, cancellationToken);
 
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Ok<CompleteCharacterQuestDto>> CompleteCharacterQuest(ISender sender, CompleteCharacterQuestCommand command)
+    public static async Task<Ok<CompleteCharacterQuestDto>> CompleteCharacterQuest(
+        ISender sender,
+        CompleteCharacterQuestCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command);
+        var result = await sender.Send(command, cancellationToken);
 
         return TypedResults.Ok(result);
     }

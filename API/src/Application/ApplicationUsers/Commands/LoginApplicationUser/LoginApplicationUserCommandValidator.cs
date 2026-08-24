@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
 
 namespace ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
+
 public class LoginApplicationUserCommandValidator : AbstractValidator<LoginApplicationUserCommand>
 {
     public LoginApplicationUserCommandValidator()
     {
         RuleFor(x => x.UserName)
+            .EmailAddress()
             .MaximumLength(256)
             .NotEmpty();
 

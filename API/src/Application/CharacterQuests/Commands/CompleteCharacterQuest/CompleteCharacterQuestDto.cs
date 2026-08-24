@@ -1,4 +1,5 @@
 ﻿namespace ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
+
 public class CompleteCharacterQuestDto
 {
     public int Reward { get; set; }

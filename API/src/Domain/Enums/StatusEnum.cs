@@ -1,4 +1,5 @@
 ﻿namespace ProjectX.Domain.Enums;
+
 public enum StatusEnum : byte
 {
     Active = 1,

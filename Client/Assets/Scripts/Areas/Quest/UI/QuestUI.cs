@@ -180,6 +180,10 @@ namespace Assets.Scripts.Areas.Quest.UI
                 {
                     questLogObject.Mesh.color = ColorUI.Green;
                 }
+                else
+                {
+                    questLogObject.Mesh.color = ColorUI.White;
+                }
             }
         }
 
@@ -188,6 +192,7 @@ namespace Assets.Scripts.Areas.Quest.UI
             if (_questLogObjects.TryGetValue(characterQuest.QuestId, out var questLogObject))
             {
                 _questLogObjectPool.Release(questLogObject);
+
                 _questLogObjects.Remove(characterQuest.QuestId);
 
                 if (_questLogObjects.Count == 0)

@@ -12,6 +12,6 @@ namespace Assets.Scripts.Areas.Quest.Subscriptions
 
         public string GameObjectName { get; set; }
 
-        public string ClientToken { get; set; }
+        public string PlayerSessionId { get; set; }
     }
 }

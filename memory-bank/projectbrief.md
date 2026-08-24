@@ -5,10 +5,12 @@ ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core b
 
 ## Current Scope
 - Unity client under `Client/`.
-- Backend API under `API/`, organized as separate API, Application, Domain, Infrastructure, and UnitTests projects.
+- Backend API under `API/`, organized as separate API, Application, Domain, and Infrastructure projects plus responsibility-aligned test projects.
 - Gameplay domains currently represented in code include characters, character transforms, health/combat state, max health, character stats, equipment/gear, inventory, quests, crafting recipes, experience, users, and translation/i18n.
+- Inventory slots support persisted drag-and-drop positioning: different items swap, matching stacks merge, empty positions are represented by `None` placeholders, and Loot can be picked up by dropping it onto inventory.
 - Gear currently includes helmet, chest, boots, weapon, and ammo slots plus stat bonuses that affect persisted character totals.
 - Tiered Arrow, Rune, Feather, and Oil ammo content is represented in inventory, merchant, localization, icon, and crafting data. Ammo equip, merge, swap, and unequip paths preserve whole stacks; Arrows require bows, Runes require wands, and Feathers/Oils require swords. Feather armor ammo is consumed on a non-dodged incoming hit, while Arrow/Rune/Oil damage ammo is consumed on an outgoing hit.
+- Craftable Strength and Speed potions grant server-authoritative runtime-only timed bonuses; reuse refreshes rather than stacks the effect, and upper-right inventory-slot visuals expose the remaining time plus the normal item preview.
 
 ## Core Goals
 - Provide a playable Unity client backed by persistent API services.
@@ -16,5 +18,6 @@ ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core b
 - Support user login/authentication, character state, health, stats, gear/ammo, quest progress, inventory, crafting, and localization.
 
 ## Source Of Truth
+- The backend architecture and its modernization conventions intentionally use `jasontaylordev/CleanArchitecture` as the primary reference implementation. ProjectX adapts that template to its Unity/game-server requirements instead of copying unrelated template features.
 - This memory bank was initialized from repository inspection on 2026-05-07 and reviewed against repository HEAD `8c954ff` on 2026-07-13, incorporating the user clarifications recorded on 2026-07-07 and 2026-07-08.
 - Product-specific goals beyond the current code shape are not yet documented and should be confirmed with the user as the project evolves.

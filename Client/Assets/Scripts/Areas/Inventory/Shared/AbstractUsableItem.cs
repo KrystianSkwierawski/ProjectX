@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
@@ -6,16 +7,16 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public abstract class AbstractUsableItem : IUsableItem
     {
-        protected AbstractUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId)
+        protected AbstractUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId)
         {
             Item = item;
-            ClientToken = clientToken;
+            PlayerSessionId = playerSessionId;
             OwnerClientId = ownerClientId;
         }
 
         protected InventoryItemDto Item { get; }
 
-        protected string ClientToken { get; private set; }
+        protected string PlayerSessionId { get; private set; }
 
         protected ulong OwnerClientId { get; private set; }
 
@@ -31,7 +32,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                         Item
                     },
                 },
-                ClientToken = ClientToken,
+                PlayerSessionId = PlayerSessionId,
             });
 #endif
         }

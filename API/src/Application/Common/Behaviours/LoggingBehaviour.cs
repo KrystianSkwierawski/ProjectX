@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.Common.Behaviours;
@@ -7,16 +9,21 @@ namespace ProjectX.Application.Common.Behaviours;
 public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext(typeof(LoggingBehaviour<,>));
-
     private readonly ICurrentUserService _currentUserService;
+    private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
 
-    public LoggingBehaviour(ICurrentUserService currentUserService)
+    public LoggingBehaviour(
+        ICurrentUserService currentUserService,
+        ILogger<LoggingBehaviour<TRequest, TResponse>> logger)
     {
         _currentUserService = currentUserService;
+        _logger = logger;
     }
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
 
@@ -24,21 +31,38 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
         {
             var userId = _currentUserService.GetId();
 
-            Log.Debug("{0} -> Start. UserId: {1}, Request: {2}", requestName, userId, request);
+            _logger.LogDebug(
+                "{RequestName} -> Start. UserId: {UserId}, Request: {Request}",
+                requestName,
+                userId,
+                request.ToString());
 
-            var sw = Stopwatch.StartNew();
-
+            var stopwatch = Stopwatch.StartNew();
             var response = await next();
+            stopwatch.Stop();
 
-            sw.Stop();
-
-            Log.Debug("{0} -> Stop. UserId: {1}, Elapsed: {2}, Response: {3}", requestName, userId, sw.Elapsed, response);
+            _logger.LogDebug(
+                "{RequestName} -> Stop. UserId: {UserId}, Elapsed: {Elapsed}, Response: {Response}",
+                requestName,
+                userId,
+                stopwatch.Elapsed,
+                response?.ToString());
 
             return response;
         }
-        catch (Exception ex)
+        catch (Exception exception) when (exception is InvalidCredentialsException or InvalidGameSessionCredentialException)
         {
-            Log.Error(ex, ex.Message);
+            _logger.LogDebug("{RequestName} -> Rejected credentials", requestName);
+            throw;
+        }
+        catch (Exception exception) when (exception is ValidationException or NotFoundException)
+        {
+            _logger.LogDebug("{RequestName} -> Rejected: {Reason}", requestName, exception.Message);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "{RequestName} failed", requestName);
             throw;
         }
     }

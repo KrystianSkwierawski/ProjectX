@@ -7,7 +7,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class CurrencyUsableItem : AbstractUsableItem
     {
-        public CurrencyUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public CurrencyUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
 
         }

@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
@@ -19,9 +22,10 @@ using UnityEngine.InputSystem;
 
 namespace Assets.Scripts.Areas.Inventory.Mono
 {
-    public class CharacterInventory : NetworkBehaviour
+    public class CharacterInventory : NetworkBehaviour, ICharacterBuffController
     {
         private IList<InventoryItemDto> _currentLoot = new List<InventoryItemDto>();
+        private readonly IDictionary<InventoryItemEnum, ActiveBuff> _activeBuffs = new Dictionary<InventoryItemEnum, ActiveBuff>();
 
         #region LootDictionary
 
@@ -40,6 +44,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     }
                 }
             },
+
             {
                 nameof(InventoryItemEnum.Fish),
                 new LootItem[]
@@ -53,6 +58,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "BlackRock(Clone)",
                 new LootItem[]
@@ -66,6 +72,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "CopperRock(Clone)",
                 new LootItem[]
@@ -79,6 +86,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "WhiteRock(Clone)",
                 new LootItem[]
@@ -92,6 +100,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "PurpleRock(Clone)",
                 new LootItem[]
@@ -105,6 +114,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
                 "Chamomile(Clone)",
                 new LootItem[]
@@ -118,8 +128,9 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     },
                 }
             },
+
             {
-            "Tree(Clone)",
+                "Tree(Clone)",
                 new LootItem[]
                 {
                     new LootItem
@@ -141,16 +152,41 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             if (IsOwner)
             {
-                await InventoryManager.Instance.LoadAsync();
+                await InventoryManager.Instance.LoadAsync(UserManager.Instance.SelectedCharacterId);
 
                 InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
 
-                // TODO: only server rpc?
                 UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
-                    UpdateInventory(e.Request);
+                    if (!string.IsNullOrWhiteSpace(e.PlayerSessionId))
+                    {
+                        return;
+                    }
 
-                    UpdateInventoryServerRpc(e.Request, e.ClientToken);
+                    if (!InventoryManager.Instance.CanApply(e.Request))
+                    {
+                        ShowInventoryFull();
+
+                        return;
+                    }
+
+                    UpdateInventoryServerRpc(e.Request);
+                });
+
+                SplitInventorySubscription.Instance.Subscribe(key, (e) =>
+                {
+                    if (SplitInventory(e.SourceSlotIndex))
+                    {
+                        SplitInventoryServerRpc(e.SourceSlotIndex);
+                    }
+                });
+
+                MoveInventorySubscription.Instance.Subscribe(key, (e) =>
+                {
+                    if (MoveInventory(e.SourceSlotIndex, e.TargetSlotIndex))
+                    {
+                        MoveInventoryServerRpc(e.SourceSlotIndex, e.TargetSlotIndex);
+                    }
                 });
 
                 UseItemSubscribtion.Instance.Subscribe(key, (e) =>
@@ -160,26 +196,16 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         return;
                     }
 
-                    UseItem(e.Item, e.From, UserManager.Instance.Token);
-
-                    UseItemServerRpc(e.Item, e.From, UserManager.Instance.Token);
+                    if (UseItem(e.Item, e.From, null))
+                    {
+                        UseItemServerRpc(e.Item, e.From);
+                    }
                 });
             }
 
             if (IsServer)
             {
-                UpdateInventorySubscription.Instance.Subscribe(key, (e) =>
-                {
-                    UpdateInventoryClientRpc(e.Request, new ClientRpcParams
-                    {
-                        Send = new ClientRpcSendParams
-                        {
-                            TargetClientIds = new ulong[] { OwnerClientId }
-                        }
-                    });
-
-                    UpdateInventoryAsync(e.Request, e.ClientToken).Forget();
-                });
+                UpdateInventorySubscription.Instance.Subscribe(key, (e) => ProcessInventoryUpdateAsync(e).Forget());
 
                 CheckLootSubscription.Instance.Subscribe(key, (e) =>
                 {
@@ -238,6 +264,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private void Update()
         {
+            UpdateActiveBuffs();
+
             if (IsOwner && Keyboard.current.bKey.wasPressedThisFrame)
             {
                 InventoryUI.Instance.Toggle();
@@ -247,46 +275,91 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ClientRpc]
         private void ShowLootClientRpc(InventoryItemDto[] items, ClientRpcParams rpcParams = default)
         {
-            InventoryUI.Instance.UpdateLoot(items, OwnerClientId, UserManager.Instance.Token);
+            InventoryUI.Instance.UpdateLoot(items, OwnerClientId);
         }
 
         [ClientRpc]
         private void UpdateInventoryClientRpc(UpdateCharacterInventoryCommand request, ClientRpcParams rpcParams = default)
         {
-            UpdateInventory(request);
+            if (!UpdateInventory(request))
+            {
+                ReloadInventoryAsync().Forget();
+            }
         }
 
-        private void UpdateInventory(UpdateCharacterInventoryCommand request)
+        [ClientRpc]
+        private void ShowInventoryFullClientRpc(ClientRpcParams rpcParams = default)
         {
+            ShowInventoryFull();
+        }
+
+        private bool UpdateInventory(UpdateCharacterInventoryCommand request)
+        {
+            if (!InventoryManager.Instance.Apply(request))
+            {
+                return false;
+            }
+
             if (request.Add.Length > 0)
             {
-                foreach (var item in request.Add)
-                {
-                    InventoryManager.Instance.Add(item);
-                }
-
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
             }
 
-            foreach (var item in request.Remove)
-            {
-                InventoryManager.Instance.Remove(item);
-            }
-
             // TODO: UpdatedInventorySubscription?
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
+            CraftingUI.Instance.UpdateRequirements();
+
+            MerchantUI.Instance.UpdatePriceValidation();
+
+            return true;
+        }
+
+        private async UniTask ReloadInventoryAsync()
+        {
+            await InventoryManager.Instance.LoadAsync(UserManager.Instance.SelectedCharacterId);
+
             InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
             CraftingUI.Instance.UpdateRequirements();
             MerchantUI.Instance.UpdatePriceValidation();
         }
 
+        private bool SplitInventory(int sourceSlotIndex)
+        {
+            if (!InventoryManager.Instance.Split(sourceSlotIndex))
+            {
+                return false;
+            }
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
+            AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.AddItem, 0.5f);
+            //CraftingUI.Instance.UpdateRequirements();
+            //MerchantUI.Instance.UpdatePriceValidation();
+
+            return true;
+        }
+
+        private bool MoveInventory(int sourceSlotIndex, int targetSlotIndex)
+        {
+            if (!InventoryManager.Instance.Move(sourceSlotIndex, targetSlotIndex))
+            {
+                return false;
+            }
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+
+            return true;
+        }
+
         [ServerRpc]
-        private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request, string clientToken)
+        private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request)
         {
             var isValid = request.Add.All(x =>
             {
                 return _currentLoot
                     .Where(c => c.Type == x.Type)
-                    // TODO: count?
+                    .Where(c => c.Count >= x.Count)
                     .Any();
             });
 
@@ -294,75 +367,407 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             if (isValid)
             {
-                UpdateInventoryAsync(request, clientToken).Forget();
-
-                _currentLoot.Clear();
-            }
-        }
-
-        private async UniTask UpdateInventoryAsync(UpdateCharacterInventoryCommand request, string clientToken)
-        {
-            await InventoryManager.Instance.UpdateAsync(request, clientToken);
-
-            foreach (var item in request.Add)
-            {
-                CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
-                {
-                    Progress = item.Count,
-                    GameObjectName = item.Type.ToString(),
-                    ClientToken = clientToken,
-                });
+                var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+                ProcessLootInventoryUpdateAsync(request, playerSessionId).Forget();
             }
         }
 
         [ServerRpc]
-        private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from, string clientToken)
+        private void SplitInventoryServerRpc(int sourceSlotIndex)
         {
-            UseItem(item, from, clientToken);
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            SplitInventoryAsync(sourceSlotIndex, playerSessionId).Forget();
         }
 
-        private void UseItem(InventoryItemDto item, UsableItemFromEnum from, string clientToken)
+        [ServerRpc]
+        private void MoveInventoryServerRpc(int sourceSlotIndex, int targetSlotIndex)
         {
-            if (item.Type.IsAmmo())
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            MoveInventoryAsync(sourceSlotIndex, targetSlotIndex, playerSessionId).Forget();
+        }
+
+        private async UniTask SplitInventoryAsync(int sourceSlotIndex, string playerSessionId)
+        {
+            await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
             {
-                new AmmoUsableItem(item, clientToken, OwnerClientId).Use(from);
+                SplitSlotIndex = sourceSlotIndex,
+            }, playerSessionId);
+        }
+
+        private async UniTask MoveInventoryAsync(int sourceSlotIndex, int targetSlotIndex, string playerSessionId)
+        {
+            await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
+            {
+                MoveSourceSlotIndex = sourceSlotIndex,
+                MoveTargetSlotIndex = targetSlotIndex,
+            }, playerSessionId);
+        }
+
+        private async UniTask ProcessInventoryUpdateAsync(UpdateInventorySubscriptionEvent e)
+        {
+            if (!e.PersistInApi)
+            {
+                SendInventoryUpdateToOwner(e.Request);
+                e.OnSucceeded?.Invoke();
 
                 return;
             }
 
-            if (item.Type.IsWeapon())
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            UpdateCharacterInventoryStatusEnum status;
+
+            try
             {
-                new WeaponUsableItem(item, clientToken, OwnerClientId).Use(from);
+                status = await UpdateInventoryAsync(e.Request, playerSessionId);
+            }
+            catch
+            {
+                RejectInventoryUpdate(e);
+
+                throw;
+            }
+
+            if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+            {
+                RejectInventoryUpdate(e);
+                SendInventoryFullToOwner();
 
                 return;
+            }
+
+            SendInventoryUpdateToOwner(e.Request);
+            e.OnSucceeded?.Invoke();
+        }
+
+        private void RejectInventoryUpdate(UpdateInventorySubscriptionEvent e)
+        {
+            e.OnRejected?.Invoke();
+
+            if (!e.ResynchronizeCharacterOnRejected)
+            {
+                return;
+            }
+
+            ResynchronizeCharacterClientRpc(
+                UserManager.Instance.Characters[OwnerClientId],
+                new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+        }
+
+        private async UniTask ProcessLootInventoryUpdateAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
+        {
+            var status = await UpdateInventoryAsync(request, playerSessionId);
+
+            if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+            {
+                SendInventoryFullToOwner();
+                ShowLootClientRpc(_currentLoot.ToArray(), new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+
+                return;
+            }
+
+            SendInventoryUpdateToOwner(request);
+            _currentLoot.Clear();
+        }
+
+        private async UniTask<UpdateCharacterInventoryStatusEnum> UpdateInventoryAsync(
+            UpdateCharacterInventoryCommand request,
+            string playerSessionId)
+        {
+            var result = await InventoryManager.Instance.UpdateAsync(request, playerSessionId);
+
+            if (result.Status != UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                return result.Status;
+            }
+
+            var changedItemTypes = request.Add
+                .Concat(request.Remove)
+                .Select(x => x.Type)
+                .Where(x => x != InventoryItemEnum.None)
+                .Distinct();
+
+            foreach (var itemType in changedItemTypes)
+            {
+                CheckCharacterQuestSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
+                {
+                    Progress = request.Add
+                        .Where(x => x.Type == itemType)
+                        .Sum(x => x.Count),
+                    GameObjectName = itemType.ToString(),
+                    PlayerSessionId = playerSessionId,
+                });
+            }
+
+            return result.Status;
+        }
+
+        private void SendInventoryUpdateToOwner(UpdateCharacterInventoryCommand request)
+        {
+            UpdateInventoryClientRpc(request, new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+
+        private void SendInventoryFullToOwner()
+        {
+            ShowInventoryFullClientRpc(new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { OwnerClientId }
+                }
+            });
+        }
+
+        private static void ShowInventoryFull()
+        {
+            LogUI.Instance.ShowAsync(
+                TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                color: ColorUI.Red)
+                .Forget();
+        }
+
+        [ClientRpc]
+        private void ResynchronizeCharacterClientRpc(CharacterDto character, ClientRpcParams rpcParams = default)
+        {
+            RestoreActiveBuffs(character);
+            UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId] = character;
+
+            PlayerUI.Instance.SetPlayer();
+            GearUI.Instance.UpdateLeftPanel();
+            GearUI.Instance.UpdateRightPanel();
+        }
+
+        [ServerRpc]
+        private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from)
+        {
+            UseItem(item, from, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
+        }
+
+        private bool UseItem(InventoryItemDto item, UsableItemFromEnum from, string playerSessionId)
+        {
+            AbstractGearUsableItem gearItem = null;
+
+            if (item.Type.IsAmmo())
+            {
+                gearItem = new AmmoUsableItem(item, playerSessionId, OwnerClientId);
+            }
+            else if (item.Type.IsWeapon())
+            {
+                gearItem = new WeaponUsableItem(item, playerSessionId, OwnerClientId);
+            }
+            else
+            {
+                gearItem = item.Type switch
+                {
+                    InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.IronChest => new ChestUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.IronBoots => new BootsUsableItem(item, playerSessionId, OwnerClientId),
+                    _ => null
+                };
+            }
+
+            if (gearItem != null)
+            {
+                return gearItem.TryUse(from);
             }
 
             IUsableItem usableItem = item.Type switch
             {
-                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.Currency => new CurrencyUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronChest => new ChestUsableItem(item, clientToken, OwnerClientId),
-                InventoryItemEnum.IronBoots => new BootsUsableItem(item, clientToken, OwnerClientId),
+                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, playerSessionId, OwnerClientId),
+                InventoryItemEnum.StrengthPotion => new StrengthPotionUsableItem(item, playerSessionId, OwnerClientId, this),
+                InventoryItemEnum.SpeedPotion => new SpeedPotionUsableItem(item, playerSessionId, OwnerClientId, this),
+                InventoryItemEnum.Currency => new CurrencyUsableItem(item, playerSessionId, OwnerClientId),
                 _ => null
             };
 
-            if (usableItem != null)
+            if (usableItem == null)
             {
-                usableItem.Use(from);
+                return false;
+            }
+
+            usableItem.Use(from);
+
+            return true;
+        }
+
+        public void ApplyOrRefreshBuff(
+            InventoryItemEnum type,
+            float durationSeconds,
+            Action<CharacterDto, bool> setActive)
+        {
+            ApplyOrRefreshBuffLocal(type, durationSeconds, setActive);
+
+            if (!IsServer)
+            {
+                return;
+            }
+
+            ApplyOrRefreshBuffClientRpc(
+                type,
+                durationSeconds,
+                new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { OwnerClientId }
+                    }
+                });
+        }
+
+        [ClientRpc]
+        private void ApplyOrRefreshBuffClientRpc(
+            InventoryItemEnum type,
+            float durationSeconds,
+            ClientRpcParams rpcParams = default)
+        {
+            Action<CharacterDto, bool> setActive = type switch
+            {
+                InventoryItemEnum.StrengthPotion => StrengthPotionUsableItem.ApplyBuff,
+                InventoryItemEnum.SpeedPotion => SpeedPotionUsableItem.ApplyBuff,
+                _ => null
+            };
+
+            if (setActive == null)
+            {
+                Debug.LogWarning($"CharacterInventory -> Unsupported buff type. Type: {type}");
+
+                return;
+            }
+
+            ApplyOrRefreshBuffLocal(type, durationSeconds, setActive);
+        }
+
+        private void ApplyOrRefreshBuffLocal(
+            InventoryItemEnum type,
+            float durationSeconds,
+            Action<CharacterDto, bool> setActive)
+        {
+            if (durationSeconds <= 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(durationSeconds));
+            }
+
+            if (setActive == null)
+            {
+                throw new ArgumentNullException(nameof(setActive));
+            }
+
+            var character = UserManager.Instance.Characters[OwnerClientId];
+
+            if (!_activeBuffs.TryGetValue(type, out var buff))
+            {
+                buff = new ActiveBuff
+                {
+                    SetActive = setActive
+                };
+                _activeBuffs.Add(type, buff);
+                setActive(character, true);
+            }
+
+            buff.ExpiresAt = Time.unscaledTime + durationSeconds;
+            buff.SetActive = setActive;
+
+            if (IsOwner)
+            {
+                BuffUI.Instance?.ShowOrRefresh(type, durationSeconds);
+                GearUI.Instance?.UpdateRightPanel();
+            }
+        }
+
+        private void UpdateActiveBuffs()
+        {
+            if (_activeBuffs.Count == 0)
+            {
+                return;
+            }
+
+            var now = Time.unscaledTime;
+
+            foreach (var pair in _activeBuffs.ToArray())
+            {
+                var remaining = pair.Value.ExpiresAt - now;
+
+                if (remaining > 0f)
+                {
+                    if (IsOwner)
+                    {
+                        BuffUI.Instance?.SetRemaining(pair.Key, remaining);
+                    }
+
+                    continue;
+                }
+
+                RemoveBuff(pair.Key, pair.Value);
+            }
+        }
+
+        private void RemoveBuff(InventoryItemEnum type, ActiveBuff buff)
+        {
+            if (UserManager.Instance.Characters.TryGetValue(OwnerClientId, out var character))
+            {
+                buff.SetActive(character, false);
+            }
+
+            _activeBuffs.Remove(type);
+
+            if (IsOwner)
+            {
+                BuffUI.Instance?.Hide(type);
+                GearUI.Instance?.UpdateRightPanel();
+            }
+        }
+
+        private void RestoreActiveBuffs(CharacterDto character)
+        {
+            foreach (var buff in _activeBuffs.Values)
+            {
+                buff.SetActive(character, true);
+            }
+        }
+
+        private void ClearActiveBuffs()
+        {
+            foreach (var pair in _activeBuffs.ToArray())
+            {
+                RemoveBuff(pair.Key, pair.Value);
             }
         }
 
         public override void OnNetworkDespawn()
         {
+            ClearActiveBuffs();
+
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnNetworkDespawn();
         }
 
         public override void OnDestroy()
         {
+            ClearActiveBuffs();
+
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            SplitInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
+            MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnDestroy();
         }
@@ -376,6 +781,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             public int Min { get; set; }
 
             public int Max { get; set; }
+        }
+
+        private sealed class ActiveBuff
+        {
+            public float ExpiresAt { get; set; }
+
+            public Action<CharacterDto, bool> SetActive { get; set; }
         }
     }
 }

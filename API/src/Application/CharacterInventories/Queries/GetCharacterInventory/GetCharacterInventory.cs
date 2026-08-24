@@ -1,15 +1,14 @@
-﻿using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+
 public record GetCharacterInventoryQuery(int CharacterId) : IRequest<CharacterInventoryDto>;
 
 public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInventoryQuery, CharacterInventoryDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<GetCharacterInventoryQueryHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -24,25 +23,33 @@ public class GetCharacterInventoryQueryHandler : IRequestHandler<GetCharacterInv
         var userId = _currentUserService.GetId();
 
         var result = await _context.CharacterInventories
-            //.Where(x => x.CharacterId == request.CharacterId)
-            .Where(x => x.Character.ApplicationUserId == userId)
-            .Select(x => new
+            .Where(inventory => inventory.Id == request.CharacterId)
+            .Where(inventory => inventory.Character.ApplicationUserId == userId)
+            .Select(inventory => new
             {
-                Id = x.Id,
-                Items = x.Inventory,
-                Count = x.Count
+                inventory.Id,
+                inventory.Inventory,
+                inventory.Count
             })
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
-        var inventory = JsonSerializer.Deserialize<InventoryDto>(result.Items);
+        var effectiveCapacity = Math.Max(result.Count, result.Inventory.Items.Count);
 
-        ArgumentNullException.ThrowIfNull(inventory, nameof(inventory));
+        if (effectiveCapacity > short.MaxValue)
+        {
+            throw new InvalidOperationException("The character inventory exceeds the supported capacity.");
+        }
 
         return new CharacterInventoryDto
         {
             CharacterId = result.Id,
-            Inventory = inventory,
-            Count = result.Count
+            Inventory = new InventoryDto
+            {
+                Items = result.Inventory.Items
+                    .Select(slot => new InventoryItemDto { Type = slot.Type, Count = slot.Count })
+                    .ToList()
+            },
+            Count = (short)effectiveCapacity
         };
     }
 }

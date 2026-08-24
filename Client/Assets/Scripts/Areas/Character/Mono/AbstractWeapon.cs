@@ -24,7 +24,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         protected virtual Quaternion RotationOffset => Quaternion.identity;
 
-        private string _clientToken;
+        private string _playerSessionId;
         private AudioSource _audioSource;
         private VisualEffect _visualEffect;
         private GameObject _target;
@@ -38,12 +38,12 @@ namespace Assets.Scripts.Areas.Character.Mono
             _visualEffect = GetComponent<VisualEffect>();
         }
 
-        public void StartCasting(GameObject target, GameObject caster, string token)
+        public void StartCasting(GameObject target, GameObject caster, string playerSessionId)
         {
             _caster = caster;
             _target = target;
             _isCasting = true;
-            _clientToken = token;
+            _playerSessionId = playerSessionId;
             _hit = false;
             Debug.Log("StartCasting");
             StartCastingClientRpc();
@@ -150,18 +150,18 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 if (!character.AmmoType.IsArmorAmmo())
                 {
-                    _caster.GetComponent<Player>().ConsumeAmmo(_clientToken);
+                    _caster.GetComponent<Player>().ConsumeAmmo();
                 }
+
+                OnHitTargetClientRpc();
 
                 AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
                 {
                     ClientId = OwnerClientId,
                     Value = damage,
-                    ClientToken = _clientToken,
+                    PlayerSessionId = _playerSessionId,
                     Player = _caster
                 });
-
-                OnHitTargetClientRpc();
             }
         }
 
@@ -183,6 +183,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             _caster = null;
 
             base.OnNetworkDespawn();
+
             gameObject.SetActive(false);
         }
     }

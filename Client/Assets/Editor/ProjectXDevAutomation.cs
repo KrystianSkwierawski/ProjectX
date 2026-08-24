@@ -12,6 +12,7 @@ namespace ProjectX.Editor
     public static class ProjectXDevAutomation
     {
         private const string BootstrapScenePath = "Assets/Scenes/BootstrapScene.unity";
+        private const string LoadingScenePath = "Assets/Scenes/LoadingScene.unity";
         private const string PlayClientRequestPath = "Temp/ProjectXAutomation/play-client.request";
         private const string BuildServerRequestPath = "Temp/ProjectXAutomation/build-server.request";
         private const string BuildServerStatusPath = "Temp/ProjectXAutomation/build-server.status";
@@ -21,6 +22,7 @@ namespace ProjectX.Editor
         private const string BuildAfterExitPathEditorPref = "ProjectX.DevAutomation.BuildAfterExitPath";
         private static readonly string[] ClientRuntimeScenePaths =
         {
+            LoadingScenePath,
             BootstrapScenePath,
             "Assets/Scenes/MainScene.unity",
             "Assets/Scenes/UIScene.unity",
@@ -63,8 +65,8 @@ namespace ProjectX.Editor
             RunAutomationFromUnity();
         }
 
-        [MenuItem("ProjectX/Play Client From Bootstrap", false, 51)]
-        public static void PlayClientFromBootstrap()
+        [MenuItem("ProjectX/Play Client From Loading Scene", false, 51)]
+        public static void PlayClientFromLoadingScene()
         {
             QueuePlayClient();
         }
@@ -88,6 +90,7 @@ namespace ProjectX.Editor
             }
 
             WatchBuildServerRequest();
+
             WatchPlayClientRequest();
         }
 
@@ -149,8 +152,10 @@ namespace ProjectX.Editor
             if (EditorPrefs.GetBool(BuildAfterExitEditorPref, false))
             {
                 var outputPath = EditorPrefs.GetString(BuildAfterExitPathEditorPref, GetDefaultServerBuildPath());
+
                 EditorPrefs.DeleteKey(BuildAfterExitEditorPref);
                 EditorPrefs.DeleteKey(BuildAfterExitPathEditorPref);
+
                 BuildDedicatedServerWithStatus(outputPath);
             }
 
@@ -160,6 +165,7 @@ namespace ProjectX.Editor
             }
 
             EditorPrefs.DeleteKey(PlayAfterExitEditorPref);
+
             StartPlayClientFromEditMode();
         }
 
@@ -169,7 +175,9 @@ namespace ProjectX.Editor
             {
                 EditorPrefs.SetBool(BuildAfterExitEditorPref, true);
                 EditorPrefs.SetString(BuildAfterExitPathEditorPref, outputPath);
+
                 EditorApplication.ExitPlaymode();
+
                 return;
             }
 
@@ -188,7 +196,9 @@ namespace ProjectX.Editor
             if (EditorApplication.isPlaying)
             {
                 EditorPrefs.SetBool(PlayAfterExitEditorPref, true);
+
                 EditorApplication.ExitPlaymode();
+
                 return;
             }
 
@@ -203,7 +213,7 @@ namespace ProjectX.Editor
 
         private static void StartPlayClientFromEditMode()
         {
-            if (!OpenBootstrapSceneWithPrompt())
+            if (!OpenClientEntrySceneWithPrompt())
             {
                 Debug.LogWarning("ProjectX automation cancelled before entering Play Mode.");
                 return;
@@ -226,16 +236,40 @@ namespace ProjectX.Editor
             }
 
             EnsureScenesInBuildSettings(ClientRuntimeScenePaths);
+
             var scene = EditorSceneManager.OpenScene(BootstrapScenePath, OpenSceneMode.Single);
+
             EditorSceneManager.SetActiveScene(scene);
+
+            return scene.IsValid() && scene.isLoaded;
+        }
+
+        private static bool OpenClientEntrySceneWithPrompt()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return false;
+            }
+
+            EnsureScenesInBuildSettings(ClientRuntimeScenePaths);
+            MoveSceneToFirstInBuildSettings(LoadingScenePath);
+
+            var scene = EditorSceneManager.OpenScene(LoadingScenePath, OpenSceneMode.Single);
+
+            EditorSceneManager.SetActiveScene(scene);
+
             return scene.IsValid() && scene.isLoaded;
         }
 
         private static void BuildDedicatedServer(string outputPath)
         {
             outputPath = Path.GetFullPath(outputPath);
+
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new InvalidOperationException("Invalid build output path."));
+
             var scenePaths = GetEnabledScenePathsFromBuildProfile(DedicatedServerBuildProfilePath, ServerRuntimeScenePaths);
+
+            MoveSceneToFirst(scenePaths, BootstrapScenePath);
 
             var options = new BuildPlayerOptions
             {
@@ -304,6 +338,24 @@ namespace ProjectX.Editor
             return scenePaths;
         }
 
+        private static void MoveSceneToFirst(string[] scenePaths, string requiredScenePath)
+        {
+            var index = Array.FindIndex(scenePaths, scenePath => string.Equals(scenePath, requiredScenePath, StringComparison.OrdinalIgnoreCase));
+            if (index < 0)
+            {
+                throw new InvalidOperationException($"The required startup scene '{requiredScenePath}' is missing from the dedicated-server build profile.");
+            }
+
+            if (index == 0)
+            {
+                return;
+            }
+
+            var firstScene = scenePaths[index];
+            Array.Copy(scenePaths, 0, scenePaths, 1, index);
+            scenePaths[0] = firstScene;
+        }
+
         private static void EnsureScenesInBuildSettings(string[] scenePaths)
         {
             var existingScenes = EditorBuildSettings.scenes;
@@ -337,17 +389,38 @@ namespace ProjectX.Editor
             }
         }
 
+        private static void MoveSceneToFirstInBuildSettings(string scenePath)
+        {
+            var scenes = EditorBuildSettings.scenes;
+            var index = Array.FindIndex(
+                scenes,
+                scene => string.Equals(scene.path, scenePath, StringComparison.OrdinalIgnoreCase));
+
+            if (index <= 0)
+            {
+                return;
+            }
+
+            var firstScene = scenes[index];
+            Array.Copy(scenes, 0, scenes, 1, index);
+            scenes[0] = firstScene;
+            EditorBuildSettings.scenes = scenes;
+        }
+
         private static void BuildDedicatedServerWithStatus(string outputPath)
         {
             try
             {
                 BuildDedicatedServer(outputPath);
+
                 WriteBuildServerStatus($"Succeeded|{Path.GetFullPath(outputPath)}");
             }
             catch (Exception ex)
             {
                 WriteBuildServerStatus($"Failed|{ex.Message}");
+
                 Debug.LogException(ex);
+
                 throw;
             }
         }
@@ -355,7 +428,9 @@ namespace ProjectX.Editor
         private static void WriteBuildServerStatus(string status)
         {
             var statusPath = GetProjectRelativeFullPath(BuildServerStatusPath);
+
             Directory.CreateDirectory(Path.GetDirectoryName(statusPath) ?? throw new InvalidOperationException("Invalid automation status path."));
+
             File.WriteAllText(statusPath, status);
         }
 

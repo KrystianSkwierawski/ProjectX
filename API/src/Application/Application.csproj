@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <RootNamespace>ProjectX.Application</RootNamespace>
         <AssemblyName>ProjectX.Application</AssemblyName>
     </PropertyGroup>
@@ -13,14 +10,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" />
-        <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="Serilog" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
         <PackageReference Include="MediatR" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>

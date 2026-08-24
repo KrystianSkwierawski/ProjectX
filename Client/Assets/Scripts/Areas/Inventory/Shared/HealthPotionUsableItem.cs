@@ -13,7 +13,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class HealthPotionUsableItem : AbstractUsableItem
     {
-        public HealthPotionUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public HealthPotionUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
 
         }
@@ -31,16 +31,15 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
 #if UNITY_EDITOR
             PlayerUI.Instance.SetHealth(character.Health);
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Drinking);
 #endif
-
 
 #if UNITY_SERVER && !UNITY_EDITOR
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
-                CharacterId = 1,
                 Health = character.Health
-            }, ClientToken)
+            }, PlayerSessionId)
             .Forget();
 #endif
 

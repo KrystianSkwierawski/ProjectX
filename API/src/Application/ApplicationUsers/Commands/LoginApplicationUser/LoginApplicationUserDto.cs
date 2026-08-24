@@ -1,6 +1,7 @@
-﻿using ProjectX.Domain.Enums;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
+
 public class LoginApplicationUserDto
 {
     public required string Token { get; set; }
@@ -9,6 +10,6 @@ public class LoginApplicationUserDto
 
     public override string ToString()
     {
-        return $"{nameof(LoginApplicationUserDto)} {{ Token = {Token}, Language = {Language} }}";
+        return $"{nameof(LoginApplicationUserDto)} {{ Language = {Language} }}";
     }
 }

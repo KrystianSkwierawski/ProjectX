@@ -1,28 +1,22 @@
-﻿using System.Reflection;
+using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using ProjectX.Application.Common.Behaviours;
-using ProjectX.Application.Common.Interfaces;
-using ProjectX.Application.Translate;
 
 namespace ProjectX.Application;
 
 public static class DependencyInjection
 {
-    public static void AddApplicationServices(this IHostApplicationBuilder builder)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
-        builder.Services.AddMediatR(cfg => {
-            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-            //cfg.AddOpenRequestPreProcessor(typeof(LoggingBehaviour<>));
-            //cfg.AddOpenBehavior(typeof(UnhandledExceptionBehaviour<,>));
-            //cfg.AddOpenBehavior(typeof(AuthorizationBehaviour<,>));
-            cfg.AddOpenBehavior(typeof(ValidationBehaviour<,>));
-            cfg.AddOpenBehavior(typeof(LoggingBehaviour<,>));
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddMediatR(configuration =>
+        {
+            configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            configuration.AddOpenBehavior(typeof(ValidationBehaviour<,>));
+            configuration.AddOpenBehavior(typeof(LoggingBehaviour<,>));
         });
 
-        builder.Services.AddScoped<ITranslateService, TranslateService>();
+        return services;
     }
 }

@@ -1,10 +1,13 @@
 using System.Linq;
+using Assets.Scripts.Areas.Inventory;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
+using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using Cysharp.Threading.Tasks;
 using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
@@ -34,6 +37,29 @@ namespace Assets.Scripts.Areas.Character.Mono
                         return;
                     }
 
+                    var request = new UpdateCharacterInventoryCommand
+                    {
+                        Add = new[] { e.item },
+                        Remove = new[]
+                        {
+                            new InventoryItemDto
+                            {
+                                Type = InventoryItemEnum.Currency,
+                                Count = MerchantManager.Instance.GetPurchasePrice(e.item)
+                            }
+                        }
+                    };
+
+                    if (!InventoryManager.Instance.CanApply(request))
+                    {
+                        LogUI.Instance.ShowAsync(
+                            TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                            color: ColorUI.Red)
+                            .Forget();
+
+                        return;
+                    }
+
                     var itemToRemove = _merchantNpc.SoldItems
                         .Where(x => x.Type == e.item.Type)
                         .Where(x => x.Count == e.item.Count)
@@ -45,23 +71,48 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                         // TODO: update one item and update prices?
                         MerchantUI.Instance.ClearOffers();
+
                         MerchantUI.Instance.AddOffers(_merchantNpc.Items);
                     }
 
-                    PurchaseItemServerRpc(e.item, UserManager.Instance.Token);
+                    PurchaseItemServerRpc(e.item);
                 });
 
                 UseItemSubscribtion.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
                     if (e.Item.Type != InventoryItemEnum.Currency && MerchantUI.Instance.Merchant.activeSelf)
                     {
+                        var request = new UpdateCharacterInventoryCommand
+                        {
+                            Add = new[]
+                            {
+                                new InventoryItemDto
+                                {
+                                    Type = InventoryItemEnum.Currency,
+                                    Count = MerchantManager.Instance.GetSellPrice(e.Item)
+                                }
+                            },
+                            Remove = new[] { e.Item }
+                        };
+
+                        if (!InventoryManager.Instance.CanApply(request))
+                        {
+                            LogUI.Instance.ShowAsync(
+                                TranslateManager.Instance.GetByKey(TranslateKeyEnum.InventoryFull),
+                                color: ColorUI.Red)
+                                .Forget();
+
+                            return;
+                        }
+
                         _merchantNpc.SoldItems.Add(e.Item);
 
                         // TODO: update one item and update prices?
                         MerchantUI.Instance.ClearOffers();
+
                         MerchantUI.Instance.AddOffers(_merchantNpc.Items);
 
-                        SellItemServerRpc(e.Item, UserManager.Instance.Token);
+                        SellItemServerRpc(e.Item);
                     }
                 });
             }
@@ -72,6 +123,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 CheckHide();
+
                 CheckNpcClicked();
             }
         }
@@ -118,36 +170,38 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ServerRpc]
-        private void PurchaseItemServerRpc(InventoryItemDto item, string clientToken)
+        private void PurchaseItemServerRpc(InventoryItemDto item)
         {
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+
             // TODO: validate npc position
             // TODO: validate currency
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
             {
                 Request = new UpdateCharacterInventoryCommand
                 {
-                    CharacterId = 1,
                     Add = new[] { item },
                     Remove = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetPurchasePrice(item) } },
                 },
-                ClientToken = clientToken
+                PlayerSessionId = playerSessionId
             });
         }
 
         [ServerRpc]
-        private void SellItemServerRpc(InventoryItemDto item, string clientToken)
+        private void SellItemServerRpc(InventoryItemDto item)
         {
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+
             // TODO: validate npc position
             // TODO: validate item ownership
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
             {
                 Request = new UpdateCharacterInventoryCommand
                 {
-                    CharacterId = 1,
                     Add = new[] { new InventoryItemDto { Type = InventoryItemEnum.Currency, Count = MerchantManager.Instance.GetSellPrice(item) } },
                     Remove = new[] { item },
                 },
-                ClientToken = clientToken
+                PlayerSessionId = playerSessionId
             });
         }
     }

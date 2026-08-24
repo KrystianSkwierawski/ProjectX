@@ -1,7 +1,9 @@
-﻿using ProjectX.Domain.Enums;
+﻿using ProjectX.Domain.Common;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
-public class CharacterExperience
+
+public class CharacterExperience : BaseAuditableEntity
 {
     public int Id { get; set; }
 
@@ -11,7 +13,5 @@ public class CharacterExperience
 
     public ExperienceTypeEnum Type { get; set; }
 
-    public DateTime ModDate { get; set; }
-
-    public virtual Character Character { get; set; }
+    public virtual Character Character { get; set; } = null!;
 }

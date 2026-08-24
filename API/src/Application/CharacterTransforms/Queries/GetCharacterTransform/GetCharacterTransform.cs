@@ -1,10 +1,11 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterTransforms.Queries.GetCharacterTransform;
 
-public record class GetCharacterTransformQuery : IRequest<CharacterTransformDto>;
+public record GetCharacterTransformQuery(int CharacterId) : IRequest<CharacterTransformDto>;
 
 public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransformQuery, CharacterTransformDto>
 {
@@ -22,6 +23,7 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransfo
         var userId = _currentUserService.GetId();
 
         return await _context.CharacterTransforms
+            .Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .OrderByDescending(x => x.ModDate)
             .Select(x => new CharacterTransformDto
@@ -32,6 +34,6 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransfo
                 PositionZ = x.PositionZ,
                 RotationY = x.RotationY
             })
-            .FirstAsync(cancellationToken);
+            .FirstOrNotFoundAsync("character transform", cancellationToken);
     }
 }

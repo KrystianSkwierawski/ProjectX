@@ -6,6 +6,7 @@ using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
+using Assets.Scripts.Areas.Professions.Mono;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Models;
@@ -25,21 +26,21 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsOwner)
             {
                 UserManager.Instance.OwnerClientId = OwnerClientId;
-                LoadCharacterServerRpc(UserManager.Instance.Token);
+                LoadCharacterServerRpc();
             }
 
             if (IsServer)
             {
                 AddExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
+                    var playerSessionId = GetCurrentPlayerSessionId();
+                    var character = UserManager.Instance.Characters[OwnerClientId];
+
                     var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
-                        CharacterId = 1,
                         Amount = e.Amount,
                         type = e.Type,
-                    }, e.ClientToken);
-
-                    var character = UserManager.Instance.Characters[OwnerClientId];
+                    }, playerSessionId);
 
                     if (result.Level > character.Levels[e.Type])
                     {
@@ -57,6 +58,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
                 {
+                    var playerSessionId = GetCurrentPlayerSessionId();
                     var character = UserManager.Instance.Characters[OwnerClientId];
 
                     if (character.IsAttackDodged())
@@ -70,7 +72,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     if (character.AmmoType.IsArmorAmmo())
                     {
-                        ConsumeAmmo(e.ClientToken);
+                        ConsumeAmmo();
                     }
 
                     character.Health = Math.Max(character.Health - damage, 0);
@@ -85,9 +87,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                     {
-                        CharacterId = 1,
                         Health = character.Health
-                    }, e.ClientToken)
+                    }, playerSessionId)
                     .Forget();
                 });
             }
@@ -121,7 +122,10 @@ namespace Assets.Scripts.Areas.Character.Mono
         private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
         {
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
+
             character.Health = health;
+
+            GetComponent<Crafting>()?.InterruptCrafting();
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MonsterAttack, 0.4f);
 
@@ -137,14 +141,22 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ServerRpc]
-        private void LoadCharacterServerRpc(string clientToken)
+        private void LoadCharacterServerRpc()
         {
-            LoadCharacterAsync(clientToken).Forget();
+            var playerSessionId = GetCurrentPlayerSessionId();
+            LoadCharacterAsync(playerSessionId).Forget();
         }
 
-        private async UniTask LoadCharacterAsync(string clientToken)
+        private async UniTask LoadCharacterAsync(string playerSessionId)
         {
-            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/1", clientToken);
+            var characterId = UserManager.Instance.GetPlayerCharacterId(OwnerClientId);
+            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/Current", playerSessionId);
+
+            if (character.Id != characterId)
+            {
+                throw new InvalidOperationException("The API returned a different character than the authenticated player session.");
+            }
+
             UserManager.Instance.Characters[OwnerClientId] = character;
 
             UpdatePlayerClientRpc(character, new ClientRpcParams
@@ -175,6 +187,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (type == ExperienceTypeEnum.Main)
             {
                 PlayerUI.Instance.SetMainLevel(level);
+
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.LevelUp, 0.1f);
 
                 var message = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.LevelUp), level);
@@ -185,8 +198,9 @@ namespace Assets.Scripts.Areas.Character.Mono
             CraftingUI.Instance.UpdateRequirements(InventoryItemEnum.Xp);
         }
 
-        public void ConsumeAmmo(string clientToken)
+        public void ConsumeAmmo()
         {
+            var playerSessionId = GetCurrentPlayerSessionId();
             var character = UserManager.Instance.Characters[OwnerClientId];
 
             if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
@@ -212,7 +226,6 @@ namespace Assets.Scripts.Areas.Character.Mono
                 // TODO: split to smaller commands
                 UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                 {
-                    CharacterId = 1,
                     MaxHealth = character.MaxHealth,
                     Strength = character.Strength,
                     Dexterity = character.Dexterity,
@@ -221,7 +234,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     Armor = character.Armor,
                     AmmoType = character.AmmoType,
                     AmmoCount = character.AmmoCount,
-                }, clientToken)
+                }, playerSessionId)
                 .Forget();
             }
         }
@@ -243,6 +256,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     character.AmmoCount = 0;
 
                     GearUI.Instance.UpdateRightPanel();
+
                     PlayerUI.Instance.SetMaxHealth(character.MaxHealth);
                 }
 
@@ -281,6 +295,11 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             base.OnDestroy();
+        }
+
+        private string GetCurrentPlayerSessionId()
+        {
+            return UserManager.Instance.GetPlayerSessionId(OwnerClientId);
         }
     }
 }

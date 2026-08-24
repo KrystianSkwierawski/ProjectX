@@ -51,8 +51,17 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
                 FinishCharacterQuestSubscription.Instance.Subscribe(key, (e) =>
                 {
-                    HideExclamationMark();
-                    ShowQuestionMark();
+                    if (e.IsFinished)
+                    {
+                        HideExclamationMark();
+                        ShowQuestionMark();
+
+                        return;
+                    }
+
+                    HideQuestionMark();
+                    ShowExclamationMark();
+                    MarkAsAccepted();
                 });
 
                 CompleteQuestSubscription.Instance.Subscribe(key, (e) =>

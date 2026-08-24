@@ -1,9 +1,11 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.Quests.Queries.GetQuest;
+
 public record GetQuestQuery(QuestEnum QuestId) : IRequest<QuestDto>;
 
 public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
@@ -32,7 +34,7 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
                 x.Requirement,
                 x.Reward
             })
-            .SingleAsync(cancellationToken);
+            .SingleOrNotFoundAsync("quest", cancellationToken);
 
         var parameters = quest.Id.GetParameters();
         var language = _currentUserService.Language;

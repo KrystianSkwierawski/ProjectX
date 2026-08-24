@@ -48,6 +48,8 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         Chamomile = 500,
         HealthPotion = 501,
+        StrengthPotion = 502,
+        SpeedPotion = 503,
 
         #endregion
 
@@ -138,34 +140,35 @@ namespace Assets.Scripts.Areas.Inventory.Enums
             return member?.GetCustomAttribute<InventoryItemParametersAttribute>()?.WeaponCategory ?? WeaponCategoryEnum.None;
         }
 
-        public static bool IsAmmo(this InventoryItemEnum value)
-        {
-            return value is InventoryItemEnum.AmmoArrow1
-                or InventoryItemEnum.AmmoArrow2
-                or InventoryItemEnum.AmmoArrow3
-                or InventoryItemEnum.AmmoRune1
-                or InventoryItemEnum.AmmoRune2
-                or InventoryItemEnum.AmmoRune3
-                or InventoryItemEnum.AmmoFeather1
-                or InventoryItemEnum.AmmoFeather2
-                or InventoryItemEnum.AmmoFeather3
-                or InventoryItemEnum.AmmoOil1
-                or InventoryItemEnum.AmmoOil2
-                or InventoryItemEnum.AmmoOil3;
-        }
+        public static bool IsAmmo(this InventoryItemEnum value) => value 
+            is InventoryItemEnum.AmmoArrow1
+            or InventoryItemEnum.AmmoArrow2
+            or InventoryItemEnum.AmmoArrow3
+            or InventoryItemEnum.AmmoRune1
+            or InventoryItemEnum.AmmoRune2
+            or InventoryItemEnum.AmmoRune3
+            or InventoryItemEnum.AmmoFeather1
+            or InventoryItemEnum.AmmoFeather2
+            or InventoryItemEnum.AmmoFeather3
+            or InventoryItemEnum.AmmoOil1
+            or InventoryItemEnum.AmmoOil2
+            or InventoryItemEnum.AmmoOil3;
 
-        public static bool IsWeapon(this InventoryItemEnum value)
-        {
-            return value is InventoryItemEnum.IronSword
-                or InventoryItemEnum.IronWand
-                or InventoryItemEnum.IronBow;
-        }
+        public static bool IsWeapon(this InventoryItemEnum value) => value 
+            is InventoryItemEnum.IronSword
+            or InventoryItemEnum.IronWand
+            or InventoryItemEnum.IronBow;
 
-        public static bool IsArmorAmmo(this InventoryItemEnum value)
-        {
-            return value is InventoryItemEnum.AmmoFeather1
-                or InventoryItemEnum.AmmoFeather2
-                or InventoryItemEnum.AmmoFeather3;
-        }
+        public static bool IsArmor(this InventoryItemEnum value) => value 
+            is InventoryItemEnum.IronHelmet
+            or InventoryItemEnum.IronChest
+            or InventoryItemEnum.IronBoots;
+
+        public static bool IsArmorAmmo(this InventoryItemEnum value) => value 
+            is InventoryItemEnum.AmmoFeather1
+            or InventoryItemEnum.AmmoFeather2
+            or InventoryItemEnum.AmmoFeather3;
+
+        public static bool IsGear(this InventoryItemEnum value) => value.IsWeapon() || value.IsArmor() || value.IsAmmo();
     }
 }

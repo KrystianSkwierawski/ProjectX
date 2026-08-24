@@ -1,6 +1,7 @@
 ﻿using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 
 namespace ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
+
 public class CraftingRecipeRequirementDto
 {
     public required InventoryItemDto[] Items { get; set; }

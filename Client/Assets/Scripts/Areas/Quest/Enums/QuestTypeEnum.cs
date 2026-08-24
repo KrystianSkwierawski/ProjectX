@@ -6,7 +6,7 @@ namespace Assets.Scripts.Areas.Quest.Enums
 
         Kill,
 
-        Epxlore,
+        Explore,
 
         Find,
 

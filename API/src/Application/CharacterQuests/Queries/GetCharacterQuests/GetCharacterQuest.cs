@@ -3,12 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 
 namespace ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
+
 public record GetCharacterQuestsQuery(int CharacterId) : IRequest<GetCharacterQuestsDto>;
 
 public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery, GetCharacterQuestsDto>
 {
-    private static readonly Serilog.ILogger Log = Serilog.Log.ForContext<GetCharacterQuestsHandler>();
-
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -23,7 +22,7 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
         var userId = _currentUserService.GetId();
 
         var result = await _context.CharacterQuests
-            //.Where(x => x.CharacterId == request.CharacterId)
+            .Where(x => x.CharacterId == request.CharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .Select(x => new CharacterQuestDto
             {
@@ -34,8 +33,6 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
             })
             .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);
-
-        Log.Debug("Found character quests. CharacterId: {0}, Count: {1}", request.CharacterId, result.Count);
 
         return new GetCharacterQuestsDto
         {

@@ -71,8 +71,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
             if (IsOwner)
             {
                 CheckSfx();
+
                 CheckInput();
+
                 CheckLumberjack();
+
                 CheckInterrupt();
             }
         }
@@ -95,7 +98,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
             if (_castingTimer >= _castingTime)
             {
-                ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>(), UserManager.Instance.Token);
+                ProcessServerRpc((NetworkObjectReference)_target.GetComponent<NetworkObject>());
                 StopLumberjack();
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.MinedOre, 0.1f); // // TODO: change sfx
             }
@@ -182,6 +185,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _sfxTimer = 0f;
 
             PlayerUI.Instance.UpdateCastBar(_castingTimer / _castingTime);
+
             _thirdPersonController.LockCameraToTarget(_target.transform, -30f);
         }
 
@@ -194,6 +198,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _castingTimer = 0f;
             _sfxTimer = 0f;
             PlayerUI.Instance.HideCastBar();
+
             _thirdPersonController.UnlockCamera();
         }
 
@@ -204,6 +209,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _interruptTimer = 0f;
 
             PlayerUI.Instance.FailCastBar();
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
 
             SetActiveServerRpc(false);
@@ -216,12 +222,13 @@ namespace Assets.Scripts.Areas.Professions.Mono
         }
 
         [ServerRpc]
-        private void ProcessServerRpc(NetworkObjectReference networkObjectRef, string clientToken)
+        private void ProcessServerRpc(NetworkObjectReference networkObjectRef)
         {
             // TODO: validation
             if (networkObjectRef.TryGet(out NetworkObject networkObject) && HasRequiredLevel(networkObject.gameObject.name))
             {
                 var gameObject = networkObject.gameObject;
+                var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
                 CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent
                 {
@@ -232,7 +239,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 {
                     Amount = 50,
                     Type = ExperienceTypeEnum.Lumberjack,
-                    ClientToken = clientToken
+                    PlayerSessionId = playerSessionId
                 });
 
                 ReleasePoolSubscription.Instance.Invoke(gameObject.GetInstanceID().ToString(), new ReleasePoolSubscriptionEvent());

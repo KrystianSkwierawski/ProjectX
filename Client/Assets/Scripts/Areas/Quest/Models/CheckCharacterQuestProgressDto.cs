@@ -8,6 +8,8 @@ namespace Assets.Scripts.Areas.Quest.Models
 
         public int CharacterQuestId { get; set; }
 
+        public int Progress { get; set; }
+
         public CharacterQuestStatusEnum Status { get; set; }
     }
 }

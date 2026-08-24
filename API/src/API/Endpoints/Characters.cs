@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application.Characters.Commands;
 using ProjectX.Application.Characters.Queries.GetCharacter;
-using ProjectX.Domain.Constants;
+using ProjectX.Application.Characters.Queries.GetCharacters;
 
 namespace ProjectX.API.Endpoints;
 
@@ -12,25 +12,47 @@ public class Characters : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder
-            .MapGet(GetCharacter, "{id}")
-            .RequireAuthorization(Policies.Server);
+            .MapGet(GetCharacters)
+            .WithSummary("Get characters")
+            .WithDescription("Returns the authenticated user's playable characters.")
+            .RequireAuthorization(AuthorizationPolicies.Client);
 
         groupBuilder
-          .MapPost(UpdateCharacter)
-          .RequireAuthorization(Policies.Server);
+            .MapGet(GetCharacter, "Current")
+            .WithSummary("Get character")
+            .WithDescription("Returns the selected character's current state.")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
+
+        groupBuilder
+            .MapPost(UpdateCharacter)
+            .WithSummary("Update character")
+            .WithDescription("Updates a character's persistent state.")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }
 
-    private static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, int id)
+    public static async Task<Ok<GetCharactersDto>> GetCharacters(ISender sender, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetCharacterQuery(id));
+        var result = await sender.Send(new GetCharactersQuery(), cancellationToken);
 
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Ok> UpdateCharacter(ISender sender, UpdateCharacterCommand command)
+    public static async Task<Ok<CharacterDto>> GetCharacter(ISender sender, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        var result = await sender.Send(new GetCharacterQuery(), cancellationToken);
 
-        return TypedResults.Ok();
+        return TypedResults.Ok(result);
+    }
+
+    public static async Task<NoContent> UpdateCharacter(
+        ISender sender,
+        UpdateCharacterCommand command,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(command, cancellationToken);
+
+        return TypedResults.NoContent();
     }
 }

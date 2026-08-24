@@ -185,6 +185,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             if (CurrentType != CraftingRecipeTypeEnum.None)
             {
                 ClearRecipes();
+
                 ClearRecipe();
             }
 

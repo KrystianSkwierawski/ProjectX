@@ -29,7 +29,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         protected override InventoryItemEnum TemplateType => InventoryItemEnum.AmmoTemplate;
 
-        public AmmoUsableItem(InventoryItemDto item, string clientToken, ulong ownerClientId) : base(item, clientToken, ownerClientId)
+        public AmmoUsableItem(InventoryItemDto item, string playerSessionId, ulong ownerClientId) : base(item, playerSessionId, ownerClientId)
         {
         }
 
@@ -41,11 +41,13 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
             if (weaponCategory != character.WeaponType.GetWeaponCategory())
             {
+#if !UNITY_SERVER || UNITY_EDITOR
                 LogUI.Instance.ShowAsync
                 (
                     $"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(weaponCategory.ToString())}", 
                     color: ColorUI.Red
                 ).Forget();
+#endif
 
                 return false;
             }

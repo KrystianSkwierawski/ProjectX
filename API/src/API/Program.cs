@@ -2,7 +2,6 @@ using ProjectX.API;
 using ProjectX.API.Infrastructure;
 using ProjectX.Application;
 using ProjectX.Infrastructure;
-using ProjectX.Infrastructure.Persistance;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +11,7 @@ builder.WebHost.ConfigureKestrel((context, options) =>
     options.Configure(context.Configuration.GetSection("Kestrel"));
 });
 
-builder.AddApplicationServices();
+builder.Services.AddApplicationServices();
 builder.AddInfrastructureServices();
 builder.AddWebServices();
 
@@ -23,17 +22,21 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets<Program>();
-}
+app.UseExceptionHandler();
 
-await app.InitialiseDatabaseAsync();
+if (app.Environment.IsDevelopment()
+    && !app.Configuration.GetValue<bool>("SkipDatabaseInitialization"))
+{
+    await app.InitialiseDatabaseAsync();
+}
 
 app.UseHsts();
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
 
-if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"]))
+if (app.Environment.IsDevelopment())
 {
     app.UseStaticFiles();
 
@@ -42,11 +45,16 @@ if (Convert.ToBoolean(builder.Configuration.GetSection("API")["SwaggerEnabled"])
         settings.Path = "/api";
         settings.DocumentPath = "/api/specification.json";
     });
+
+    app.Map("/", () => Results.Redirect("/api"));
 }
 
-app.Map("/", () => Results.Redirect("/api"));
 app.MapEndpoints();
 
 Log.Information("Starting ProjectX API");
 
 app.Run();
+
+public partial class Program
+{
+}

@@ -1,11 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
-using ProjectX.API.Infrastructure;
-using ProjectX.Application.Extensions;
-using ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
-using ProjectX.Domain.Constants;
-using ProjectX.Domain.Enums;
 using Microsoft.Extensions.Caching.Memory;
+using ProjectX.API.Infrastructure;
+using ProjectX.Application.CraftingRecipes.Queries.GetCraftingRecipes;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.API.Endpoints;
 
@@ -15,16 +13,24 @@ public class CraftingRecipes : EndpointGroupBase
     {
         groupBuilder
             .MapGet(GetCraftingRecipes)
-            .RequireAuthorization(Policies.ServerOrClient);
+            .WithSummary("Get crafting recipes")
+            .WithDescription("Returns active recipes for a crafting profession.")
+            .RequireAuthorization(AuthorizationPolicies.ServerOrClient);
     }
 
-    private static async Task<Ok<GetCraftingRecipesDto>> GetCraftingRecipes(IMemoryCache memoryCache, ISender sender, [AsParameters] GetCraftingRecipesQuery query)
+    public static async Task<Ok<GetCraftingRecipesDto>> GetCraftingRecipes(
+        IMemoryCache memoryCache,
+        ISender sender,
+        [AsParameters] GetCraftingRecipesQuery query,
+        CancellationToken cancellationToken)
     {
-        return await memoryCache.GetOrCreateAsync(CacheKeyEnum.CraftingRecipes, async entry =>
+        return await memoryCache.GetOrCreateAsync(ApiCacheKeys.CraftingRecipes(query.Type), async entry =>
         {
-            var result = await sender.Send(query);
+            entry.AbsoluteExpirationRelativeToNow = ApiCacheKeys.Lifetime;
+
+            var result = await sender.Send(query, cancellationToken);
 
             return TypedResults.Ok(result);
-        }, query.type);
+        }) ?? throw new InvalidOperationException("The crafting-recipe cache factory returned null.");
     }
 }

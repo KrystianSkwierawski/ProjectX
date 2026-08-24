@@ -101,5 +101,10 @@
     "Required": "Required",
     "Sword": "Sword",
     "Wand": "Wand",
-    "Bow": "Bow"
+    "Bow": "Bow",
+    "InventoryFull": "Your inventory is full.",
+    "StrengthPotionTitle": "Strength Potion",
+    "StrengthPotionDescription": "A concentrated alchemical potion that temporarily increases Strength. Drinking another one while the effect is active refreshes its duration.",
+    "SpeedPotionTitle": "Speed Potion",
+    "SpeedPotionDescription": "A bright alchemical potion that temporarily increases Speed. Drinking another one while the effect is active refreshes its duration."
 }

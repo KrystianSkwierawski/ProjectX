@@ -1,6 +1,7 @@
 ﻿using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
+
 public class CharacterQuestDto
 {
     public int Id { get; set; }
