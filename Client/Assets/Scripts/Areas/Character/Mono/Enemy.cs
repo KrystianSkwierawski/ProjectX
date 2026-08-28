@@ -57,13 +57,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         _agent.isStopped = false;
                         _agent.SetDestination(_target.transform.position);
 
-                        AggroClientRpc(new ClientRpcParams
-                        {
-                            Send = new ClientRpcSendParams
-                            {
-                                TargetClientIds = new ulong[] { e.ClientId }
-                            }
-                        });
+                        AggroClientRpc(e.ClientId.ToClientRpcParams());
                     }
                 });
 

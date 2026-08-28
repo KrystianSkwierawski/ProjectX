@@ -182,6 +182,23 @@ public sealed class InMemoryGameSessionService : IGameSessionService
         }
     }
 
+    public bool IsCharacterOnline(string serverUserId, int characterId)
+    {
+        if (string.IsNullOrWhiteSpace(serverUserId) || characterId <= 0)
+        {
+            return false;
+        }
+
+        lock (_sync)
+        {
+            RemoveExpiredState(GetUtcNow());
+
+            return _playerSessions.Values.Any(x =>
+                string.Equals(x.ServerUserId, serverUserId, StringComparison.Ordinal)
+                && x.CharacterId == characterId);
+        }
+    }
+
     public void RevokePlayer(string serverUserId, string playerSessionId)
     {
         if (string.IsNullOrWhiteSpace(serverUserId) || string.IsNullOrWhiteSpace(playerSessionId))

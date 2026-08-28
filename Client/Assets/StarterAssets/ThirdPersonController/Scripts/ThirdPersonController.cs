@@ -204,11 +204,19 @@ namespace StarterAssets
 
         private void Update()
         {
-            if (IsOwner && !ChatUI.Instance.InputField.isFocused && UserManager.Instance.Characters.ContainsKey(NetworkManager.Singleton.LocalClientId))
+            if (!IsOwner || !UserManager.Instance.Characters.ContainsKey(NetworkManager.Singleton.LocalClientId))
             {
-                JumpAndGravity();
-                GroundedCheck();
-                Move();
+                return;
+            }
+
+            var allowInput = !InputFocusUI.IsAnyInputFocused;
+
+            JumpAndGravity(allowInput);
+            GroundedCheck();
+            Move(allowInput);
+
+            if (allowInput)
+            {
                 HandleCusor();
                 HandleZoom();
             }
@@ -289,6 +297,11 @@ namespace StarterAssets
 
         private void LateUpdate()
         {
+            if (!IsOwner || InputFocusUI.IsAnyInputFocused)
+            {
+                return;
+            }
+
             CameraRotation();
         }
 
@@ -385,14 +398,16 @@ namespace StarterAssets
             CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + _cameraAngleOverride, _cinemachineTargetYaw, 0.0f);
         }
 
-        private void Move()
+        private void Move(bool allowInput)
         {
+            var moveInput = allowInput ? Input.Move : Vector2.zero;
+
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            var baseSpeed = Input.Sprint ? SprintSpeed : LockSpeed;
+            var baseSpeed = allowInput && Input.Sprint ? SprintSpeed : LockSpeed;
             var targetSpeed = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].ApplySpeed(baseSpeed);
 
             // if there is no input, set the target speed to 0
-            if (Input.Move == Vector2.zero)
+            if (moveInput == Vector2.zero)
             {
                 targetSpeed = 0.0f;
             }
@@ -401,10 +416,14 @@ namespace StarterAssets
             float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
             float speedOffset = 0.1f;
-            float inputMagnitude = Input.AnalogMovement ? Input.Move.magnitude : 1f;
+            float inputMagnitude = allowInput ? Input.AnalogMovement ? moveInput.magnitude : 1f : 0f;
 
             // accelerate or decelerate to target speed
-            if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
+            if (!allowInput)
+            {
+                _speed = 0f;
+            }
+            else if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
             {
                 // creates curved result rather than a linear one giving a more organic speed change
                 // note T in Lerp is clamped, so we don't need to clamp our speed
@@ -422,7 +441,7 @@ namespace StarterAssets
             if (_animationBlend < 0.01f) _animationBlend = 0f;
 
             // normalise input direction
-            Vector3 inputDirection = new Vector3(Input.Move.x, 0.0f, Input.Move.y).normalized;
+            Vector3 inputDirection = new Vector3(moveInput.x, 0.0f, moveInput.y).normalized;
 
             // When locked on to a target, move relative to the target axis and rotate to face the target.
             if (_lockTarget != null)
@@ -443,7 +462,7 @@ namespace StarterAssets
                 Vector3 forward = targetYawRot * Vector3.forward;
                 Vector3 right = targetYawRot * Vector3.right;
 
-                Vector3 moveDir = (right * Input.Move.x + forward * Input.Move.y);
+                Vector3 moveDir = (right * moveInput.x + forward * moveInput.y);
                 if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
 
                 _controller.Move(moveDir * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
@@ -459,7 +478,7 @@ namespace StarterAssets
             }
 
             // if there is a move input rotate player when the player is moving (free camera mode)
-            if (Input.Move != Vector2.zero)
+            if (moveInput != Vector2.zero)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
@@ -481,11 +500,11 @@ namespace StarterAssets
             }
         }
 
-        private void JumpAndGravity()
+        private void JumpAndGravity(bool allowInput)
         {
             if (Grounded)
             {
-                HandleGrounded();
+                HandleGrounded(allowInput);
             }
             else
             {
@@ -495,7 +514,7 @@ namespace StarterAssets
             ApplyGravity();
         }
 
-        private void HandleGrounded()
+        private void HandleGrounded(bool allowInput)
         {
             // reset the fall timeout timer
             _fallTimeoutDelta = FallTimeout;
@@ -514,7 +533,7 @@ namespace StarterAssets
             }
 
             // Jump
-            if (Input.Jump && _jumpTimeoutDelta <= 0.0f)
+            if (allowInput && Input.Jump && _jumpTimeoutDelta <= 0.0f)
             {
                 PerformJump();
             }
@@ -555,7 +574,7 @@ namespace StarterAssets
             }
 
             // if we are not grounded, do not jump
-            Input.Jump = false;
+            Input.JumpInput(false);
         }
 
         private void ApplyGravity()

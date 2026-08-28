@@ -43,5 +43,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         public static readonly Color RedA = new Color(0.8627450980f, 0.2078431373f, 0.2705882353f, 0.72549019607f);
 
         public static readonly Color Black = Color.black;
+
+        public static readonly Color BlackA = new Color(0f, 0f, 0f, 0.72549019607f);
     }
 }

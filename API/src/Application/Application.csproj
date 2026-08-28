@@ -10,6 +10,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Update="Friends\**\*.cs" Visible="true" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
         <PackageReference Include="MediatR" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />

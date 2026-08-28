@@ -14,5 +14,7 @@ public interface IGameSessionService
 
     bool TryResolvePlayer(string serverUserId, string playerSessionId, out ResolvedPlayerSession playerSession);
 
+    bool IsCharacterOnline(string serverUserId, int characterId);
+
     void RevokePlayer(string serverUserId, string playerSessionId);
 }

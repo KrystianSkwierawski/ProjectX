@@ -51,13 +51,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 characterQuest.QuestId,
                 characterQuest.Status,
                 characterQuest.Progress,
-                new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                OwnerClientId.ToClientRpcParams());
         }
 
         [ClientRpc]
@@ -186,13 +180,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             if (result.Status != CharacterQuestStatusEnum.None)
             {
-                UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { clientId }
-                    }
-                });
+                UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, clientId.ToClientRpcParams());
             }
         }
 

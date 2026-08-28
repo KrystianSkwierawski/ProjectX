@@ -221,7 +221,10 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Characters", (string)null);
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Characters");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterExperience", b =>
@@ -248,7 +251,46 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("CharacterId");
 
-                    b.ToTable("CharacterExperiences", (string)null);
+                    b.ToTable("CharacterExperiences");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterFriendship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FirstCharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("RequestedByCharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SecondCharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SecondCharacterId");
+
+                    b.HasIndex("FirstCharacterId", "SecondCharacterId")
+                        .IsUnique();
+
+                    b.ToTable("CharacterFriendships", t =>
+                        {
+                            t.HasCheckConstraint("CK_CharacterFriendship_CharacterOrder", "[FirstCharacterId] < [SecondCharacterId]");
+
+                            t.HasCheckConstraint("CK_CharacterFriendship_Requester", "[RequestedByCharacterId] = [FirstCharacterId] OR [RequestedByCharacterId] = [SecondCharacterId]");
+                        });
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>
@@ -268,7 +310,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CharacterInventories", (string)null);
+                    b.ToTable("CharacterInventories");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
@@ -306,7 +348,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("QuestId");
 
-                    b.ToTable("CharacterQuests", (string)null);
+                    b.ToTable("CharacterQuests");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
@@ -339,7 +381,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasIndex("CharacterId");
 
-                    b.ToTable("CharacterTransforms", (string)null);
+                    b.ToTable("CharacterTransforms");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CraftingRecipe", b =>
@@ -373,7 +415,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasIndex("Type", "Status")
                         .HasDatabaseName("IX.CraftingRecipe.Type.Status");
 
-                    b.ToTable("CraftingRecipes", (string)null);
+                    b.ToTable("CraftingRecipes");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
@@ -393,7 +435,7 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InventoryItems", (string)null);
+                    b.ToTable("InventoryItems");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.Quest", b =>
@@ -433,7 +475,7 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("IX.Quests.Status");
 
-                    b.ToTable("Quests", (string)null);
+                    b.ToTable("Quests");
                 });
 
             modelBuilder.Entity("ProjectX.Infrastructure.Identity.ApplicationUser", b =>
@@ -573,6 +615,25 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterFriendship", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", "FirstCharacter")
+                        .WithMany()
+                        .HasForeignKey("FirstCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjectX.Domain.Entities.Character", "SecondCharacter")
+                        .WithMany()
+                        .HasForeignKey("SecondCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FirstCharacter");
+
+                    b.Navigation("SecondCharacter");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>

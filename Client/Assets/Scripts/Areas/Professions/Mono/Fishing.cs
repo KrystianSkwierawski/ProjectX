@@ -5,6 +5,7 @@ using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
@@ -170,13 +171,7 @@ public class Fishing : NetworkBehaviour
 
             SimulateBaitBiteAsync().Forget();
 
-            NotifyCanFishOutClientRpc(new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            NotifyCanFishOutClientRpc(OwnerClientId.ToClientRpcParams());
         }
     }
 
@@ -195,13 +190,7 @@ public class Fishing : NetworkBehaviour
             _fishBrokeOffTimer = 0;
             _canFishOut.Value = false;
 
-            NotifyFishBrokeOffClientRpc(new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            NotifyFishBrokeOffClientRpc(OwnerClientId.ToClientRpcParams());
         }
     }
 
@@ -302,7 +291,7 @@ public class Fishing : NetworkBehaviour
 
     private void CheckInput()
     {
-        if (!_isCasting && !_isInterrupted && _input.Move == Vector2.zero && !_input.Jump && Keyboard.current.fKey.wasPressedThisFrame)
+        if (!InputFocusUI.IsAnyInputFocused && !_isCasting && !_isInterrupted && _input.Move == Vector2.zero && !_input.Jump && Keyboard.current.fKey.wasPressedThisFrame)
         {
             if (!TryGetNearestWater(out var water, out var waterCollider))
             {

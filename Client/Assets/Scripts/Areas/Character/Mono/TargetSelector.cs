@@ -1,6 +1,7 @@
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.UI;
 using StarterAssets;
 using Unity.Netcode;
@@ -210,13 +211,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 UpdateTargetSelectorSubscription.Instance.Subscribe($"{_selectedTarget.GetInstanceID()}_{OwnerClientId}", (e) =>
                 {
-                    UpdateTargetCanvasClientRpc(e.Value, e.Killed, new ClientRpcParams
-                    {
-                        Send = new ClientRpcSendParams
-                        {
-                            TargetClientIds = new ulong[] { OwnerClientId }
-                        }
-                    });
+                    UpdateTargetCanvasClientRpc(e.Value, e.Killed, OwnerClientId.ToClientRpcParams());
 
                     if (e.Killed)
                     {
@@ -276,13 +271,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
 
-            NotifyWeaponSpawnedClientRpc(new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            NotifyWeaponSpawnedClientRpc(OwnerClientId.ToClientRpcParams());
         }
 
         [ServerRpc]

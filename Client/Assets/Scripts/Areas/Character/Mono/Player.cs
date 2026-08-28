@@ -9,6 +9,7 @@ using Assets.Scripts.Areas.Inventory.Shared;
 using Assets.Scripts.Areas.Professions.Mono;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
@@ -46,13 +47,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     {
                         character.Levels[e.Type] = result.Level;
 
-                        UpdateLevelClientRpc(e.Type, result.Level, new ClientRpcParams
-                        {
-                            Send = new ClientRpcSendParams
-                            {
-                                TargetClientIds = new ulong[] { OwnerClientId }
-                            }
-                        });
+                        UpdateLevelClientRpc(e.Type, result.Level, OwnerClientId.ToClientRpcParams());
                     }
                 });
 
@@ -77,13 +72,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     character.Health = Math.Max(character.Health - damage, 0);
 
-                    AttackPlayerClientRpc(character.Health, new ClientRpcParams
-                    {
-                        Send = new ClientRpcSendParams
-                        {
-                            TargetClientIds = new ulong[] { OwnerClientId }
-                        }
-                    });
+                    AttackPlayerClientRpc(character.Health, OwnerClientId.ToClientRpcParams());
 
                     UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                     {
@@ -107,12 +96,12 @@ namespace Assets.Scripts.Areas.Character.Mono
             //    CharacterUI.Instance.Hide();
             //}
 
-            if (Keyboard.current.cKey.wasPressedThisFrame)
+            if (!InputFocusUI.IsAnyInputFocused && Keyboard.current.cKey.wasPressedThisFrame)
             {
                 CharacterUI.Instance.Toggle();
             }
 
-            if (Keyboard.current.tabKey.wasPressedThisFrame)
+            if (!InputFocusUI.IsAnyInputFocused && Keyboard.current.tabKey.wasPressedThisFrame)
             {
                 GearUI.Instance.Toggle();
             }
@@ -159,13 +148,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             UserManager.Instance.Characters[OwnerClientId] = character;
 
-            UpdatePlayerClientRpc(character, new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            UpdatePlayerClientRpc(character, OwnerClientId.ToClientRpcParams());
         }
 
         [ClientRpc]
@@ -205,13 +188,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
             {
-                ConsumeAmmoClientRpc(new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                ConsumeAmmoClientRpc(OwnerClientId.ToClientRpcParams());
 
                 character.AmmoCount--;
 

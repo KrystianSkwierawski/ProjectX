@@ -884,6 +884,310 @@
         ]
       }
     },
+    "/api/Friends": {
+      "get": {
+        "tags": [
+          "Friends"
+        ],
+        "summary": "Get friend list",
+        "description": "Returns friends and pending invitations for the selected character.",
+        "operationId": "GetFriendList",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFriendListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Friends/Invitations": {
+      "post": {
+        "tags": [
+          "Friends"
+        ],
+        "summary": "Send friend invitation",
+        "description": "Invites another active character by name.",
+        "operationId": "SendFriendInvitation",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendFriendInvitationCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendFriendInvitationDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Friends/Invitations/Respond": {
+      "post": {
+        "tags": [
+          "Friends"
+        ],
+        "summary": "Respond to friend invitation",
+        "description": "Accepts or declines an incoming friendship invitation.",
+        "operationId": "RespondFriendInvitation",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondFriendInvitationCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespondFriendInvitationDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Friends/{characterId}": {
+      "delete": {
+        "tags": [
+          "Friends"
+        ],
+        "summary": "Remove friend",
+        "description": "Removes an accepted friendship for the selected character.",
+        "operationId": "RemoveFriend",
+        "parameters": [
+          {
+            "name": "characterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemoveFriendDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Friends/{characterId}/WhisperAuthorization": {
+      "get": {
+        "tags": [
+          "Friends"
+        ],
+        "summary": "Authorize whisper",
+        "description": "Checks whether the selected character may whisper the target friend.",
+        "operationId": "AuthorizeWhisper",
+        "parameters": [
+          {
+            "name": "characterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizeWhisperDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/GameSessions/Register": {
       "post": {
         "tags": [
@@ -2169,6 +2473,181 @@
           5,
           6
         ]
+      },
+      "GetFriendListDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "friends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FriendDto"
+            }
+          },
+          "incomingInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FriendInvitationDto"
+            }
+          },
+          "outgoingInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FriendInvitationDto"
+            }
+          }
+        }
+      },
+      "FriendDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "characterName"
+        ],
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterName": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FriendInvitationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "characterName"
+        ],
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterName": {
+            "type": "string"
+          }
+        }
+      },
+      "SendFriendInvitationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FriendOperationStatusEnum"
+          },
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterName": {
+            "type": "string"
+          }
+        }
+      },
+      "FriendOperationStatusEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Applied",
+          "CharacterNotFound",
+          "CannotInviteSelf",
+          "AlreadyFriends",
+          "InvitationAlreadyPending",
+          "InvitationNotFound",
+          "FriendshipNotFound",
+          "WhisperNotAllowed"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "SendFriendInvitationCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "characterName"
+        ],
+        "properties": {
+          "characterName": {
+            "type": "string"
+          }
+        }
+      },
+      "RespondFriendInvitationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FriendOperationStatusEnum"
+          },
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterName": {
+            "type": "string"
+          }
+        }
+      },
+      "RespondFriendInvitationCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accept": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RemoveFriendDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FriendOperationStatusEnum"
+          },
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterName": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthorizeWhisperDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FriendOperationStatusEnum"
+          },
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "characterName": {
+            "type": "string"
+          },
+          "isAllowed": {
+            "type": "boolean"
+          }
+        }
       },
       "RegisterGameSessionDto": {
         "type": "object",
