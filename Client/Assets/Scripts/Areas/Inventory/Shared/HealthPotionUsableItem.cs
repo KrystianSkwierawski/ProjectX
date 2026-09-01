@@ -8,6 +8,7 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Cysharp.Threading.Tasks;
+using PartyController = Assets.Scripts.Areas.Party.Mono.Party;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
@@ -28,6 +29,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             }
 
             character.Health = Math.Min(character.Health + 20, character.MaxHealth);
+            PartyController.NotifyCharacterChanged(OwnerClientId);
 
 #if UNITY_EDITOR
             PlayerUI.Instance.SetHealth(character.Health);

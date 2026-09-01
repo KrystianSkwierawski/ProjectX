@@ -103,6 +103,7 @@
 - Generated/build artifacts are present in the workspace; avoid touching `bin/`, `obj/`, Unity `Library/`, and log/cache outputs unless specifically needed.
 - Unity asset/script changes must include their corresponding `.meta` files so GUIDs and import settings remain stable; the tracked `.gitignore` does not currently exclude `*.meta` files.
 - Dev startup flow:
+  - After any API source, configuration, contract, or migration change, rebuild the API before runtime verification and restart the running API process so it cannot keep serving stale binaries. A successful earlier build is not evidence for the current backend diff.
   - PowerShell starts/restarts the API executable and auto-builds it if missing.
   - PowerShell builds or reuses the Unity dedicated server executable.
   - Local automation starts that server with `-projectx-direct`; standalone/release without the switch defaults to Relay + DTLS and does not downgrade after a Relay failure.

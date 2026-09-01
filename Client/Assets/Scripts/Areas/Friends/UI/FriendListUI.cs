@@ -10,6 +10,7 @@ using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using PartyController = Assets.Scripts.Areas.Party.Mono.Party;
 
 namespace Assets.Scripts.Areas.Friends.UI
 {
@@ -60,7 +61,6 @@ namespace Assets.Scripts.Areas.Friends.UI
         private void Start()
         {
             _panel.transform.Find("Header/Close").GetComponent<Button>().onClick.AddListener(Hide);
-            _panel.transform.Find("Header/Refresh").GetComponent<Button>().onClick.AddListener(RequestRefresh);
             _panel.transform.Find("Invite/Button").GetComponent<Button>().onClick.AddListener(Invite);
             _inviteInput.onSubmit.AddListener(_ => Invite());
 
@@ -84,6 +84,7 @@ namespace Assets.Scripts.Areas.Friends.UI
         public void Toggle()
         {
             _panel.SetActive(!_panel.activeSelf);
+            QuickAccessUI.Instance?.SetPreviewsEnabled(!_panel.activeSelf);
 
             if (_panel.activeSelf)
             {
@@ -95,6 +96,7 @@ namespace Assets.Scripts.Areas.Friends.UI
         public void Hide()
         {
             _panel.SetActive(false);
+            QuickAccessUI.Instance?.SetPreviewsEnabled(true);
         }
 
         public void Present(FriendListDto data)
@@ -211,6 +213,7 @@ namespace Assets.Scripts.Areas.Friends.UI
                 var row = GetRow(_friendRows, _friendEntryPrefab, _friendsContent, index);
 
                 row.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = friend.CharacterName;
+                row.transform.Find("Level").GetComponent<TextMeshProUGUI>().text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.PartyLevel), Mathf.Max(1, friend.Level));
 
                 var status = row.transform.Find("Status").GetComponent<TextMeshProUGUI>();
                 status.text = TranslateManager.Instance.GetByKey(friend.IsOnline ? TranslateKeyEnum.FriendOnline : TranslateKeyEnum.FriendOffline);
@@ -220,6 +223,11 @@ namespace Assets.Scripts.Areas.Friends.UI
                 whisper.interactable = friend.IsOnline;
                 whisper.onClick.RemoveAllListeners();
                 whisper.onClick.AddListener(() => BeginWhisper(friend.CharacterName));
+
+                var partyInvite = row.transform.Find("PartyInvite").GetComponent<Button>();
+                partyInvite.interactable = friend.IsOnline;
+                partyInvite.onClick.RemoveAllListeners();
+                partyInvite.onClick.AddListener(() => PartyController.Local?.Invite(friend.CharacterId));
 
                 var remove = row.transform.Find("Remove").GetComponent<Button>();
                 remove.onClick.RemoveAllListeners();

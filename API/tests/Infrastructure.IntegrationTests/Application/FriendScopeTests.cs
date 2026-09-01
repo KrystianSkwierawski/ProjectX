@@ -52,6 +52,12 @@ public class FriendScopeTests
             CreateCharacter(RequesterId, "requester", "Requester"),
             CreateCharacter(RecipientId, "recipient", "Recipient"));
         context.CharacterFriendships.Add(CharacterFriendship.Create(RequesterId, RecipientId));
+        context.CharacterExperiences.Add(new CharacterExperience
+        {
+            CharacterId = RecipientId,
+            Amount = 400,
+            Type = ExperienceTypeEnum.Main
+        });
         await context.SaveChangesAsync();
 
         var response = await new RespondFriendInvitationCommandHandler(context, new TestCurrentUserService(RecipientId))
@@ -71,6 +77,7 @@ public class FriendScopeTests
             x =>
             {
                 Assert.Equal(RecipientId, x.CharacterId);
+                Assert.Equal(3, x.Level);
                 Assert.True(x.IsOnline);
             });
         Assert.True(whisper.IsAllowed);

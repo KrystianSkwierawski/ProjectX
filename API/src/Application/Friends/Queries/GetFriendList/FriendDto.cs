@@ -6,5 +6,7 @@ public sealed class FriendDto
 
     public required string CharacterName { get; init; }
 
+    public byte Level { get; init; }
+
     public bool IsOnline { get; init; }
 }

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Friends.Enums;
 using Assets.Scripts.Areas.Friends.Models;
 using Assets.Scripts.Areas.Friends.UI;
@@ -23,13 +25,17 @@ namespace Assets.Scripts.Areas.Friends.Mono
         private const int _maximumWhisperLength = 200;
         private const double _friendMutationCooldownSeconds = 0.5d;
         private const double _refreshCooldownSeconds = 0.5d;
+        private const double _refreshRetrySeconds = 5d;
         private const double _whisperCooldownSeconds = 0.5d;
+
+        private static readonly HashSet<FriendList> _serverInstances = new HashSet<FriendList>();
 
         private FriendListDto _friendList = new FriendListDto();
         private double _lastWhisperAt = double.NegativeInfinity;
         private double _nextFriendMutationAt = double.NegativeInfinity;
         private double _nextRefreshAt = double.NegativeInfinity;
         private bool _friendMutationInProgress;
+        private bool _refreshFailureReported;
         private bool _refreshInProgress;
         private bool _refreshRequested;
         private CancellationTokenSource _networkLifetimeCancellationTokenSource;
@@ -44,10 +50,16 @@ namespace Assets.Scripts.Areas.Friends.Mono
             _networkLifetimeCancellationTokenSource?.Dispose();
             _networkLifetimeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
             _friendMutationInProgress = false;
+            _refreshFailureReported = false;
             _refreshInProgress = false;
             _refreshRequested = false;
             _nextFriendMutationAt = double.NegativeInfinity;
             _nextRefreshAt = double.NegativeInfinity;
+
+            if (IsServer)
+            {
+                _serverInstances.Add(this);
+            }
 
             if (!IsOwner)
             {
@@ -83,6 +95,7 @@ namespace Assets.Scripts.Areas.Friends.Mono
 
         public override void OnNetworkDespawn()
         {
+            _serverInstances.Remove(this);
             CancelNetworkLifetime();
             ClearLocalInstance();
 
@@ -91,6 +104,7 @@ namespace Assets.Scripts.Areas.Friends.Mono
 
         public override void OnDestroy()
         {
+            _serverInstances.Remove(this);
             CancelNetworkLifetime();
             _networkLifetimeCancellationTokenSource?.Dispose();
             _networkLifetimeCancellationTokenSource = null;
@@ -104,6 +118,21 @@ namespace Assets.Scripts.Areas.Friends.Mono
             if (IsOwner && IsSpawned)
             {
                 RefreshServerRpc();
+            }
+        }
+
+        public static void NotifyFriendStateChanged()
+        {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            {
+                return;
+            }
+
+            _serverInstances.RemoveWhere(friendList => friendList == null || !friendList.IsSpawned);
+
+            foreach (var friendList in _serverInstances.ToArray())
+            {
+                friendList.QueueRefresh();
             }
         }
 
@@ -284,14 +313,18 @@ namespace Assets.Scripts.Areas.Friends.Mono
         private async UniTask ProcessRefreshAsync()
         {
             var cancellationToken = GetNetworkLifetimeCancellationToken();
+            var retryAfterFailure = false;
 
             _refreshInProgress = true;
             _refreshRequested = false;
 
             try
             {
-                var result = await UnityWebRequestHelper.ExecuteGetAsync<FriendListDto>("Friends", GetPlayerSessionId(), log: false, cancellationToken: cancellationToken);
-                var payload = JsonSerializer.Serialize(result ?? new FriendListDto());
+                var result = await UnityWebRequestHelper.ExecuteGetAsync<FriendListDto>("Friends", GetPlayerSessionId(), log: false, cancellationToken: cancellationToken) ?? new FriendListDto();
+                ApplyLiveFriendState(result);
+                var payload = JsonSerializer.Serialize(result);
+
+                _refreshFailureReported = false;
 
                 if (!_refreshRequested && CanUseNetworkLifetime(cancellationToken))
                 {
@@ -304,18 +337,40 @@ namespace Assets.Scripts.Areas.Friends.Mono
             catch (Exception exception)
             {
                 Debug.LogWarning($"Friend list refresh failed: {exception.Message}");
+                retryAfterFailure = true;
 
-                if (!_refreshRequested && CanUseNetworkLifetime(cancellationToken))
+                if (CanUseNetworkLifetime(cancellationToken))
                 {
-                    RequestFailedClientRpc(OwnerClientId.ToClientRpcParams());
+                    _refreshRequested = true;
+
+                    if (!_refreshFailureReported)
+                    {
+                        _refreshFailureReported = true;
+                        RequestFailedClientRpc(OwnerClientId.ToClientRpcParams());
+                    }
                 }
             }
             finally
             {
                 if (IsCurrentNetworkLifetime(cancellationToken))
                 {
-                    _nextRefreshAt = Time.realtimeSinceStartupAsDouble + _refreshCooldownSeconds;
+                    var delay = retryAfterFailure ? _refreshRetrySeconds : _refreshCooldownSeconds;
+                    _nextRefreshAt = Time.realtimeSinceStartupAsDouble + delay;
                     _refreshInProgress = false;
+                }
+            }
+        }
+
+        private static void ApplyLiveFriendState(FriendListDto friendList)
+        {
+            foreach (var friend in friendList.Friends ?? Array.Empty<FriendDto>())
+            {
+                var character = UserManager.Instance.Characters.Values.FirstOrDefault(x => x.Id == friend.CharacterId);
+                friend.IsOnline = character != null;
+
+                if (character != null && character.Levels.TryGetValue(ExperienceTypeEnum.Main, out var level))
+                {
+                    friend.Level = level;
                 }
             }
         }

@@ -3,6 +3,7 @@ using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Friends.Mono;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
@@ -17,6 +18,7 @@ using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PartyController = Assets.Scripts.Areas.Party.Mono.Party;
 
 namespace Assets.Scripts.Areas.Character.Mono
 {
@@ -46,6 +48,12 @@ namespace Assets.Scripts.Areas.Character.Mono
                     if (result.Level > character.Levels[e.Type])
                     {
                         character.Levels[e.Type] = result.Level;
+                        PartyController.NotifyCharacterChanged(OwnerClientId);
+
+                        if (e.Type == ExperienceTypeEnum.Main)
+                        {
+                            FriendList.NotifyFriendStateChanged();
+                        }
 
                         UpdateLevelClientRpc(e.Type, result.Level, OwnerClientId.ToClientRpcParams());
                     }
@@ -71,6 +79,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     }
 
                     character.Health = Math.Max(character.Health - damage, 0);
+                    PartyController.NotifyCharacterChanged(OwnerClientId);
 
                     AttackPlayerClientRpc(character.Health, OwnerClientId.ToClientRpcParams());
 
@@ -147,6 +156,8 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             UserManager.Instance.Characters[OwnerClientId] = character;
+            PartyController.NotifyCharacterChanged(OwnerClientId);
+            FriendList.NotifyFriendStateChanged();
 
             UpdatePlayerClientRpc(character, OwnerClientId.ToClientRpcParams());
         }
@@ -247,10 +258,15 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
-            UserManager.Instance.Characters.Remove(OwnerClientId);
+            var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);
 
             if (IsServer)
             {
+                if (characterRemoved)
+                {
+                    FriendList.NotifyFriendStateChanged();
+                }
+
                 var key = OwnerClientId.ToString();
 
                 AddExperienceSubscription.Instance.Unsubscribe(key);
@@ -261,10 +277,15 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
         public override void OnDestroy()
         {
-            UserManager.Instance.Characters.Remove(OwnerClientId);
+            var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);
 
             if (IsServer)
             {
+                if (characterRemoved)
+                {
+                    FriendList.NotifyFriendStateChanged();
+                }
+
                 var key = OwnerClientId.ToString();
 
                 AddExperienceSubscription.Instance.Unsubscribe(key);

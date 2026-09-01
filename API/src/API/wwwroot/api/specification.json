@@ -2512,6 +2512,10 @@
           "characterName": {
             "type": "string"
           },
+          "level": {
+            "type": "integer",
+            "format": "byte"
+          },
           "isOnline": {
             "type": "boolean"
           }

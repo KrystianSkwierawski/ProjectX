@@ -9,6 +9,8 @@ namespace Assets.Scripts.Areas.Friends.Models
 
         public string CharacterName { get; set; }
 
+        public byte Level { get; set; }
+
         public bool IsOnline { get; set; }
     }
 }

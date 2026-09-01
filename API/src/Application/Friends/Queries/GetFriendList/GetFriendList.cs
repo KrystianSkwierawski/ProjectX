@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Characters;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
@@ -42,7 +43,13 @@ public class GetFriendListQueryHandler : IRequestHandler<GetFriendListQuery, Get
         var characters = await _context.Characters
             .Where(x => relatedCharacterIds.Contains(x.Id))
             .Where(x => x.Status == StatusEnum.Active)
-            .Select(x => new CharacterLookup(x.Id, x.Name))
+            .Select(x => new CharacterLookup(
+                x.Id,
+                x.Name,
+                x.CharacterExperiences
+                    .Where(x => x.Type == ExperienceTypeEnum.Main)
+                    .Sum(x => x.Amount)))
+
             .ToDictionaryAsync(x => x.Id, cancellationToken);
 
         var friends = relationships
@@ -53,6 +60,7 @@ public class GetFriendListQueryHandler : IRequestHandler<GetFriendListQuery, Get
             {
                 CharacterId = x,
                 CharacterName = characters[x].Name,
+                Level = ExperienceProgression.GetLevel(characters[x].MainExperience),
                 IsOnline = _gameSessionService.IsCharacterOnline(serverUserId, x)
             })
             .OrderByDescending(x => x.IsOnline)
@@ -94,5 +102,5 @@ public class GetFriendListQueryHandler : IRequestHandler<GetFriendListQuery, Get
             .ToArray();
     }
 
-    private sealed record CharacterLookup(int Id, string Name);
+    private sealed record CharacterLookup(int Id, string Name, int MainExperience);
 }
