@@ -13,6 +13,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 - Exposes tiered ammo items through merchant stock and Blacksmithing/Alchemy recipes, with weapon-compatible equip rules, whole-stack transfers, and server-authoritative per-hit consumption synchronized to the API and owner UI.
 - Lets health potions restore up to 20 health, persist the resulting health from dedicated-server builds, and remain unconsumed when the character is already at max health.
 - Lets craftable Strength and Speed potions apply server-authoritative, refreshable temporary bonuses with visible upper-right timers and normal item-slot hover previews that state the exact bonus.
+- Lets nearby members of an ephemeral server-memory Party share enemy rewards: Main EXP is divided evenly, while personal loot eligibility and Kill-quest credit are granted to every eligible member.
 - Supports multiple languages through i18n resources and translation services.
 
 ## User Experience Goals
@@ -26,7 +27,7 @@ ProjectX appears to be a networked RPG/survival-style game prototype or project.
 
 ## Open Product Questions
 - Near-term development is systems/mechanics-first for one programmer working without an artist; visual polish is deferred. The current roadmap also defers a real character selector and price/recipe/drop balancing.
-- Planned systems include Gear Score, Party quest/experience sharing, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, and visible item/experience quest rewards.
+- Planned systems include Gear Score, player-to-player trade, Guilds, an Auction House, consistent Escape-based UI closure, visible item/experience quest rewards, and later balancing/configuration of the implemented Party reward radius and EXP split.
 - The exact genre, target platform, multiplayer session model, and release goals are not documented yet.
 - The intended authority split between Unity host/server and the ASP.NET Core API needs clarification before large networking changes.
 - The intended model for base stats versus gear-derived stats needs clarification; current gear use mutates persisted totals directly.

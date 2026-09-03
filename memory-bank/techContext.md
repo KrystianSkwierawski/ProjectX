@@ -45,6 +45,7 @@
 - Unity Editor menu:
   - `ProjectX > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
   - `ProjectX > Build And Run` invokes `Client/Automation/run.bat`.
+  - Each Unity Editor Play session and each dedicated-server process started by this automation writes a separate timestamped runtime file under ignored `Client/Logs/Runtime`; these files remain available after Play Mode or the server exits. Dedicated-server application logs are mirrored to the file through `PROJECTX_RUNTIME_LOG_PATH` while Unity continues showing its normal console output, and local Direct mode is selected through `PROJECTX_USE_DIRECT_TRANSPORT` rather than a custom Unity command-line argument.
 - Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
 - At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 362 passing domain/application unit, infrastructure integration, web acceptance/contract, and architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
 
