@@ -59,7 +59,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             Debug.Log("StartCastingClientRpc");
 
-            if (PrecastAudioType != AudioTypeEnum.None)
+            if (PrecastAudioType != AudioTypeEnum.None && _audioSource != null)
             {
                 AudioManager.Instance.TryPlayOneShot(_audioSource, PrecastAudioType, 0.7f);
             }
@@ -79,12 +79,12 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         private void CastClientRpc()
         {
-            if (_audioSource.isPlaying)
+            if (_audioSource != null && _audioSource.isPlaying)
             {
                 _audioSource.Stop();
             }
 
-            if (CastAudioType != AudioTypeEnum.None)
+            if (CastAudioType != AudioTypeEnum.None && _audioSource != null)
             {
                 AudioManager.Instance.TryPlayOneShot(_audioSource, CastAudioType, 0.7f);
             }
@@ -98,7 +98,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ClientRpc]
         private void FailedClientRpc()
         {
-            if (_audioSource.isPlaying)
+            if (_audioSource != null && _audioSource.isPlaying)
             {
                 _audioSource.Stop();
             }
@@ -108,7 +108,14 @@ namespace Assets.Scripts.Areas.Character.Mono
                 _visualEffect.enabled = false;
             }
 
-            AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 0.1f);
+            if (_audioSource != null)
+            {
+                AudioManager.Instance.TryPlayOneShot(_audioSource, AudioTypeEnum.CastingFailed, 0.1f);
+            }
+            else
+            {
+                AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.CastingFailed, 0.1f);
+            }
         }
 
         private void Update()
