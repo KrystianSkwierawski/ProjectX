@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Quest;
@@ -16,6 +17,11 @@ namespace Assets.Scripts.Areas.Shared.Mono
     {
         private const string _mainSceneName = "MainScene";
 
+#if UNITY_SERVER && !UNITY_EDITOR
+        private static readonly object _serverRuntimeLogLock = new object();
+        private static StreamWriter _serverRuntimeLogWriter;
+#endif
+
         private static readonly string[] _clientSceneNames =
         {
             _mainSceneName,
@@ -26,6 +32,84 @@ namespace Assets.Scripts.Areas.Shared.Mono
         };
 
         private bool _isLoginInProgress;
+
+#if UNITY_SERVER && !UNITY_EDITOR
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void StartServerRuntimeLogging()
+        {
+            var runtimeLogPath = Environment.GetEnvironmentVariable("PROJECTX_RUNTIME_LOG_PATH");
+
+            if (string.IsNullOrWhiteSpace(runtimeLogPath))
+            {
+                return;
+            }
+
+            runtimeLogPath = Path.GetFullPath(runtimeLogPath);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(runtimeLogPath)
+                ?? throw new InvalidOperationException("Invalid server runtime log path."));
+
+            lock (_serverRuntimeLogLock)
+            {
+                _serverRuntimeLogWriter = new StreamWriter(runtimeLogPath, append: false)
+                {
+                    AutoFlush = true
+                };
+                _serverRuntimeLogWriter.WriteLine($"{DateTimeOffset.Now:O} [Session] Dedicated server started.");
+            }
+
+            Application.logMessageReceivedThreaded += WriteServerRuntimeLog;
+            Application.quitting += StopServerRuntimeLogging;
+
+            Debug.Log($"Unity server runtime log: {runtimeLogPath}");
+        }
+
+        private static void StopServerRuntimeLogging()
+        {
+            Application.logMessageReceivedThreaded -= WriteServerRuntimeLog;
+            Application.quitting -= StopServerRuntimeLogging;
+
+            lock (_serverRuntimeLogLock)
+            {
+                if (_serverRuntimeLogWriter == null)
+                {
+                    return;
+                }
+
+                _serverRuntimeLogWriter.WriteLine($"{DateTimeOffset.Now:O} [Session] Dedicated server stopped.");
+                _serverRuntimeLogWriter.Dispose();
+                _serverRuntimeLogWriter = null;
+            }
+        }
+
+        private static void WriteServerRuntimeLog(string condition, string stackTrace, LogType type)
+        {
+            lock (_serverRuntimeLogLock)
+            {
+                if (_serverRuntimeLogWriter == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    _serverRuntimeLogWriter.WriteLine($"{DateTimeOffset.Now:O} [{type}] {condition}");
+
+                    if (!string.IsNullOrWhiteSpace(stackTrace)
+                        && (type == LogType.Error || type == LogType.Exception || type == LogType.Assert))
+                    {
+                        _serverRuntimeLogWriter.WriteLine(stackTrace);
+                    }
+                }
+                catch (IOException)
+                {
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            }
+        }
+#endif
 
         private async void Start()
         {

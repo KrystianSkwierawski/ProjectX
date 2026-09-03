@@ -129,7 +129,10 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 configuredUrl = GetCommandLineValue("-projectx-api-url");
             }
 
-            if (string.IsNullOrWhiteSpace(configuredUrl) && (Application.isEditor || HasCommandLineSwitch("-projectx-direct")))
+            if (string.IsNullOrWhiteSpace(configuredUrl)
+                && (Application.isEditor
+                    || IsEnvironmentFlagEnabled("PROJECTX_USE_DIRECT_TRANSPORT")
+                    || HasCommandLineSwitch("-projectx-direct")))
             {
                 configuredUrl = _developmentBaseUrl;
             }
@@ -161,6 +164,14 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
 
             return false;
+        }
+
+        private static bool IsEnvironmentFlagEnabled(string name)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+
+            return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetCommandLineValue(string name)

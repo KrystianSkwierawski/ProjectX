@@ -19,6 +19,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
     public static class GameSessionManager
     {
         private const string _dtlsConnectionType = "dtls";
+        private const string _directTransportEnvironmentVariable = "PROJECTX_USE_DIRECT_TRANSPORT";
         private const int _connectionApprovalTimeoutSeconds = 20;
         private const int _maxConnections = 100;
         private const int _maxTicketPayloadBytes = 256;
@@ -517,7 +518,9 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 return false;
             }
 
-            return Application.isEditor || HasCommandLineSwitch("-projectx-direct");
+            return Application.isEditor
+                || IsEnvironmentFlagEnabled(_directTransportEnvironmentVariable)
+                || HasCommandLineSwitch("-projectx-direct");
         }
 
         private static string GetUgsProfile()
@@ -543,6 +546,14 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private static bool HasCommandLineSwitch(string value)
         {
             return Environment.GetCommandLineArgs().Any(argument => string.Equals(argument, value, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool IsEnvironmentFlagEnabled(string name)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+
+            return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetCommandLineValue(string name, string fallback)

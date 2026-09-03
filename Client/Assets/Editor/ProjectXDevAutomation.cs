@@ -20,6 +20,10 @@ namespace ProjectX.Editor
         private const string PlayAfterExitEditorPref = "ProjectX.DevAutomation.PlayAfterExit";
         private const string BuildAfterExitEditorPref = "ProjectX.DevAutomation.BuildAfterExit";
         private const string BuildAfterExitPathEditorPref = "ProjectX.DevAutomation.BuildAfterExitPath";
+        private const string RuntimeLogDirectoryPath = "Logs/Runtime";
+        private static readonly object ClientRuntimeLogLock = new object();
+        private static StreamWriter _clientRuntimeLogWriter;
+        private static string _clientRuntimeLogPath;
         private static readonly string[] ClientRuntimeScenePaths =
         {
             LoadingScenePath,
@@ -45,6 +49,101 @@ namespace ProjectX.Editor
         {
             EditorApplication.update += WatchAutomationRequests;
             EditorApplication.delayCall += ResumeAutomationAfterExitIfNeeded;
+            EditorApplication.playModeStateChanged += HandlePlayModeStateChanged;
+            EditorApplication.quitting += StopClientRuntimeLogging;
+            AssemblyReloadEvents.beforeAssemblyReload += StopClientRuntimeLogging;
+
+            if (EditorApplication.isPlaying)
+            {
+                EditorApplication.delayCall += StartClientRuntimeLogging;
+            }
+        }
+
+        private static void HandlePlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                StartClientRuntimeLogging();
+            }
+            else if (state == PlayModeStateChange.ExitingPlayMode)
+            {
+                StopClientRuntimeLogging();
+            }
+        }
+
+        private static void StartClientRuntimeLogging()
+        {
+            lock (ClientRuntimeLogLock)
+            {
+                if (_clientRuntimeLogWriter != null)
+                {
+                    return;
+                }
+
+                var runtimeLogDirectory = GetProjectRelativeFullPath(RuntimeLogDirectoryPath);
+
+                Directory.CreateDirectory(runtimeLogDirectory);
+
+                var timestamp = DateTimeOffset.Now.ToString("yyyyMMdd-HHmmss-fff");
+
+                _clientRuntimeLogPath = Path.Combine(runtimeLogDirectory, $"ProjectXClient-{timestamp}.log");
+                _clientRuntimeLogWriter = new StreamWriter(_clientRuntimeLogPath, append: false)
+                {
+                    AutoFlush = true
+                };
+                _clientRuntimeLogWriter.WriteLine($"{DateTimeOffset.Now:O} [Session] Client Play Mode started.");
+            }
+
+            Application.logMessageReceivedThreaded -= WriteClientRuntimeLog;
+            Application.logMessageReceivedThreaded += WriteClientRuntimeLog;
+
+            Debug.Log($"Unity client runtime log: {_clientRuntimeLogPath}");
+        }
+
+        private static void StopClientRuntimeLogging()
+        {
+            Application.logMessageReceivedThreaded -= WriteClientRuntimeLog;
+
+            lock (ClientRuntimeLogLock)
+            {
+                if (_clientRuntimeLogWriter == null)
+                {
+                    return;
+                }
+
+                _clientRuntimeLogWriter.WriteLine($"{DateTimeOffset.Now:O} [Session] Client Play Mode stopped.");
+                _clientRuntimeLogWriter.Dispose();
+                _clientRuntimeLogWriter = null;
+                _clientRuntimeLogPath = null;
+            }
+        }
+
+        private static void WriteClientRuntimeLog(string condition, string stackTrace, LogType type)
+        {
+            lock (ClientRuntimeLogLock)
+            {
+                if (_clientRuntimeLogWriter == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    _clientRuntimeLogWriter.WriteLine($"{DateTimeOffset.Now:O} [{type}] {condition}");
+
+                    if (!string.IsNullOrWhiteSpace(stackTrace)
+                        && (type == LogType.Error || type == LogType.Exception || type == LogType.Assert))
+                    {
+                        _clientRuntimeLogWriter.WriteLine(stackTrace);
+                    }
+                }
+                catch (IOException)
+                {
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            }
         }
 
         [MenuItem("ProjectX/Open Bootstrap Scene", false, 50)]
