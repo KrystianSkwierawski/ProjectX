@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Subscriptions;
@@ -26,25 +27,82 @@ namespace Assets.Scripts.Areas.Quest.Mono
     {
         private const float _npcMaxDistance = 5f;
 
+        private CancellationTokenSource _networkLifetimeCancellationTokenSource;
+        private readonly SemaphoreSlim _questMutationSemaphore = new SemaphoreSlim(1, 1);
         private QuestNpc _questNpc;
         private StarterAssetsInputs _input;
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            CancelNetworkLifetime();
+            _networkLifetimeCancellationTokenSource?.Dispose();
+            _networkLifetimeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+
+            if (!IsServer)
+            {
+                return;
+            }
+
+            var cancellationToken = GetNetworkLifetimeCancellationToken();
+
+            CheckCharacterQuestSubscription.Instance.Subscribe(
+                OwnerClientId.ToString(),
+                e => CheckProgressSequentiallyAsync(e.GameObjectName, e.QuestType, e.Progress, OwnerClientId, cancellationToken)
+                    .SuppressCancellationThrow()
+                    .Forget());
+        }
 
         [ServerRpc]
         private void CompleteQuestServerRpc(QuestEnum questId, int characterQuestId)
         {
             // TODO: validation
-            CompleteQuestAsync(questId, characterQuestId, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
+            CompleteQuestSequentiallyAsync(
+                    questId,
+                    characterQuestId,
+                    UserManager.Instance.GetPlayerSessionId(OwnerClientId),
+                    GetNetworkLifetimeCancellationToken())
+                .SuppressCancellationThrow()
+                .Forget();
         }
 
         [ServerRpc]
         private void AcceptQuestServerRpc(QuestEnum questId)
         {
-            AcceptQuestAsync(questId, UserManager.Instance.GetPlayerSessionId(OwnerClientId)).Forget();
+            AcceptQuestSequentiallyAsync(
+                    questId,
+                    UserManager.Instance.GetPlayerSessionId(OwnerClientId),
+                    GetNetworkLifetimeCancellationToken())
+                .SuppressCancellationThrow()
+                .Forget();
         }
 
-        private async UniTask AcceptQuestAsync(QuestEnum questId, string playerSessionId)
+        private async UniTask AcceptQuestSequentiallyAsync(
+            QuestEnum questId,
+            string playerSessionId,
+            CancellationToken cancellationToken)
         {
-            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(questId, playerSessionId);
+            await _questMutationSemaphore.WaitAsync(cancellationToken);
+
+            try
+            {
+                await AcceptQuestAsync(questId, playerSessionId, cancellationToken);
+            }
+            finally
+            {
+                _questMutationSemaphore.Release();
+            }
+        }
+
+        private async UniTask AcceptQuestAsync(QuestEnum questId, string playerSessionId, CancellationToken cancellationToken)
+        {
+            var characterQuest = await QuestManager.Instance.AcceptCharacterQuestAsync(questId, playerSessionId, cancellationToken);
+
+            if (!CanUseNetworkLifetime(cancellationToken))
+            {
+                return;
+            }
 
             AcceptQuestClientRpc(
                 characterQuest.Id,
@@ -90,13 +148,22 @@ namespace Assets.Scripts.Areas.Quest.Mono
             }
         }
 
-        private async UniTask CompleteQuestAsync(QuestEnum questId, int characterQuestId, string playerSessionId)
+        private async UniTask CompleteQuestAsync(
+            QuestEnum questId,
+            int characterQuestId,
+            string playerSessionId,
+            CancellationToken cancellationToken)
         {
             var quest = QuestManager.Instance.Quests
                 .Where(x => x.Id == questId)
                 .Single();
 
-            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, playerSessionId);
+            var result = await QuestManager.Instance.CompleteAsync(characterQuestId, playerSessionId, cancellationToken);
+
+            if (!CanUseNetworkLifetime(cancellationToken))
+            {
+                return;
+            }
 
             if (quest.Type == QuestTypeEnum.Collect)
             {
@@ -126,6 +193,24 @@ namespace Assets.Scripts.Areas.Quest.Mono
             });
         }
 
+        private async UniTask CompleteQuestSequentiallyAsync(
+            QuestEnum questId,
+            int characterQuestId,
+            string playerSessionId,
+            CancellationToken cancellationToken)
+        {
+            await _questMutationSemaphore.WaitAsync(cancellationToken);
+
+            try
+            {
+                await CompleteQuestAsync(questId, characterQuestId, playerSessionId, cancellationToken);
+            }
+            finally
+            {
+                _questMutationSemaphore.Release();
+            }
+        }
+
         private void Start()
         {
             if (IsOwner)
@@ -153,34 +238,71 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 });
             }
 
-            if (IsServer)
+        }
+
+        private async UniTask CheckProgressSequentiallyAsync(
+            string gameObjectName,
+            QuestTypeEnum questType,
+            int progress,
+            ulong clientId,
+            CancellationToken cancellationToken)
+        {
+            await _questMutationSemaphore.WaitAsync(cancellationToken);
+
+            try
             {
-                CheckCharacterQuestSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) => await CheckProgressAsync(e.GameObjectName, e.Progress, OwnerClientId));
+                await CheckProgressAsync(gameObjectName, questType, progress, clientId, cancellationToken);
+            }
+            finally
+            {
+                _questMutationSemaphore.Release();
             }
         }
 
-        private async UniTask CheckProgressAsync(string gameObjectName, int progress, ulong clientId)
+        private async UniTask CheckProgressAsync(
+            string gameObjectName,
+            QuestTypeEnum questType,
+            int progress,
+            ulong clientId,
+            CancellationToken cancellationToken)
         {
-            // TODO: multiple quests with same gameObjectName
-            var quest = QuestManager.Instance.Quests
-                .Where(x => x.GameObjectName == gameObjectName)
-                .FirstOrDefault();
-
-            if (quest == null || quest.Id == QuestEnum.None)
+            if (!CanUseNetworkLifetime(cancellationToken))
             {
-                Debug.Log($"Quest not found. GameObjectName: {gameObjectName}");
+                return;
+            }
+
+            var quests = QuestManager.Instance.Quests
+                .Where(x => x.GameObjectName == gameObjectName)
+                .Where(x => x.Type == questType)
+                .ToArray();
+
+            if (quests.Length == 0)
+            {
+                Debug.Log($"Quest not found. GameObjectName: {gameObjectName}, QuestType: {questType}");
 
                 return;
             }
 
-            var result = await QuestManager.Instance.CheckProgressAsync(
-                quest.Id,
-                progress,
-                UserManager.Instance.GetPlayerSessionId(clientId));
+            var playerSessionId = UserManager.Instance.GetPlayerSessionId(clientId);
 
-            if (result.Status != CharacterQuestStatusEnum.None)
+            foreach (var quest in quests)
             {
-                UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, clientId.ToClientRpcParams());
+                if (!CanUseNetworkLifetime(cancellationToken))
+                {
+                    return;
+                }
+
+                var result = await QuestManager.Instance.CheckProgressAsync(quest.Id, progress, playerSessionId, cancellationToken);
+
+                if (!CanUseNetworkLifetime(cancellationToken))
+                {
+                    return;
+                }
+
+                if (result.Status != CharacterQuestStatusEnum.None)
+                {
+                    UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, clientId.ToClientRpcParams());
+                }
             }
         }
 
@@ -189,9 +311,23 @@ namespace Assets.Scripts.Areas.Quest.Mono
         {
             Debug.Log($"UpdateQuestLogClientRpc: {characterQuestId}");
 
-            var characterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => x.Id == characterQuestId)
-                .Single();
+            var characterQuest = QuestManager.Instance.CharacterQuests?
+                .FirstOrDefault(x => x.Id == characterQuestId);
+
+            if (characterQuest == null)
+            {
+                Debug.LogWarning($"Ignoring quest progress for unknown character quest: {characterQuestId}");
+
+                return;
+            }
+
+            if (characterQuest.Status == CharacterQuestStatusEnum.Completed
+                && status != CharacterQuestStatusEnum.Completed)
+            {
+                Debug.Log($"Ignoring stale quest progress for completed character quest: {characterQuestId}");
+
+                return;
+            }
 
             var previousStatus = characterQuest.Status;
 
@@ -293,6 +429,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
         public override void OnNetworkDespawn()
         {
+            CancelNetworkLifetime();
+
             if (IsServer)
             {
                 CheckCharacterQuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
@@ -303,12 +441,42 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
         public override void OnDestroy()
         {
+            CancelNetworkLifetime();
+            _networkLifetimeCancellationTokenSource?.Dispose();
+            _networkLifetimeCancellationTokenSource = null;
+
             if (IsServer)
             {
                 CheckCharacterQuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
             }
 
             base.OnDestroy();
+        }
+
+        private CancellationToken GetNetworkLifetimeCancellationToken()
+        {
+            return _networkLifetimeCancellationTokenSource?.Token ?? new CancellationToken(canceled: true);
+        }
+
+        private bool IsCurrentNetworkLifetime(CancellationToken cancellationToken)
+        {
+            return _networkLifetimeCancellationTokenSource != null
+                && _networkLifetimeCancellationTokenSource.Token == cancellationToken;
+        }
+
+        private bool CanUseNetworkLifetime(CancellationToken cancellationToken)
+        {
+            return IsCurrentNetworkLifetime(cancellationToken)
+                && !cancellationToken.IsCancellationRequested
+                && IsSpawned;
+        }
+
+        private void CancelNetworkLifetime()
+        {
+            if (_networkLifetimeCancellationTokenSource?.IsCancellationRequested == false)
+            {
+                _networkLifetimeCancellationTokenSource.Cancel();
+            }
         }
     }
 }

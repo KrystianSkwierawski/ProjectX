@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Assets.Scripts.Areas.Quest.Enums;
 using Assets.Scripts.Areas.Quest.Models;
@@ -26,12 +27,15 @@ namespace Assets.Scripts.Areas.Quest
             CharacterQuests = result.CharacterQuests;
         }
 
-        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(QuestEnum questId, string playerSessionId)
+        public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(
+            QuestEnum questId,
+            string playerSessionId,
+            CancellationToken cancellationToken = default)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CharacterQuestDto>("CharacterQuests/Accept", new AcceptCharacterQuestCommand
             {
                 QuestId = questId
-            }, playerSessionId);
+            }, playerSessionId, cancellationToken: cancellationToken);
         }
 
         public async UniTask<AddCharacterQuestProgressDto> AddCharacterQuestProgressAsync(int progress, int characterQuestId, string playerSessionId)
@@ -43,21 +47,28 @@ namespace Assets.Scripts.Areas.Quest
             }, playerSessionId);
         }
 
-        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(QuestEnum questId, int progress, string playerSessionId)
+        public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(
+            QuestEnum questId,
+            int progress,
+            string playerSessionId,
+            CancellationToken cancellationToken = default)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgressDto>("CharacterQuests/CheckProgress", new CheckCharacterQuestProgressCommand
             {
                 QuestId = questId,
                 Progress = progress,
-            }, playerSessionId);
+            }, playerSessionId, cancellationToken: cancellationToken);
         }
 
-        public async UniTask<CompleteCharacterQuestDto> CompleteAsync(int characterQuestId, string playerSessionId)
+        public async UniTask<CompleteCharacterQuestDto> CompleteAsync(
+            int characterQuestId,
+            string playerSessionId,
+            CancellationToken cancellationToken = default)
         {
             return await UnityWebRequestHelper.ExecutePostAsync<CompleteCharacterQuestDto>("CharacterQuests/Complete", new CompleteCharacterQuestCommand
             {
                 CharacterQuestId = characterQuestId,
-            }, playerSessionId);
+            }, playerSessionId, cancellationToken: cancellationToken);
         }
     }
 }

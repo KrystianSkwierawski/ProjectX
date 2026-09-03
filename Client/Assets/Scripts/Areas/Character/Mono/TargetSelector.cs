@@ -17,8 +17,9 @@ namespace Assets.Scripts.Areas.Character.Mono
         [SerializeField] private GameObject _arrowPrefab;
         [SerializeField] private GameObject _swordPrefab;
 
-        private static Renderer _currentlySelectedRenderer = null;
-        private static Color _originalSelectedColor;
+        private Renderer _currentlySelectedRenderer;
+        private Color _originalSelectedColor;
+        private string _selectedTargetSubscriptionKey;
 
         private bool _isCasting = false;
 
@@ -171,10 +172,14 @@ namespace Assets.Scripts.Areas.Character.Mono
                     UnselectServerRpc();
                 }
 
-                var newRenderer = hit.transform.GetComponent<Renderer>();
-                _currentlySelectedRenderer = newRenderer;
-                _originalSelectedColor = newRenderer.material.color;
-                newRenderer.material.color = ColorUI.Green;
+                _currentlySelectedRenderer = hit.transform.GetComponent<Renderer>();
+
+                if (_currentlySelectedRenderer != null)
+                {
+                    _originalSelectedColor = _currentlySelectedRenderer.material.color;
+                    _currentlySelectedRenderer.material.color = ColorUI.Green;
+                }
+
                 _selectedTarget = hit.transform.gameObject;
 
                 if (!_onlyView)
@@ -192,7 +197,12 @@ namespace Assets.Scripts.Areas.Character.Mono
             StopCasting();
             _thirdPersonController.UnlockCamera();
 
-            _currentlySelectedRenderer.material.color = _originalSelectedColor;
+            if (_currentlySelectedRenderer != null)
+            {
+                _currentlySelectedRenderer.material.color = _originalSelectedColor;
+            }
+
+            _currentlySelectedRenderer = null;
             _selectedTarget = null;
             TargetUI.Instance.Target.SetActive(false);
         }
@@ -200,16 +210,15 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         private void SelectServerRpc(NetworkObjectReference selectedTargetObjectRef)
         {
-            if (_selectedTarget != null)
-            {
-                UpdateTargetSelectorSubscription.Instance.Unsubscribe($"{_selectedTarget.GetInstanceID()}_{OwnerClientId}");
-            }
+            ClearTargetSubscription();
+            _selectedTarget = null;
 
             if (selectedTargetObjectRef.TryGet(out var selectedTargetTransformObject))
             {
                 _selectedTarget = selectedTargetTransformObject.gameObject;
+                _selectedTargetSubscriptionKey = $"{_selectedTarget.GetInstanceID()}_{OwnerClientId}";
 
-                UpdateTargetSelectorSubscription.Instance.Subscribe($"{_selectedTarget.GetInstanceID()}_{OwnerClientId}", (e) =>
+                UpdateTargetSelectorSubscription.Instance.Subscribe(_selectedTargetSubscriptionKey, (e) =>
                 {
                     UpdateTargetCanvasClientRpc(e.Value, e.Killed, OwnerClientId.ToClientRpcParams());
 
@@ -229,8 +238,38 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void UnselectTarget()
         {
+            ClearTargetSubscription();
             DespawnWeapon();
             _selectedTarget = null;
+        }
+
+        private void ClearTargetSubscription()
+        {
+            if (string.IsNullOrEmpty(_selectedTargetSubscriptionKey))
+            {
+                return;
+            }
+
+            UpdateTargetSelectorSubscription.Instance.Unsubscribe(_selectedTargetSubscriptionKey);
+            _selectedTargetSubscriptionKey = null;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer)
+            {
+                ClearTargetSubscription();
+            }
+
+            if (_currentlySelectedRenderer != null)
+            {
+                _currentlySelectedRenderer.material.color = _originalSelectedColor;
+            }
+
+            _currentlySelectedRenderer = null;
+            _selectedTarget = null;
+
+            base.OnNetworkDespawn();
         }
 
         [ClientRpc]
@@ -252,6 +291,15 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         public void SpawnProjectileServerRpc()
         {
+            if (_selectedTarget == null
+                || !_selectedTarget.TryGetComponent(out NetworkObject selectedTargetNetworkObject)
+                || !selectedTargetNetworkObject.IsSpawned)
+            {
+                UnselectTarget();
+
+                return;
+            }
+
             var character = UserManager.Instance.Characters[OwnerClientId];
 
             _currentWeapon = character.WeaponType.GetWeaponCategory() switch

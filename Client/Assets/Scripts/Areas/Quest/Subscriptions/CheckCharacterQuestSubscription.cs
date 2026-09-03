@@ -1,4 +1,5 @@
 using Assets.Scripts.Areas.Shared.Subscriptions;
+using Assets.Scripts.Areas.Quest.Enums;
 
 namespace Assets.Scripts.Areas.Quest.Subscriptions
 {
@@ -9,6 +10,8 @@ namespace Assets.Scripts.Areas.Quest.Subscriptions
     public class CheckCharacterQuestSubscriptionEvent
     {
         public int Progress { get; set; }
+
+        public QuestTypeEnum QuestType { get; set; }
 
         public string GameObjectName { get; set; }
 

@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Party.Mono;
+using Assets.Scripts.Areas.Quest.Enums;
 using Assets.Scripts.Areas.Quest.Subscriptions;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 
@@ -9,6 +12,9 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class Health : NetworkBehaviour
     {
+        private const int _experienceReward = 50;
+        private const float _partyRewardMaxDistance = 1000f;
+
         public NetworkVariable<float> Network { get; private set; } = new NetworkVariable<float>(100, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private void Start()
@@ -19,6 +25,11 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
+                    if (!IsSpawned || Network.Value <= 0)
+                    {
+                        return;
+                    }
+
                     Network.Value -= e.Value;
 
                     Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
@@ -34,26 +45,9 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                         targetSelectorSubscriptionsEvent.Killed = true;
 
-                        ReleasePoolSubscription.Instance.Invoke(gameObjectKey, new ReleasePoolSubscriptionEvent());
+                        var rewardRecipients = GetRewardRecipients(e.ClientId, e.Player, e.PlayerSessionId);
 
-                        CheckCharacterQuestSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckCharacterQuestSubscriptionEvent
-                        {
-                            Progress = 1,
-                            GameObjectName = gameObject.name,
-                            PlayerSessionId = e.PlayerSessionId,
-                        });
-
-                        CheckLootSubscription.Instance.Invoke(e.ClientId.ToString(), new CheckLootSubscriptionEvent
-                        {
-                            GameObjectName = gameObject.name
-                        });
-
-                        AddExperienceSubscription.Instance.Invoke(e.ClientId.ToString(), new AddExperienceSubscriptionEvent
-                        {
-                            Amount = 50,
-                            Type = ExperienceTypeEnum.Main,
-                            PlayerSessionId = e.PlayerSessionId,
-                        });
+                        GrantKillRewards(rewardRecipients);
                     }
 
                     EnemyAggroSubscription.Instance.Invoke(gameObjectKey, new EnemyAggroSubscriptionEvent
@@ -64,6 +58,11 @@ namespace Assets.Scripts.Areas.Character.Mono
                     });
 
                     UpdateTargetSelectorSubscription.Instance.Invoke(gameObjectKey, targetSelectorSubscriptionsEvent);
+
+                    if (targetSelectorSubscriptionsEvent.Killed)
+                    {
+                        ReleasePoolSubscription.Instance.Invoke(gameObjectKey, new ReleasePoolSubscriptionEvent());
+                    }
                 });
 
                 SetHealthSubscription.Instance.Subscribe(gameObjectKey, (e) =>
@@ -75,6 +74,78 @@ namespace Assets.Scripts.Areas.Character.Mono
                         Value = e.Value
                     });
                 });
+            }
+        }
+
+        private IReadOnlyDictionary<ulong, string> GetRewardRecipients(
+            ulong killerClientId,
+            GameObject killer,
+            string killerSessionId)
+        {
+            var recipients = new Dictionary<ulong, string>();
+
+            if (killer == null)
+            {
+                Debug.LogWarning($"Kill rewards skipped because client {killerClientId} has no player object.");
+
+                return recipients;
+            }
+
+            foreach (var clientId in PartyServerState.GetEligibleRewardMembers(
+                killerClientId,
+                transform.position,
+                _partyRewardMaxDistance))
+            {
+                if (clientId == killerClientId && !string.IsNullOrWhiteSpace(killerSessionId))
+                {
+                    recipients[clientId] = killerSessionId;
+                }
+                else if (UserManager.Instance.TryGetPlayerSessionId(clientId, out var playerSessionId))
+                {
+                    recipients[clientId] = playerSessionId;
+                }
+                else
+                {
+                    Debug.LogWarning($"Party reward ineligible. SourceClientId: {killerClientId}, MemberClientId: {clientId}, Reason: MissingPlayerSession.");
+                }
+            }
+
+            return recipients;
+        }
+
+        private void GrantKillRewards(IReadOnlyDictionary<ulong, string> recipients)
+        {
+            if (recipients.Count == 0)
+            {
+                return;
+            }
+
+            var experiencePerMember = _experienceReward / recipients.Count;
+
+            foreach (var recipient in recipients)
+            {
+                CheckCharacterQuestSubscription.Instance.Invoke(recipient.Key.ToString(), new CheckCharacterQuestSubscriptionEvent
+                {
+                    Progress = 1,
+                    QuestType = QuestTypeEnum.Kill,
+                    GameObjectName = gameObject.name,
+                    PlayerSessionId = recipient.Value,
+                });
+
+                CheckLootSubscription.Instance.Invoke(recipient.Key.ToString(), new CheckLootSubscriptionEvent
+                {
+                    GameObjectName = gameObject.name
+                });
+
+                if (experiencePerMember > 0)
+                {
+                    AddExperienceSubscription.Instance.Invoke(recipient.Key.ToString(), new AddExperienceSubscriptionEvent
+                    {
+                        Amount = experiencePerMember,
+                        Type = ExperienceTypeEnum.Main,
+                        PlayerSessionId = recipient.Value,
+                    });
+                }
             }
         }
 

@@ -11,6 +11,7 @@ using Assets.Scripts.Areas.Inventory.Shared;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Inventory.UI;
 using Assets.Scripts.Areas.Professions.UI;
+using Assets.Scripts.Areas.Quest.Enums;
 using Assets.Scripts.Areas.Quest.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
@@ -488,6 +489,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     Progress = request.Add
                         .Where(x => x.Type == itemType)
                         .Sum(x => x.Count),
+                    QuestType = QuestTypeEnum.Collect,
                     GameObjectName = itemType.ToString(),
                     PlayerSessionId = playerSessionId,
                 });

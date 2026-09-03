@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Party.Enums;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Assets.Scripts.Areas.Party.Mono
@@ -123,6 +124,66 @@ namespace Assets.Scripts.Areas.Party.Mono
             leaderClientId = party.LeaderClientId;
 
             return true;
+        }
+
+        public static IReadOnlyList<ulong> GetEligibleRewardMembers(
+            ulong sourceClientId,
+            Vector3 sourcePosition,
+            float maxDistance)
+        {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer || maxDistance < 0f)
+            {
+                return System.Array.Empty<ulong>();
+            }
+
+            var candidates = _partiesByMember.TryGetValue(sourceClientId, out var party)
+                ? party.Members
+                : new List<ulong> { sourceClientId };
+
+            var maxDistanceSquared = maxDistance * maxDistance;
+            var eligibleMembers = new List<ulong>();
+
+            foreach (var clientId in candidates)
+            {
+                if (clientId == sourceClientId)
+                {
+                    eligibleMembers.Add(clientId);
+
+                    Debug.Log($"Party reward eligible. SourceClientId: {sourceClientId}, MemberClientId: {clientId}, Reason: Killer.");
+
+                    continue;
+                }
+
+                if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+                {
+                    Debug.Log($"Party reward ineligible. SourceClientId: {sourceClientId}, MemberClientId: {clientId}, Reason: Disconnected.");
+
+                    continue;
+                }
+
+                if (client.PlayerObject == null)
+                {
+                    Debug.Log($"Party reward ineligible. SourceClientId: {sourceClientId}, MemberClientId: {clientId}, Reason: MissingPlayerObject.");
+
+                    continue;
+                }
+
+                var distanceSquared = (client.PlayerObject.transform.position - sourcePosition).sqrMagnitude;
+                var distance = Mathf.Sqrt(distanceSquared);
+
+                if (distanceSquared > maxDistanceSquared)
+                {
+                    Debug.Log($"Party reward ineligible. SourceClientId: {sourceClientId}, MemberClientId: {clientId}, Distance: {distance:F2}, MaxDistance: {maxDistance:F2}, Reason: TooFar.");
+
+                    continue;
+                }
+
+                eligibleMembers.Add(clientId);
+
+                Debug.Log($"Party reward eligible. SourceClientId: {sourceClientId}, MemberClientId: {clientId}, Distance: {distance:F2}, MaxDistance: {maxDistance:F2}.");
+            }
+
+            return eligibleMembers;
         }
 
         public static IReadOnlyList<ulong> GetInviters(ulong targetClientId)
