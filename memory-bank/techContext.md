@@ -1,86 +1,43 @@
 # Tech Context
 
 ## Backend
-- .NET 10 / ASP.NET Core 10 solution: `API/ProjectX.slnx`; targeting `net10.0` selects C# 14 by default.
-- Backend build defaults live in `API/Directory.Build.props`, and `API/global.json` requests stable SDK `10.0.300` with `latestFeature` roll-forward (currently resolving to installed SDK 10.0.302).
-- Projects:
-  - `API/src/API/API.csproj`
-  - `API/src/Application/Application.csproj`
-  - `API/src/Domain/Domain.csproj`
-  - `API/src/Infrastructure/Infrastructure.csproj`
-  - `API/tests/Domain.UnitTests/Domain.UnitTests.csproj`
-  - `API/tests/Application.UnitTests/Application.UnitTests.csproj`
-  - `API/tests/Infrastructure.IntegrationTests/Infrastructure.IntegrationTests.csproj`
-  - `API/tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj`
-  - `API/tests/Architecture.Tests/Architecture.Tests.csproj`
-- Shared backend test settings are centralized in `API/tests/TestProject.props` and imported explicitly by the five actual test projects.
-- Central package management via `API/Directory.Packages.props`.
-- Key packages include Entity Framework Core/ASP.NET Core 10.0.11, `Microsoft.AspNetCore.Mvc.Testing` 10.0.11, MediatR 14.2.0, FluentValidation 12.1.1, NSwag 14.7.1, Serilog 10 integration packages, IdentityModel 8.22.0, xUnit 2.9.3, Moq, and coverlet 10.0.1. Repository-local `dotnet-ef` 10.0.11 is pinned in `API/.config/dotnet-tools.json` and restored with `dotnet tool restore`.
+- .NET 10 / ASP.NET Core 10, targeting `net10.0` and default C# 14 through `API/Directory.Build.props`.
+- `API/global.json` requests stable SDK `10.0.300` with `latestFeature` roll-forward; current local resolution is 10.0.302.
+- `API/ProjectX.slnx` contains API, Application, Domain, Infrastructure, and Domain/Application unit, Infrastructure integration, Web acceptance, and Architecture test projects.
+- Central packages are in `API/Directory.Packages.props`; shared test configuration is explicitly imported from `API/tests/TestProject.props`.
+- Main dependencies: EF Core/ASP.NET Core 10.0.11, MediatR 14.2.0, FluentValidation 12.1.1, NSwag 14.7.1, Serilog 10 integrations, IdentityModel 8.22.0, xUnit 2.9.3, Moq, and coverlet 10.0.1.
+- Repository-local `dotnet-ef` 10.0.11 is pinned in `API/.config/dotnet-tools.json`.
 
-## Backend Runtime Configuration
-- Default connection string points to local SQL Server database `ProjectX`.
-- `UseInMemoryDatabase=true` is scoped to `appsettings.Development.json`; base configuration defaults to SQL Server behavior.
-- Kestrel HTTPS endpoint is configured for `https://localhost:5001`.
-- Swagger/OpenAPI UI and the root redirect to `/api` are available only in Development.
-- Serilog writes to console and daily rolling file logs.
-- API startup initializes the database only in Development. That development initializer intentionally deletes, recreates, and seeds the database; non-Development startup never invokes it.
-- The NSwag MSBuild target sets `SkipDatabaseInitialization=true`, so OpenAPI regeneration never runs the destructive initializer. JWT signing keys are absent from tracked settings and are supplied locally through .NET User Secrets (`JwtSettings:SecurityKey`); CI/deployments must provide equivalent external configuration.
-- Current EF Core migration history is squashed to `20260811172103_Init` plus `ApplicationDbContextModelSnapshot.cs`; application-owned date columns are created directly as `datetimeoffset`, and obsolete Duende IdentityServer tables are absent.
+## Backend Runtime
+- Default persistence is local SQL Server database `ProjectX`; Development may use the in-memory provider.
+- Development startup intentionally deletes/recreates/seeds the database. Non-Development startup never initializes it; NSwag sets `SkipDatabaseInitialization=true`.
+- Local HTTPS endpoint is `https://localhost:5001`; Swagger/root `/api` redirect are Development-only.
+- JWT signing material is supplied through .NET User Secrets or external configuration and is never tracked.
+- Current migrations are `20260811172103_Init`, `20260904191036_AddCharacterInventoryTradeReceipts`, and the model snapshot.
 
-## Client
-- Unity project under `Client/`.
-- Unity editor version: `6000.1.15f1`.
-- Main generated solutions include `Client/ProjectXClient.sln` and `Client/Client.sln`.
-- Uses Unity Netcode for GameObjects 2.4.4, Unity Transport 2.5.3, Multiplayer Services 1.2.0 (Relay/Authentication/Core), Multiplayer Play Mode 1.6.2, Dedicated Server 1.6.2, Input System, URP, Shader Graph, TextMesh Pro/UGUI, Cinemachine, AI Navigation, UniTask, NuGetForUnity, and ParrelSync. MPS 1.2.0 is intentionally pinned because MPS 2.1.2 removes Multiplay editor types still required by Multiplayer Play Mode 1.6.x.
+## Unity Client And Server
+- Unity `6000.1.15f1` under `Client/`; generated solutions include `ProjectXClient.sln` and `Client.sln`.
+- Key packages: Netcode for GameObjects 2.4.4, Unity Transport 2.5.3, Multiplayer Services 1.2.0, Multiplayer Play Mode 1.6.2, Dedicated Server 1.6.2, Input System, URP, TextMesh Pro/UGUI, Cinemachine, AI Navigation, UniTask, NuGetForUnity, and ParrelSync.
+- MPS stays at 1.2.0 because 2.1.2 removed Multiplay editor types required by Multiplayer Play Mode 1.6.x.
+- Production networking defaults to Relay + DTLS; local automation opts into Direct transport through `PROJECTX_USE_DIRECT_TRANSPORT=true`.
 
-## Common Commands
-- Backend build/test:
-  - From `API/`: `dotnet build ProjectX.slnx`
-  - From `API/`: `dotnet test ProjectX.slnx`
-- Local dev stack automation:
-  - `Client/Automation/run.bat` runs missing parts of the API, Unity dedicated server, and Unity client Play Mode stack. It reuses an API already listening on the configured port and skips both build and startup when the configured dedicated-server executable is already running.
-  - `Client/Automation/run.bat -RestartExisting` explicitly restarts processes managed from the configured API/server executable paths before continuing.
-  - `Client/Automation/run.bat -SkipServerBuild` runs using the existing server build.
-  - `Client/Automation/run.bat -SkipApi -SkipServerBuild -SkipServerRun -SkipClientPlay` is a safe no-op smoke test for script wiring.
-- Unity Editor menu:
-  - `ProjectX > Run` invokes `Client/Automation/run.bat -SkipServerBuild`.
-  - `ProjectX > Build And Run` invokes `Client/Automation/run.bat`.
-  - Each Unity Editor Play session and each dedicated-server process started by this automation writes a separate timestamped runtime file under ignored `Client/Logs/Runtime`; these files remain available after Play Mode or the server exits. Dedicated-server application logs are mirrored to the file through `PROJECTX_RUNTIME_LOG_PATH` while Unity continues showing its normal console output, and local Direct mode is selected through `PROJECTX_USE_DIRECT_TRANSPORT` rather than a custom Unity command-line argument.
-- Client validation is expected through Unity Editor/test runner unless project-specific CLI commands are added later.
-- At the 2026-07-13 review, only the parameterized translation test existed. The backend suite has since expanded to 362 passing domain/application unit, infrastructure integration, web acceptance/contract, and architecture cases; Unity Play Mode/gameplay coverage remains substantially narrower.
+## Common Workflows
+- Backend: from `API/`, run `dotnet build ProjectX.slnx`, `dotnet test ProjectX.slnx`, and `dotnet format ProjectX.slnx --no-restore` when relevant.
+- EF validation: `dotnet tool restore`, then `dotnet tool run dotnet-ef migrations has-pending-model-changes ...` with SQL Server configuration.
+- Client compile checks use generated `Client/Assembly-CSharp.csproj`; networking changes should compile once with `UNITY_SERVER` and once without it.
+- `Client/Automation/run.bat` starts missing API/server/client parts; `-RestartExisting` explicitly restarts managed processes, `-SkipServerBuild` reuses the build, and the full skip set is a safe wiring no-op.
+- Unity menu `ProjectX > Run` uses `-SkipServerBuild`; `ProjectX > Build And Run` performs the full flow. Keep menu automation aligned with `Client/Automation/run.ps1`.
+- Each editor/server run writes timestamped diagnostics under ignored `Client/Logs/Runtime`; the server mirrors logs through `PROJECTX_RUNTIME_LOG_PATH` without suppressing Unity console output.
 
-## Current Repo Notes
-- On 2026-08-22, the upper-right buff-slot/preview refinement compiled through the generated `Assembly-CSharp.csproj` with zero errors and seven existing warnings. The exact scene import was not rerun in batch mode because the Unity project was already open; the YAML change is limited to the existing BuffBar anchor/pivot/offset, and the prior scene-backed buff implementation had already passed Unity batch import.
-- On 2026-08-21, after adding Strength/Speed potions and the scene-backed buff bar, Unity `6000.1.15f1` batch mode successfully compiled scripts and imported `UIScene` with return code 0; the generated `Assembly-CSharp.csproj` build also completed with zero errors and seven existing warnings. API formatting verification passed, OpenAPI and both localization JSON files were validated, and all 362 backend tests passed. Timers, refresh timing, and the final visual layout still need a Play Mode gameplay smoke test.
-- On 2026-08-11, the post-migration Clean Architecture pass aligned backend formatting with the current upstream `.editorconfig`, scoped destructive database reset/seeding and Swagger to Development, moved the JWT signing key to User Secrets, moved the concrete in-memory game-session registry to Infrastructure, removed JSON persistence concerns from Domain/Application, replaced crafting JSON attributes with typed Domain definitions, enforced owner-plus-`CharacterId` queries, and simplified NSwag metadata to typed results plus concise endpoint descriptions. OpenAPI regenerated, EF reported no pending model changes, build/format completed with zero warnings/errors, and all 288 tests passed.
-- On 2026-08-11, the backend was migrated from .NET 9/C# 13 to .NET 10/C# 14 following the applicable build conventions in `jasontaylordev/CleanArchitecture`: centralized `Directory.Build.props`, stable SDK selection in `global.json`, and replacement of `ProjectX.sln` with `ProjectX.slnx`. All direct NuGet dependencies were updated to their latest stable compatible versions, unused `FluentValidation.AspNetCore` was removed, NSwag now runs its Net100 toolchain, and automation resolves the `net10.0` API output. Restore/build/NSwag complete with zero warnings/errors; 283 tests pass, NuGet reports no outdated direct packages, and the full transitive graph reports no known vulnerabilities.
-- On 2026-08-11, backend tests were split into `Domain.UnitTests`, `Application.UnitTests`, `Infrastructure.IntegrationTests`, `Web.AcceptanceTests`, and `Architecture.Tests`, with shared tooling explicitly imported from `API/tests/TestProject.props`. The production-localization resource contract lives in Web rather than creating a hidden Infrastructure-to-API filesystem dependency. `dotnet restore API/ProjectX.sln` and `dotnet test API/ProjectX.sln --no-restore` succeeded; the latter rebuilt all projects, regenerated NSwag with zero warnings/errors, and passed all 281 tests. The ten architecture cases cover compiled assembly boundaries, declared production/test-project references, Domain/Application package constraints, and layer namespaces. This validates backend structure/contracts but is not a Unity runtime or full-stack gameplay test.
-- At the start of the 2026-07-13 memory-bank refresh, branch `dev` was clean and exactly aligned with `origin/dev` at `8c954ff` (`0` ahead, `0` behind).
-- On 2026-07-13, `dotnet build API/ProjectX.sln --no-restore` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` both completed with zero errors. They emitted existing nullable/reference/version-conflict/unused-field warnings. `dotnet test API/ProjectX.sln --no-build --no-restore` then passed all 182 tests. This is build/unit-test validation, not Unity runtime or dedicated-server validation.
-- On 2026-07-15, after combat ammo consumption was added, `dotnet build API/ProjectX.sln --no-restore -p:SkipNSwag=True` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and existing warnings. `dotnet test API/ProjectX.sln --no-build --no-restore` passed all 190 tests. No full Unity client/dedicated-server/API runtime test was performed.
-- On 2026-07-24, after inventory drag-and-drop was added, `dotnet build API/ProjectX.sln --no-restore -p:SkipNSwag=True` and `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and existing warnings, the API specification JSON parsed successfully, and `dotnet test API/ProjectX.sln --no-build --no-restore` passed all 206 tests. Pointer-driven behavior still requires a Unity Play Mode smoke test.
-- On 2026-07-27, after Loot -> Inventory drag-and-drop and correct Inventory/Gear source placeholders were added, `dotnet build Client/Assembly-CSharp.csproj --no-restore` completed with zero errors and the six existing warnings. Pointer-driven behavior still requires a Unity Play Mode smoke test.
-- On 2026-08-05, after the login security review fixes, API and Unity runtime/editor projects compiled with zero errors, NSwag regenerated the login `200/400/401/429` contract without initializing the database, and all 215 API tests passed.
-- On 2026-08-05, the full 16-operation NSwag contract was documented and regression-tested, application validation/not-found errors were normalized to ProblemDetails, API tests passed all 220 cases, and the generated Unity client project compiled with zero errors and its existing dependency/unused-field warnings.
-- On 2026-08-05, after the global LoadingScene/loading-scope implementation, `dotnet build Client/Assembly-CSharp.csproj --no-restore` and `dotnet build Client/Assembly-CSharp-Editor.csproj --no-restore` completed with zero errors and the existing warnings. Static prefab/scene local-reference and GUID checks passed. A Unity batch import/Play Mode run was not possible because no valid headless Editor license was available.
-- On 2026-08-12, JWT validation was extended with a signed original session start and a non-sliding 24-hour global deadline. Each access token remains capped at one hour; Unity refreshes at minute 56 and retries only through the remaining four minutes, while the API accepts renewal throughout the final five-minute eligibility window. Authorization now fails closed by default with only login explicitly anonymous, algorithms are restricted to HS256, and startup enforces a 32-byte minimum signing secret. WebApplicationFactory tests cover invalid signature/issuer/audience/algorithm, expiry, wrong role, missing `PlayerSessionId`, fallback authorization, renewal, and the 24-hour cap through the complete ASP.NET Core pipeline; they inject isolated JWT configuration before startup instead of relying on local User Secrets. All 306 backend tests pass. A long-duration runtime soak test is still pending.
-- On 2026-08-12, targeted happy-path and boundary additions raised the backend suite to 328 passing tests. They cover quest lifecycle and additional inventory branches in Domain, owned-versus-foreign character/inventory/quest handler behavior against EF in Infrastructure, and missing JWT session claims, refresh rejection paths, and the real login limiter through WebApplicationFactory. Formatting verification remains clean.
-- On 2026-08-10, after UTC `DateTimeOffset` domain fields, singleton `TimeProvider`, the EF auditable interceptor, and the regenerated initial migration were added, the API suite passed all 228 tests and the Unity runtime project compiled with zero errors. Current UI contracts expose no timestamps; future date presentation should call local-time conversion only in the UI layer.
-- On 2026-08-10, migrations were regenerated as the single fresh `20260810173356_INIT` baseline, removing the unsafe legacy `datetime2` conversion path. The application columns are directly declared as `datetimeoffset`; remaining `datetime2` columns are framework-owned Identity/OpenIddict persistence fields.
-- On 2026-08-10, terminal session-refresh handling was added: client 4xx responses log out immediately, transient failures retry only through the remaining five-minute window, client networking/scenes are torn down before returning to Bootstrap login, and dedicated-server builds exit for supervised restart. API and Unity runtime builds completed with zero errors, and all 228 API tests passed.
-- On 2026-08-10, Relay/DTLS and ticket admission were added together with a 90-second UTC server lease/heartbeat and ticket throttling. The backend and regenerated 22-operation OpenAPI contract build with zero warnings/errors and all 259 API tests pass. An initial MPS 2.1.2 pin compiled the game assembly but broke the Multiplayer Play Mode editor assembly because required Multiplay types were removed; Unity now successfully resolves the compatible MPS 1.2.0 line, which retains those types and lower-level Relay APIs while supporting UTP 2.5.x. Multiplayer Play Mode and Dedicated Server are aligned at 1.6.2. A live Relay runtime test remains pending UGS project/build-profile linkage.
-- The repo-level `.gitignore` is tracked.
-- Git status commands emit permission warnings for `C:\Users\pc/.config/git/ignore`.
+## Validation And Tool Preferences
+- Prefer code inspection, builds, tests, logs, static prefab checks, and generated previews.
+- Use `computer-use` only when direct interaction with a running UI is necessary or materially simplifies implementation or verification.
+- Generated-project compilation does not prove pointer behavior, scene layout, networking, or gameplay timing; record required Play Mode/full-stack smoke tests explicitly.
+- Latest trade baseline: 383 backend tests passed; API build/OpenAPI/format/EF checks passed; Unity import/Netcode processing and client/server-symbol builds passed. The 2026-09-08 trade UI refinement additionally passed 20 generated layout/interaction cases; live authenticated two-client trade remains untested.
 
-## Constraints And Preferences
-- Preserve Unity `.meta` files when moving or adding Unity assets.
-- The repo's tracked `.gitignore` does not currently exclude `*.meta`; keep required Unity metadata versioned with every new or moved asset/script.
-- Avoid editing generated artifacts and caches such as `Client/Library`, `Client/obj`, `API/**/bin`, `API/**/obj`, and log files.
-- Keep API contract changes synchronized with Unity client models and request code.
-- Validate JSON localization files when editing i18n resources.
-- `run.ps1` auto-builds `API/src/API/API.csproj` in `Debug` when `ProjectX.API.exe` is missing.
-- Unity dedicated server builds are generated under `Client/Builds/Server/ProjectXServer.exe`.
-- If `.claude/settings.local.json` reappears, treat it as local-only secret configuration and do not commit or quote its values.
-- `.Codexrules` is the active memory-bank/agent instruction file; `CLAUDE.md` and `.claude/` were not present during the 2026-07-13 refresh.
-- Client `pl.json` currently uses English item/UI text intentionally as a temporary development fallback; do not treat this as an accidental localization bug.
-- Recent gameplay/UI changes compile through the generated client project but were not verified end-to-end in a running Unity client/dedicated server/API stack during the 2026-07-13 memory-bank refresh.
+## Repository Constraints
+- Preserve Unity `.meta` files and synchronized API/client enums, DTOs, OpenAPI, and localization resources.
+- Avoid generated/cache outputs (`bin`, `obj`, Unity `Library`, logs) unless validation specifically requires them.
+- Validate modified JSON resources.
+- `.Codexrules` is the active repository instruction file. `.claude/settings.local.json`, if it reappears, is secret local configuration and must not be committed or quoted.
+- Git status emits a known permission warning for `C:/Users/pc/.config/git/ignore`.

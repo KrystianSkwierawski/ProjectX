@@ -1,23 +1,19 @@
 # Project Brief
 
 ## Project
-ProjectX is a multiplayer game project with a Unity client and an ASP.NET Core backend API.
+ProjectX is a multiplayer RPG-style game with a Unity client, a Unity dedicated server, and an ASP.NET Core backend API.
 
-## Current Scope
-- Unity client under `Client/`.
-- Backend API under `API/`, organized as separate API, Application, Domain, and Infrastructure projects plus responsibility-aligned test projects.
-- Gameplay domains currently represented in code include characters, character transforms, health/combat state, max health, character stats, equipment/gear, inventory, quests, crafting recipes, experience, users, and translation/i18n.
-- Inventory slots support persisted drag-and-drop positioning: different items swap, matching stacks merge, empty positions are represented by `None` placeholders, and Loot can be picked up by dropping it onto inventory.
-- Gear currently includes helmet, chest, boots, weapon, and ammo slots plus stat bonuses that affect persisted character totals.
-- Tiered Arrow, Rune, Feather, and Oil ammo content is represented in inventory, merchant, localization, icon, and crafting data. Ammo equip, merge, swap, and unequip paths preserve whole stacks; Arrows require bows, Runes require wands, and Feathers/Oils require swords. Feather armor ammo is consumed on a non-dodged incoming hit, while Arrow/Rune/Oil damage ammo is consumed on an outgoing hit.
-- Craftable Strength and Speed potions grant server-authoritative runtime-only timed bonuses; reuse refreshes rather than stacks the effect, and upper-right inventory-slot visuals expose the remaining time plus the normal item preview.
+## Scope
+- `Client/`: Unity gameplay, UI, Netcode for GameObjects, local development automation, and dedicated-server builds.
+- `API/`: persistent accounts, characters, inventories, quests, crafting, friendships, game sessions, and trade transactions, organized as API/Application/Domain/Infrastructure plus responsibility-aligned tests.
+- Implemented gameplay areas include authentication/session refresh, character state and combat, stats, gear/ammo, inventory and loot, quests, crafting, consumables/buffs, friends/whispers, parties/reward sharing, and player-to-player trade.
 
-## Core Goals
-- Provide a playable Unity client backed by persistent API services.
-- Keep game state and progression features synchronized between client, Unity dedicated server, and API.
-- Support user login/authentication, character state, health, stats, gear/ammo, quest progress, inventory, crafting, and localization.
+## Goals
+- Keep gameplay authoritative on the Unity server while persisting durable state through the API.
+- Keep client, server, API contracts, inventory rules, and localization synchronized.
+- Favor correct, testable systems that one programmer can maintain; defer art-heavy polish and economic balancing.
 
-## Source Of Truth
-- The backend architecture and its modernization conventions intentionally use `jasontaylordev/CleanArchitecture` as the primary reference implementation. ProjectX adapts that template to its Unity/game-server requirements instead of copying unrelated template features.
-- This memory bank was initialized from repository inspection on 2026-05-07 and reviewed against repository HEAD `8c954ff` on 2026-07-13, incorporating the user clarifications recorded on 2026-07-07 and 2026-07-08.
-- Product-specific goals beyond the current code shape are not yet documented and should be confirmed with the user as the project evolves.
+## Sources Of Truth
+- Backend architecture follows applicable patterns from `jasontaylordev/CleanArchitecture`, adapted to ProjectX's Unity, authentication, persistence, and deployment needs.
+- Current behavior and decisions live in this Memory Bank; detailed implementation history remains available in Git.
+- Product decisions not recorded here should be confirmed when they materially affect implementation.
