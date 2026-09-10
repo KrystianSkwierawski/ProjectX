@@ -1,5 +1,6 @@
 using MediatR;
 using ProjectX.Application.ApplicationUsers.Commands.LoginApplicationUser;
+using ProjectX.Application.CharacterInventories.Commands.TradeCharacterInventories;
 
 namespace ProjectX.Application.UnitTests.Common;
 
@@ -18,5 +19,16 @@ public class RequestLoggingConventionTests
             .ToArray();
 
         Assert.Empty(requestTypesWithoutToString);
+    }
+
+    [Fact]
+    public void TradeRequest_DoesNotLogPlayerSessionCredentials()
+    {
+        const string playerSessionId = "sensitive-player-session";
+        var request = new TradeCharacterInventoriesCommand(Guid.NewGuid(), playerSessionId, [], []);
+
+        var text = request.ToString();
+
+        Assert.DoesNotContain(playerSessionId, text, StringComparison.Ordinal);
     }
 }

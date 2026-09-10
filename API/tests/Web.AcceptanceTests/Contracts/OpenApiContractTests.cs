@@ -50,6 +50,7 @@ public class OpenApiContractTests
         {
             ("/api/CharacterExperiences", "POST"),
             ("/api/CharacterInventories", "POST"),
+            ("/api/CharacterInventories/Trade", "POST"),
             ("/api/CharacterQuests/Accept", "POST"),
             ("/api/CharacterQuests/Progress", "POST"),
             ("/api/CharacterQuests/CheckProgress", "POST"),
@@ -90,6 +91,7 @@ public class OpenApiContractTests
     [Theory]
     [InlineData("AddCharacterExperienceCommand")]
     [InlineData("UpdateCharacterInventoryCommand")]
+    [InlineData("TradeCharacterInventoriesCommand")]
     [InlineData("AcceptCharacterQuestCommand")]
     [InlineData("AddCharacterQuestProgressCommand")]
     [InlineData("CheckCharacterQuestProgressCommand")]
@@ -116,7 +118,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(28, operations.Length);
+        Assert.Equal(30, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -149,10 +151,12 @@ public class OpenApiContractTests
             "RegisterAsync",
             "RefreshSessionAsync",
             "RemoveFriend",
+            "ResolveCharacterInventoryTrade",
             "RevokePlayerAsync",
             "RespondFriendInvitation",
             "SaveCharacterTransform",
             "SendFriendInvitation",
+            "TradeCharacterInventories",
             "UpdateCharacter",
             "UpdateCharacterInventory"
         };

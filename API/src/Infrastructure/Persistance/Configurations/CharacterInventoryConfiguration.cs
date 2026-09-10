@@ -25,6 +25,10 @@ public class CharacterInventoryConfiguration : IEntityTypeConfiguration<Characte
             .IsRequired();
 
         builder
+            .Property(x => x.Inventory)
+            .IsConcurrencyToken();
+
+        builder
             .HasOne(x => x.Character)
             .WithOne(x => x.CharacterInventory)
             .HasForeignKey<CharacterInventory>(x => x.Id);
