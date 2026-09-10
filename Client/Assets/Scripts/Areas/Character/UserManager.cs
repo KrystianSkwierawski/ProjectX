@@ -234,6 +234,20 @@ namespace Assets.Scripts.Areas.Character
                 : throw new InvalidOperationException($"No authenticated player session exists for network client {clientId}.");
         }
 
+        public bool TryGetPlayerSessionId(ulong clientId, out string playerSessionId)
+        {
+            if (_playerSessions.TryGetValue(clientId, out var playerSession))
+            {
+                playerSessionId = playerSession.PlayerSessionId;
+
+                return true;
+            }
+
+            playerSessionId = null;
+
+            return false;
+        }
+
         public int GetPlayerCharacterId(ulong clientId)
         {
             return _playerSessions.TryGetValue(clientId, out var playerSession)

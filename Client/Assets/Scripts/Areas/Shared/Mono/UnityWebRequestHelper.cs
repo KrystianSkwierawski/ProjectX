@@ -22,12 +22,13 @@ namespace Assets.Scripts.Areas.Shared.Mono
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string playerSessionId = null, bool log = true, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecuteGetAsync<T>(string endpoint, string playerSessionId = null, bool log = true,
+            CancellationToken cancellationToken = default, [CallerMemberName] string memberName = "")
         {
             using var request = UnityWebRequest.Get(GetUrl(endpoint));
             request.downloadHandler = new DownloadHandlerBuffer();
 
-            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName);
+            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName, cancellationToken);
         }
 
         public static async UniTask<T> ExecutePostAsync<T>(string endpoint, object body, string playerSessionId = null, bool log = true,
@@ -55,12 +56,13 @@ namespace Assets.Scripts.Areas.Shared.Mono
             return await SendWebRequestAsync<T>(request, null, log, memberName, cancellationToken);
         }
 
-        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string playerSessionId = null, bool log = false, [CallerMemberName] string memberName = "")
+        public static async UniTask<T> ExecuteDeleteAsync<T>(string endpoint, string playerSessionId = null, bool log = false,
+            CancellationToken cancellationToken = default, [CallerMemberName] string memberName = "")
         {
             using var request = UnityWebRequest.Delete(GetUrl(endpoint));
             request.downloadHandler = new DownloadHandlerBuffer();
 
-            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName);
+            return await SendWebRequestAsync<T>(request, playerSessionId, log, memberName, cancellationToken);
         }
 
         private static async UniTask<T> SendWebRequestAsync<T>(UnityWebRequest request, string playerSessionId, bool log = false,
@@ -127,7 +129,10 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 configuredUrl = GetCommandLineValue("-projectx-api-url");
             }
 
-            if (string.IsNullOrWhiteSpace(configuredUrl) && (Application.isEditor || HasCommandLineSwitch("-projectx-direct")))
+            if (string.IsNullOrWhiteSpace(configuredUrl)
+                && (Application.isEditor
+                    || IsEnvironmentFlagEnabled("PROJECTX_USE_DIRECT_TRANSPORT")
+                    || HasCommandLineSwitch("-projectx-direct")))
             {
                 configuredUrl = _developmentBaseUrl;
             }
@@ -159,6 +164,14 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
 
             return false;
+        }
+
+        private static bool IsEnvironmentFlagEnabled(string name)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+
+            return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetCommandLineValue(string name)

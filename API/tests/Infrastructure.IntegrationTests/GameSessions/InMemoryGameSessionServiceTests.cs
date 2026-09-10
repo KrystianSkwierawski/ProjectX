@@ -201,6 +201,53 @@ public sealed class InMemoryGameSessionServiceTests
         Assert.False(service.TryResolvePlayer(ServerUserId, player.PlayerSessionId, out _));
     }
 
+    [Fact]
+    public void IsCharacterOnline_TracksRedeemedPlayerSessionLifetime()
+    {
+        var service = CreateService(out var timeProvider);
+        var session = service.Register(ServerUserId, false, null);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
+
+        var player = service.Redeem(ServerUserId, session.GameSessionId, ticket.Ticket);
+
+        Assert.True(service.IsCharacterOnline(ServerUserId, CharacterId));
+        Assert.False(service.IsCharacterOnline("another-server", CharacterId));
+
+        service.RevokePlayer(ServerUserId, player.PlayerSessionId);
+
+        Assert.False(service.IsCharacterOnline(ServerUserId, CharacterId));
+
+        var secondTicket = service.CreateTicket(ClientUserId, CharacterId);
+        service.Redeem(ServerUserId, session.GameSessionId, secondTicket.Ticket);
+        timeProvider.Advance(TimeSpan.FromSeconds(90));
+
+        Assert.False(service.IsCharacterOnline(ServerUserId, CharacterId));
+    }
+
+    [Fact]
+    public void IsCharacterOnline_DoesNotExposePlayersFromAnotherServerSession()
+    {
+        var service = CreateService(out var timeProvider);
+        var firstSession = service.Register(ServerUserId, false, null);
+        var firstTicket = service.CreateTicket(ClientUserId, CharacterId);
+
+        service.Redeem(ServerUserId, firstSession.GameSessionId, firstTicket.Ticket);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+
+        const string secondServerUserId = "another-server";
+        const int secondCharacterId = 43;
+        var secondSession = service.Register(secondServerUserId, false, null);
+        var secondTicket = service.CreateTicket("another-client", secondCharacterId);
+
+        service.Redeem(secondServerUserId, secondSession.GameSessionId, secondTicket.Ticket);
+
+        Assert.True(service.IsCharacterOnline(ServerUserId, CharacterId));
+        Assert.False(service.IsCharacterOnline(secondServerUserId, CharacterId));
+        Assert.True(service.IsCharacterOnline(secondServerUserId, secondCharacterId));
+        Assert.False(service.IsCharacterOnline(ServerUserId, secondCharacterId));
+    }
+
     private static InMemoryGameSessionService CreateService(out ManualTimeProvider timeProvider, bool allowDirectTransport = true)
     {
         timeProvider = new ManualTimeProvider(new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero));

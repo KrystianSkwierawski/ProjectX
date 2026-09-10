@@ -3,12 +3,14 @@ using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Friends.Mono;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Shared;
 using Assets.Scripts.Areas.Professions.Mono;
 using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
@@ -16,6 +18,7 @@ using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PartyController = Assets.Scripts.Areas.Party.Mono.Party;
 
 namespace Assets.Scripts.Areas.Character.Mono
 {
@@ -45,14 +48,14 @@ namespace Assets.Scripts.Areas.Character.Mono
                     if (result.Level > character.Levels[e.Type])
                     {
                         character.Levels[e.Type] = result.Level;
+                        PartyController.NotifyCharacterChanged(OwnerClientId);
 
-                        UpdateLevelClientRpc(e.Type, result.Level, new ClientRpcParams
+                        if (e.Type == ExperienceTypeEnum.Main)
                         {
-                            Send = new ClientRpcSendParams
-                            {
-                                TargetClientIds = new ulong[] { OwnerClientId }
-                            }
-                        });
+                            FriendList.NotifyFriendStateChanged();
+                        }
+
+                        UpdateLevelClientRpc(e.Type, result.Level, OwnerClientId.ToClientRpcParams());
                     }
                 });
 
@@ -76,14 +79,9 @@ namespace Assets.Scripts.Areas.Character.Mono
                     }
 
                     character.Health = Math.Max(character.Health - damage, 0);
+                    PartyController.NotifyCharacterChanged(OwnerClientId);
 
-                    AttackPlayerClientRpc(character.Health, new ClientRpcParams
-                    {
-                        Send = new ClientRpcSendParams
-                        {
-                            TargetClientIds = new ulong[] { OwnerClientId }
-                        }
-                    });
+                    AttackPlayerClientRpc(character.Health, OwnerClientId.ToClientRpcParams());
 
                     UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
                     {
@@ -107,12 +105,12 @@ namespace Assets.Scripts.Areas.Character.Mono
             //    CharacterUI.Instance.Hide();
             //}
 
-            if (Keyboard.current.cKey.wasPressedThisFrame)
+            if (!InputFocusUI.IsAnyInputFocused && Keyboard.current.cKey.wasPressedThisFrame)
             {
                 CharacterUI.Instance.Toggle();
             }
 
-            if (Keyboard.current.tabKey.wasPressedThisFrame)
+            if (!InputFocusUI.IsAnyInputFocused && Keyboard.current.tabKey.wasPressedThisFrame)
             {
                 GearUI.Instance.Toggle();
             }
@@ -158,14 +156,10 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             UserManager.Instance.Characters[OwnerClientId] = character;
+            PartyController.NotifyCharacterChanged(OwnerClientId);
+            FriendList.NotifyFriendStateChanged();
 
-            UpdatePlayerClientRpc(character, new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            UpdatePlayerClientRpc(character, OwnerClientId.ToClientRpcParams());
         }
 
         [ClientRpc]
@@ -205,13 +199,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
             {
-                ConsumeAmmoClientRpc(new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                ConsumeAmmoClientRpc(OwnerClientId.ToClientRpcParams());
 
                 character.AmmoCount--;
 
@@ -270,10 +258,15 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
-            UserManager.Instance.Characters.Remove(OwnerClientId);
+            var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);
 
             if (IsServer)
             {
+                if (characterRemoved)
+                {
+                    FriendList.NotifyFriendStateChanged();
+                }
+
                 var key = OwnerClientId.ToString();
 
                 AddExperienceSubscription.Instance.Unsubscribe(key);
@@ -284,10 +277,15 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
         public override void OnDestroy()
         {
-            UserManager.Instance.Characters.Remove(OwnerClientId);
+            var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);
 
             if (IsServer)
             {
+                if (characterRemoved)
+                {
+                    FriendList.NotifyFriendStateChanged();
+                }
+
                 var key = OwnerClientId.ToString();
 
                 AddExperienceSubscription.Instance.Unsubscribe(key);

@@ -12,6 +12,7 @@ using Assets.Scripts.Areas.Shared.Models;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
+using PartyController = Assets.Scripts.Areas.Party.Mono.Party;
 
 namespace Assets.Scripts.Areas.Inventory.Shared
 {
@@ -129,6 +130,8 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         private void PersistCharacter(CharacterDto character)
         {
+            PartyController.NotifyCharacterChanged(OwnerClientId);
+
             UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
             {
                 MaxHealth = character.MaxHealth,

@@ -11,8 +11,10 @@ using Assets.Scripts.Areas.Inventory.Shared;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Inventory.UI;
 using Assets.Scripts.Areas.Professions.UI;
+using Assets.Scripts.Areas.Quest.Enums;
 using Assets.Scripts.Areas.Quest.Subscriptions;
 using Assets.Scripts.Areas.Shared.Enums;
+using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
@@ -215,13 +217,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
                         if (_currentLoot.Count > 0)
                         {
-                            ShowLootClientRpc(_currentLoot.ToArray(), new ClientRpcParams
-                            {
-                                Send = new ClientRpcSendParams
-                                {
-                                    TargetClientIds = new ulong[] { OwnerClientId }
-                                }
-                            });
+                            ShowLootClientRpc(_currentLoot.ToArray(), OwnerClientId.ToClientRpcParams());
                         }
                     }
                 });
@@ -266,7 +262,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             UpdateActiveBuffs();
 
-            if (IsOwner && Keyboard.current.bKey.wasPressedThisFrame)
+            if (IsOwner && !InputFocusUI.IsAnyInputFocused && Keyboard.current.bKey.wasPressedThisFrame)
             {
                 InventoryUI.Instance.Toggle();
             }
@@ -450,13 +446,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             ResynchronizeCharacterClientRpc(
                 UserManager.Instance.Characters[OwnerClientId],
-                new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                OwnerClientId.ToClientRpcParams());
         }
 
         private async UniTask ProcessLootInventoryUpdateAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
@@ -466,13 +456,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
             {
                 SendInventoryFullToOwner();
-                ShowLootClientRpc(_currentLoot.ToArray(), new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                ShowLootClientRpc(_currentLoot.ToArray(), OwnerClientId.ToClientRpcParams());
 
                 return;
             }
@@ -505,6 +489,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                     Progress = request.Add
                         .Where(x => x.Type == itemType)
                         .Sum(x => x.Count),
+                    QuestType = QuestTypeEnum.Collect,
                     GameObjectName = itemType.ToString(),
                     PlayerSessionId = playerSessionId,
                 });
@@ -515,24 +500,12 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private void SendInventoryUpdateToOwner(UpdateCharacterInventoryCommand request)
         {
-            UpdateInventoryClientRpc(request, new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            UpdateInventoryClientRpc(request, OwnerClientId.ToClientRpcParams());
         }
 
         private void SendInventoryFullToOwner()
         {
-            ShowInventoryFullClientRpc(new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { OwnerClientId }
-                }
-            });
+            ShowInventoryFullClientRpc(OwnerClientId.ToClientRpcParams());
         }
 
         private static void ShowInventoryFull()
@@ -622,13 +595,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             ApplyOrRefreshBuffClientRpc(
                 type,
                 durationSeconds,
-                new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new ulong[] { OwnerClientId }
-                    }
-                });
+                OwnerClientId.ToClientRpcParams());
         }
 
         [ClientRpc]

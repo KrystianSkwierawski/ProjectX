@@ -9,6 +9,7 @@ public class CharacterConfiguration : IEntityTypeConfiguration<Character>
     public void Configure(EntityTypeBuilder<Character> builder)
     {
         builder.Property(character => character.Name).IsRequired().HasMaxLength(100);
+        builder.HasIndex(character => character.Name).IsUnique();
 
         builder
             .HasOne(character => character.CharacterInventory)

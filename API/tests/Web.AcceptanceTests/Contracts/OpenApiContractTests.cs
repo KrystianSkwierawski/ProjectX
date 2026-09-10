@@ -56,7 +56,12 @@ public class OpenApiContractTests
             ("/api/CharacterQuests/Complete", "POST"),
             ("/api/Characters/Current", "GET"),
             ("/api/Characters", "POST"),
-            ("/api/CharacterTransforms", "POST")
+            ("/api/CharacterTransforms", "POST"),
+            ("/api/Friends", "GET"),
+            ("/api/Friends/Invitations", "POST"),
+            ("/api/Friends/Invitations/Respond", "POST"),
+            ("/api/Friends/{characterId}", "DELETE"),
+            ("/api/Friends/{characterId}/WhisperAuthorization", "GET")
         };
 
         var operationsWithPlayerSessionHeader = GetOperations(specification.RootElement)
@@ -111,7 +116,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(23, operations.Length);
+        Assert.Equal(28, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -125,6 +130,7 @@ public class OpenApiContractTests
             "AcceptCharacterQuest",
             "AddCharacterExperience",
             "AddCharacterQuestProgress",
+            "AuthorizeWhisper",
             "CheckCharacterQuestProgress",
             "CompleteCharacterQuest",
             "GetCharacter",
@@ -133,6 +139,7 @@ public class OpenApiContractTests
             "GetCharacterQuests",
             "GetCharacterTransform",
             "GetCraftingRecipes",
+            "GetFriendList",
             "GetQuest",
             "GetQuests",
             "CreateTicketAsync",
@@ -141,8 +148,11 @@ public class OpenApiContractTests
             "RedeemTicketAsync",
             "RegisterAsync",
             "RefreshSessionAsync",
+            "RemoveFriend",
             "RevokePlayerAsync",
+            "RespondFriendInvitation",
             "SaveCharacterTransform",
+            "SendFriendInvitation",
             "UpdateCharacter",
             "UpdateCharacterInventory"
         };

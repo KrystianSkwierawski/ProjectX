@@ -80,9 +80,31 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public void Add(string message, string sender = "SYSTEM")
         {
+            Add(message, sender, ColorUI.TextPrimary, string.Empty);
+        }
+
+        public void AddWhisper(string message, string characterName, bool outgoing)
+        {
+            var prefix = outgoing ? "→ " : "← ";
+
+            Add(message, characterName, ColorUI.AccentHover, prefix);
+        }
+
+        public void BeginWhisper(string characterName)
+        {
+            Container.SetActive(true);
+            var escapedCharacterName = (characterName ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"");
+            InputField.text = $"/w \"{escapedCharacterName}\" ";
+            InputField.ActivateInputField();
+            InputField.MoveTextEnd(false);
+        }
+
+        private void Add(string message, string sender, Color color, string prefix)
+        {
             var obj = _pool.Get();
 
-            obj.Mesh.text = $"{sender}: {message}";
+            obj.Mesh.text = $"{prefix}{Sanitize(sender)}: {Sanitize(message)}";
+            obj.Mesh.color = color;
 
             _queue.Enqueue(obj);
 
@@ -92,6 +114,11 @@ namespace Assets.Scripts.Areas.Shared.UI
             {
                 ScrollToBottom();
             }
+        }
+
+        private static string Sanitize(string value)
+        {
+            return (value ?? string.Empty).Replace("<", "‹").Replace(">", "›");
         }
 
         public void ScrollToBottom()

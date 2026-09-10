@@ -18,6 +18,7 @@ $clientPath = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $repoRoot = (Resolve-Path (Join-Path $clientPath "..")).Path
 $apiRoot = Join-Path $repoRoot "API"
 $apiProjectPath = Join-Path $apiRoot "src\API\API.csproj"
+$runtimeLogDirectory = Join-Path $clientPath "Logs\Runtime"
 
 if ([string]::IsNullOrWhiteSpace($ApiExePath)) {
     $ApiExePath = Join-Path $repoRoot "API\src\API\bin\$Configuration\net10.0\ProjectX.API.exe"
@@ -30,6 +31,14 @@ if ([string]::IsNullOrWhiteSpace($ServerBuildPath)) {
 function Write-Step([string]$Message) {
     Write-Host ""
     Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function New-RuntimeLogPath([string]$ProcessName) {
+    New-Item -ItemType Directory -Force -Path $runtimeLogDirectory | Out-Null
+
+    $timestamp = [DateTimeOffset]::Now.ToString("yyyyMMdd-HHmmss-fff")
+
+    return Join-Path $runtimeLogDirectory "ProjectX$ProcessName-$timestamp.log"
 }
 
 function Resolve-UnityPath {
@@ -353,7 +362,22 @@ else {
             $env:PROJECTX_SERVER_PASSWORD = "Server1!"
         }
 
-        Start-Executable -ExecutablePath $ServerBuildPath -WorkingDirectory (Split-Path $ServerBuildPath) -Name "ProjectX server" -Arguments "-projectx-direct" | Out-Null
+        $serverRuntimeLogPath = New-RuntimeLogPath "Server"
+        $previousDirectTransport = $env:PROJECTX_USE_DIRECT_TRANSPORT
+        $previousRuntimeLogPath = $env:PROJECTX_RUNTIME_LOG_PATH
+
+        Write-Host "Unity server runtime log: $serverRuntimeLogPath"
+
+        try {
+            $env:PROJECTX_USE_DIRECT_TRANSPORT = "true"
+            $env:PROJECTX_RUNTIME_LOG_PATH = $serverRuntimeLogPath
+
+            Start-Executable -ExecutablePath $ServerBuildPath -WorkingDirectory (Split-Path $ServerBuildPath) -Name "ProjectX server" | Out-Null
+        }
+        finally {
+            $env:PROJECTX_USE_DIRECT_TRANSPORT = $previousDirectTransport
+            $env:PROJECTX_RUNTIME_LOG_PATH = $previousRuntimeLogPath
+        }
     }
 }
 
