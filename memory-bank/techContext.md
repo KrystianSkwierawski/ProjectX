@@ -30,10 +30,11 @@
 - Each editor/server run writes timestamped diagnostics under ignored `Client/Logs/Runtime`; the server mirrors logs through `PROJECTX_RUNTIME_LOG_PATH` without suppressing Unity console output.
 
 ## Validation And Tool Preferences
+- Apply proportional engineering: this is a game, not a banking system. Not every rare edge case needs full handling. Prioritize normal gameplay and realistic player-impacting bugs; avoid adding complexity or blocking reviews for hypothetical scenarios whose cost outweighs their practical benefit.
 - Prefer code inspection, builds, tests, logs, static prefab checks, and generated previews.
 - Use `computer-use` only when direct interaction with a running UI is necessary or materially simplifies implementation or verification.
 - Generated-project compilation does not prove pointer behavior, scene layout, networking, or gameplay timing; record required Play Mode/full-stack smoke tests explicitly.
-- Latest trade baseline: 383 backend tests passed; API build/OpenAPI/format/EF checks passed; Unity import/Netcode processing and client/server-symbol builds passed. The 2026-09-08 trade UI refinement additionally passed 20 generated layout/interaction cases; live authenticated two-client trade remains untested.
+- Latest trade baseline: 386 backend tests passed after durable receipt-resolution and atomic two-character Collect-progress coverage; API build/OpenAPI/format/EF checks passed. Unity import/Netcode processing and client/server-symbol builds passed; mutation draining, Collect-write ordering across participant despawn, server-lifetime commit coordination, versioned snapshot application, server-only receipt resolution, deferred credential revocation, raw-entry offer bounds, spacing, and Loot-collision changes pass both generated-project compile variants, with static prefab checks for layout. Live authenticated two-client trade remains untested.
 
 ## Repository Constraints
 - Preserve Unity `.meta` files and synchronized API/client enums, DTOs, OpenAPI, and localization resources.

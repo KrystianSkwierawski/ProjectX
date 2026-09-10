@@ -15,8 +15,8 @@ ProjectX provides a persistent multiplayer RPG gameplay loop: players authentica
 ## Trade UI Contract
 - Invitations are compact. Incoming invitations show Accept/Decline; outgoing waiting shows only Cancel.
 - Active offers start empty and accept a complete clicked stack by right-click or drag/drop. Offered quantities disappear visually from their source inventory slot, including while awaiting acknowledgement, and return on withdrawal, rejection, cancellation, or closure.
-- Own offer items can be returned to inventory by click/right-click or drag/drop. Offers render left-to-right in exactly four columns with equal horizontal and vertical content padding; incomplete rows stay left-aligned and content scrolls vertically.
-- Trade remains separate from inventory and complete wrapping LogUI messages. Opening trade hides Crafting, Quest, Merchant, Gear, and Character; opening one of those cancels negotiation and opens it only after authoritative trade closure. An in-flight commit must finish definitively.
+- Own offer items can be returned to inventory by click/right-click or drag/drop. Offer fields align with their labels; items render left-to-right in exactly four columns with equal horizontal and vertical content padding plus a small inset around each icon. Incomplete rows stay left-aligned and content scrolls vertically.
+- Trade remains separate from Inventory, Loot, and complete wrapping LogUI messages. Opening trade hides Crafting, Quest, Merchant, Gear, and Character; opening one of those cancels negotiation and opens it only after authoritative trade closure. An in-flight commit must finish definitively.
 
 ## Product Direction And Open Questions
 - Prioritize systems/mechanics over new art. Defer price, recipe, and drop-rate balancing until systems can be exercised together.
