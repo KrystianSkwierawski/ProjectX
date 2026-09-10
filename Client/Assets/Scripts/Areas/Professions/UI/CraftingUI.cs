@@ -12,6 +12,7 @@ using Assets.Scripts.Areas.Quest.UI;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Trade.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -166,6 +167,11 @@ namespace Assets.Scripts.Areas.Professions.UI
         public void Show(GetCraftingRecipesDto dto, CraftingRecipeTypeEnum type)
         {
             if (Crafting.activeSelf)
+            {
+                return;
+            }
+
+            if (TradeUI.Instance?.OpenAfterTrade(() => Show(dto, type)) == true)
             {
                 return;
             }

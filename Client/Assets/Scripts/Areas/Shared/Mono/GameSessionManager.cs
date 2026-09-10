@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Shared.Models;
+using Assets.Scripts.Areas.Trade.Mono;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -357,7 +358,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 return;
             }
 
-            RevokePlayerSessionAsync(playerSessionId).Forget();
+            RevokePlayerSessionWhenTradeSettlesAsync(clientId, playerSessionId).Forget();
         }
 
         private static void HandleServerTransportFailure()
@@ -390,6 +391,13 @@ namespace Assets.Scripts.Areas.Shared.Mono
                     await UniTask.Delay(TimeSpan.FromSeconds(attempt), ignoreTimeScale: true);
                 }
             }
+        }
+
+        private static async UniTask RevokePlayerSessionWhenTradeSettlesAsync(ulong clientId, string playerSessionId)
+        {
+            // A retry must keep both delegated credentials valid until the API's idempotent trade commit is resolved.
+            await UniTask.WaitUntil(() => !TradeServerState.IsCommitPendingForPlayer(clientId));
+            await RevokePlayerSessionAsync(playerSessionId);
         }
 
         private static async UniTaskVoid MaintainServerLeaseAsync(NetworkManager networkManager, DateTimeOffset expiresAtUtc)

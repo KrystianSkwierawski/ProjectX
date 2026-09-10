@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -12,16 +13,44 @@ namespace Assets.Scripts.Areas.Inventory
     {
         public const int MaxStackSize = 1024;
 
+        private long _stateVersion;
+
         public CharacterInventoryDto Dto { get; private set; }
 
         public async UniTask LoadAsync(int characterId)
         {
-            Dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>($"CharacterInventories?CharacterId={characterId}");
+            var loadVersion = ++_stateVersion;
+            var dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>($"CharacterInventories?CharacterId={characterId}");
+
+            if (loadVersion == _stateVersion)
+            {
+                Dto = dto;
+            }
         }
 
-        public async UniTask<UpdateCharacterInventoryDto> UpdateAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
+        public bool Replace(CharacterInventoryDto dto)
         {
-            return await UnityWebRequestHelper.ExecutePostAsync<UpdateCharacterInventoryDto>("CharacterInventories", request, playerSessionId);
+            if (dto?.Inventory?.Items == null)
+            {
+                return false;
+            }
+
+            _stateVersion++;
+            Dto = dto;
+
+            return true;
+        }
+
+        public async UniTask<UpdateCharacterInventoryDto> UpdateAsync(
+            UpdateCharacterInventoryCommand request,
+            string playerSessionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await UnityWebRequestHelper.ExecutePostAsync<UpdateCharacterInventoryDto>(
+                "CharacterInventories",
+                request,
+                playerSessionId,
+                cancellationToken: cancellationToken);
         }
 
         public bool CanApply(UpdateCharacterInventoryCommand request)
@@ -49,6 +78,7 @@ namespace Assets.Scripts.Areas.Inventory
             }
 
             Dto.Inventory.Items = items;
+            _stateVersion++;
 
             return true;
         }
@@ -92,6 +122,8 @@ namespace Assets.Scripts.Areas.Inventory
                 Dto.Inventory.Items.Add(splitItem);
             }
 
+            _stateVersion++;
+
             return true;
         }
 
@@ -130,11 +162,14 @@ namespace Assets.Scripts.Areas.Inventory
                     Dto.Inventory.Items[sourceSlotIndex] = EmptySlot;
                 }
 
+                _stateVersion++;
+
                 return true;
             }
 
             Dto.Inventory.Items[sourceSlotIndex] = target;
             Dto.Inventory.Items[targetSlotIndex] = source;
+            _stateVersion++;
 
             return true;
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
@@ -17,6 +18,8 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Trade.Mono;
+using TradeController = Assets.Scripts.Areas.Trade.Mono.Trade;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -28,6 +31,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
     {
         private IList<InventoryItemDto> _currentLoot = new List<InventoryItemDto>();
         private readonly IDictionary<InventoryItemEnum, ActiveBuff> _activeBuffs = new Dictionary<InventoryItemEnum, ActiveBuff>();
+        private CancellationTokenSource _networkLifetimeCancellationTokenSource;
 
         #region LootDictionary
 
@@ -148,6 +152,15 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         #endregion
 
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            CancelNetworkLifetime();
+            _networkLifetimeCancellationTokenSource?.Dispose();
+            _networkLifetimeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        }
+
         private async void Start()
         {
             var key = OwnerClientId.ToString();
@@ -165,6 +178,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         return;
                     }
 
+                    if (TradeController.Local?.IsInventoryLocked == true)
+                    {
+                        TradeController.NotifyInventoryLocked(OwnerClientId);
+
+                        return;
+                    }
+
                     if (!InventoryManager.Instance.CanApply(e.Request))
                     {
                         ShowInventoryFull();
@@ -177,6 +197,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
                 SplitInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
+                    if (TradeController.Local?.IsInventoryLocked == true)
+                    {
+                        TradeController.NotifyInventoryLocked(OwnerClientId);
+
+                        return;
+                    }
+
                     if (SplitInventory(e.SourceSlotIndex))
                     {
                         SplitInventoryServerRpc(e.SourceSlotIndex);
@@ -185,6 +212,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
                 MoveInventorySubscription.Instance.Subscribe(key, (e) =>
                 {
+                    if (TradeController.Local?.IsInventoryLocked == true)
+                    {
+                        TradeController.NotifyInventoryLocked(OwnerClientId);
+
+                        return;
+                    }
+
                     if (MoveInventory(e.SourceSlotIndex, e.TargetSlotIndex))
                     {
                         MoveInventoryServerRpc(e.SourceSlotIndex, e.TargetSlotIndex);
@@ -195,6 +229,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 {
                     if (MerchantUI.Instance.Merchant.activeSelf)
                     {
+                        return;
+                    }
+
+                    if (TradeController.Local?.IsInventoryLocked == true)
+                    {
+                        TradeController.NotifyInventoryLocked(OwnerClientId);
+
                         return;
                     }
 
@@ -283,6 +324,31 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }
         }
 
+        public bool ApplyAuthoritativeInventory(CharacterInventoryDto inventory)
+        {
+            if (!IsOwner
+                || inventory == null
+                || inventory.CharacterId != UserManager.Instance.SelectedCharacterId
+                || !InventoryManager.Instance.Replace(inventory))
+            {
+                return false;
+            }
+
+            InventoryUI.Instance.UpdateInventory(InventoryManager.Instance.Dto);
+            CraftingUI.Instance.UpdateRequirements();
+            MerchantUI.Instance.UpdatePriceValidation();
+
+            return true;
+        }
+
+        public void ReloadAuthoritativeInventory()
+        {
+            if (IsOwner && IsSpawned)
+            {
+                ReloadInventoryAsync().Forget();
+            }
+        }
+
         [ClientRpc]
         private void ShowInventoryFullClientRpc(ClientRpcParams rpcParams = default)
         {
@@ -351,6 +417,14 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ServerRpc]
         private void UpdateInventoryServerRpc(UpdateCharacterInventoryCommand request)
         {
+            if (TradeServerState.IsInventoryReserved(OwnerClientId))
+            {
+                TradeController.NotifyInventoryLocked(OwnerClientId);
+                ShowLootClientRpc(_currentLoot.ToArray(), OwnerClientId.ToClientRpcParams());
+
+                return;
+            }
+
             var isValid = request.Add.All(x =>
             {
                 return _currentLoot
@@ -364,43 +438,111 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             if (isValid)
             {
                 var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
-                ProcessLootInventoryUpdateAsync(request, playerSessionId).Forget();
+                ProcessLootInventoryUpdateAsync(
+                        request,
+                        playerSessionId,
+                        GetNetworkLifetimeCancellationToken())
+                    .Forget();
             }
         }
 
         [ServerRpc]
         private void SplitInventoryServerRpc(int sourceSlotIndex)
         {
+            if (TradeServerState.IsInventoryReserved(OwnerClientId))
+            {
+                RejectLockedInventoryMutation();
+
+                return;
+            }
+
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
-            SplitInventoryAsync(sourceSlotIndex, playerSessionId).Forget();
+            SplitInventoryAsync(
+                    sourceSlotIndex,
+                    playerSessionId,
+                    GetNetworkLifetimeCancellationToken())
+                .Forget();
         }
 
         [ServerRpc]
         private void MoveInventoryServerRpc(int sourceSlotIndex, int targetSlotIndex)
         {
+            if (TradeServerState.IsInventoryReserved(OwnerClientId))
+            {
+                RejectLockedInventoryMutation();
+
+                return;
+            }
+
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
-            MoveInventoryAsync(sourceSlotIndex, targetSlotIndex, playerSessionId).Forget();
+            MoveInventoryAsync(
+                    sourceSlotIndex,
+                    targetSlotIndex,
+                    playerSessionId,
+                    GetNetworkLifetimeCancellationToken())
+                .Forget();
         }
 
-        private async UniTask SplitInventoryAsync(int sourceSlotIndex, string playerSessionId)
+        private async UniTask SplitInventoryAsync(
+            int sourceSlotIndex,
+            string playerSessionId,
+            CancellationToken networkLifetimeCancellationToken)
         {
-            await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
+            using var inventoryMutation = TradeServerState.TrackInventoryMutation(OwnerClientId);
+            var operationCancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+            var status = await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
             {
                 SplitSlotIndex = sourceSlotIndex,
-            }, playerSessionId);
+            }, playerSessionId, operationCancellationToken);
+
+            if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
+            {
+                return;
+            }
+
+            if (status != UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+            }
         }
 
-        private async UniTask MoveInventoryAsync(int sourceSlotIndex, int targetSlotIndex, string playerSessionId)
+        private async UniTask MoveInventoryAsync(
+            int sourceSlotIndex,
+            int targetSlotIndex,
+            string playerSessionId,
+            CancellationToken networkLifetimeCancellationToken)
         {
-            await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
+            using var inventoryMutation = TradeServerState.TrackInventoryMutation(OwnerClientId);
+            var operationCancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+            var status = await UpdateInventoryAsync(new UpdateCharacterInventoryCommand
             {
                 MoveSourceSlotIndex = sourceSlotIndex,
                 MoveTargetSlotIndex = targetSlotIndex,
-            }, playerSessionId);
+            }, playerSessionId, operationCancellationToken);
+
+            if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
+            {
+                return;
+            }
+
+            if (status != UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+            }
         }
 
         private async UniTask ProcessInventoryUpdateAsync(UpdateInventorySubscriptionEvent e)
         {
+            var networkLifetimeCancellationToken = GetNetworkLifetimeCancellationToken();
+
+            if (e.PersistInApi && TradeServerState.IsInventoryReserved(OwnerClientId))
+            {
+                RejectInventoryUpdate(e);
+                TradeController.NotifyInventoryLocked(OwnerClientId);
+
+                return;
+            }
+
             if (!e.PersistInApi)
             {
                 SendInventoryUpdateToOwner(e.Request);
@@ -409,24 +551,42 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 return;
             }
 
+            using var inventoryMutation = TradeServerState.TrackInventoryMutation(OwnerClientId);
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
+            var operationCancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
             UpdateCharacterInventoryStatusEnum status;
 
             try
             {
-                status = await UpdateInventoryAsync(e.Request, playerSessionId);
+                status = await UpdateInventoryAsync(e.Request, playerSessionId, operationCancellationToken);
             }
             catch
             {
-                RejectInventoryUpdate(e);
+                if (CanUseNetworkLifetime(networkLifetimeCancellationToken))
+                {
+                    RejectInventoryUpdate(e);
+                }
 
                 throw;
             }
 
-            if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+            if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
+            {
+                return;
+            }
+
+            if (status != UpdateCharacterInventoryStatusEnum.Applied)
             {
                 RejectInventoryUpdate(e);
-                SendInventoryFullToOwner();
+
+                if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+                {
+                    SendInventoryFullToOwner();
+                }
+                else
+                {
+                    ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+                }
 
                 return;
             }
@@ -449,13 +609,28 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 OwnerClientId.ToClientRpcParams());
         }
 
-        private async UniTask ProcessLootInventoryUpdateAsync(UpdateCharacterInventoryCommand request, string playerSessionId)
+        private async UniTask ProcessLootInventoryUpdateAsync(
+            UpdateCharacterInventoryCommand request,
+            string playerSessionId,
+            CancellationToken networkLifetimeCancellationToken)
         {
-            var status = await UpdateInventoryAsync(request, playerSessionId);
+            using var inventoryMutation = TradeServerState.TrackInventoryMutation(OwnerClientId);
+            var operationCancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+            var status = await UpdateInventoryAsync(request, playerSessionId, operationCancellationToken);
 
-            if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+            if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
             {
-                SendInventoryFullToOwner();
+                return;
+            }
+
+            if (status != UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                if (status == UpdateCharacterInventoryStatusEnum.InventoryFull)
+                {
+                    SendInventoryFullToOwner();
+                }
+
+                ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
                 ShowLootClientRpc(_currentLoot.ToArray(), OwnerClientId.ToClientRpcParams());
 
                 return;
@@ -467,9 +642,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private async UniTask<UpdateCharacterInventoryStatusEnum> UpdateInventoryAsync(
             UpdateCharacterInventoryCommand request,
-            string playerSessionId)
+            string playerSessionId,
+            CancellationToken operationCancellationToken)
         {
-            var result = await InventoryManager.Instance.UpdateAsync(request, playerSessionId);
+            var result = await InventoryManager.Instance.UpdateAsync(
+                request,
+                playerSessionId,
+                operationCancellationToken);
 
             if (result.Status != UpdateCharacterInventoryStatusEnum.Applied)
             {
@@ -530,7 +709,29 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ServerRpc]
         private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from)
         {
+            if (TradeServerState.IsInventoryReserved(OwnerClientId))
+            {
+                RejectLockedInventoryMutation();
+
+                return;
+            }
+
             UseItem(item, from, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
+        }
+
+        private void RejectLockedInventoryMutation()
+        {
+            TradeController.NotifyInventoryLocked(OwnerClientId);
+            ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+            ResynchronizeCharacterClientRpc(
+                UserManager.Instance.Characters[OwnerClientId],
+                OwnerClientId.ToClientRpcParams());
+        }
+
+        [ClientRpc]
+        private void ReloadInventoryClientRpc(ClientRpcParams rpcParams = default)
+        {
+            ReloadInventoryAsync().Forget();
         }
 
         private bool UseItem(InventoryItemDto item, UsableItemFromEnum from, string playerSessionId)
@@ -719,6 +920,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         public override void OnNetworkDespawn()
         {
+            CancelNetworkLifetime();
             ClearActiveBuffs();
 
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
@@ -730,6 +932,10 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         public override void OnDestroy()
         {
+            CancelNetworkLifetime();
+            _networkLifetimeCancellationTokenSource?.Dispose();
+            _networkLifetimeCancellationTokenSource = null;
+
             ClearActiveBuffs();
 
             UpdateInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
@@ -737,6 +943,27 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             MoveInventorySubscription.Instance.Unsubscribe(OwnerClientId.ToString());
 
             base.OnDestroy();
+        }
+
+        private CancellationToken GetNetworkLifetimeCancellationToken()
+        {
+            return _networkLifetimeCancellationTokenSource?.Token ?? new CancellationToken(canceled: true);
+        }
+
+        private bool CanUseNetworkLifetime(CancellationToken cancellationToken)
+        {
+            return _networkLifetimeCancellationTokenSource != null
+                && _networkLifetimeCancellationTokenSource.Token == cancellationToken
+                && !cancellationToken.IsCancellationRequested
+                && IsSpawned;
+        }
+
+        private void CancelNetworkLifetime()
+        {
+            if (_networkLifetimeCancellationTokenSource?.IsCancellationRequested == false)
+            {
+                _networkLifetimeCancellationTokenSource.Cancel();
+            }
         }
 
         private class LootItem

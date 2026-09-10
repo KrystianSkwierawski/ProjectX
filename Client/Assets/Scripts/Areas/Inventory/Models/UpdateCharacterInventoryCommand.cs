@@ -71,6 +71,7 @@ namespace Assets.Scripts.Areas.Inventory.Models
     public enum UpdateCharacterInventoryStatusEnum
     {
         Applied,
-        InventoryFull
+        InventoryFull,
+        InventoryChanged
     }
 }

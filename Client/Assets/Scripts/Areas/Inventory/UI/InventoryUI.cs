@@ -12,8 +12,10 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Trade.UI;
 using Cysharp.Threading.Tasks;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -58,6 +60,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private InventorySlot _draggedLootSlot;
         private InventoryItemDto _draggedItem;
         private bool _isDraggingMerchantItem;
+        private bool _isDraggingTradeItem;
         private RawImage _dragSourceImage;
         private bool _dragSourceImageWasEnabled;
         private Texture _dragSourceTexture;
@@ -68,7 +71,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
         public bool IsDragging => _draggedSlotIndex >= 0
             || _draggedGearSlot != null
             || _draggedLootSlot != null
-            || _isDraggingMerchantItem;
+            || _isDraggingMerchantItem
+            || _isDraggingTradeItem;
 
         public void Start()
         {
@@ -163,12 +167,15 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         public void UpdateInventory(CharacterInventoryDto dto)
         {
+            ClearDragPreview();
             _inventorySlots ??= InstantiateInventorySlots(dto.Count).ToArray();
+            var visibleItems = TradeUI.Instance?.GetAvailableInventoryItems(dto.Inventory.Items) ?? dto.Inventory.Items.ToArray();
 
             for (int i = 0; i < _inventorySlots.Length; i++)
             {
                 var slot = _inventorySlots[i];
-                var item = dto.Inventory.Items.ElementAtOrDefault(i);
+                var item = visibleItems.ElementAtOrDefault(i);
+                slot.Item = item;
 
                 if (item == null || item.Type == InventoryItemEnum.None || item.Count <= 0)
                 {
@@ -205,6 +212,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
                 slot.Button.OnRightClick.AddListener(() =>
                 {
+                    if (TradeUI.Instance?.HasSession == true)
+                    {
+                        TradeUI.Instance.AddToOffer(item, slotIndex);
+
+                        return;
+                    }
+
                     if (Keyboard.current.altKey.isPressed)
                     {
                         SplitStack(slotIndex);
@@ -214,6 +228,14 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
                     UseItem(CreateUsableItem(item), UsableItemFromEnum.Inventory);
                 });
+            }
+        }
+
+        public void RefreshTradeInventory()
+        {
+            if (_inventorySlots != null && InventoryManager.Instance.Dto != null)
+            {
+                UpdateInventory(InventoryManager.Instance.Dto);
             }
         }
 
@@ -227,11 +249,11 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 return;
             }
 
-            var item = InventoryManager.Instance.Dto.Inventory.Items[slot.Index];
+            var item = slot.Item;
 
             ClearDragPreview();
             _draggedSlotIndex = slot.Index;
-            _draggedItem = CreateUsableItem(item);
+            _draggedItem = TradeUI.Instance?.HasSession == true ? CloneItem(item) : CreateUsableItem(item);
 
             HidePreviews();
             GearUI.Instance.HidePreviews();
@@ -274,6 +296,66 @@ namespace Assets.Scripts.Areas.Inventory.UI
             AddDragEvent(trigger, EventTriggerType.EndDrag, EndMerchantDrag);
 
             return trigger;
+        }
+
+        public void ConfigureTradeOfferDrag(GameObject source, RawImage image, TextMeshProUGUI mesh, Func<InventoryItemDto> getItem)
+        {
+            var trigger = source.GetComponent<EventTrigger>() ?? source.AddComponent<EventTrigger>();
+            var scroll = source.GetComponentInParent<ScrollRect>();
+
+            AddDragEvent(trigger, EventTriggerType.BeginDrag, eventData => BeginTradeOfferDrag(source, image, mesh, getItem(), eventData));
+            AddDragEvent(trigger, EventTriggerType.Drag, Drag);
+            AddDragEvent(trigger, EventTriggerType.EndDrag, EndTradeOfferDrag);
+
+            // EventTrigger consumes scroll events too; keep the offer scrollable over its items.
+            if (scroll != null)
+            {
+                AddDragEvent(trigger, EventTriggerType.Scroll, scroll.OnScroll);
+            }
+        }
+
+        private void BeginTradeOfferDrag(GameObject source, RawImage image, TextMeshProUGUI mesh, InventoryItemDto item, PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left || item == null || item.Count <= 0 || TradeUI.Instance?.CanEditOffer != true)
+            {
+                return;
+            }
+
+            ClearDragPreview();
+            _isDraggingTradeItem = true;
+            _draggedItem = CloneItem(item);
+            HidePreviews();
+            TradeUI.Instance.HidePreviews();
+
+            if (!CreateDragPreview(source, image.texture, mesh.text, mesh.gameObject.activeSelf, eventData))
+            {
+                ClearDragPreview();
+
+                return;
+            }
+
+            SetDragSourcePlaceholder(image, mesh, null, ColorUI.Black);
+            // A slot is also a Button: releasing a drag over it must not count as removal by click.
+            eventData.eligibleForClick = false;
+        }
+
+        private void EndTradeOfferDrag(PointerEventData eventData)
+        {
+            if (!_isDraggingTradeItem)
+            {
+                return;
+            }
+
+            var item = _draggedItem;
+            var target = eventData.pointerCurrentRaycast.gameObject;
+            var returnToInventory = target != null && target.transform.IsChildOf(Inventory.transform);
+
+            ClearDragPreview();
+
+            if (returnToInventory)
+            {
+                TradeUI.Instance?.RemoveFromOffer(item.Type);
+            }
         }
 
         private void BeginGearDrag(GearSlot slot, PointerEventData eventData)
@@ -434,12 +516,15 @@ namespace Assets.Scripts.Areas.Inventory.UI
             var targetInventorySlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
             var targetGearSlot = GearUI.Instance.GetSlot(targetButton);
             var targetMerchant = MerchantUI.Instance.IsDropTarget(targetGameObject);
+            var targetTradeOffer = TradeUI.Instance?.IsMyOfferDropTarget(targetGameObject) == true;
 
             ClearDragPreview();
 
             if (targetInventorySlot != null)
             {
-                if (targetInventorySlot.Index == sourceSlotIndex)
+                if (targetInventorySlot.Index == sourceSlotIndex
+                    || TradeUI.Instance?.IsInventorySlotReserved(sourceSlotIndex) == true
+                    || TradeUI.Instance?.IsInventorySlotReserved(targetInventorySlot.Index) == true)
                 {
                     return;
                 }
@@ -458,6 +543,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
             if (targetGearSlot != null && item != null && item.Type.IsGear())
             {
                 UseItem(item, UsableItemFromEnum.Inventory);
+
+                return;
+            }
+
+            if (targetTradeOffer && item != null)
+            {
+                TradeUI.Instance.AddToOffer(item, sourceSlotIndex);
 
                 return;
             }
@@ -560,6 +652,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             _draggedLootSlot = null;
             _draggedItem = null;
             _isDraggingMerchantItem = false;
+            _isDraggingTradeItem = false;
         }
 
         private void SetDragSourcePlaceholder(
@@ -768,6 +861,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         private void TakeLoot(InventorySlot slot)
         {
+            if (Assets.Scripts.Areas.Trade.Mono.Trade.Local?.IsInventoryLocked == true)
+            {
+                Assets.Scripts.Areas.Trade.Mono.Trade.NotifyInventoryLocked(NetworkManager.Singleton.LocalClientId);
+
+                return;
+            }
+
             if (slot?.Item == null
                 || !_lootPoolObjects.TryGetValue(slot.Type, out var activeSlot)
                 || activeSlot != slot)

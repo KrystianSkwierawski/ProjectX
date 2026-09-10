@@ -37,7 +37,6 @@ namespace Assets.Scripts.Areas.Character.Mono
                 AddExperienceSubscription.Instance.Subscribe(OwnerClientId.ToString(), async (e) =>
                 {
                     var playerSessionId = GetCurrentPlayerSessionId();
-                    var character = UserManager.Instance.Characters[OwnerClientId];
 
                     var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                     {
@@ -45,18 +44,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         type = e.Type,
                     }, playerSessionId);
 
-                    if (result.Level > character.Levels[e.Type])
-                    {
-                        character.Levels[e.Type] = result.Level;
-                        PartyController.NotifyCharacterChanged(OwnerClientId);
-
-                        if (e.Type == ExperienceTypeEnum.Main)
-                        {
-                            FriendList.NotifyFriendStateChanged();
-                        }
-
-                        UpdateLevelClientRpc(e.Type, result.Level, OwnerClientId.ToClientRpcParams());
-                    }
+                    ApplyPersistedExperienceLevel(e.Type, result.Level);
                 });
 
                 AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
@@ -190,6 +178,25 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             CraftingUI.Instance.UpdateRequirements(InventoryItemEnum.Xp);
+        }
+
+        internal void ApplyPersistedExperienceLevel(ExperienceTypeEnum type, byte level)
+        {
+            if (!UserManager.Instance.Characters.TryGetValue(OwnerClientId, out var character) ||
+                level <= character.Levels[type])
+            {
+                return;
+            }
+
+            character.Levels[type] = level;
+            PartyController.NotifyCharacterChanged(OwnerClientId);
+
+            if (type == ExperienceTypeEnum.Main)
+            {
+                FriendList.NotifyFriendStateChanged();
+            }
+
+            UpdateLevelClientRpc(type, level, OwnerClientId.ToClientRpcParams());
         }
 
         public void ConsumeAmmo()

@@ -8,6 +8,7 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Trade.UI;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -56,6 +57,11 @@ namespace Assets.Scripts.Areas.Character.UI
         public void Show()
         {
             if (Gear.activeSelf)
+            {
+                return;
+            }
+
+            if (TradeUI.Instance?.OpenAfterTrade(Show) == true)
             {
                 return;
             }

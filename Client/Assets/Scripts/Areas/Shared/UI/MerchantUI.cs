@@ -14,6 +14,7 @@ using Assets.Scripts.Areas.Professions.UI;
 using Assets.Scripts.Areas.Quest.UI;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
+using Assets.Scripts.Areas.Trade.UI;
 using UnityEngine.EventSystems;
 
 namespace Assets.Scripts.Areas.Shared.UI
@@ -122,6 +123,11 @@ namespace Assets.Scripts.Areas.Shared.UI
         public void Show(InventoryItemDto[] items)
         {
             if (items.Length == 0 || Merchant.activeSelf)
+            {
+                return;
+            }
+
+            if (TradeUI.Instance?.OpenAfterTrade(() => Show(items)) == true)
             {
                 return;
             }
