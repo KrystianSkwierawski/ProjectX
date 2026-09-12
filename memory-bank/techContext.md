@@ -13,7 +13,7 @@
 - Development startup intentionally deletes/recreates/seeds the database. Non-Development startup never initializes it; NSwag sets `SkipDatabaseInitialization=true`.
 - Local HTTPS endpoint is `https://localhost:5001`; Swagger/root `/api` redirect are Development-only.
 - JWT signing material is supplied through .NET User Secrets or external configuration and is never tracked.
-- Current migrations are `20260811172103_Init`, `20260904191036_AddCharacterInventoryTradeReceipts`, and the model snapshot.
+- Current migrations are `20260811172103_Init`, `20260824173652_AddCharacterFriendships`, `20260904191036_AddCharacterInventoryTradeReceipts`, and the model snapshot.
 
 ## Unity Client And Server
 - Unity `6000.1.15f1` under `Client/`; generated solutions include `ProjectXClient.sln` and `Client.sln`.
@@ -40,5 +40,5 @@
 - Preserve Unity `.meta` files and synchronized API/client enums, DTOs, OpenAPI, and localization resources.
 - Avoid generated/cache outputs (`bin`, `obj`, Unity `Library`, logs) unless validation specifically requires them.
 - Validate modified JSON resources.
-- `.Codexrules` is the active repository instruction file. `.claude/settings.local.json`, if it reappears, is secret local configuration and must not be committed or quoted.
+- Root `AGENTS.md` is the repository instruction file; Memory Bank is read on demand according to its routing table. `.claude/settings.local.json`, if it reappears, is secret local configuration and must not be committed or quoted.
 - Git status emits a known permission warning for `C:/Users/pc/.config/git/ignore`.

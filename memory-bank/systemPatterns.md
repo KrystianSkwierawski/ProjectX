@@ -1,7 +1,7 @@
 # System Patterns
 
 ## Repository And Backend Architecture
-- `Client/` is the Unity client/dedicated server; `API/` is the layered .NET backend; `.Codexrules` defines Memory Bank workflow.
+- `Client/` is the Unity client/dedicated server; `API/` is the layered .NET backend; root `AGENTS.md` defines repository instructions and documentation routing.
 - Follow applicable `jasontaylordev/CleanArchitecture` dependency direction: Domain is framework-free business state, Application owns use cases/ports/validation, Infrastructure owns EF/Identity/JWT/localization/game-session adapters, and API owns transport, authorization, OpenAPI, rate limiting, and composition.
 - Backend tests mirror those boundaries: Domain/Application unit, Infrastructure integration, Web acceptance, and Architecture tests. Do not add outer-layer references to inner-layer tests.
 - Minimal API handlers are public/static and use typed results. Await MediatR into a local result before constructing the response; attach concise summary/description, authorization, rate limits, and non-inferred errors in route mapping.
@@ -59,6 +59,7 @@
 - Keep code simple and consistent with surrounding style. Separate logical stages with blank lines; keep assignment targets with their expressions; extract locals instead of awkward wrapping.
 - In LINQ, put independent filters in separate `.Where(...)` calls and use `x` for generic lambda parameters.
 - Sensitive request `ToString()` implementations omit secrets entirely. MediatR pipeline logging handles request start/completion/timing/rejection/failure; use injected `ILogger<T>` only for meaningful business/audit events.
+- New or modified logic in the API, Unity client, and Unity dedicated server must include meaningful diagnostic logs that support later error analysis. Cover important operation stages, state changes, rejections, retries, and failures with enough safe context (operation name, relevant entity/correlation IDs, outcome, and exception details) to reconstruct the flow across components. Reuse existing logging mechanisms, choose appropriate severity levels, avoid duplicate or per-frame noise, and never log passwords, tokens, or other secrets. Keep Domain entities I/O-free by logging at the coordinating boundary.
 - Preserve Unity `.meta` files and avoid generated/cache outputs. Keep mirrored enums/contracts/localization synchronized.
 - After API source/config/contract/migration changes, rebuild and restart the API before runtime verification; earlier binaries are not evidence for the current diff.
 - Dev automation and Unity menu behavior must stay aligned. Persist per-process runtime logs under ignored `Client/Logs/Runtime`; keep build logs separate.

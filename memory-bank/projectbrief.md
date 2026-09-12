@@ -15,5 +15,5 @@ ProjectX is a multiplayer RPG-style game with a Unity client, a Unity dedicated 
 
 ## Sources Of Truth
 - Backend architecture follows applicable patterns from `jasontaylordev/CleanArchitecture`, adapted to ProjectX's Unity, authentication, persistence, and deployment needs.
-- Current behavior and decisions live in this Memory Bank; detailed implementation history remains available in Git.
+- This Memory Bank records behavior and decisions; current code and verified behavior take precedence over stale implementation descriptions. Root `AGENTS.md` defines working instructions and documentation routing; detailed implementation history remains available in Git.
 - Product decisions not recorded here should be confirmed when they materially affect implementation.

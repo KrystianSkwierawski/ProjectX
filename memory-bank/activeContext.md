@@ -29,7 +29,7 @@
 - Keep temporary first-character selection isolated; do not schedule a selector unless requested.
 - Keep English client `pl.json` as the intentional development fallback until complete Polish localization is requested.
 - Keep Animator root motion disabled unless a root-motion movement model is explicitly requested.
-- Read every Memory Bank file at the start of each task as required by `.Codexrules`.
+- Repository instructions and task-dependent documentation routing live in root `AGENTS.md`.
 - Prefer code, builds, tests, logs, and generated previews. Use `computer-use` only when direct UI interaction is necessary or materially simplifies implementation or verification.
 - Preserve user/unrelated working-tree changes. New/moved Unity assets require their `.meta` files.
 
