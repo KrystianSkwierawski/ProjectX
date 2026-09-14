@@ -133,5 +133,8 @@
     "TradeInventoryChanged": "An inventory changed during commit. Review and lock both offers again.",
     "TradeRequestFailed": "The trade operation could not be completed.",
     "TradeCommitRetrying": "The trade result is temporarily unavailable. The server is retrying safely.",
-    "QuestInventoryChanged": "The quest could not be completed because your inventory changed. The inventory has been refreshed."
+    "QuestInventoryChanged": "The quest could not be completed because your inventory changed. The inventory has been refreshed.",
+    "ActionBarsUsableOnly": "Drag a usable item here (gold, potions, equipment or ammunition).",
+    "ActionBarsClearHint": "Right-click to use. Drag to another slot to move or swap; drag outside the bar to clear.",
+    "CharacterSettingsSaveFailed": "Settings could not be saved. Please try again."
 }

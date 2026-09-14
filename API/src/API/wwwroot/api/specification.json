@@ -869,6 +869,124 @@
         ]
       }
     },
+    "/api/CharacterSettings": {
+      "get": {
+        "tags": [
+          "CharacterSettings"
+        ],
+        "summary": "Get character settings",
+        "description": "Returns the owned character's language and ten action bar bindings in key order 1 through 0.",
+        "operationId": "GetCharacterSettings",
+        "parameters": [
+          {
+            "name": "CharacterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterSettingsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "CharacterSettings"
+        ],
+        "summary": "Update character settings",
+        "description": "Saves language and exactly ten usable item bindings for an owned character. None clears a slot.",
+        "operationId": "UpdateCharacterSettings",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCharacterSettingsCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterSettingsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterTransforms": {
       "get": {
         "tags": [
@@ -2527,6 +2645,44 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          }
+        }
+      },
+      "CharacterSettingsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "language": {
+            "$ref": "#/components/schemas/LanguageEnum"
+          },
+          "actionBars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemEnum"
+            }
+          }
+        }
+      },
+      "UpdateCharacterSettingsCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "language": {
+            "$ref": "#/components/schemas/LanguageEnum"
+          },
+          "actionBars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemEnum"
+            }
           }
         }
       },

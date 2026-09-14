@@ -176,7 +176,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                     Type = InventoryItemEnum.Currency,
                     Count = MerchantManager.Instance.GetPurchasePrice(item)
                 };
-                currencyObj.Mesh.text = currencyObj.Item.Count > 1000 ? $"~{currencyObj.Item.Count / 1000}k" : currencyObj.Item.Count.ToString();
+                currencyObj.Mesh.text = currencyObj.Item.Count.ToString();
                 currencyObj.Mesh.color = currency < currencyObj.Item.Count ? ColorUI.Red : ColorUI.White;
                 currencyObj.Image.texture = InventoryUI.Instance.Textures[InventoryItemEnum.Currency];
                 currencyObj.HoverUI.enabled = false;

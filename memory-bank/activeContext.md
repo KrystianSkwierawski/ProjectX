@@ -1,6 +1,14 @@
 # Active Context
 
 ## Current Focus
+- ActionBars and per-character settings are implemented: ten InventorySlot-based shortcuts (1–0), inventory drag assignment, right-click/key use, drag-out clearing, live stock counts, and responsive bottom-center placement. `CharacterSettings` persists language and bindings and restores them before client UI startup. Migration `20260912100007_AddCharacterSettings` backfills existing character defaults.
+
+## ActionBars Verification
+- API build/OpenAPI generation, formatting, SQL Server-configured EF pending-model check and all 413 backend tests pass. A newly started isolated in-memory API passed HTTP settings read/write/read, foreign-character 404, invalid-item 400 and anonymous 401 checks; this did not migrate the normal SQL database.
+- Both generated Unity client/server-symbol compilations pass with existing warnings. Static prefab/scene reference, metadata, localization and five landscape/portrait layout-bound checks pass.
+- Unity batch import could not run because the installed editor reports no valid license. Import and actual Play Mode drag/drop, keyboard use, counters after consumption, reconnect restoration and visual layout checks remain required. Compilation/static geometry do not replace these checks. Existing two-client trade smoke coverage remains outstanding.
+
+## Previous Focus
 - Player-to-player trade and its UI refinement are implemented across API and Unity, committed in separate localization, backend, Unity integration, and font-asset changes.
 - Trade flow: friend invitation, bilateral offers, per-side lock/unlock, both-side confirmation, cancellation/disconnect cleanup, atomic capacity-aware commit, persistent idempotency receipt, and retry of genuinely uncertain commits with one immutable trade GUID/payload. The same API transaction resynchronizes active Collect quests from both post-trade inventories, including for a participant who disconnects during commit. Quest completion and Collect acceptance/progress join the inventory-mutation barrier, so commit waits for already-started inventory-dependent quest writes while locked state blocks new ones. Quest completion sends only the character-quest ID and uses the quest ID returned by the authenticated API. Persistence uses the server lifetime after entering the barrier, while RPC/UI effects remain guarded by the participant's network-spawn lifetime; despawn therefore cannot release a tracker before the API request settles. A server-lifetime coordinator owns commit/retry across participant despawns and cancels only on server shutdown. A disconnected participant's delegated API credential remains valid until an in-flight commit resolves; after an uncertain response, a server-authorized receipt lookup resolves success even when a later retry loses its player session.
 - Current TradeUI uses a preferred 720x440 session and 460x192 invitation on a height-matched 1920x900 Canvas; LogMessage uses 28-point wrapping text.

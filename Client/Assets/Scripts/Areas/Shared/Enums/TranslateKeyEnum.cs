@@ -214,6 +214,9 @@ namespace Assets.Scripts.Areas.Shared.Enums
         TradeInventoryChanged,
         TradeRequestFailed,
         TradeCommitRetrying,
-        QuestInventoryChanged
+        QuestInventoryChanged,
+        ActionBarsUsableOnly,
+        ActionBarsClearHint,
+        CharacterSettingsSaveFailed
     }
 }

@@ -1,6 +1,7 @@
 # Progress
 
 ## Current Status
+- ActionBars persists ten item-type bindings plus language in per-character settings. Scene-authored InventorySlot variants support inventory drag assignment, 1–0/right-click use, drag-out clearing and current stock counts. Backend checks and 413 tests pass, as do generated Unity builds and static asset/layout checks. Live API settings smoke passes against an isolated in-memory instance; Unity import/Play Mode remains blocked by the installed editor's missing license (see activeContext.md).
 - Authentication is hardened with Identity lockout/rate limiting, fail-closed JWT authorization, one-hour access tokens, a signed 24-hour session ceiling, bounded refresh, client logout recovery, and dedicated-server supervised exit.
 - Direct/Relay admission uses server registration/lease, one-time connection tickets, NGO approval, and server-only `PlayerSessionId` delegation; client JWTs never cross Netcode.
 - Character health/max health, percentage-based combat stats, weapon-specific scaling, code-driven movement, gear, compatible tiered ammo, per-hit ammo consumption, and health/Strength/Speed potions are implemented.

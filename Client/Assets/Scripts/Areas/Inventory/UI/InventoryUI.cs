@@ -68,7 +68,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private TextMeshProUGUI _dragSourceMesh;
         private bool _dragSourceMeshWasEnabled;
 
-        public bool IsDragging => _draggedSlotIndex >= 0
+        private Action<PointerEventData> _actionBarDrop;
+
+        public bool IsDragging => _actionBarDrop != null || _draggedSlotIndex >= 0
             || _draggedGearSlot != null
             || _draggedLootSlot != null
             || _isDraggingMerchantItem
@@ -167,6 +169,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         public void UpdateInventory(CharacterInventoryDto dto)
         {
+            ActionBarsUI.Instance?.RefreshInventory();
             ClearDragPreview();
             _inventorySlots ??= InstantiateInventorySlots(dto.Count).ToArray();
             var visibleItems = TradeUI.Instance?.GetAvailableInventoryItems(dto.Inventory.Items) ?? dto.Inventory.Items.ToArray();
@@ -193,7 +196,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 }
 
                 slot.Mesh.gameObject.SetActive(true);
-                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
+                slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
@@ -272,6 +275,43 @@ namespace Assets.Scripts.Areas.Inventory.UI
             }
 
             SetDragSourcePlaceholder(slot.Image, slot.Mesh, null, ColorUI.Black);
+        }
+
+        public void ConfigureActionBarDrag(GameObject source, RawImage image, TextMeshProUGUI count,
+            Func<InventoryItemEnum> getBinding, Action<PointerEventData> onDrop)
+        {
+            var trigger = source.GetComponent<EventTrigger>() ?? source.AddComponent<EventTrigger>();
+            AddDragEvent(trigger, EventTriggerType.BeginDrag, eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Left || getBinding() == InventoryItemEnum.None)
+                {
+                    return;
+                }
+
+                ClearDragPreview();
+                if (!CreateDragPreview(source, image.texture, count.text, count.gameObject.activeSelf, eventData))
+                {
+                    ClearDragPreview();
+                    return;
+                }
+
+                _actionBarDrop = onDrop;
+                HidePreviews();
+                SetDragSourcePlaceholder(image, count, null, ColorUI.Black);
+                eventData.eligibleForClick = false;
+            });
+            AddDragEvent(trigger, EventTriggerType.Drag, Drag);
+            AddDragEvent(trigger, EventTriggerType.EndDrag, eventData =>
+            {
+                var drop = _actionBarDrop;
+                if (drop == null)
+                {
+                    return;
+                }
+
+                ClearDragPreview();
+                drop(eventData);
+            });
         }
 
         public void ConfigureGearDrag(GearSlot slot)
@@ -520,6 +560,12 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             ClearDragPreview();
 
+            if (ActionBarsUI.Instance?.TryAssignDrop(targetGameObject, item) == true)
+            {
+                eventData.eligibleForClick = false;
+                return;
+            }
+
             if (targetInventorySlot != null)
             {
                 if (targetInventorySlot.Index == sourceSlotIndex
@@ -638,6 +684,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         private void ClearDragPreview()
         {
+            _actionBarDrop = null;
             RestoreDragSource();
 
             if (_dragPreview != null)
@@ -728,6 +775,26 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 Type = item.Type,
                 Count = item.Type.IsAmmo() ? item.Count : 1,
             };
+        }
+
+        public void UseActionBarItem(InventoryItemEnum type)
+        {
+            // The shared use subscription sells items while the merchant is open.
+            if (!type.IsActionBarItem() || IsDragging || InputFocusUI.IsAnyInputFocused
+                || TradeUI.Instance?.HasSession == true || MerchantUI.Instance.Merchant.activeSelf
+                || NetworkManager.Singleton?.IsConnectedClient != true)
+            {
+                return;
+            }
+
+            var item = InventoryManager.Instance.Dto?.Inventory?.Items
+                .FirstOrDefault(x => x.Type == type && x.Count > 0);
+
+            if (item != null)
+            {
+                Debug.Log($"Action bar use requested. CharacterId: {UserManager.Instance.SelectedCharacterId}, Item: {type}");
+                UseItem(CreateUsableItem(item), UsableItemFromEnum.Inventory);
+            }
         }
 
         private static InventoryItemDto CloneItem(InventoryItemDto item)
@@ -849,7 +916,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Item = CloneItem(item);
                 slot.Type = item.Type;
                 slot.LootClientId = clientId;
-                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
+                slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");

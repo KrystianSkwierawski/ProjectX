@@ -20,6 +20,8 @@ Current code and verified behavior take precedence over stale documentation abou
 
 ## Architecture and engineering
 
+- In all new and modified code (API, Unity client/server, tooling and tests), separate logical steps with blank lines so code does not become a dense block. Visibly separate initialization, validation, data preparation, calls/awaits, state changes and result handling; keep closely related statements together. In tests, apply the same rule to setup, mock configuration, execution and assertions.
+
 - `Client/` contains the Unity client and dedicated server. `API/` contains the .NET backend. Unity dedicated server is the gameplay authority; API is the durable/transactional persistence authority. Clients express intent, not trusted gameplay outcomes.
 - Follow the existing Clean Architecture direction: Domain owns I/O-free business invariants; Application owns use cases, ports and validation; Infrastructure owns EF/Identity/JWT and adapters; API owns transport, authorization and composition. Inner layers/tests must not depend on outer layers. API persists trusted server-calculated character state instead of duplicating gameplay calculations.
 - Use existing Minimal API/typed-result and MediatR conventions. `ApiExceptionHandler` is the exception-to-HTTP boundary. Keep secrets out of request `ToString()` and logs. Use injected `TimeProvider`, UTC `DateTimeOffset` and the auditable interceptor for backend timestamps.

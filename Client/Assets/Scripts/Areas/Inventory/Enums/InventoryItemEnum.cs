@@ -120,6 +120,9 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
     public static class InventoryItemEnumExtensions
     {
+        public static bool IsActionBarItem(this InventoryItemEnum value) => value.IsGear()
+            || value is InventoryItemEnum.Currency or InventoryItemEnum.HealthPotion or InventoryItemEnum.StrengthPotion or InventoryItemEnum.SpeedPotion;
+
         public static InventoryItemParametersAttribute GetInventoryItemParametersAttribute(this InventoryItemEnum value)
         {
             var member = value

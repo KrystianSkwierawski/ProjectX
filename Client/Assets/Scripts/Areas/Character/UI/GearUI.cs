@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Inventory.UI;
@@ -142,7 +142,7 @@ namespace Assets.Scripts.Areas.Character.UI
 
             if (item.Type.IsAmmo())
             {
-                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
+                slot.Mesh.text = item.Count.ToString();
                 slot.Mesh.enabled = true;
             }
            

@@ -13,7 +13,7 @@
 - Development startup intentionally deletes/recreates/seeds the database. Non-Development startup never initializes it; NSwag sets `SkipDatabaseInitialization=true`.
 - Local HTTPS endpoint is `https://localhost:5001`; Swagger/root `/api` redirect are Development-only.
 - JWT signing material is supplied through .NET User Secrets or external configuration and is never tracked.
-- Current migrations are `20260811172103_Init`, `20260824173652_AddCharacterFriendships`, `20260904191036_AddCharacterInventoryTradeReceipts`, and the model snapshot.
+- Current migrations are `20260811172103_Init`, `20260824173652_AddCharacterFriendships`, `20260904191036_AddCharacterInventoryTradeReceipts`, `20260912100007_AddCharacterSettings`, and the model snapshot.
 
 ## Unity Client And Server
 - Unity `6000.1.15f1` under `Client/`; generated solutions include `ProjectXClient.sln` and `Client.sln`.
