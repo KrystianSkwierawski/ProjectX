@@ -13,14 +13,22 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private IDictionary<TranslateKeyEnum, string> _cache = new Dictionary<TranslateKeyEnum, string>();
 
         private JObject _object;
+        private LanguageEnum _language;
 
         public TranslateManager()
         {
+            LoadLanguage();
+        }
+
+        private void LoadLanguage()
+        {
+            _language = UserManager.Instance.Language;
             var asset = Resources.Load<TextAsset>($"i18n/{UserManager.Instance.Language}");
 
             var json = asset.ToString();
 
             _object = JObject.Parse(json);
+            _cache.Clear();
         }
 
         public string GetByKey(string key)
@@ -35,6 +43,11 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         public string GetByKey(TranslateKeyEnum key)
         {
+            if (_language != UserManager.Instance.Language)
+            {
+                LoadLanguage();
+            }
+
             if (_cache.TryGetValue(key, out var result))
             {
                 return result;

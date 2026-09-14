@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
 using Assets.Scripts.Areas.Inventory.UI;
@@ -8,6 +8,7 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Trade.UI;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -56,6 +57,11 @@ namespace Assets.Scripts.Areas.Character.UI
         public void Show()
         {
             if (Gear.activeSelf)
+            {
+                return;
+            }
+
+            if (TradeUI.Instance?.OpenAfterTrade(Show) == true)
             {
                 return;
             }
@@ -136,7 +142,7 @@ namespace Assets.Scripts.Areas.Character.UI
 
             if (item.Type.IsAmmo())
             {
-                slot.Mesh.text = item.Count > 1000 ? $"~{item.Count / 1000}k" : item.Count.ToString();
+                slot.Mesh.text = item.Count.ToString();
                 slot.Mesh.enabled = true;
             }
            

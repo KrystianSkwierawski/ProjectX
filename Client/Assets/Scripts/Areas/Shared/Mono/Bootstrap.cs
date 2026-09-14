@@ -266,6 +266,8 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
                 UserManager.Instance.SelectCharacter(character.Id);
 
+                await CharacterSettingsManager.Instance.LoadAsync(character.Id);
+
                 #endregion
 
                 await QuestManager.Instance.LoadAsync();

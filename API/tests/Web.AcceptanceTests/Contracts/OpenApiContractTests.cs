@@ -4,6 +4,23 @@ namespace ProjectX.Web.AcceptanceTests.Contracts;
 
 public class OpenApiContractTests
 {
+    [Theory]
+    [InlineData("get")]
+    [InlineData("post")]
+    public void CharacterSettingsEndpoint_ExposesOwnedClientSettings(string method)
+    {
+        using var specification = OpenSpecification();
+        var operation = GetOperation(specification.RootElement, "/api/CharacterSettings", method);
+        Assert.True(operation.GetProperty("responses").TryGetProperty("200", out _));
+        Assert.True(operation.GetProperty("responses").TryGetProperty("404", out _));
+        Assert.DoesNotContain(GetParameters(operation), x => x.GetProperty("name").GetString() == "PlayerSessionId");
+        var properties = specification.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("CharacterSettingsDto").GetProperty("properties");
+        Assert.True(properties.TryGetProperty("characterId", out _));
+        Assert.True(properties.TryGetProperty("language", out _));
+        Assert.Equal("array", properties.GetProperty("actionBars").GetProperty("type").GetString());
+    }
+
     private static readonly HashSet<string> HttpMethods =
     [
         "delete",
@@ -50,6 +67,7 @@ public class OpenApiContractTests
         {
             ("/api/CharacterExperiences", "POST"),
             ("/api/CharacterInventories", "POST"),
+            ("/api/CharacterInventories/Trade", "POST"),
             ("/api/CharacterQuests/Accept", "POST"),
             ("/api/CharacterQuests/Progress", "POST"),
             ("/api/CharacterQuests/CheckProgress", "POST"),
@@ -90,6 +108,7 @@ public class OpenApiContractTests
     [Theory]
     [InlineData("AddCharacterExperienceCommand")]
     [InlineData("UpdateCharacterInventoryCommand")]
+    [InlineData("TradeCharacterInventoriesCommand")]
     [InlineData("AcceptCharacterQuestCommand")]
     [InlineData("AddCharacterQuestProgressCommand")]
     [InlineData("CheckCharacterQuestProgressCommand")]
@@ -116,7 +135,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(28, operations.Length);
+        Assert.Equal(32, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -136,6 +155,7 @@ public class OpenApiContractTests
             "GetCharacter",
             "GetCharacters",
             "GetCharacterInventory",
+            "GetCharacterSettings",
             "GetCharacterQuests",
             "GetCharacterTransform",
             "GetCraftingRecipes",
@@ -149,12 +169,15 @@ public class OpenApiContractTests
             "RegisterAsync",
             "RefreshSessionAsync",
             "RemoveFriend",
+            "ResolveCharacterInventoryTrade",
             "RevokePlayerAsync",
             "RespondFriendInvitation",
             "SaveCharacterTransform",
             "SendFriendInvitation",
+            "TradeCharacterInventories",
             "UpdateCharacter",
-            "UpdateCharacterInventory"
+            "UpdateCharacterInventory",
+            "UpdateCharacterSettings"
         };
 
         Assert.True(expectedOperationIds.SetEquals(operations.Select(operation =>

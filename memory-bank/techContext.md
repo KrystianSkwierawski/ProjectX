@@ -13,7 +13,7 @@
 - Development startup intentionally deletes/recreates/seeds the database. Non-Development startup never initializes it; NSwag sets `SkipDatabaseInitialization=true`.
 - Local HTTPS endpoint is `https://localhost:5001`; Swagger/root `/api` redirect are Development-only.
 - JWT signing material is supplied through .NET User Secrets or external configuration and is never tracked.
-- Current migrations are `20260811172103_Init`, `20260904191036_AddCharacterInventoryTradeReceipts`, and the model snapshot.
+- Current migrations are `20260811172103_Init`, `20260824173652_AddCharacterFriendships`, `20260904191036_AddCharacterInventoryTradeReceipts`, `20260912100007_AddCharacterSettings`, and the model snapshot.
 
 ## Unity Client And Server
 - Unity `6000.1.15f1` under `Client/`; generated solutions include `ProjectXClient.sln` and `Client.sln`.
@@ -30,14 +30,15 @@
 - Each editor/server run writes timestamped diagnostics under ignored `Client/Logs/Runtime`; the server mirrors logs through `PROJECTX_RUNTIME_LOG_PATH` without suppressing Unity console output.
 
 ## Validation And Tool Preferences
+- Apply proportional engineering: this is a game, not a banking system. Not every rare edge case needs full handling. Prioritize normal gameplay and realistic player-impacting bugs; avoid adding complexity or blocking reviews for hypothetical scenarios whose cost outweighs their practical benefit.
 - Prefer code inspection, builds, tests, logs, static prefab checks, and generated previews.
 - Use `computer-use` only when direct interaction with a running UI is necessary or materially simplifies implementation or verification.
 - Generated-project compilation does not prove pointer behavior, scene layout, networking, or gameplay timing; record required Play Mode/full-stack smoke tests explicitly.
-- Latest trade baseline: 383 backend tests passed; API build/OpenAPI/format/EF checks passed; Unity import/Netcode processing and client/server-symbol builds passed. The 2026-09-08 trade UI refinement additionally passed 20 generated layout/interaction cases; live authenticated two-client trade remains untested.
+- Latest trade baseline: 386 backend tests passed after durable receipt-resolution and atomic two-character Collect-progress coverage; API build/OpenAPI/format/EF checks passed. Unity import/Netcode processing and client/server-symbol builds passed; mutation draining, Collect-write ordering across participant despawn, server-lifetime commit coordination, versioned snapshot application, server-only receipt resolution, deferred credential revocation, raw-entry offer bounds, spacing, and Loot-collision changes pass both generated-project compile variants, with static prefab checks for layout. Live authenticated two-client trade remains untested.
 
 ## Repository Constraints
 - Preserve Unity `.meta` files and synchronized API/client enums, DTOs, OpenAPI, and localization resources.
 - Avoid generated/cache outputs (`bin`, `obj`, Unity `Library`, logs) unless validation specifically requires them.
 - Validate modified JSON resources.
-- `.Codexrules` is the active repository instruction file. `.claude/settings.local.json`, if it reappears, is secret local configuration and must not be committed or quoted.
+- Root `AGENTS.md` is the repository instruction file; Memory Bank is read on demand according to its routing table. `.claude/settings.local.json`, if it reappears, is secret local configuration and must not be committed or quoted.
 - Git status emits a known permission warning for `C:/Users/pc/.config/git/ignore`.

@@ -14,6 +14,7 @@ using Assets.Scripts.Areas.Quest.Mono;
 using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Trade.UI;
 
 namespace Assets.Scripts.Areas.Quest.UI
 {
@@ -110,6 +111,11 @@ namespace Assets.Scripts.Areas.Quest.UI
         public void Show(QuestNpc questNpc)
         {
             if (Quest.activeSelf)
+            {
+                return;
+            }
+
+            if (TradeUI.Instance?.OpenAfterTrade(() => Show(questNpc)) == true)
             {
                 return;
             }

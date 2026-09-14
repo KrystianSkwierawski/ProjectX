@@ -69,6 +69,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             string memberName = "", CancellationToken cancellationToken = default)
         {
             request.timeout = RequestTimeoutSeconds;
+            request.SetRequestHeader("Accept-Language", UserManager.Instance.Language.ToString());
 
             var userToken = UserManager.Instance.Token;
 

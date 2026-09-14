@@ -282,7 +282,13 @@ public class CharacterScopeTests
 
         Assert.Collection(initialQuests.CharacterQuests, x => Assert.Equal(currentQuest.Id, x.Id));
         Assert.Equal(CharacterQuestStatusEnum.Finished, progress.Status);
+        Assert.Equal(CompleteCharacterQuestStatusEnum.Applied, completion.Status);
+        Assert.Equal(QuestEnum.Kill2Beans, completion.QuestId);
         Assert.Equal(1000, completion.Reward);
+        Assert.Equal(3, completion.Level);
+        Assert.Equal(1000, currentCharacter.CharacterExperiences
+            .Where(x => x.Type == ExperienceTypeEnum.Main)
+            .Sum(x => x.Amount));
         Assert.Equal(CharacterQuestStatusEnum.Completed, currentQuest.Status);
         Assert.Equal(completedAtUtc, currentQuest.EndDate);
         Assert.Equal(CharacterQuestStatusEnum.Accepted, foreignAcceptedQuest.Status);
@@ -331,7 +337,13 @@ public class CharacterScopeTests
 
         var remainingItem = Assert.Single(character.CharacterInventory.Inventory.Items);
 
+        Assert.Equal(CompleteCharacterQuestStatusEnum.Applied, result.Status);
+        Assert.Equal(QuestEnum.Collect2Cans, result.QuestId);
         Assert.Equal(1000, result.Reward);
+        Assert.Equal(3, result.Level);
+        Assert.Equal(1000, character.CharacterExperiences
+            .Where(x => x.Type == ExperienceTypeEnum.Main)
+            .Sum(x => x.Amount));
         Assert.Equal(CharacterQuestStatusEnum.Completed, characterQuest.Status);
         Assert.Equal((InventoryItemEnum.Can, 1), (remainingItem.Type, remainingItem.Count));
     }

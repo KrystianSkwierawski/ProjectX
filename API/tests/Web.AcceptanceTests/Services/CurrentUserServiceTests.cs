@@ -9,6 +9,20 @@ namespace ProjectX.Web.AcceptanceTests.Services;
 
 public sealed class CurrentUserServiceTests
 {
+    [Theory]
+    [InlineData("en", ProjectX.Domain.Enums.LanguageEnum.en)]
+    [InlineData("pl", ProjectX.Domain.Enums.LanguageEnum.pl)]
+    [InlineData("invalid", ProjectX.Domain.Enums.LanguageEnum.pl)]
+    public void Language_UsesSupportedCharacterPreferenceWithAccountFallback(string requested, ProjectX.Domain.Enums.LanguageEnum expected)
+    {
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("LanguageEnum", "pl")], "Bearer"))
+        };
+        context.Request.Headers.AcceptLanguage = requested;
+        Assert.Equal(expected, new CurrentUserService(new HttpContextAccessor { HttpContext = context }).Language);
+    }
+
     [Fact]
     public void GetCharacterId_ReturnsCharacterDelegatedByPlayerSession()
     {

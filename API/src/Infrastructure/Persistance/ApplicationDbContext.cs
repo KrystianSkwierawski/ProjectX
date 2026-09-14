@@ -12,11 +12,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public DbSet<Character> Characters => Set<Character>();
+    public DbSet<CharacterSettings> CharacterSettings => Set<CharacterSettings>();
     public DbSet<CharacterFriendship> CharacterFriendships => Set<CharacterFriendship>();
     public DbSet<CharacterTransform> CharacterTransforms => Set<CharacterTransform>();
     public DbSet<CharacterExperience> CharacterExperiences => Set<CharacterExperience>();
     public DbSet<CharacterQuest> CharacterQuests => Set<CharacterQuest>();
     public DbSet<CharacterInventory> CharacterInventories => Set<CharacterInventory>();
+    public DbSet<CharacterInventoryTradeReceipt> CharacterInventoryTradeReceipts => Set<CharacterInventoryTradeReceipt>();
     public DbSet<Quest> Quests => Set<Quest>();
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();

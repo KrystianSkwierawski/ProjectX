@@ -68,9 +68,24 @@ public class CurrentUserService : ICurrentUserService
             : null;
     }
 
-    public LanguageEnum Language => _httpContextAccessor.HttpContext?.User == null
-        ? LanguageEnum.en
-        : (LanguageEnum)Enum.Parse(typeof(LanguageEnum), _httpContextAccessor.HttpContext.User.FindFirstValue(nameof(LanguageEnum)) ?? LanguageEnum.en.ToString());
+    public LanguageEnum Language
+    {
+        get
+        {
+            // A selected character can use a different language from the account's JWT default.
+            var requestedLanguage = _httpContextAccessor.HttpContext?.Request.Headers.AcceptLanguage.ToString();
+
+            if (requestedLanguage is "en" or "pl")
+            {
+                return Enum.Parse<LanguageEnum>(requestedLanguage);
+            }
+
+            var claim = _httpContextAccessor.HttpContext?.User.FindFirstValue(nameof(LanguageEnum));
+
+            return Enum.TryParse<LanguageEnum>(claim, out var language) && Enum.IsDefined(language)
+                ? language : LanguageEnum.en;
+        }
+    }
 
     public List<string>? Roles => _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role).Select(x => x.Value).ToList();
 }

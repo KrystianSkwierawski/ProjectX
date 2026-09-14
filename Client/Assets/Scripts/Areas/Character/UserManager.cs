@@ -34,6 +34,11 @@ namespace Assets.Scripts.Areas.Character
 
         public LanguageEnum Language { get; private set; }
 
+        public void SetCharacterLanguage(LanguageEnum language)
+        {
+            Language = language;
+        }
+
         public ulong OwnerClientId { get; set; } // TODO: replace all references
 
         public event Action<string> SessionInvalidated;
@@ -145,7 +150,10 @@ namespace Assets.Scripts.Areas.Character
                     }
 
                     Token = result.Token;
-                    Language = result.Language;
+                    if (SelectedCharacterId == 0)
+                    {
+                        Language = result.Language;
+                    }
 
                     Debug.Log("Session refreshed.");
 

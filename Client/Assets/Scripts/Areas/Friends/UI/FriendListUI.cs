@@ -11,6 +11,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using PartyController = Assets.Scripts.Areas.Party.Mono.Party;
+using TradeController = Assets.Scripts.Areas.Trade.Mono.Trade;
 
 namespace Assets.Scripts.Areas.Friends.UI
 {
@@ -228,6 +229,11 @@ namespace Assets.Scripts.Areas.Friends.UI
                 partyInvite.interactable = friend.IsOnline;
                 partyInvite.onClick.RemoveAllListeners();
                 partyInvite.onClick.AddListener(() => PartyController.Local?.Invite(friend.CharacterId));
+
+                var trade = row.transform.Find("Trade").GetComponent<Button>();
+                trade.interactable = friend.IsOnline;
+                trade.onClick.RemoveAllListeners();
+                trade.onClick.AddListener(() => TradeController.Local?.Invite(friend.CharacterId));
 
                 var remove = row.transform.Find("Remove").GetComponent<Button>();
                 remove.onClick.RemoveAllListeners();

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
+using ProjectX.Domain.Characters;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
@@ -29,6 +30,8 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
         var characterQuest = await _context.CharacterQuests
             .Include(x => x.Quest)
+            .Include(x => x.Character)
+                .ThenInclude(x => x.CharacterExperiences.Where(experience => experience.Type == ExperienceTypeEnum.Main))
             .Where(x => x.Id == request.CharacterQuestId)
             .Where(x => x.CharacterId == selectedCharacterId)
             .Where(x => x.Status == CharacterQuestStatusEnum.Finished)
@@ -42,9 +45,36 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
 
         characterQuest.Complete(_timeProvider.GetUtcNow());
 
-        await _context.SaveChangesAsync(cancellationToken);
+        characterQuest.Character.CharacterExperiences.Add(new CharacterExperience
+        {
+            Amount = characterQuest.Quest.Reward,
+            Type = ExperienceTypeEnum.Main
+        });
 
-        return new CompleteCharacterQuestDto { Reward = characterQuest.Quest.Reward };
+        var experience = characterQuest.Character.CharacterExperiences
+            .Where(entry => entry.Type == ExperienceTypeEnum.Main)
+            .Sum(entry => entry.Amount);
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new CompleteCharacterQuestDto
+            {
+                QuestId = characterQuest.QuestId,
+                Status = CompleteCharacterQuestStatusEnum.InventoryChanged
+            };
+        }
+
+        return new CompleteCharacterQuestDto
+        {
+            QuestId = characterQuest.QuestId,
+            Status = CompleteCharacterQuestStatusEnum.Applied,
+            Reward = characterQuest.Quest.Reward,
+            Level = ExperienceProgression.GetLevel(experience)
+        };
     }
 
     private async Task CollectItemsAsync(

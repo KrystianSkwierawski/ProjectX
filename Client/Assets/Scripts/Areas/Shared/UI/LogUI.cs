@@ -3,9 +3,9 @@ using Assets.Scripts.Areas.Shared.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using Cysharp.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Shared.UI
 {
@@ -39,11 +39,8 @@ namespace Assets.Scripts.Areas.Shared.UI
             _pool = new ObjectPool<LogPoolObject>(
                 createFunc: () =>
                 {
-                    var obj = Instantiate(_textPrefab);
+                    var obj = Instantiate(_textPrefab, LogContent.transform, worldPositionStays: false);
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
-
-                    mesh.fontSize = 36;
-                    mesh.alignment = TextAlignmentOptions.Center;
 
                     return new LogPoolObject
                     {
@@ -53,13 +50,12 @@ namespace Assets.Scripts.Areas.Shared.UI
                 },
                 actionOnGet: obj =>
                 {
-                    obj.GameObject.transform.SetParent(LogContent.transform);
+                    obj.GameObject.transform.SetParent(LogContent.transform, worldPositionStays: false);
                     obj.GameObject.SetActive(true);
                     obj.GameObject.transform.SetAsLastSibling();
                 },
                 actionOnRelease: obj =>
                 {
-                    obj.GameObject.transform.SetParent(null);
                     obj.GameObject.SetActive(false);
                     obj.Mesh.text = string.Empty;
                 }
@@ -85,8 +81,14 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             obj.Mesh.text = message;
             obj.Mesh.color = color ?? ColorUI.White;
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)LogContent.transform);
 
-            await UniTask.Delay(delay);
+            var cancelled = await UniTask.Delay(delay, ignoreTimeScale: true, cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
+
+            if (cancelled)
+            {
+                return;
+            }
 
             _pool.Release(obj);
 

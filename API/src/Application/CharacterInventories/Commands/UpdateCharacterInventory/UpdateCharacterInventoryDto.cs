@@ -8,5 +8,6 @@ public class UpdateCharacterInventoryDto
 public enum UpdateCharacterInventoryStatusEnum
 {
     Applied,
-    InventoryFull
+    InventoryFull,
+    InventoryChanged
 }

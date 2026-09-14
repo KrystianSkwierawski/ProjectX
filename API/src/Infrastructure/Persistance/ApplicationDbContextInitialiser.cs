@@ -171,6 +171,10 @@ public class ApplicationDbContextInitialiser
 
         _context.Characters.Add(character);
 
+        var settings = new CharacterSettings { Character = character };
+        settings.Update(language, new InventoryItemEnum[CharacterSettings.ActionBarSlotCount]);
+        _context.CharacterSettings.Add(settings);
+
         await _context.SaveChangesAsync();
 
         _logger.LogDebug(

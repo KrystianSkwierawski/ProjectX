@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
@@ -78,7 +79,17 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         entity.Inventory = inventory;
         entity.Count = (short)effectiveCapacity;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new UpdateCharacterInventoryDto
+            {
+                Status = UpdateCharacterInventoryStatusEnum.InventoryChanged
+            };
+        }
 
         return new UpdateCharacterInventoryDto
         {

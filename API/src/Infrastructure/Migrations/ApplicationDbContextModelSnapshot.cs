@@ -302,6 +302,7 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasColumnType("smallint");
 
                     b.Property<string>("Inventory")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -311,6 +312,35 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CharacterInventories");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryTradeReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<int>("SourceCharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TargetCharacterId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceCharacterId");
+
+                    b.HasIndex("TargetCharacterId");
+
+                    b.ToTable("CharacterInventoryTradeReceipts");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
@@ -349,6 +379,27 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasIndex("QuestId");
 
                     b.ToTable("CharacterQuests");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterSettings", b =>
+                {
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActionBars")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<byte>("Language")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("CharacterId");
+
+                    b.ToTable("CharacterSettings");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
@@ -647,6 +698,21 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("Character");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryTradeReceipt", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", null)
+                        .WithMany()
+                        .HasForeignKey("SourceCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjectX.Domain.Entities.Character", null)
+                        .WithMany()
+                        .HasForeignKey("TargetCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterQuest", b =>
                 {
                     b.HasOne("ProjectX.Domain.Entities.Character", "Character")
@@ -664,6 +730,17 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("Character");
 
                     b.Navigation("Quest");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterSettings", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", "Character")
+                        .WithOne()
+                        .HasForeignKey("ProjectX.Domain.Entities.CharacterSettings", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>

@@ -10,6 +10,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Update="CharacterInventories\Commands\ResolveCharacterInventoryTrade\**\*.cs" Visible="true" />
+      <Compile Update="CharacterInventories\Commands\TradeCharacterInventories\**\*.cs" Visible="true" />
       <Compile Update="Friends\**\*.cs" Visible="true" />
     </ItemGroup>
 

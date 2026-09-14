@@ -114,4 +114,7 @@ public enum TranslateKeyEnum
     IronWandDescription,
     IronBowTitle,
     IronBowDescription,
+    ActionBarsUsableOnly,
+    ActionBarsClearHint,
+    CharacterSettingsSaveFailed,
 }
