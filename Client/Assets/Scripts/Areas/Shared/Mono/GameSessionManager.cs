@@ -499,7 +499,13 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         private static NetworkManager GetNetworkManager()
         {
-            return NetworkManager.Singleton != null ? NetworkManager.Singleton : throw new InvalidOperationException("NetworkManager is not available.");
+            var manager = NetworkManager.Singleton
+                ?? throw new InvalidOperationException("NetworkManager is not available.");
+
+            // Environments are client-specific. Gameplay objects are dynamically spawned in MainScene.
+            manager.NetworkConfig.EnableSceneManagement = false;
+
+            return manager;
         }
 
         private static UnityTransport GetUnityTransport(NetworkManager networkManager)

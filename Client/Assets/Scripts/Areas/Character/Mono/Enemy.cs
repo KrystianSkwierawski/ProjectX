@@ -28,7 +28,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private float _maxChasePathLength = 30f;
 
-        private void Start()
+        public override void OnNetworkSpawn()
         {
             if (IsServer)
             {
@@ -47,7 +47,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                         return;
                     }
 
-                    if (_target == null)
+                    if (_target == null && DungeonWorldObject.SameInstance(gameObject, e.Target))
                     {
                         _target = e.Target;
                         _clientId = e.ClientId;
@@ -61,7 +61,22 @@ namespace Assets.Scripts.Areas.Character.Mono
                     }
                 });
 
+                _target = null;
+                _clientId = null;
+                _isReturning = false;
+                _attackTimer = 0f;
                 _agent.enabled = true;
+
+                if (_agent.isOnNavMesh)
+                {
+                    _agent.Warp(_initPosition);
+                    StartPatrolling();
+                    Debug.Log($"Enemy patrol started. NetworkObjectId: {NetworkObjectId}, Position: {_initPosition}.");
+                }
+                else
+                {
+                    Debug.LogError($"Enemy spawned outside NavMesh. NetworkObjectId: {NetworkObjectId}, Position: {_initPosition}.");
+                }
             }
         }
 
@@ -73,16 +88,13 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void Update()
         {
-            if (!IsServer)
+            if (!IsServer || !IsSpawned || _agent == null)
             {
                 return;
             }
 
-            if (!_agent.enabled)
+            if (!_agent.enabled || !_agent.isOnNavMesh)
             {
-                // TODO: update transfrom directly?
-                Debug.Log("NavMeshAgent disabled");
-
                 return;
             }
 
@@ -102,7 +114,9 @@ namespace Assets.Scripts.Areas.Character.Mono
                 return;
             }
 
-            if (IsAgentPathTooLong(_target.transform.position) || IsAgentPathTooLong(_initPosition))
+            if (!DungeonWorldObject.SameInstance(gameObject, _target)
+                || !_clientId.HasValue || !DungeonTravel.CanInteract(_clientId.Value)
+                || IsAgentPathTooLong(_target.transform.position) || IsAgentPathTooLong(_initPosition))
             {
                 LoseAggro();
 
@@ -230,6 +244,29 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
 
             return length > _maxChasePathLength;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            EnemyAggroSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
+
+            if (_agent != null)
+            {
+                _agent.enabled = false;
+            }
+
+            _target = null;
+            _clientId = null;
+            _isPatrolling = false;
+
+            base.OnNetworkDespawn();
+        }
+
+        public override void OnDestroy()
+        {
+            EnemyAggroSubscription.Instance.Unsubscribe(gameObject.GetInstanceID().ToString());
+
+            base.OnDestroy();
         }
     }
 }

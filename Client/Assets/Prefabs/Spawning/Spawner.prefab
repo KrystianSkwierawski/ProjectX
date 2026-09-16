@@ -103,6 +103,7 @@ MonoBehaviour:
   _prefab: {fileID: 0}
   _count: 2
   _transformY: 0
+  _maintainPopulation: 1
 --- !u!65 &1294064713967650092
 BoxCollider:
   m_ObjectHideFlags: 0

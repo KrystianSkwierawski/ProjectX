@@ -90,6 +90,7 @@ namespace StarterAssets
         private float _cinemachineTargetPitch;
 
         private float _speed;
+        private bool _resetMovementVelocity;
         private float _animationBlend;
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
@@ -200,6 +201,32 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
             }
 #endif
+        }
+
+        public void ResetAfterTeleport(Vector3 positionDelta)
+        {
+            _speed = 0f;
+            _resetMovementVelocity = true;
+            _animationBlend = 0f;
+            _verticalVelocity = 0f;
+            _rotationVelocity = 0f;
+            _targetRotation = transform.eulerAngles.y;
+            _jumpTimeoutDelta = JumpTimeout;
+            _fallTimeoutDelta = FallTimeout;
+
+            Input.MoveInput(Vector2.zero);
+            Input.LookInput(Vector2.zero);
+            Input.JumpInput(false);
+
+            _lockTarget = null;
+            _cinemachineTargetYaw = transform.eulerAngles.y;
+            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(
+                _cinemachineTargetPitch + _cameraAngleOverride, _cinemachineTargetYaw, 0f);
+
+            // A portal is a discontinuity, not a movement for the follow camera to damp.
+            _cinemachineVirtualCamera.OnTargetObjectWarped(CinemachineCameraTarget.transform, positionDelta);
+            _cinemachineVirtualCamera.PreviousStateIsValid = false;
+            GroundedCheck();
         }
 
         private void Update()
@@ -415,12 +442,19 @@ namespace StarterAssets
             // a reference to the players current horizontal velocity
             float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
+            if (_resetMovementVelocity)
+            {
+                currentHorizontalSpeed = 0f;
+                _resetMovementVelocity = false;
+            }
+
             float speedOffset = 0.1f;
             float inputMagnitude = allowInput ? Input.AnalogMovement ? moveInput.magnitude : 1f : 0f;
 
             // accelerate or decelerate to target speed
-            if (!allowInput)
+            if (!allowInput || moveInput == Vector2.zero)
             {
+                // Collision correction is not movement input; never feed it back into idle movement.
                 _speed = 0f;
             }
             else if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)

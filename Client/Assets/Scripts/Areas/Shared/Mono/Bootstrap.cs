@@ -28,7 +28,6 @@ namespace Assets.Scripts.Areas.Shared.Mono
             "UIScene",
             "AudioScene",
             "EnvironmentScene",
-            "TestScene"
         };
 
         private bool _isLoginInProgress;
@@ -344,10 +343,6 @@ namespace Assets.Scripts.Areas.Shared.Mono
             await SceneManager.LoadSceneAsync("MainScene", LoadSceneMode.Single);
 
             Debug.Log("MainScene Loaded");
-
-            await SceneManager.LoadSceneAsync("ServerScene", LoadSceneMode.Additive);
-
-            Debug.Log("ServerScene Loaded");
 
             await SceneManager.LoadSceneAsync("EnvironmentScene", LoadSceneMode.Additive);
 

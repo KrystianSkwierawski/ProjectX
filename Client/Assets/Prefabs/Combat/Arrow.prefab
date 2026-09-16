@@ -70,6 +70,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39f58549491feb44688d1530b9882472, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 850000000000000001}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39f58549491feb44688d1530b9882472, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 2551717873309689388}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39f58549491feb44688d1530b9882472, type: 3}
       insertIndex: -1
@@ -268,3 +271,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _speed: 15
+--- !u!114 &850000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7825809438050140326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c51598fd88de4555b29b2ad55bea88fd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:

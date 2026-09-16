@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,83 +12,159 @@ namespace Assets.Scripts.Areas.Shared.Mono
     {
         [SerializeField] private GameObject _prefab;
         [SerializeField] private int _count = 2;
-        [SerializeField] private float _transformY; // FIXME: auto calc y
+        [SerializeField] private float _transformY;
+        [Tooltip("Replenish removed objects. Disable to spawn only once per instance.")]
+        [SerializeField] private bool _maintainPopulation = true;
 
         private ObjectPool<GameObject> _pool;
-
+        private readonly List<GameObject> _objects = new();
         private bool _isSpawning;
+        private bool _initialized;
+        private bool _stopped;
+        private int _instanceId;
         private Collider _collider;
 
+        public void ConfigureInstance(int instanceId)
+        {
+            _instanceId = instanceId;
+        }
+
+        private void Awake()
+        {
+            _collider = GetComponent<Collider>();
+            _collider.enabled = false;
+
+            var view = GetComponent<Renderer>();
+
+            if (view != null)
+            {
+                view.enabled = false;
+            }
+        }
 
 #if UNITY_SERVER && !UNITY_EDITOR
         private void Start()
         {
-            _collider = GetComponent<Collider>();
-
             _pool = new ObjectPool<GameObject>(
                 createFunc: () =>
                 {
                     var result = Instantiate(_prefab);
+                    _objects.Add(result);
 
-                    var instanceId = result.GetInstanceID().ToString();
+                    var marker = result.GetComponent<DungeonWorldObject>();
 
-                    ReleasePoolSubscription.Instance.Subscribe(instanceId, (e) =>
+                    if (marker != null)
                     {
-                        Debug.Log($"Releasing to pool. GameObjectName: {result.name}, InstanceId: {instanceId}");
+                        marker.InstanceId = _instanceId;
+                    }
 
-                        _pool.Release(result);
+                    var key = result.GetInstanceID().ToString();
+                    ReleasePoolSubscription.Instance.Subscribe(key, _ =>
+                    {
+                        if (!_stopped && result != null && result.GetComponent<NetworkObject>().IsSpawned)
+                        {
+                            _pool.Release(result);
+                        }
                     });
 
                     return result;
                 },
-                actionOnGet: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Spawn(),
-                actionOnRelease: (GameObject gameObject) => gameObject.GetComponent<NetworkObject>().Despawn(false),
-                defaultCapacity: _count
-            );
+                actionOnRelease: go =>
+                {
+                    go.GetComponent<NetworkObject>().Despawn(false);
+                    go.SetActive(false);
+                },
+                defaultCapacity: Math.Max(1, _count));
         }
 
         private async void Update()
         {
-            if (_isSpawning)
+            if (_stopped || _isSpawning || _pool == null || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
             {
                 return;
             }
 
-            var init = _pool.CountAll == 0;
-            var inactive = _pool.CountInactive;
+            var count = !_initialized ? _count : _maintainPopulation ? _pool.CountInactive : 0;
 
-            if (init || inactive > 0)
+            if (count <= 0)
             {
-                _isSpawning = true;
-
-                await RespawnAsync(init ? _count : inactive);
-            }
-        }
-
-        private async UniTask RespawnAsync(int count)
-        {
-            await UniTask.Delay(TimeSpan.FromSeconds(5));
-
-            SpawnBeans(count);
-        }
-
-        private void SpawnBeans(int count)
-        {
-            var bounds = _collider.bounds;
-
-            for (int i = 1; i <= count; i++)
-            {
-                var bean = _pool.Get();
-
-                var position = new Vector3(UnityEngine.Random.Range(bounds.min.x, bounds.max.x), _transformY, UnityEngine.Random.Range(bounds.min.z, bounds.max.z));
-
-                bean.transform.position = position;
+                return;
             }
 
-            _isSpawning = false;
+            _isSpawning = true;
+            var token = this.GetCancellationTokenOnDestroy();
 
-            Debug.Log($"{count} {_prefab.name} spawned");
+            try
+            {
+                if (_initialized)
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(5), cancellationToken: token);
+                }
+
+                if (token.IsCancellationRequested || _stopped || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+                {
+                    return;
+                }
+
+                var box = (BoxCollider)_collider;
+
+                for (var i = 0; i < count; i++)
+                {
+                    var local = box.center + new Vector3(
+                        UnityEngine.Random.Range(-box.size.x / 2, box.size.x / 2), 0,
+                        UnityEngine.Random.Range(-box.size.z / 2, box.size.z / 2));
+                    var position = transform.TransformPoint(local);
+                    position.y = _transformY;
+
+                    var spawned = _pool.Get();
+                    spawned.transform.position = position;
+                    spawned.SetActive(true);
+                    spawned.GetComponent<NetworkObject>().Spawn();
+                }
+
+                _initialized = true;
+                Debug.Log($"Spawner populated. Name: {name}, InstanceId: {_instanceId}, Count: {count}, MaintainPopulation: {_maintainPopulation}.");
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+            }
+            finally
+            {
+                _isSpawning = false;
+            }
         }
 #endif
+
+        public void StopSpawning()
+        {
+            _stopped = true;
+
+            foreach (var spawned in _objects)
+            {
+                if (spawned == null)
+                {
+                    continue;
+                }
+
+                ReleasePoolSubscription.Instance.Unsubscribe(spawned.GetInstanceID().ToString());
+                var networkObject = spawned.GetComponent<NetworkObject>();
+
+                if (networkObject.IsSpawned)
+                {
+                    networkObject.Despawn();
+                }
+                else
+                {
+                    Destroy(spawned);
+                }
+            }
+
+            _objects.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            StopSpawning();
+        }
     }
 }

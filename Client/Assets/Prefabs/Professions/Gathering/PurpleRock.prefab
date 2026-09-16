@@ -78,6 +78,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 34cc899918b2b7345835b2311f9a7a63, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 850000000000000001}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 34cc899918b2b7345835b2311f9a7a63, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 474319396749034505}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 34cc899918b2b7345835b2311f9a7a63, type: 3}
       insertIndex: -1
@@ -183,3 +186,15 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &850000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2101192237383442916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c51598fd88de4555b29b2ad55bea88fd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:

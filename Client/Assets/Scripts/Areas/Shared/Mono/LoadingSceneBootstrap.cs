@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Shared.UI;
 using Cysharp.Threading.Tasks;
@@ -12,14 +13,12 @@ namespace Assets.Scripts.Areas.Shared.Mono
     {
         private const string _bootstrapSceneName = "BootstrapScene";
 
-        private static readonly string[] _authenticatedSceneNames =
+        private static readonly string[] _authenticatedSceneNames = new[]
         {
             "MainScene",
             "UIScene",
-            "AudioScene",
-            "EnvironmentScene",
-            "TestScene"
-        };
+            "AudioScene"
+        }.Concat(Enum.GetNames(typeof(LocationEnum))).ToArray();
 
         private bool _isReturningToLogin;
 

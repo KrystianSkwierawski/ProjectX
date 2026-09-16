@@ -32,7 +32,8 @@ namespace ProjectX.Editor
             "Assets/Scenes/UIScene.unity",
             "Assets/Scenes/AudioScene.unity",
             "Assets/Scenes/EnvironmentScene.unity",
-            "Assets/Scenes/TestScene.unity"
+            "Assets/Scenes/DungeonScene.unity",
+            "Assets/Scenes/TemplateScene.unity",
         };
         private static readonly string[] ServerRuntimeScenePaths =
         {
@@ -40,8 +41,8 @@ namespace ProjectX.Editor
             "Assets/Scenes/EnvironmentScene.unity",
             "Assets/Scenes/AudioScene.unity",
             "Assets/Scenes/MainScene.unity",
-            "Assets/Scenes/ServerScene.unity",
-            "Assets/Scenes/TestScene.unity",
+            "Assets/Scenes/DungeonScene.unity",
+            "Assets/Scenes/TemplateScene.unity",
             "Assets/Scenes/UIScene.unity"
         };
 

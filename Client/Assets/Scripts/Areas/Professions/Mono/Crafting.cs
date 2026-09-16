@@ -46,7 +46,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void Update()
         {
-            if (IsOwner)
+            if (IsOwner && !GetComponent<DungeonTravel>().IsTransitioning)
             {
                 CheckHide();
 
@@ -60,6 +60,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void StartCrafting()
         {
+            if (GetComponent<DungeonTravel>().IsTransitioning)
+            {
+                return;
+            }
+
             var inventoryRequest = new UpdateCharacterInventoryCommand
             {
                 Add = new[] { CraftingUI.Instance.CurrentRecipe.Reward.Item },
@@ -129,6 +134,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
             CraftingUI.Instance.CraftButton.interactable = CraftingUI.Instance.HasAllRequirements;
         }
 
+        public void CancelForTravel()
+        {
+            Exit();
+        }
+
         public void InterruptCrafting()
         {
             if (!_isCrafting)
@@ -142,6 +152,13 @@ namespace Assets.Scripts.Areas.Professions.Mono
         [ServerRpc]
         private void CraftServerRpc(CraftingRecipeEnum id, CraftingRecipeTypeEnum type)
         {
+            if (!DungeonTravel.CanInteract(OwnerClientId) || DungeonTravel.GetInstanceId(OwnerClientId) != 0)
+            {
+                Debug.LogWarning($"World interaction rejected during dungeon travel. ClientId: {OwnerClientId}.");
+
+                return;
+            }
+
             // TODO: validate
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
             CraftAsync(id, type, playerSessionId).Forget();
@@ -246,6 +263,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
             }
 
             var dto = await CraftingRecipeManager.Instance.GetAsync(type);
+
+            if (!IsSpawned || GetComponent<DungeonTravel>().IsTransitioning || _crafting == null)
+            {
+                return;
+            }
 
             CraftingUI.Instance.Show(dto, type);
         }

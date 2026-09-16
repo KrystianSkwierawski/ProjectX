@@ -172,6 +172,13 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         private void PurchaseItemServerRpc(InventoryItemDto item)
         {
+            if (!DungeonTravel.CanInteract(OwnerClientId) || DungeonTravel.GetInstanceId(OwnerClientId) != 0)
+            {
+                Debug.LogWarning($"World interaction rejected during dungeon travel. ClientId: {OwnerClientId}.");
+
+                return;
+            }
+
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
             // TODO: validate npc position
@@ -190,6 +197,13 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         private void SellItemServerRpc(InventoryItemDto item)
         {
+            if (!DungeonTravel.CanInteract(OwnerClientId) || DungeonTravel.GetInstanceId(OwnerClientId) != 0)
+            {
+                Debug.LogWarning($"World interaction rejected during dungeon travel. ClientId: {OwnerClientId}.");
+
+                return;
+            }
+
             var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
             // TODO: validate npc position

@@ -8,6 +8,11 @@ namespace Assets.Scripts.Areas.Party.Mono
 {
     internal static class PartyServerState
     {
+        public static System.Guid GetPartyId(ulong clientId)
+        {
+            return _partiesByMember.TryGetValue(clientId, out var party) ? party.Id : System.Guid.Empty;
+        }
+
         private static readonly IDictionary<ulong, PartyGroup> _partiesByMember = new Dictionary<ulong, PartyGroup>();
         private static readonly IDictionary<ulong, HashSet<ulong>> _invitersByTarget = new Dictionary<ulong, HashSet<ulong>>();
 
@@ -83,6 +88,7 @@ namespace Assets.Scripts.Areas.Party.Mono
 
             RemoveIncomingInvitations(targetClientId);
             RemoveOutgoingInvitations(targetClientId);
+            Assets.Scripts.Areas.Shared.Mono.DungeonTravel.NotifyPartyChanged();
 
             return PartyOperationStatusEnum.Applied;
         }
@@ -145,6 +151,12 @@ namespace Assets.Scripts.Areas.Party.Mono
 
             foreach (var clientId in candidates)
             {
+                if (Assets.Scripts.Areas.Shared.Mono.DungeonTravel.GetInstanceId(clientId)
+                    != Assets.Scripts.Areas.Shared.Mono.DungeonTravel.GetInstanceId(sourceClientId))
+                {
+                    continue;
+                }
+
                 if (clientId == sourceClientId)
                 {
                     eligibleMembers.Add(clientId);
@@ -198,6 +210,7 @@ namespace Assets.Scripts.Areas.Party.Mono
             party.Members.Remove(clientId);
             _partiesByMember.Remove(clientId);
             RemoveOutgoingInvitations(clientId);
+            Assets.Scripts.Areas.Shared.Mono.DungeonTravel.NotifyPartyChanged();
 
             if (party.Members.Count == 0)
             {
@@ -236,6 +249,8 @@ namespace Assets.Scripts.Areas.Party.Mono
 
         private sealed class PartyGroup
         {
+            public System.Guid Id { get; } = System.Guid.NewGuid();
+
             public PartyGroup(ulong leaderClientId)
             {
                 LeaderClientId = leaderClientId;

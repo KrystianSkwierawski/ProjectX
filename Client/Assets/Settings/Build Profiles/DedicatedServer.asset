@@ -31,9 +31,9 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/MainScene.unity
   - m_enabled: 1
-    m_path: Assets/Scenes/ServerScene.unity
+    m_path: Assets/Scenes/DungeonScene.unity
   - m_enabled: 1
-    m_path: Assets/Scenes/TestScene.unity
+    m_path: Assets/Scenes/TemplateScene.unity
   - m_enabled: 1
     m_path: Assets/Scenes/UIScene.unity
   m_ScriptingDefines: []

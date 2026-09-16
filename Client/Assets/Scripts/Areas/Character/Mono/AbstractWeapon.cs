@@ -1,3 +1,4 @@
+using System;
 ﻿using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Inventory.Enums;
@@ -31,6 +32,22 @@ namespace Assets.Scripts.Areas.Character.Mono
         private GameObject _caster;
         private bool _isCasting;
         private bool _hit;
+        private Action<GameObject> _release;
+
+        public void SetReleaseHandler(Action<GameObject> release)
+        {
+            _release = release;
+        }
+
+        public void Finish()
+        {
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+
+            _release?.Invoke(gameObject);
+        }
 
         private void Awake()
         {
@@ -120,8 +137,18 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void Update()
         {
-            if (!IsServer || _target == null)
+            if (!IsServer || !IsSpawned)
             {
+                return;
+            }
+
+            if (_caster == null || _target == null || !_target.activeInHierarchy
+                || !_target.TryGetComponent<NetworkObject>(out var targetNetwork) || !targetNetwork.IsSpawned
+                || !DungeonTravel.CanInteract(OwnerClientId)
+                || !DungeonWorldObject.SameInstance(_caster, _target))
+            {
+                Finish();
+
                 return;
             }
 
@@ -141,6 +168,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (transform.IsCloseToTarget(_target))
             {
                 OnHitTarget();
+                Finish();
             }
         }
 
