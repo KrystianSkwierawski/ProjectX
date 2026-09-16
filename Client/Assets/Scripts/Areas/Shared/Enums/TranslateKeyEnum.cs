@@ -217,6 +217,9 @@ namespace Assets.Scripts.Areas.Shared.Enums
         QuestInventoryChanged,
         ActionBarsUsableOnly,
         ActionBarsClearHint,
-        CharacterSettingsSaveFailed
+        CharacterSettingsSaveFailed,
+        DungeonLoading,
+        DungeonPortalUnavailable,
+        DungeonPortalDead
     }
 }

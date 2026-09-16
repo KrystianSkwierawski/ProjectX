@@ -8,10 +8,14 @@ namespace ProjectX.Application.CharacterTransforms.Commands.SaveCharacterTransfo
 
 public record SaveCharacterTransformCommand : IRequest
 {
+    public string SceneName { get; init; } = "EnvironmentScene";
+
     public float PositionX { get; init; }
     public float PositionY { get; init; }
     public float PositionZ { get; init; }
     public float RotationY { get; init; }
+
+    public override string ToString() => $"{nameof(SaveCharacterTransformCommand)} {{ SceneName = {SceneName} }}";
 }
 
 public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacterTransformCommand>
@@ -37,6 +41,7 @@ public class SaveCharacterTransformCommandHandler : IRequestHandler<SaveCharacte
 
         _context.CharacterTransforms.Add(new CharacterTransform
         {
+            SceneName = request.SceneName,
             PositionX = request.PositionX,
             PositionY = request.PositionY,
             PositionZ = request.PositionZ,

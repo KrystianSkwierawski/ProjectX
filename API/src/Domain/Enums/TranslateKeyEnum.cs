@@ -117,4 +117,7 @@ public enum TranslateKeyEnum
     ActionBarsUsableOnly,
     ActionBarsClearHint,
     CharacterSettingsSaveFailed,
+    DungeonLoading,
+    DungeonPortalUnavailable,
+    DungeonPortalDead,
 }

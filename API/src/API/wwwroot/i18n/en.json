@@ -136,5 +136,8 @@
     "QuestInventoryChanged": "The quest could not be completed because your inventory changed. The inventory has been refreshed.",
     "ActionBarsUsableOnly": "Drag a usable item here (gold, potions, equipment or ammunition).",
     "ActionBarsClearHint": "Right-click to use. Drag to another slot to move or swap; drag outside the bar to clear.",
-    "CharacterSettingsSaveFailed": "Settings could not be saved. Please try again."
+    "CharacterSettingsSaveFailed": "Settings could not be saved. Please try again.",
+    "DungeonLoading": "Loading location...",
+    "DungeonPortalUnavailable": "Cannot use the portal right now. Please try again.",
+    "DungeonPortalDead": "You cannot use a portal with 0 HP. Restore your health first."
 }

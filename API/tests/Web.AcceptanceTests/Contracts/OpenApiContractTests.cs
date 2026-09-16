@@ -5,6 +5,19 @@ namespace ProjectX.Web.AcceptanceTests.Contracts;
 public class OpenApiContractTests
 {
     [Theory]
+    [InlineData("SaveCharacterTransformCommand")]
+    [InlineData("CharacterTransformDto")]
+    public void CharacterTransform_ContainsResumableScene(string schema)
+    {
+        using var specification = OpenSpecification();
+
+        var properties = specification.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty(schema).GetProperty("properties");
+
+        Assert.Equal("string", properties.GetProperty("sceneName").GetProperty("type").GetString());
+    }
+
+    [Theory]
     [InlineData("get")]
     [InlineData("post")]
     public void CharacterSettingsEndpoint_ExposesOwnedClientSettings(string method)
