@@ -91,6 +91,17 @@ namespace Assets.Scripts.Areas.Inventory.UI
                {
                    var obj = Instantiate(_inventorySlotPrefab, LootContent.transform);
                    var mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+                   var icon = obj.transform.Find("Background").GetComponent<RawImage>();
+
+                   mesh.rectTransform.SetParent(icon.rectTransform, false);
+                   mesh.rectTransform.anchorMin = Vector2.zero;
+                   mesh.rectTransform.anchorMax = Vector2.one;
+                   mesh.rectTransform.offsetMin = new Vector2(2, 2);
+                   mesh.rectTransform.offsetMax = new Vector2(-2, -2);
+                   mesh.alignment = TextAlignmentOptions.BottomRight;
+                   mesh.fontSizeMax = 16;
+                   mesh.raycastTarget = false;
+
                    var preview = obj.transform.Find("Preview").gameObject;
                    var slot = new InventorySlot
                    {

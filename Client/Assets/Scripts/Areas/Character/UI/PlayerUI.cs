@@ -34,6 +34,9 @@ namespace Assets.Scripts.Areas.Character.UI
 
         #endregion
 
+        private Color _progressColor;
+        private float _failureUntil;
+
         public void Start()
         {
             PlayerCanvas = GameObject.Find("PlayerCanvas");
@@ -42,12 +45,15 @@ namespace Assets.Scripts.Areas.Character.UI
             PlayerNameText = PlayerCanvas.transform.Find("Player/Name").GetComponent<TextMeshProUGUI>();
             PlayerHealthPointsText = PlayerCanvas.transform.Find("Player/HealthPoints").GetComponent<TextMeshProUGUI>();
             CastProgressBar = GameObject.Find("ProgressBar").GetComponent<Image>();
+            _progressColor = CastProgressBar.color;
         }
 
         public void UpdateCastBar(float progress)
         {
             if (CastProgressBar != null)
             {
+                _failureUntil = 0f;
+                CastProgressBar.color = _progressColor;
                 ProgressBarCanvas.SetActive(true);
                 CastProgressBar.fillAmount = Mathf.Clamp01(progress);
             }
@@ -57,17 +63,28 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             if (CastProgressBar != null)
             {
+                _failureUntil = 0f;
+                CastProgressBar.color = _progressColor;
                 ProgressBarCanvas.SetActive(false);
             }
         }
 
-        public void FailCastBar()
+        public void FailCastBar(float duration = 0.2f)
         {
             if (CastProgressBar != null)
             {
+                _failureUntil = Time.unscaledTime + duration;
                 CastProgressBar.color = ColorUI.RedA;
                 CastProgressBar.fillAmount = 1f;
                 ProgressBarCanvas.SetActive(true);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (_failureUntil > 0f && Time.unscaledTime >= _failureUntil)
+            {
+                HideCastBar();
             }
         }
 
