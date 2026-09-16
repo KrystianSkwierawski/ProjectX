@@ -20,6 +20,10 @@ Current code and verified behavior take precedence over stale documentation abou
 
 ## Architecture and engineering
 
+- Names of enums introduced or modified in project code must end with `Enum`, including private and nested enums.
+
+- In new and modified LINQ queries, put filtering in `Where(...)` before terminal selectors such as parameterless `FirstOrDefault()`, `First()`, `SingleOrDefault()` or `Single()`. Do not pass predicates directly to those terminal methods.
+
 - In all new and modified code (API, Unity client/server, tooling and tests), separate logical steps with blank lines so code does not become a dense block. Visibly separate initialization, validation, data preparation, calls/awaits, state changes and result handling; keep closely related statements together. In tests, apply the same rule to setup, mock configuration, execution and assertions.
 
 - `Client/` contains the Unity client and dedicated server. `API/` contains the .NET backend. Unity dedicated server is the gameplay authority; API is the durable/transactional persistence authority. Clients express intent, not trusted gameplay outcomes.
