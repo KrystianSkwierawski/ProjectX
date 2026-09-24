@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Inventory.Mono;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
@@ -175,6 +176,8 @@ namespace Assets.Scripts.Areas.Professions.UI
             {
                 return;
             }
+
+            CharacterStash.Local?.Close();
 
             // FIXME: array
             QuestUI.Instance.Hide();

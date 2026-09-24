@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Inventory.Mono;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,6 +120,8 @@ namespace Assets.Scripts.Areas.Quest.UI
             {
                 return;
             }
+
+            CharacterStash.Local?.Close();
 
             // FIXME: array
             CharacterUI.Instance.Hide();

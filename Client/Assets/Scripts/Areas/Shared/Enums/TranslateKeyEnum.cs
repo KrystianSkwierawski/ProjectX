@@ -220,6 +220,10 @@ namespace Assets.Scripts.Areas.Shared.Enums
         CharacterSettingsSaveFailed,
         DungeonLoading,
         DungeonPortalUnavailable,
-        DungeonPortalDead
+        DungeonPortalDead,
+        StashTitle,
+        StashHint,
+        StashFull,
+        StashChanged,
     }
 }

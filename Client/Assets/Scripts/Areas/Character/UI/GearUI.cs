@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Inventory.Mono;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
 using Assets.Scripts.Areas.Inventory.Subscriptions;
@@ -65,6 +66,8 @@ namespace Assets.Scripts.Areas.Character.UI
             {
                 return;
             }
+
+            CharacterStash.Local?.Close();
 
             // FIXME: array
             CraftingUI.Instance.Hide();

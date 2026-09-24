@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Inventory.Mono;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -131,6 +132,8 @@ namespace Assets.Scripts.Areas.Shared.UI
             {
                 return;
             }
+
+            CharacterStash.Local?.Close();
 
             // FIXME: array
             QuestUI.Instance.Hide();

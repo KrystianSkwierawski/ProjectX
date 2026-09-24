@@ -9,6 +9,9 @@ namespace Assets.Scripts.Areas.Quest
 {
     public class QuestManager : Singleton<QuestManager>
     {
+        private long _characterQuestsVersion;
+        private long _characterQuestsLoadVersion;
+
         public QuestDto[] Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
@@ -20,11 +23,40 @@ namespace Assets.Scripts.Areas.Quest
             Quests = result.Quests;
         }
 
-        public async UniTask LoadCharacterQuestsAsync(int characterId)
+        public void InvalidatePendingCharacterQuestLoads()
         {
-            var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>($"CharacterQuests?CharacterId={characterId}");
+            _characterQuestsVersion++;
+        }
 
-            CharacterQuests = result.CharacterQuests;
+        public async UniTask<bool> LoadCharacterQuestsAsync(int characterId, CancellationToken cancellationToken = default)
+        {
+            var loadVersion = ++_characterQuestsLoadVersion;
+
+            while (true)
+            {
+                var stateVersion = _characterQuestsVersion;
+                var result = await UnityWebRequestHelper.ExecuteGetAsync<GetCharacterQuestsDto>($"CharacterQuests?CharacterId={characterId}", cancellationToken: cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (loadVersion != _characterQuestsLoadVersion)
+                {
+                    UnityEngine.Debug.Log($"Ignoring superseded quest load. CharacterId: {characterId}, Version: {loadVersion}.");
+
+                    return false;
+                }
+
+                if (stateVersion != _characterQuestsVersion)
+                {
+                    UnityEngine.Debug.Log($"Reloading quests after a concurrent server update. CharacterId: {characterId}.");
+
+                    continue;
+                }
+
+                CharacterQuests = result.CharacterQuests;
+
+                return true;
+            }
         }
 
         public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(

@@ -68,9 +68,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
         private TextMeshProUGUI _dragSourceMesh;
         private bool _dragSourceMeshWasEnabled;
 
-        private Action<PointerEventData> _actionBarDrop;
+        private Action<PointerEventData> _externalItemDrop;
 
-        public bool IsDragging => _actionBarDrop != null || _draggedSlotIndex >= 0
+        public bool IsDragging => _externalItemDrop != null || _draggedSlotIndex >= 0
             || _draggedGearSlot != null
             || _draggedLootSlot != null
             || _isDraggingMerchantItem
@@ -240,6 +240,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
                         return;
                     }
 
+                    if (StashUI.Instance?.IsOpen == true)
+                    {
+                        StashUI.Instance.Deposit(slotIndex);
+
+                        return;
+                    }
+
                     UseItem(CreateUsableItem(item), UsableItemFromEnum.Inventory);
                 });
             }
@@ -288,7 +295,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             SetDragSourcePlaceholder(slot.Image, slot.Mesh, null, ColorUI.Black);
         }
 
-        public void ConfigureActionBarDrag(GameObject source, RawImage image, TextMeshProUGUI count,
+        public void ConfigureItemDrag(GameObject source, RawImage image, TextMeshProUGUI count,
             Func<InventoryItemEnum> getBinding, Action<PointerEventData> onDrop)
         {
             var trigger = source.GetComponent<EventTrigger>() ?? source.AddComponent<EventTrigger>();
@@ -300,21 +307,24 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 }
 
                 ClearDragPreview();
+
                 if (!CreateDragPreview(source, image.texture, count.text, count.gameObject.activeSelf, eventData))
                 {
                     ClearDragPreview();
+
                     return;
                 }
 
-                _actionBarDrop = onDrop;
+                _externalItemDrop = onDrop;
                 HidePreviews();
+                source.transform.Find("Preview")?.gameObject.SetActive(false);
                 SetDragSourcePlaceholder(image, count, null, ColorUI.Black);
                 eventData.eligibleForClick = false;
             });
             AddDragEvent(trigger, EventTriggerType.Drag, Drag);
             AddDragEvent(trigger, EventTriggerType.EndDrag, eventData =>
             {
-                var drop = _actionBarDrop;
+                var drop = _externalItemDrop;
                 if (drop == null)
                 {
                     return;
@@ -564,7 +574,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             var item = _draggedItem;
             var targetGameObject = eventData.pointerCurrentRaycast.gameObject;
             var targetButton = targetGameObject?.GetComponentInParent<ButtonUI>();
-            var targetInventorySlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
+            var targetInventorySlot = _inventorySlots.Where(x => x.Button == targetButton).FirstOrDefault();
             var targetGearSlot = GearUI.Instance.GetSlot(targetButton);
             var targetMerchant = MerchantUI.Instance.IsDropTarget(targetGameObject);
             var targetTradeOffer = TradeUI.Instance?.IsMyOfferDropTarget(targetGameObject) == true;
@@ -574,6 +584,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
             if (ActionBarsUI.Instance?.TryAssignDrop(targetGameObject, item) == true)
             {
                 eventData.eligibleForClick = false;
+                return;
+            }
+
+            var stashIndex = StashUI.Instance?.GetSlotIndex(targetGameObject) ?? -1;
+
+            if (stashIndex >= 0)
+            {
+                eventData.eligibleForClick = false;
+                StashUI.Instance.Deposit(sourceSlotIndex, stashIndex);
+
                 return;
             }
 
@@ -626,7 +646,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             var item = _draggedItem;
             var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
-            var targetInventorySlot = _inventorySlots.FirstOrDefault(x => x.Button == targetButton);
+            var targetInventorySlot = _inventorySlots.Where(x => x.Button == targetButton).FirstOrDefault();
 
             ClearDragPreview();
 
@@ -645,7 +665,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             var item = _draggedItem;
             var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
-            var targetInventorySlot = _inventorySlots?.FirstOrDefault(x => x.Button == targetButton);
+            var targetInventorySlot = _inventorySlots?.Where(x => x.Button == targetButton).FirstOrDefault();
 
             ClearDragPreview();
 
@@ -664,7 +684,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             var sourceSlot = _draggedLootSlot;
             var targetButton = eventData.pointerCurrentRaycast.gameObject?.GetComponentInParent<ButtonUI>();
-            var targetInventorySlot = _inventorySlots?.FirstOrDefault(x => x.Button == targetButton);
+            var targetInventorySlot = _inventorySlots?.Where(x => x.Button == targetButton).FirstOrDefault();
 
             ClearDragPreview();
 
@@ -695,7 +715,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         private void ClearDragPreview()
         {
-            _actionBarDrop = null;
+            _externalItemDrop = null;
             RestoreDragSource();
 
             if (_dragPreview != null)
@@ -758,6 +778,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
             _dragSourceMesh = null;
         }
 
+        public int GetSlotIndex(GameObject target)
+        {
+            var button = target != null ? target.GetComponentInParent<ButtonUI>() : null;
+
+            return _inventorySlots?.Where(x => x.Button == button).FirstOrDefault()?.Index ?? -1;
+        }
+
         public void CancelDrag()
         {
             ClearDragPreview();
@@ -792,7 +819,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
         {
             // The shared use subscription sells items while the merchant is open.
             if (!type.IsActionBarItem() || IsDragging || InputFocusUI.IsAnyInputFocused
-                || TradeUI.Instance?.HasSession == true || MerchantUI.Instance.Merchant.activeSelf
+                || StashUI.Instance?.IsOpen == true || TradeUI.Instance?.HasSession == true || MerchantUI.Instance.Merchant.activeSelf
                 || NetworkManager.Singleton?.IsConnectedClient != true)
             {
                 return;

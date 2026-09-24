@@ -63,7 +63,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
                 button.OnRightClick.AddListener(() => InventoryUI.Instance.UseActionBarItem(GetBinding(index)));
 
-                InventoryUI.Instance.ConfigureActionBarDrag(root.gameObject, slot.Image, slot.Count,
+                InventoryUI.Instance.ConfigureItemDrag(root.gameObject, slot.Image, slot.Count,
                     () => GetBinding(index), eventData =>
                     {
                         var target = Array.FindIndex(_slots, x => RectTransformUtility.RectangleContainsScreenPoint(
