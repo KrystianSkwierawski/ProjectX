@@ -9,6 +9,7 @@
 - Repository-local `dotnet-ef` 10.0.11 is pinned in `API/.config/dotnet-tools.json`.
 
 ## Backend Runtime
+- Migration `20260921161117_AddAccountStash` adds the account-keyed CharacterStashes table, 64-slot capacity default, inventory JSON, revision concurrency token and auditable timestamp.
 - Default persistence is local SQL Server database `ProjectX`; Development may use the in-memory provider.
 - Development startup intentionally deletes/recreates/seeds the database. Non-Development startup never initializes it; NSwag sets `SkipDatabaseInitialization=true`.
 - Local HTTPS endpoint is `https://localhost:5001`; Swagger/root `/api` redirect are Development-only.
