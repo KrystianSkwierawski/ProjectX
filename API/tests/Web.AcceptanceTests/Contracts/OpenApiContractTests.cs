@@ -80,6 +80,7 @@ public class OpenApiContractTests
         {
             ("/api/CharacterExperiences", "POST"),
             ("/api/CharacterInventories", "POST"),
+            ("/api/CharacterStashes", "POST"),
             ("/api/CharacterInventories/Trade", "POST"),
             ("/api/CharacterQuests/Accept", "POST"),
             ("/api/CharacterQuests/Progress", "POST"),
@@ -148,7 +149,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(32, operations.Length);
+        Assert.Equal(33, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -160,6 +161,7 @@ public class OpenApiContractTests
         var expectedOperationIds = new HashSet<string>
         {
             "AcceptCharacterQuest",
+            "AccessCharacterStash",
             "AddCharacterExperience",
             "AddCharacterQuestProgress",
             "AuthorizeWhisper",

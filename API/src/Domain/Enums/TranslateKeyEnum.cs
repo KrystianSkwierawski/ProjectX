@@ -120,4 +120,8 @@ public enum TranslateKeyEnum
     DungeonLoading,
     DungeonPortalUnavailable,
     DungeonPortalDead,
+    StashTitle,
+    StashHint,
+    StashFull,
+    StashChanged,
 }

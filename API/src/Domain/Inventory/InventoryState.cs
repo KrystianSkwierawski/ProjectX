@@ -187,6 +187,45 @@ public sealed class InventoryState
         return true;
     }
 
+    public bool TransferTo(InventoryState target, int sourceIndex, int capacity, int? targetIndex = null)
+    {
+        if (!IsValidExistingSlot(sourceIndex) || ReferenceEquals(this, target))
+        {
+            return false;
+        }
+
+        var source = _items[sourceIndex];
+
+        if (targetIndex.HasValue)
+        {
+            var index = targetIndex.Value;
+
+            if (index < 0 || index >= capacity)
+            {
+                return false;
+            }
+
+            var destination = index < target._items.Count ? target._items[index] : InventorySlot.Empty();
+
+            if (!destination.IsEmpty && (destination.Type != source.Type
+                || destination.Count + source.Count > InventorySlot.MaxStackSize))
+            {
+                return false;
+            }
+
+            target.EnsureSlotExists(index);
+            target._items[index] = new InventorySlot(source.Type, destination.Count + source.Count);
+        }
+        else if (!target.Add(source.Type, source.Count, capacity))
+        {
+            return false;
+        }
+
+        source.Remove(source.Count);
+
+        return true;
+    }
+
     private bool IsValidExistingSlot(int slotIndex)
     {
         return slotIndex >= 0 && slotIndex < _items.Count && !_items[slotIndex].IsEmpty;

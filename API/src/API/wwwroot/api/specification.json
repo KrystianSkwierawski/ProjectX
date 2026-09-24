@@ -987,6 +987,82 @@
         ]
       }
     },
+    "/api/CharacterStashes": {
+      "post": {
+        "tags": [
+          "CharacterStashes"
+        ],
+        "summary": "Access the account stash",
+        "description": "Reads or atomically transfers, moves or splits stacks for the session-bound character and account; updates Collect progress.",
+        "operationId": "AccessCharacterStash",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessCharacterStashCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterStashDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterTransforms": {
       "get": {
         "tags": [
@@ -2695,6 +2771,99 @@
             }
           }
         }
+      },
+      "CharacterStashDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/StashStatusEnum"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "inventory": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InventoryDto"
+              }
+            ]
+          },
+          "characterInventory": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CharacterInventoryDto"
+              }
+            ]
+          }
+        }
+      },
+      "StashStatusEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Applied",
+          "Full",
+          "Changed"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "AccessCharacterStashCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "$ref": "#/components/schemas/StashOperationEnum"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sourceIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "targetIndex": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "expectedType": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "expectedCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StashOperationEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Read",
+          "Deposit",
+          "Withdraw",
+          "Move",
+          "Split"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
       },
       "CharacterTransformDto": {
         "type": "object",

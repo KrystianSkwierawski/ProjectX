@@ -11,6 +11,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+    public DbSet<CharacterStash> CharacterStashes => Set<CharacterStash>();
     public DbSet<Character> Characters => Set<Character>();
     public DbSet<CharacterSettings> CharacterSettings => Set<CharacterSettings>();
     public DbSet<CharacterFriendship> CharacterFriendships => Set<CharacterFriendship>();

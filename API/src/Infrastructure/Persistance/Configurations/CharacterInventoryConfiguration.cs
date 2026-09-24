@@ -34,14 +34,14 @@ public class CharacterInventoryConfiguration : IEntityTypeConfiguration<Characte
             .HasForeignKey<CharacterInventory>(x => x.Id);
     }
 
-    private static ValueConverter<InventoryState, string> CreateConverter()
+    internal static ValueConverter<InventoryState, string> CreateConverter()
     {
         return new(
             inventory => Serialize(inventory),
             value => Deserialize(value));
     }
 
-    private static ValueComparer<InventoryState> CreateComparer()
+    internal static ValueComparer<InventoryState> CreateComparer()
     {
         return new(
             (left, right) => HaveEqualItems(left, right),

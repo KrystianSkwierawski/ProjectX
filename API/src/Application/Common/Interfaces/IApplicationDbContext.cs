@@ -5,6 +5,7 @@ namespace ProjectX.Application.Common.Interfaces;
 
 public interface IApplicationDbContext
 {
+    DbSet<CharacterStash> CharacterStashes { get; }
     DbSet<Character> Characters { get; }
     DbSet<Domain.Entities.CharacterSettings> CharacterSettings { get; }
     DbSet<CharacterFriendship> CharacterFriendships { get; }
