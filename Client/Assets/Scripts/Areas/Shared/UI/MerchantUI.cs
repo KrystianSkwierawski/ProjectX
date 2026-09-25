@@ -47,6 +47,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         {
             MerchantCanvas = GameObject.Find("MerchantCanvas");
             Merchant = MerchantCanvas.transform.Find("Merchant").gameObject;
+            Merchant.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Hide);
             Offers = Merchant.transform.Find("Offers").gameObject;
             OffersContent = Offers.transform.Find("Viewport/Content").gameObject;
 

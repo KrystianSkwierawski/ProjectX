@@ -1,3 +1,4 @@
+using UnityEngine.InputSystem;
 using Assets.Scripts.Areas.Inventory.Mono;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -46,6 +47,7 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             GearCanvas = GameObject.Find("GearCanvas");
             Gear = GearCanvas.transform.Find("Gear").gameObject;
+            Gear.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Hide);
             LeftPanel = Gear.transform.Find("LeftPanel").gameObject;
             Helmet = GetGearSlot(nameof(Helmet));
             Chest = GetGearSlot(nameof(Chest));
@@ -265,6 +267,14 @@ namespace Assets.Scripts.Areas.Character.UI
             InventoryUI.Instance.ConfigureGearDrag(slot);
 
             return slot;
+        }
+
+        private void Update()
+        {
+            if (Gear != null && Gear.activeSelf && Keyboard.current?.escapeKey.wasPressedThisFrame == true)
+            {
+                Hide();
+            }
         }
 
         public void Hide()

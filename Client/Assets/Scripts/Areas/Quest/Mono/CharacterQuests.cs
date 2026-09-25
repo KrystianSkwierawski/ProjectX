@@ -373,8 +373,6 @@ namespace Assets.Scripts.Areas.Quest.Mono
             {
                 _input = GetComponent<StarterAssetsInputs>();
 
-                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.Hide());
-
                 QuestUI.Instance.QuestAcceptButton.onClick.AddListener(() =>
                 {
                     QuestUI.Instance.Hide();

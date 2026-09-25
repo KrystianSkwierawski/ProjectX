@@ -1,3 +1,5 @@
+using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using Assets.Scripts.Areas.Inventory.Mono;
 using System.Linq;
 using Assets.Scripts.Areas.Professions.UI;
@@ -30,6 +32,7 @@ namespace Assets.Scripts.Areas.Character.UI
         {
             CharacterCanvas = GameObject.Find("CharacterCanvas");
             Character = CharacterCanvas.transform.Find("Character").gameObject;
+            Character.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Hide);
             Description = Character.transform.Find("Description").gameObject;
             DescriptionText = Description.GetComponent<TextMeshProUGUI>();
         }
@@ -66,6 +69,14 @@ namespace Assets.Scripts.Areas.Character.UI
             }
 
             DescriptionText.text = string.Format(TranslateManager.Instance.GetByKey(TranslateKeyEnum.CharacterDescription), character.Levels.Values.Cast<object>().ToArray());
+        }
+
+        private void Update()
+        {
+            if (Character != null && Character.activeSelf && Keyboard.current?.escapeKey.wasPressedThisFrame == true)
+            {
+                Hide();
+            }
         }
 
         public void Hide()
