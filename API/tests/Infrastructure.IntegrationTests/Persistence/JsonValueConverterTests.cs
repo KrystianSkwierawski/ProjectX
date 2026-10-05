@@ -10,6 +10,78 @@ namespace ProjectX.Infrastructure.IntegrationTests.Persistence;
 public class JsonValueConverterTests
 {
     [Fact]
+    public async Task CharacterInventory_NormalizedLegacyStateSavesWithIndependentRevision()
+    {
+        await using var context = CreateContext();
+        var entityType = context.Model.FindEntityType(typeof(CharacterInventory))!;
+        var inventoryProperty = entityType.FindProperty(nameof(CharacterInventory.Inventory))!;
+        var converter = inventoryProperty.GetValueConverter()!;
+        const string legacyJson = """{"Items":[{"Type":101,"Count":2500},{"Type":0,"Count":0}]}""";
+        var inventory = Assert.IsType<InventoryState>(converter.ConvertFromProvider(legacyJson));
+
+        Assert.False(inventoryProperty.IsConcurrencyToken);
+        Assert.True(entityType.FindProperty(nameof(CharacterInventory.Revision))!.IsConcurrencyToken);
+        Assert.NotEqual(legacyJson, converter.ConvertToProvider(inventory));
+
+        context.CharacterInventories.Add(new CharacterInventory { Id = 42, Count = 15, Inventory = inventory });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var stored = await context.CharacterInventories.SingleAsync();
+        stored.Inventory.Add(InventoryItemEnum.Currency, 1, capacity: 15);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var updated = await context.CharacterInventories.SingleAsync();
+
+        Assert.Equal(2501, updated.Inventory.Items.Sum(x => x.Count));
+        Assert.Equal(1, updated.Revision);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CharacterInventory_RejectsStaleWriter(bool synchronousSave)
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var firstContext = new ApplicationDbContext(options);
+        firstContext.CharacterInventories.Add(new CharacterInventory
+        {
+            Id = 42,
+            Count = 15,
+            Inventory = new InventoryState([new InventorySlot(InventoryItemEnum.Currency, 10)])
+        });
+
+        await firstContext.SaveChangesAsync();
+        await using var secondContext = new ApplicationDbContext(options);
+        var first = await firstContext.CharacterInventories.SingleAsync();
+        var second = await secondContext.CharacterInventories.SingleAsync();
+        first.Inventory.Add(InventoryItemEnum.Currency, 1, capacity: 15);
+        second.Inventory.Add(InventoryItemEnum.Currency, 2, capacity: 15);
+
+        if (synchronousSave)
+        {
+            firstContext.SaveChanges();
+
+            Assert.Throws<DbUpdateConcurrencyException>(() => secondContext.SaveChanges());
+        }
+        else
+        {
+            await firstContext.SaveChangesAsync();
+
+            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => secondContext.SaveChangesAsync());
+        }
+
+        secondContext.ChangeTracker.Clear();
+        var persisted = await secondContext.CharacterInventories.SingleAsync();
+
+        Assert.Equal(11, persisted.Inventory.Items.Single().Count);
+        Assert.Equal(1, persisted.Revision);
+    }
+
+    [Fact]
     public void CharacterInventoryConverter_RoundTripsDomainStateAndTracksMutations()
     {
         using var context = CreateContext();

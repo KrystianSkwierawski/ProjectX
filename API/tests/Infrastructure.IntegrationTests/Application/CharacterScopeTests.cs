@@ -26,6 +26,132 @@ public class CharacterScopeTests
     private const int ForeignCharacterId = 1;
 
     [Fact]
+    public async Task HealthPotion_PersistsHealingAndConsumptionTogether()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2));
+        character.Health = 50;
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+        var saves = 0;
+        context.SavingChanges += (_, _) => saves++;
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(new([], [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 1 }],
+                CharacterUpdate: new UpdateCharacterCommand { Health = 70 }), default);
+
+        context.ChangeTracker.Clear();
+        var stored = await context.Characters.Include(x => x.CharacterInventory).SingleAsync();
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, result.Status);
+        Assert.Equal(1, saves);
+        Assert.Equal(70, stored.Health);
+        Assert.Equal(1, stored.CharacterInventory.Inventory.Items.Single().Count);
+    }
+
+    [Fact]
+    public async Task HealthPotion_WhenInventoryConflicts_PersistsNeitherHealingNorConsumption()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2));
+        character.Health = 50;
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+
+        context.SavingChanges += (_, _) => throw new DbUpdateConcurrencyException("Simulated concurrent loot save");
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(new([], [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 1 }],
+                CharacterUpdate: new UpdateCharacterCommand { Health = 70 }), default);
+
+        context.ChangeTracker.Clear();
+        var stored = await context.Characters.Include(x => x.CharacterInventory).SingleAsync();
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.InventoryChanged, result.Status);
+        Assert.Equal(50, stored.Health);
+        Assert.Equal(2, stored.CharacterInventory.Inventory.Items.Single().Count);
+    }
+
+    [Fact]
+    public async Task Equip_PersistsInventoryAndCharacterInOneSave()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HelmetTemplate, 1));
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+        var saves = 0;
+        context.SavingChanges += (_, _) => saves++;
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(new([], [new InventoryItemDto { Type = InventoryItemEnum.HelmetTemplate, Count = 1 }],
+                CharacterUpdate: new UpdateCharacterCommand { HelmetType = InventoryItemEnum.HelmetTemplate, MaxHealth = 150 }), default);
+
+        context.ChangeTracker.Clear();
+        var stored = await context.Characters.Include(x => x.CharacterInventory).SingleAsync();
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, result.Status);
+        Assert.Equal(1, saves);
+        Assert.Equal(InventoryItemEnum.HelmetTemplate, stored.HelmetType);
+        Assert.Equal(150, stored.MaxHealth);
+        Assert.Equal(0, stored.CharacterInventory.Inventory.Items[0].Count);
+    }
+
+    [Fact]
+    public async Task Unequip_WhenInventoryFull_PreservesEquipmentAndStats()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Currency, 1024));
+        character.CharacterInventory.Count = 1;
+        character.HelmetType = InventoryItemEnum.HelmetTemplate;
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(new([new InventoryItemDto { Type = InventoryItemEnum.HelmetTemplate, Count = 1 }], [],
+                CharacterUpdate: new UpdateCharacterCommand { HelmetType = InventoryItemEnum.None, MaxHealth = 50 }), default);
+
+        context.ChangeTracker.Clear();
+        var stored = await context.Characters.Include(x => x.CharacterInventory).SingleAsync();
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.InventoryFull, result.Status);
+        Assert.Equal(InventoryItemEnum.HelmetTemplate, stored.HelmetType);
+        Assert.Equal(100, stored.MaxHealth);
+        Assert.Equal(1024, stored.CharacterInventory.Inventory.Items[0].Count);
+    }
+
+    [Fact]
+    public async Task Equip_WhenSaveFails_PersistsNeitherInventoryNorEquipment()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HelmetTemplate, 1));
+        context.Characters.Add(character);
+
+        await context.SaveChangesAsync();
+        context.SavingChanges += (_, _) => throw new InvalidOperationException("Simulated save failure");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+                .Handle(new([], [new InventoryItemDto { Type = InventoryItemEnum.HelmetTemplate, Count = 1 }],
+                    CharacterUpdate: new UpdateCharacterCommand { HelmetType = InventoryItemEnum.HelmetTemplate, MaxHealth = 150 }), default));
+
+        context.ChangeTracker.Clear();
+        var stored = await context.Characters.Include(x => x.CharacterInventory).SingleAsync();
+
+        Assert.Equal(InventoryItemEnum.None, stored.HelmetType);
+        Assert.Equal(100, stored.MaxHealth);
+        Assert.Equal(1, stored.CharacterInventory.Inventory.Items[0].Count);
+    }
+
+    [Fact]
     public async Task ClientQueries_DoNotReadAnotherUsersCharacterData()
     {
         await using var context = CreateContext();

@@ -124,4 +124,10 @@ public enum TranslateKeyEnum
     StashHint,
     StashFull,
     StashChanged,
+    ChamomileFarmTitle,
+    HideoutBuildTime,
+    HideoutUnavailable,
+    HideoutMissingMaterials,
+    HideoutBuild,
+    ChamomileFarmDescription,
 }

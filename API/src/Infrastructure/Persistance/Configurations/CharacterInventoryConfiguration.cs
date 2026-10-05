@@ -25,7 +25,7 @@ public class CharacterInventoryConfiguration : IEntityTypeConfiguration<Characte
             .IsRequired();
 
         builder
-            .Property(x => x.Inventory)
+            .Property(x => x.Revision)
             .IsConcurrencyToken();
 
         builder

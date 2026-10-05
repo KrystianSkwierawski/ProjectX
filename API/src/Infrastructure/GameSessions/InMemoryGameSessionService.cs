@@ -148,6 +148,11 @@ public sealed class InMemoryGameSessionService : IGameSessionService
             // Removing inside the same lock makes redemption single-use even for concurrent requests.
             _tickets.Remove(ticketHash);
 
+            if (_playerSessions.Values.Any(x => x.CharacterId == ticketState.CharacterId))
+            {
+                throw new InvalidGameSessionCredentialException();
+            }
+
             var playerSessionId = CreateUniqueSecret(_playerSessions);
             _playerSessions.Add(
                 Hash(playerSessionId),

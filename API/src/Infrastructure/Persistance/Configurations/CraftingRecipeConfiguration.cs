@@ -26,7 +26,7 @@ public class CraftingRecipeConfiguration : IEntityTypeConfiguration<CraftingReci
             .HasDatabaseName("IX.CraftingRecipe.Type.Status");
     }
 
-    private static void ConfigureJsonProperty<T>(PropertyBuilder<T> propertyBuilder)
+    internal static void ConfigureJsonProperty<T>(PropertyBuilder<T> propertyBuilder)
         where T : class
     {
         propertyBuilder

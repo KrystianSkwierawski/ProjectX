@@ -4,6 +4,22 @@ namespace ProjectX.Web.AcceptanceTests.Contracts;
 
 public class OpenApiContractTests
 {
+    [Fact]
+    public void Hideout_ExposesDefinitionAndPersistentTimestampsWithoutCallerCharacterId()
+    {
+        using var specification = OpenSpecification();
+        var schemas = specification.RootElement.GetProperty("components").GetProperty("schemas");
+        var building = schemas.GetProperty("HideoutBuildingDto").GetProperty("properties");
+        var command = schemas.GetProperty("AccessHideoutCommand").GetProperty("properties");
+
+        Assert.True(building.TryGetProperty("requirement", out _));
+        Assert.True(building.TryGetProperty("buildTime", out _));
+        Assert.Equal("date-time", building.GetProperty("buildStartedAt").GetProperty("format").GetString());
+        Assert.Equal("date-time", building.GetProperty("buildEndsAt").GetProperty("format").GetString());
+        Assert.False(command.TryGetProperty("characterId", out _));
+        Assert.False(building.TryGetProperty("status", out _));
+    }
+
     [Theory]
     [InlineData("SaveCharacterTransformCommand")]
     [InlineData("CharacterTransformDto")]
@@ -81,6 +97,7 @@ public class OpenApiContractTests
             ("/api/CharacterExperiences", "POST"),
             ("/api/CharacterInventories", "POST"),
             ("/api/CharacterStashes", "POST"),
+            ("/api/Hideouts", "POST"),
             ("/api/CharacterInventories/Trade", "POST"),
             ("/api/CharacterQuests/Accept", "POST"),
             ("/api/CharacterQuests/Progress", "POST"),
@@ -119,6 +136,18 @@ public class OpenApiContractTests
         }
     }
 
+    [Fact]
+    public void InventoryUpdate_ExposesOptionalAtomicCharacterUpdate()
+    {
+        using var specification = OpenSpecification();
+        var schema = specification.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("UpdateCharacterInventoryCommand");
+        var update = schema.GetProperty("properties").GetProperty("characterUpdate");
+
+        Assert.Contains("#/components/schemas/UpdateCharacterCommand", update.GetRawText());
+        Assert.True(update.GetProperty("nullable").GetBoolean());
+    }
+
     [Theory]
     [InlineData("AddCharacterExperienceCommand")]
     [InlineData("UpdateCharacterInventoryCommand")]
@@ -149,7 +178,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(33, operations.Length);
+        Assert.Equal(34, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -162,6 +191,7 @@ public class OpenApiContractTests
         {
             "AcceptCharacterQuest",
             "AccessCharacterStash",
+            "AccessHideout",
             "AddCharacterExperience",
             "AddCharacterQuestProgress",
             "AuthorizeWhisper",

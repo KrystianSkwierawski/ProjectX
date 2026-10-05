@@ -5,6 +5,9 @@ namespace ProjectX.Application.Common.Interfaces;
 
 public interface IApplicationDbContext
 {
+    DbSet<HideoutBuildingType> HideoutBuildingTypes { get; }
+    DbSet<CharacterHideout> CharacterHideouts { get; }
+
     DbSet<CharacterStash> CharacterStashes { get; }
     DbSet<Character> Characters { get; }
     DbSet<Domain.Entities.CharacterSettings> CharacterSettings { get; }
