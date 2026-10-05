@@ -20,7 +20,8 @@ public class CharacterTransforms : EndpointGroupBase
         groupBuilder
             .MapPost(SaveCharacterTransform)
             .WithSummary("Save character transform")
-            .WithDescription("Saves a character's world transform.")
+            .WithDescription("Saves the selected character's resumable scene and world transform. Temporary dungeon runs save their world return point.")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
     }

@@ -19,9 +19,13 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
         private GameObject _exclamationMark;
         private GameObject _quesionMark;
+        private bool _subscribed;
 
-        private async void Start()
+        private void Start()
         {
+#if UNITY_SERVER && !UNITY_EDITOR
+            return;
+#else
             _exclamationMark = gameObject.transform.Find("ExclamationMark").gameObject;
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
@@ -31,6 +35,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 .FirstOrDefault();
 
             SetStatus();
+            _subscribed = true;
 
             foreach (var questId in _questsIds)
             {
@@ -69,6 +74,23 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     HideQuestionMark();
                     CheckNextQuest();
                 });
+            }
+#endif
+        }
+
+        private void OnDestroy()
+        {
+            if (!_subscribed)
+            {
+                return;
+            }
+
+            foreach (var questId in _questsIds)
+            {
+                var key = questId.ToString();
+                AcceptQuestSubscription.Instance.Unsubscribe(key);
+                FinishCharacterQuestSubscription.Instance.Unsubscribe(key);
+                CompleteQuestSubscription.Instance.Unsubscribe(key);
             }
         }
 

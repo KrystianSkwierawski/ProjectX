@@ -63,7 +63,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
                 button.OnRightClick.AddListener(() => InventoryUI.Instance.UseActionBarItem(GetBinding(index)));
 
-                InventoryUI.Instance.ConfigureActionBarDrag(root.gameObject, slot.Image, slot.Count,
+                InventoryUI.Instance.ConfigureItemDrag(root.gameObject, slot.Image, slot.Count,
                     () => GetBinding(index), eventData =>
                     {
                         var target = Array.FindIndex(_slots, x => RectTransformUtility.RectangleContainsScreenPoint(
@@ -106,10 +106,12 @@ namespace Assets.Scripts.Areas.Shared.UI
             {
                 _lastCanvasSize = canvasSize;
                 var columns = canvasSize.x >= 740f ? 10 : 5;
-                var cellSize = Mathf.Min(64f, (canvasSize.x - 32f - (columns - 1) * 6f) / columns);
+                var spacing = _layout.spacing;
+                var cellSize = Mathf.Min(50f, (canvasSize.x - 32f - (columns - 1) * spacing.x) / columns);
                 _layout.constraintCount = columns;
                 _layout.cellSize = new Vector2(cellSize, cellSize);
-                _bar.sizeDelta = new Vector2(columns * (cellSize + 6f) - 6f, (10 / columns) * (cellSize + 6f) - 6f);
+                _bar.sizeDelta = new Vector2(columns * (cellSize + spacing.x) - spacing.x,
+                    (10 / columns) * (cellSize + spacing.y) - spacing.y);
                 // Leave a separate bottom row for QuickAccess on narrow screens.
                 _bar.anchoredPosition = new Vector2(0f, canvasSize.x < 1200f ? 84f : 16f);
             }

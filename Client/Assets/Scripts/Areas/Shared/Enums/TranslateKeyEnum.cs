@@ -217,6 +217,19 @@ namespace Assets.Scripts.Areas.Shared.Enums
         QuestInventoryChanged,
         ActionBarsUsableOnly,
         ActionBarsClearHint,
-        CharacterSettingsSaveFailed
+        CharacterSettingsSaveFailed,
+        DungeonLoading,
+        DungeonPortalUnavailable,
+        DungeonPortalDead,
+        StashTitle,
+        StashHint,
+        StashFull,
+        StashChanged,
+        ChamomileFarmTitle,
+        HideoutBuildTime,
+        HideoutUnavailable,
+        HideoutMissingMaterials,
+        HideoutBuild,
+        ChamomileFarmDescription,
     }
 }

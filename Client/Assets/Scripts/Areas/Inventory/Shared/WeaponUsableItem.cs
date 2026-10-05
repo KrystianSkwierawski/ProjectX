@@ -70,7 +70,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             character.AmmoType = InventoryItemEnum.AmmoTemplate;
             character.AmmoCount = 0;
 
-#if UNITY_EDITOR
+#if !UNITY_SERVER || UNITY_EDITOR
             GearUI.Instance.Wear(GearUI.Instance.Ammo, new InventoryItemDto
             {
                 Type = InventoryItemEnum.AmmoTemplate,

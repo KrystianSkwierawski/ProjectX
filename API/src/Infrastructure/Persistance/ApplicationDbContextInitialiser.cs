@@ -47,6 +47,22 @@ public class ApplicationDbContextInitialiser
 
     private async Task SeedCatalogsAsync()
     {
+        _context.HideoutBuildingTypes.AddRange(Enum.GetValues<HideoutBuildingEnum>()
+            .Where(id => id != HideoutBuildingEnum.None)
+            .Select(id =>
+            {
+                var parameters = id.GetParameters();
+
+                return new HideoutBuildingType
+                {
+                    Id = id,
+                    Name = id.ToString(),
+                    Requirement = parameters.Requirement,
+                    BuildTime = parameters.BuildTime,
+                    Status = parameters.Status
+                };
+            }));
+
         _context.Quests.AddRange(Enum.GetValues<QuestEnum>()
             .Where(id => id != QuestEnum.None)
             .Select(id =>

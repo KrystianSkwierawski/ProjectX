@@ -46,7 +46,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void Update()
         {
-            if (IsOwner)
+            if (IsOwner && !GetComponent<DungeonTravel>().IsTransitioning)
             {
                 //CheckSfx();
                 CheckInput();
@@ -64,7 +64,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 return;
             }
 
-            if (_thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump)
+            if (_target == null || !_target.activeInHierarchy || _thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump)
             {
                 InterruptCast();
                 return;
@@ -158,6 +158,13 @@ namespace Assets.Scripts.Areas.Professions.Mono
             _thirdPersonController.UnlockCamera();
         }
 
+        public void CancelForTravel()
+        {
+            _isInterrupted = false;
+            _interruptTimer = 0f;
+            StopHerbalism();
+        }
+
         private void InterruptCast()
         {
             _isCasting = false;
@@ -173,7 +180,10 @@ namespace Assets.Scripts.Areas.Professions.Mono
         private void ProcessServerRpc(NetworkObjectReference networkObjectRef)
         {
             // TODO: validation
-            if (networkObjectRef.TryGet(out NetworkObject networkObject) && HasRequiredLevel(networkObject.gameObject.name))
+            if (DungeonTravel.CanInteract(OwnerClientId)
+                && networkObjectRef.TryGet(out NetworkObject networkObject)
+                && DungeonWorldObject.SameInstance(gameObject, networkObject.gameObject)
+                && HasRequiredLevel(networkObject.gameObject.name))
             {
                 var gameObject = networkObject.gameObject;
                 var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);

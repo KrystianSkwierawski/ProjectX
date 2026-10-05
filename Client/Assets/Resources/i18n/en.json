@@ -212,5 +212,18 @@
     "QuestInventoryChanged": "The quest could not be completed because your inventory changed. The inventory has been refreshed.",
     "ActionBarsUsableOnly": "Drag a usable item here (gold, potions, equipment or ammunition).",
     "ActionBarsClearHint": "Right-click to use. Drag to another slot to move or swap; drag outside the bar to clear.",
-    "CharacterSettingsSaveFailed": "Settings could not be saved. Please try again."
+    "CharacterSettingsSaveFailed": "Settings could not be saved. Please try again.",
+    "DungeonLoading": "Loading location...",
+    "DungeonPortalUnavailable": "Cannot use the portal right now. Please try again.",
+    "DungeonPortalDead": "You cannot use a portal with 0 HP. Restore your health first.",
+    "StashTitle": "Stash",
+    "StashHint": "Right-click: transfer stack | Alt + right-click: split",
+    "StashFull": "The destination has no room for the entire stack. Nothing was transferred.",
+    "StashChanged": "Stash access failed or its contents changed. Open the stash again to refresh.",
+    "ChamomileFarmTitle": "Chamomile farm",
+    "HideoutBuildTime": "Build time",
+    "HideoutUnavailable": "Hideout unavailable. Re-enter to refresh its state.",
+    "HideoutMissingMaterials": "Not enough building materials.",
+    "HideoutBuild": "Build",
+    "ChamomileFarmDescription": "Once built, this farm grows chamomile in your private hideout. Chamomile regrows after harvesting, even while you explore other locations."
 }

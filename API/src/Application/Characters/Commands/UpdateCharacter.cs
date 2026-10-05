@@ -21,6 +21,10 @@ public record UpdateCharacterCommand : IRequest
     public InventoryItemEnum? WeaponType { get; init; }
     public InventoryItemEnum? AmmoType { get; init; }
     public int? AmmoCount { get; init; }
+
+    public CharacterStateUpdate ToStateUpdate() => new(
+        Health, MaxHealth, Strength, Dexterity, Speed, Intellect, Armor,
+        HelmetType, ChestType, BootsType, WeaponType, AmmoType, AmmoCount);
 }
 
 public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterCommand>
@@ -44,20 +48,7 @@ public class UpdateCharacterCommandHandler : IRequestHandler<UpdateCharacterComm
             .Where(x => x.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character", cancellationToken);
 
-        character.UpdateState(new CharacterStateUpdate(
-            request.Health,
-            request.MaxHealth,
-            request.Strength,
-            request.Dexterity,
-            request.Speed,
-            request.Intellect,
-            request.Armor,
-            request.HelmetType,
-            request.ChestType,
-            request.BootsType,
-            request.WeaponType,
-            request.AmmoType,
-            request.AmmoCount));
+        character.UpdateState(request.ToStateUpdate());
 
         await _context.SaveChangesAsync(cancellationToken);
     }

@@ -15,6 +15,9 @@ namespace Assets.Scripts.Areas.Inventory.Models
 
         public int? MoveTargetSlotIndex { get; set; }
 
+        // Set only by authoritative server gameplay; deliberately excluded from NGO serialization.
+        public Assets.Scripts.Areas.Character.Models.UpdateCharacterCommand CharacterUpdate { get; set; }
+
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             // Serialize Add array length and elements

@@ -20,6 +20,11 @@ namespace Assets.Scripts.Areas.Inventory.Subscriptions
 
         public Action OnSucceeded { get; set; }
 
+        // Server-state continuation for accepted persistence, including after despawn. No RPC/UI work.
+        public Action OnPersisted { get; set; }
+
         public Action OnRejected { get; set; }
+
+        public Action OnCompleted { get; set; }
     }
 }

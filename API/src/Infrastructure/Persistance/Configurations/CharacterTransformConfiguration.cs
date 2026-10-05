@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProjectX.Domain.Entities;
 
@@ -8,6 +8,10 @@ public class CharacterTransformConfiguration : IEntityTypeConfiguration<Characte
 {
     public void Configure(EntityTypeBuilder<CharacterTransform> builder)
     {
+        builder.Property(x => x.SceneName)
+            .HasMaxLength(64)
+            .HasDefaultValue("EnvironmentScene");
+
         builder
             .HasOne(x => x.Character)
             .WithMany(x => x.CharacterTransforms)

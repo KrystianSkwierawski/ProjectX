@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Inventory.Mono;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,6 @@ namespace Assets.Scripts.Areas.Quest.UI
 
         public Button QuestAcceptButton { get; private set; }
 
-        public Button QuestCancelButton { get; private set; }
 
         #endregion
 
@@ -71,13 +71,13 @@ namespace Assets.Scripts.Areas.Quest.UI
         {
             QuestCanvas = GameObject.Find("QuestCanvas");
             Quest = QuestCanvas.transform.Find("Quest").gameObject;
+            Quest.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Hide);
             QuestLog = QuestCanvas.transform.Find("Log").gameObject;
             QuestLogContent = QuestLog.transform.Find("Viewport/Content").gameObject;
             QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
             QuestTitleText = QuestCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>();
             QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description/Viewport/Content/Text").GetComponent<TextMeshProUGUI>();
             QuestAcceptButton = QuestCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>();
-            QuestCancelButton = QuestCanvas.transform.Find("Quest/CancelButton").GetComponent<Button>();
             Material001 = Resources.Load<Material>("Materials/Material.001");
             Material002 = Resources.Load<Material>("Materials/Material.002");
 
@@ -119,6 +119,8 @@ namespace Assets.Scripts.Areas.Quest.UI
             {
                 return;
             }
+
+            CharacterStash.Local?.Close();
 
             // FIXME: array
             CharacterUI.Instance.Hide();

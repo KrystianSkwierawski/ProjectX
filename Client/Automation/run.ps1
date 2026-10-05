@@ -200,6 +200,12 @@ function Invoke-UnityServerBuild {
         return
     }
 
+    foreach ($locationAsset in @("Assets\Scenes\EnvironmentScene.unity", "Assets\Scenes\DungeonScene.unity", "Assets\Prefabs\Locations\Resources\DungeonEnvironmentPrefab.prefab", "Assets\Resources\DungeonNavMesh.asset", "Assets\Scenes\TemplateScene.unity", "Assets\Prefabs\Locations\Resources\TemplateEnvironmentPrefab.prefab", "Assets\Resources\TemplateNavMesh.asset", "Assets\Scenes\HideoutScene.unity", "Assets\Prefabs\Locations\Resources\HideoutEnvironmentPrefab.prefab", "Assets\Prefabs\Locations\ChamomileFarm.prefab", "Assets\Resources\HideoutNavMesh.asset")) {
+        if (-not (Test-Path -LiteralPath (Join-Path $clientPath $locationAsset))) {
+            throw "Location asset '$locationAsset' is required by ProjectXDevAutomation's runtime scene lists."
+        }
+    }
+
     $logPath = Join-Path $clientPath "Logs\ProjectXServerBuild.log"
     New-Item -ItemType Directory -Force -Path (Split-Path $logPath) | Out-Null
     New-Item -ItemType Directory -Force -Path (Split-Path $OutputPath) | Out-Null

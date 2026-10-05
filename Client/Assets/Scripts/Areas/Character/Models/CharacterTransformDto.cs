@@ -2,6 +2,8 @@ namespace Assets.Scripts.Areas.Character.Models
 {
     public class CharacterTransformDto
     {
+        public string SceneName { get; set; } = "EnvironmentScene";
+
         public float PositionX { get; set; }
 
         public float PositionY { get; set; }

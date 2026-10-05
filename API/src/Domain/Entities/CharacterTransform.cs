@@ -8,6 +8,8 @@ public class CharacterTransform : BaseAuditableEntity
 
     public int CharacterId { get; set; }
 
+    public string SceneName { get; set; } = "EnvironmentScene";
+
     public float PositionX { get; set; }
 
     public float PositionY { get; set; }

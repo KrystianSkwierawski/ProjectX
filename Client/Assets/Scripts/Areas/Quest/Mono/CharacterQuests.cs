@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Assets.Scripts.Areas.Character;
@@ -32,12 +33,27 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
         private CancellationTokenSource _networkLifetimeCancellationTokenSource;
         private readonly SemaphoreSlim _questMutationSemaphore = new SemaphoreSlim(1, 1);
+        private readonly HashSet<int> _presentedQuestCompletions = new HashSet<int>();
+        private readonly HashSet<int> _presentedQuestAcceptances = new HashSet<int>();
         private QuestNpc _questNpc;
         private StarterAssetsInputs _input;
+
+        public UniTask WaitForInventoryQuestMutationAsync(CancellationToken cancellationToken)
+        {
+            return _questMutationSemaphore.WaitAsync(cancellationToken).AsUniTask();
+        }
+
+        public void ReleaseInventoryQuestMutation()
+        {
+            _questMutationSemaphore.Release();
+        }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            _presentedQuestCompletions.Clear();
+            _presentedQuestAcceptances.Clear();
 
             CancelNetworkLifetime();
             _networkLifetimeCancellationTokenSource?.Dispose();
@@ -65,6 +81,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                             e.QuestType,
                             e.Progress,
                             OwnerClientId,
+                            e.PlayerSessionId,
                             operationCancellationToken,
                             cancellationToken)
                         .SuppressCancellationThrow()
@@ -185,28 +202,51 @@ namespace Assets.Scripts.Areas.Quest.Mono
             int progress,
             ClientRpcParams rpcParams = default)
         {
-            var characterQuest = new CharacterQuestDto
+            ApplyAcceptedQuest(new CharacterQuestDto
             {
                 Id = characterQuestId,
                 QuestId = questId,
                 Status = status,
                 Progress = progress
-            };
+            });
+        }
 
+        private void ApplyAcceptedQuest(CharacterQuestDto acceptedQuest)
+        {
+            if (!_presentedQuestAcceptances.Add(acceptedQuest.Id))
+            {
+                return;
+            }
+
+            QuestManager.Instance.InvalidatePendingCharacterQuestLoads();
+            var characterQuest = QuestManager.Instance.CharacterQuests
+                .Where(x => x.Id == acceptedQuest.Id)
+                .FirstOrDefault();
+
+            if (characterQuest == null)
+            {
+                characterQuest = acceptedQuest;
+                QuestManager.Instance.CharacterQuests.Add(characterQuest);
+            }
+
+            if (characterQuest.Status == CharacterQuestStatusEnum.Completed)
+            {
+                return;
+            }
+
+            Debug.Log($"Presenting quest acceptance. CharacterQuestId: {characterQuest.Id}.");
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestAccepted, 0.5f);
-
-            QuestManager.Instance.CharacterQuests.Add(characterQuest);
 
             QuestUI.Instance.Accept(characterQuest);
 
-            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(questId.ToString(), new AddQuestSubscriptionEvent
+            AcceptQuestSubscription.Instance.InvokeAndUnsubscribe(characterQuest.QuestId.ToString(), new AddQuestSubscriptionEvent
             {
                 CharacterQuest = characterQuest
             });
 
-            if (status == CharacterQuestStatusEnum.Finished)
+            if (characterQuest.Status == CharacterQuestStatusEnum.Finished)
             {
-                FinishCharacterQuestSubscription.Instance.Invoke(questId.ToString(), new FinishCharacterQuestSubscriptionEvent
+                FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.QuestId.ToString(), new FinishCharacterQuestSubscriptionEvent
                 {
                     IsFinished = true
                 });
@@ -278,16 +318,25 @@ namespace Assets.Scripts.Areas.Quest.Mono
         [ClientRpc]
         private void CompleteQuestClientRpc(int characterQuestId, ClientRpcParams rpcParams = default)
         {
-            var characterQuest = QuestManager.Instance.CharacterQuests?
-                .FirstOrDefault(x => x.Id == characterQuestId);
+            ApplyCompletedQuest(characterQuestId);
+        }
 
-            if (characterQuest == null || characterQuest.Status == CharacterQuestStatusEnum.Completed)
+        public void ApplyCompletedQuest(int characterQuestId)
+        {
+            var characterQuest = QuestManager.Instance.CharacterQuests?
+                .Where(x => x.Id == characterQuestId)
+                .FirstOrDefault();
+
+            if (characterQuest == null || !_presentedQuestCompletions.Add(characterQuestId))
             {
                 return;
             }
 
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.QuestCompleted, 0.5f);
+            QuestManager.Instance.InvalidatePendingCharacterQuestLoads();
             characterQuest.Status = CharacterQuestStatusEnum.Completed;
+
+            Debug.Log($"Presenting quest completion. CharacterQuestId: {characterQuestId}.");
 
             QuestUI.Instance.Complete(characterQuest);
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(
@@ -325,8 +374,6 @@ namespace Assets.Scripts.Areas.Quest.Mono
             {
                 _input = GetComponent<StarterAssetsInputs>();
 
-                QuestUI.Instance.QuestCancelButton.onClick.AddListener(() => QuestUI.Instance.Hide());
-
                 QuestUI.Instance.QuestAcceptButton.onClick.AddListener(() =>
                 {
                     QuestUI.Instance.Hide();
@@ -353,6 +400,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
             QuestTypeEnum questType,
             int progress,
             ulong clientId,
+            string playerSessionId,
             CancellationToken operationCancellationToken,
             CancellationToken networkLifetimeCancellationToken)
         {
@@ -369,6 +417,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     questType,
                     progress,
                     clientId,
+                    playerSessionId,
                     operationCancellationToken,
                     networkLifetimeCancellationToken);
             }
@@ -383,14 +432,10 @@ namespace Assets.Scripts.Areas.Quest.Mono
             QuestTypeEnum questType,
             int progress,
             ulong clientId,
+            string playerSessionId,
             CancellationToken operationCancellationToken,
             CancellationToken networkLifetimeCancellationToken)
         {
-            if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
-            {
-                return;
-            }
-
             var quests = QuestManager.Instance.Quests
                 .Where(x => x.GameObjectName == gameObjectName)
                 .Where(x => x.Type == questType)
@@ -403,14 +448,9 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            var playerSessionId = UserManager.Instance.GetPlayerSessionId(clientId);
-
             foreach (var quest in quests)
             {
-                if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
-                {
-                    return;
-                }
+                operationCancellationToken.ThrowIfCancellationRequested();
 
                 var result = await QuestManager.Instance.CheckProgressAsync(
                     quest.Id,
@@ -418,12 +458,9 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     playerSessionId,
                     operationCancellationToken);
 
-                if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
-                {
-                    return;
-                }
+                Debug.Log($"Quest progress persisted. ClientId: {clientId}, QuestId: {quest.Id}, Status: {result.Status}, Progress: {result.Progress}.");
 
-                if (result.Status != CharacterQuestStatusEnum.None)
+                if (CanUseNetworkLifetime(networkLifetimeCancellationToken) && result.Status != CharacterQuestStatusEnum.None)
                 {
                     UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, clientId.ToClientRpcParams());
                 }
@@ -455,6 +492,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             var previousStatus = characterQuest.Status;
 
+            QuestManager.Instance.InvalidatePendingCharacterQuestLoads();
             characterQuest.Progress = progress;
             characterQuest.Status = status;
 

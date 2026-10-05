@@ -9,6 +9,7 @@
 - Repository-local `dotnet-ef` 10.0.11 is pinned in `API/.config/dotnet-tools.json`.
 
 ## Backend Runtime
+- Migration `20260921161117_AddAccountStash` adds the account-keyed CharacterStashes table, 64-slot capacity default, inventory JSON, revision concurrency token and auditable timestamp.
 - Default persistence is local SQL Server database `ProjectX`; Development may use the in-memory provider.
 - Development startup intentionally deletes/recreates/seeds the database. Non-Development startup never initializes it; NSwag sets `SkipDatabaseInitialization=true`.
 - Local HTTPS endpoint is `https://localhost:5001`; Swagger/root `/api` redirect are Development-only.
@@ -16,6 +17,7 @@
 - Current migrations are `20260811172103_Init`, `20260824173652_AddCharacterFriendships`, `20260904191036_AddCharacterInventoryTradeReceipts`, `20260912100007_AddCharacterSettings`, and the model snapshot.
 
 ## Unity Client And Server
+- Dungeon scenes are included in global/client/dedicated build lists. `Prefabs/Locations/Resources/DungeonEnvironmentPrefab.prefab` is shared by the client scene and server runtime instances, with checked-in `DungeonNavMesh.asset`. Re-bake authored geometry via `ProjectX > Bake Dungeon Navigation`. EnvironmentScene now includes NPC/crafting and server spawners; TestScene/ServerScene were removed from assets/startup/build profiles. Batch Unity runs need the normal user context outside the sandbox for licensing; an isolated project successfully baked and validated dungeon navigation. Migration `20260914162935_AddCharacterTransformScene` adds the resumable scene to character transform history, with `EnvironmentScene` as the existing-row default.
 - Unity `6000.1.15f1` under `Client/`; generated solutions include `ProjectXClient.sln` and `Client.sln`.
 - Key packages: Netcode for GameObjects 2.4.4, Unity Transport 2.5.3, Multiplayer Services 1.2.0, Multiplayer Play Mode 1.6.2, Dedicated Server 1.6.2, Input System, URP, TextMesh Pro/UGUI, Cinemachine, AI Navigation, UniTask, NuGetForUnity, and ParrelSync.
 - MPS stays at 1.2.0 because 2.1.2 removed Multiplay editor types required by Multiplayer Play Mode 1.6.x.
@@ -42,3 +44,5 @@
 - Validate modified JSON resources.
 - Root `AGENTS.md` is the repository instruction file; Memory Bank is read on demand according to its routing table. `.claude/settings.local.json`, if it reappears, is secret local configuration and must not be committed or quoted.
 - Git status emits a known permission warning for `C:/Users/pc/.config/git/ignore`.
+
+- All prefab assets live under `Assets/Prefabs`: project modules include Character, Combat, Inventory, Professions, Spawning, Locations, Loading, Authentication, Quest, Merchant, Chat, Shared/UI, ActionBars, Friends, Party and Trade. Imported package prefabs are under ThirdParty with their original package hierarchy. Location environment prefabs remain in `Prefabs/Locations/Resources` so `Resources.Load` names are unchanged; the NavMesh baker uses the new asset path. Moves preserve prefab bytes and .meta GUIDs.

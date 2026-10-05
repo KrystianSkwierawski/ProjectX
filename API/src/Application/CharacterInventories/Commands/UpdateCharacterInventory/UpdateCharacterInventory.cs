@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
+using ProjectX.Application.Characters.Commands;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Domain.Enums;
@@ -12,7 +13,8 @@ public record UpdateCharacterInventoryCommand(
     InventoryItemDto[] Remove,
     int? SplitSlotIndex = null,
     int? MoveSourceSlotIndex = null,
-    int? MoveTargetSlotIndex = null) : IRequest<UpdateCharacterInventoryDto>;
+    int? MoveTargetSlotIndex = null,
+    UpdateCharacterCommand? CharacterUpdate = null) : IRequest<UpdateCharacterInventoryDto>;
 
 public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateCharacterInventoryCommand, UpdateCharacterInventoryDto>
 {
@@ -31,6 +33,7 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         var selectedCharacterId = _currentUserService.GetRequiredCharacterId();
 
         var entity = await _context.CharacterInventories
+            .Include(x => x.Character)
             .Where(x => x.Id == selectedCharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
@@ -78,6 +81,11 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         entity.Inventory = inventory;
         entity.Count = (short)effectiveCapacity;
+
+        if (request.CharacterUpdate != null)
+        {
+            entity.Character.UpdateState(request.CharacterUpdate.ToStateUpdate());
+        }
 
         try
         {

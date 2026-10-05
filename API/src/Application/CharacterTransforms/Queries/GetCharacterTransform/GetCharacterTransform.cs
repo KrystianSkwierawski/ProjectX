@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
@@ -29,6 +29,7 @@ public class GetPlayerPositionQueryHandler : IRequestHandler<GetCharacterTransfo
             .Select(x => new CharacterTransformDto
             {
                 CharacterId = x.CharacterId,
+                SceneName = x.SceneName,
                 PositionX = x.PositionX,
                 PositionY = x.PositionY,
                 PositionZ = x.PositionZ,

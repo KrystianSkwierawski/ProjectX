@@ -7,6 +7,7 @@ using Assets.Scripts.Areas.Party.Mono;
 using Assets.Scripts.Areas.Quest.Enums;
 using Assets.Scripts.Areas.Quest.Subscriptions;
 using Assets.Scripts.Areas.Shared.Subscriptions;
+using Assets.Scripts.Areas.Shared.Mono;
 
 namespace Assets.Scripts.Areas.Character.Mono
 {
@@ -25,7 +26,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
-                    if (!IsSpawned || Network.Value <= 0)
+                    if (!IsSpawned || Network.Value <= 0 || !DungeonTravel.CanInteract(e.ClientId)
+                        || !DungeonWorldObject.SameInstance(gameObject, e.Player))
                     {
                         return;
                     }

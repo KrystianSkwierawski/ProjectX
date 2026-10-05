@@ -290,7 +290,9 @@ namespace Assets.Scripts.Areas.Trade.Mono
                     return;
                 }
 
-                var status = TradeServerState.Invite(OwnerClientId, targetClientId);
+                var status = CanShareLocation(OwnerClientId, targetClientId)
+                    ? TradeServerState.Invite(OwnerClientId, targetClientId)
+                    : TradeOperationStatusEnum.TargetBusy;
 
                 SendOperation(OwnerClientId, TradeOperationTypeEnum.Invite, status, authorization.CharacterName);
 
@@ -340,7 +342,9 @@ namespace Assets.Scripts.Areas.Trade.Mono
                     return;
                 }
 
-                var status = TradeServerState.Respond(OwnerClientId, inviterClientId, accept);
+                var status = !accept || CanShareLocation(OwnerClientId, inviterClientId)
+                    ? TradeServerState.Respond(OwnerClientId, inviterClientId, accept)
+                    : TradeOperationStatusEnum.TargetBusy;
 
                 SendOperation(OwnerClientId, operation, status, GetCharacterName(inviterClientId));
 
@@ -485,6 +489,23 @@ namespace Assets.Scripts.Areas.Trade.Mono
                     EndMutation(cancellationToken);
                 }
             }
+        }
+
+        private static bool CanShareLocation(ulong first, ulong second)
+        {
+            return DungeonTravel.CanInteract(first) && DungeonTravel.CanInteract(second)
+                && DungeonTravel.GetInstanceId(first) == DungeonTravel.GetInstanceId(second);
+        }
+
+        public void CancelForTravel()
+        {
+            if (!IsServer || TradeServerState.IsCommitPendingForPlayer(OwnerClientId))
+            {
+                return;
+            }
+
+            TradeServerState.Cancel(OwnerClientId, out _);
+            SendStateToAll();
         }
 
         internal static void FailCommit(TradeServerState.TradeCommit commit, TradeOperationStatusEnum status)

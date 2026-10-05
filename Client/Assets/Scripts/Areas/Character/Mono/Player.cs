@@ -1,4 +1,7 @@
 using System;
+using System.Threading;
+using Assets.Scripts.Areas.Inventory.Mono;
+using Assets.Scripts.Areas.Trade.Mono;
 using Assets.Scripts.Areas.Character.Enums;
 using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.Subscriptions;
@@ -24,6 +27,18 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class Player : NetworkBehaviour
     {
+        private CancellationTokenSource _spawnLifetime;
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            _spawnLifetime?.Dispose();
+            _spawnLifetime = new CancellationTokenSource();
+        }
+
+        private bool IsCurrentSpawn(CancellationToken token) => IsSpawned && _spawnLifetime != null
+            && _spawnLifetime.Token == token && !token.IsCancellationRequested;
+
         private void Start()
         {
             if (IsOwner)
@@ -69,14 +84,48 @@ namespace Assets.Scripts.Areas.Character.Mono
                     character.Health = Math.Max(character.Health - damage, 0);
                     PartyController.NotifyCharacterChanged(OwnerClientId);
 
-                    AttackPlayerClientRpc(character.Health, OwnerClientId.ToClientRpcParams());
+                    var respawn = GetComponent<DungeonTravel>().GetRespawnPose();
 
-                    UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                    if (character.Health == 0)
                     {
-                        Health = character.Health
-                    }, playerSessionId)
-                    .Forget();
+                        GetComponent<TargetSelector>().ResetForTravel();
+                        transform.SetPositionAndRotation(respawn.position, respawn.rotation);
+                        Debug.Log($"Player respawned. ClientId: {OwnerClientId}, InstanceId: {DungeonTravel.GetInstanceId(OwnerClientId)}.");
+                    }
+
+                    AttackPlayerClientRpc(character.Health, respawn.position, respawn.rotation, OwnerClientId.ToClientRpcParams());
+
+                    PersistHealthAsync(character, playerSessionId, OwnerClientId).Forget();
                 });
+            }
+        }
+
+        private async UniTask PersistHealthAsync(CharacterDto character, string playerSessionId, ulong clientId)
+        {
+            var inventory = GetComponent<CharacterInventory>();
+            using var mutation = TradeServerState.TrackInventoryMutation(clientId);
+            var operationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+
+            await inventory.WaitForEquipmentMutationAsync(operationToken);
+
+            try
+            {
+                // Damage is immediate; its save waits for potion/gear persistence and captures the resulting HP.
+                var current = UserManager.Instance.Characters.TryGetValue(clientId, out var connectedCharacter)
+                    ? connectedCharacter
+                    : character;
+                var health = current.Health;
+
+                await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                {
+                    Health = health
+                }, playerSessionId, cancellationToken: operationToken);
+
+                Debug.Log($"Health persisted after pending character mutations. ClientId: {clientId}, Health: {health}.");
+            }
+            finally
+            {
+                inventory.ReleaseEquipmentMutation();
             }
         }
 
@@ -105,7 +154,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         [ClientRpc]
-        private void AttackPlayerClientRpc(int health, ClientRpcParams rpcParams = default)
+        private void AttackPlayerClientRpc(int health, Vector3 respawnPosition, Quaternion respawnRotation, ClientRpcParams rpcParams = default)
         {
             var character = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId];
 
@@ -119,8 +168,14 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Death, 0.3f);
 
-                // FIXME: set on server
-                transform.position = new Vector3(3.562874f, 1.41359f, 4.244279f);
+                var previousPosition = transform.position;
+                var controller = GetComponent<CharacterController>();
+                controller.enabled = false;
+                transform.SetPositionAndRotation(respawnPosition, respawnRotation);
+                GetComponent<ClientNetworkTransform>().Teleport(respawnPosition, respawnRotation, transform.localScale);
+                Physics.SyncTransforms();
+                controller.enabled = true;
+                GetComponent<StarterAssets.ThirdPersonController>().ResetAfterTeleport(respawnPosition - previousPosition);
             }
 
             PlayerUI.Instance.SetHealth(character.Health);
@@ -130,13 +185,28 @@ namespace Assets.Scripts.Areas.Character.Mono
         private void LoadCharacterServerRpc()
         {
             var playerSessionId = GetCurrentPlayerSessionId();
-            LoadCharacterAsync(playerSessionId).Forget();
+            LoadCharacterAsync(playerSessionId, _spawnLifetime.Token).Forget();
         }
 
-        private async UniTask LoadCharacterAsync(string playerSessionId)
+        private async UniTask LoadCharacterAsync(string playerSessionId, CancellationToken token)
         {
             var characterId = UserManager.Instance.GetPlayerCharacterId(OwnerClientId);
-            var character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/Current", playerSessionId);
+            CharacterDto character;
+
+            try
+            {
+                character = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>("Characters/Current", playerSessionId,
+                    cancellationToken: token);
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!IsCurrentSpawn(token))
+            {
+                return;
+            }
 
             if (character.Id != characterId)
             {
@@ -201,36 +271,65 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public void ConsumeAmmo()
         {
+            ConsumeAmmoAsync(_spawnLifetime.Token).Forget();
+        }
+
+        private async UniTask ConsumeAmmoAsync(CancellationToken spawnToken)
+        {
+            var inventory = GetComponent<CharacterInventory>();
+            var clientId = OwnerClientId;
+            var character = UserManager.Instance.Characters[clientId];
+            using var mutation = TradeServerState.TrackInventoryMutation(clientId);
+            var operationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
             var playerSessionId = GetCurrentPlayerSessionId();
-            var character = UserManager.Instance.Characters[OwnerClientId];
 
-            if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
+            await inventory.WaitForEquipmentMutationAsync(operationToken);
+
+            try
             {
-                ConsumeAmmoClientRpc(OwnerClientId.ToClientRpcParams());
-
-                character.AmmoCount--;
-
-                if (character.AmmoCount <= 0)
+                // Keep the accepted hit's state after despawn; a live equipment recovery may replace the DTO.
+                if (IsCurrentSpawn(spawnToken)
+                    && UserManager.Instance.Characters.TryGetValue(clientId, out var currentCharacter))
                 {
-                    AbstractGearUsableItem.RemoveStats(character, character.AmmoType);
-
-                    character.AmmoType = InventoryItemEnum.AmmoTemplate;
-                    character.AmmoCount = 0;
+                    character = currentCharacter;
                 }
 
-                // TODO: split to smaller commands
-                UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
                 {
-                    MaxHealth = character.MaxHealth,
-                    Strength = character.Strength,
-                    Dexterity = character.Dexterity,
-                    Speed = character.Speed,
-                    Intellect = character.Intellect,
-                    Armor = character.Armor,
-                    AmmoType = character.AmmoType,
-                    AmmoCount = character.AmmoCount,
-                }, playerSessionId)
-                .Forget();
+                    if (IsCurrentSpawn(spawnToken))
+                    {
+                        ConsumeAmmoClientRpc(clientId.ToClientRpcParams());
+                    }
+
+                    character.AmmoCount--;
+
+                    if (character.AmmoCount <= 0)
+                    {
+                        AbstractGearUsableItem.RemoveStats(character, character.AmmoType);
+
+                        character.AmmoType = InventoryItemEnum.AmmoTemplate;
+                        character.AmmoCount = 0;
+                    }
+
+                    // TODO: split to smaller commands
+                    await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                    {
+                        MaxHealth = character.MaxHealth,
+                        Strength = character.Strength,
+                        Dexterity = character.Dexterity,
+                        Speed = character.Speed,
+                        Intellect = character.Intellect,
+                        Armor = character.Armor,
+                        AmmoType = character.AmmoType,
+                        AmmoCount = character.AmmoCount,
+                    }, playerSessionId, cancellationToken: operationToken);
+
+                    Debug.Log($"Accepted ammo consumption persisted. ClientId: {clientId}, CharacterId: {character.Id}, AmmoType: {character.AmmoType}, AmmoCount: {character.AmmoCount}.");
+                }
+            }
+            finally
+            {
+                inventory.ReleaseEquipmentMutation();
             }
         }
 
@@ -265,6 +364,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
+            _spawnLifetime?.Cancel();
+
             var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);
 
             if (IsServer)
@@ -284,6 +385,10 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
         public override void OnDestroy()
         {
+            _spawnLifetime?.Cancel();
+            _spawnLifetime?.Dispose();
+            _spawnLifetime = null;
+
             var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);
 
             if (IsServer)

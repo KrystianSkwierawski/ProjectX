@@ -1,8 +1,10 @@
-﻿namespace ProjectX.Application.CharacterTransforms.Queries.GetCharacterTransform;
+namespace ProjectX.Application.CharacterTransforms.Queries.GetCharacterTransform;
 
 public class CharacterTransformDto
 {
     public int CharacterId { get; set; }
+
+    public string SceneName { get; set; } = "EnvironmentScene";
 
     public float PositionX { get; set; }
 

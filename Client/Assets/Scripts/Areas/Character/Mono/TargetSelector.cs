@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Assets.Scripts.Areas.Character.Subscriptions;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Extensions;
 using Assets.Scripts.Areas.Shared.UI;
+using Assets.Scripts.Areas.Shared.Mono;
 using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
@@ -33,6 +36,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         private ObjectPool<GameObject> _swordPool;
 
         private GameObject _currentWeapon;
+        private readonly List<GameObject> _weapons = new();
         private bool _onlyView;
 
         private ThirdPersonController _thirdPersonController;
@@ -48,7 +52,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsServer)
             {
                 _fireballPool = new ObjectPool<GameObject>(
-                    createFunc: () => Instantiate(_fireballPrefab),
+                    createFunc: () => CreateWeapon(_fireballPrefab, weapon => _fireballPool.Release(weapon)),
                     actionOnGet: (GameObject gameObject) =>
                     {
                         gameObject.SetActive(true);
@@ -70,7 +74,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 );
 
                 _arrowPool = new ObjectPool<GameObject>(
-                    createFunc: () => Instantiate(_arrowPrefab),
+                    createFunc: () => CreateWeapon(_arrowPrefab, weapon => _arrowPool.Release(weapon)),
                     actionOnGet: (GameObject gameObject) =>
                     {
                         gameObject.SetActive(true);
@@ -92,7 +96,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 );
 
                 _swordPool = new ObjectPool<GameObject>(
-                    createFunc: () => Instantiate(_swordPrefab),
+                    createFunc: () => CreateWeapon(_swordPrefab, weapon => _swordPool.Release(weapon)),
                     actionOnGet: (GameObject gameObject) =>
                     {
                         gameObject.SetActive(true);
@@ -115,9 +119,27 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
         }
 
+        private GameObject CreateWeapon(GameObject prefab, Action<GameObject> release)
+        {
+            var weapon = Instantiate(prefab);
+            _weapons.Add(weapon);
+            weapon.GetComponent<AbstractWeapon>().SetReleaseHandler(finished =>
+            {
+                if (_currentWeapon == finished)
+                {
+                    _currentWeapon = null;
+                }
+
+                release(finished);
+            });
+
+            return weapon;
+        }
+
         private void Update()
         {
-            if (IsOwner && UserManager.Instance.Characters.ContainsKey(OwnerClientId))
+            if (IsOwner && UserManager.Instance.Characters.ContainsKey(OwnerClientId)
+                && !GetComponent<DungeonTravel>().IsTransitioning)
             {
                 CheckCurrentTarget();
 
@@ -194,7 +216,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public void HandleUnselect()
         {
-            StopCasting();
+            StopCasting(failed: true);
             _thirdPersonController.UnlockCamera();
 
             if (_currentlySelectedRenderer != null)
@@ -213,7 +235,9 @@ namespace Assets.Scripts.Areas.Character.Mono
             ClearTargetSubscription();
             _selectedTarget = null;
 
-            if (selectedTargetObjectRef.TryGet(out var selectedTargetTransformObject))
+            if (DungeonTravel.CanInteract(OwnerClientId)
+                && selectedTargetObjectRef.TryGet(out var selectedTargetTransformObject)
+                && DungeonWorldObject.SameInstance(gameObject, selectedTargetTransformObject.gameObject))
             {
                 _selectedTarget = selectedTargetTransformObject.gameObject;
                 _selectedTargetSubscriptionKey = $"{_selectedTarget.GetInstanceID()}_{OwnerClientId}";
@@ -243,6 +267,14 @@ namespace Assets.Scripts.Areas.Character.Mono
             _selectedTarget = null;
         }
 
+        public void ResetForTravel()
+        {
+            if (IsServer)
+            {
+                UnselectTarget();
+            }
+        }
+
         private void ClearTargetSubscription()
         {
             if (string.IsNullOrEmpty(_selectedTargetSubscriptionKey))
@@ -259,6 +291,28 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (IsServer)
             {
                 ClearTargetSubscription();
+
+                foreach (var weapon in _weapons)
+                {
+                    if (weapon == null)
+                    {
+                        continue;
+                    }
+
+                    var networkObject = weapon.GetComponent<NetworkObject>();
+
+                    if (networkObject.IsSpawned)
+                    {
+                        networkObject.Despawn();
+                    }
+                    else
+                    {
+                        Destroy(weapon);
+                    }
+                }
+
+                _weapons.Clear();
+                _currentWeapon = null;
             }
 
             if (_currentlySelectedRenderer != null)
@@ -291,7 +345,14 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         public void SpawnProjectileServerRpc()
         {
+            if (_currentWeapon != null)
+            {
+                return;
+            }
+
             if (_selectedTarget == null
+                || !DungeonTravel.CanInteract(OwnerClientId)
+                || !DungeonWorldObject.SameInstance(gameObject, _selectedTarget)
                 || !_selectedTarget.TryGetComponent(out NetworkObject selectedTargetNetworkObject)
                 || !selectedTargetNetworkObject.IsSpawned)
             {
@@ -325,9 +386,11 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         public void CastServerRpc()
         {
-            if (_currentWeapon != null)
+            if (_currentWeapon != null && DungeonTravel.CanInteract(OwnerClientId)
+                && DungeonWorldObject.SameInstance(gameObject, _selectedTarget))
             {
                 _currentWeapon.GetComponent<AbstractWeapon>().Cast();
+                _currentWeapon = null;
             }
         }
 
@@ -351,7 +414,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             if (_selectedTarget == null || weaponCategory == WeaponCategoryEnum.None)
             {
-                StopCasting();
+                StopCasting(failed: true);
 
                 return;
             }
@@ -360,7 +423,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             {
                 _onlyView = true;
                 _thirdPersonController.UnlockCamera();
-                StopCasting();
+                StopCasting(failed: true);
                 DespawnDespawnServerRpc();
 
                 return;
@@ -398,29 +461,32 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
         }
 
-        private void StopCasting()
+        private void StopCasting(bool failed = false)
         {
+            if (!_isCasting)
+            {
+                return;
+            }
+
             _isCasting = false;
             _castTimer = 0f;
-            PlayerUI.Instance.HideCastBar();
+
+            if (failed)
+            {
+                PlayerUI.Instance.FailCastBar(0.5f);
+                AudioManager.Instance.TryPlayOneShot(Assets.Scripts.Areas.Shared.Enums.AudioTypeEnum.CastingFailed, 0.1f);
+            }
+            else
+            {
+                PlayerUI.Instance.HideCastBar();
+            }
         }
 
         private void DespawnWeapon()
         {
             if (_currentWeapon != null)
             {
-                switch (UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory())
-                {
-                    case WeaponCategoryEnum.Wand:
-                        _fireballPool.Release(_currentWeapon);
-                        break;
-                    case WeaponCategoryEnum.Bow:
-                        _arrowPool.Release(_currentWeapon);
-                        break;
-                    case WeaponCategoryEnum.Sword:
-                        _swordPool.Release(_currentWeapon);
-                        break;
-                }
+                _currentWeapon.GetComponent<AbstractWeapon>().Finish();
 
                 _currentWeapon = null;
             }

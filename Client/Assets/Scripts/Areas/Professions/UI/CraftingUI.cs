@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Inventory.Mono;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
@@ -65,6 +66,10 @@ namespace Assets.Scripts.Areas.Professions.UI
 
         public CraftingRecipeTypeEnum CurrentType { get; private set; }
 
+        public System.Action BuildHideout { get; private set; }
+
+        private string _craftButtonText;
+
         private ObjectPool<RecipesPoolObject> _recipesObjectPool;
 
         private IDictionary<InventoryItemEnum, RecipesPoolObject> _recipesPoolObjects = new Dictionary<InventoryItemEnum, RecipesPoolObject>();
@@ -84,7 +89,57 @@ namespace Assets.Scripts.Areas.Professions.UI
             return count >= x.Count;
         });
 
-        public bool HasRequiredLevel => UserManager.Instance.GetLevelByRecipeType(CurrentType) >= CurrentRecipe.Requirement.Level;
+        public bool HasRequiredLevel => BuildHideout != null || UserManager.Instance.GetLevelByRecipeType(CurrentType) >= CurrentRecipe.Requirement.Level;
+
+        public void ShowHideout(Assets.Scripts.Areas.Hideout.HideoutBuildingDto definition, System.Action build)
+        {
+            Hide();
+            ClearRecipes();
+            ClearRecipe();
+            CurrentType = CraftingRecipeTypeEnum.None;
+            BuildHideout = build;
+            _craftButtonText = CraftButton.GetComponentInChildren<TMP_Text>().text;
+            CraftButton.GetComponentInChildren<TMP_Text>().text = TranslateManager.Instance.GetByKey("HideoutBuild");
+            CurrentRecipe = new CraftingRecipeDto
+            {
+                Requirement = new CraftingRecipeRequirementDto { Items = definition.Requirement.Items, Level = 0 }
+            };
+
+            CharacterStash.Local?.Close();
+            QuestUI.Instance.Hide();
+            CharacterUI.Instance.Hide();
+            MerchantUI.Instance.Hide();
+            GearUI.Instance.Hide();
+
+            var title = _recipesObjectPool.Get();
+            title.Mesh.text = TranslateManager.Instance.GetByKey(definition.Name + "Title");
+            title.Mesh.color = ColorUI.Green;
+            _recipesPoolObjects.Add(InventoryItemEnum.Chamomile, title);
+            RewardText.SetActive(true);
+            RewardText.GetComponent<TMP_Text>().text = TranslateManager.Instance.GetByKey("HideoutBuildTime") + $": {definition.BuildTime}s";
+            var preview = _recipeObjectPool.Get();
+            preview.GameObject.transform.SetParent(Reward.transform, false);
+            preview.Image.texture = Resources.Load<Texture2D>("Icons/ChamomileFarm");
+            preview.Mesh.text = string.Empty;
+            preview.Mesh.gameObject.SetActive(false);
+
+            ConfigurePreview(preview,
+                TranslateManager.Instance.GetByKey(definition.Name + "Title"),
+                TranslateManager.Instance.GetByKey(definition.Name + "Description"));
+
+            _recipeObjects.Add(InventoryItemEnum.None, preview);
+
+            RequirementsText.SetActive(true);
+            RequirementsFlexibleGridLayout.columns = definition.Requirement.Items.Length;
+
+            foreach (var item in definition.Requirement.Items)
+            {
+                AddInventoryItem(item, Requirements.transform);
+            }
+
+            Crafting.SetActive(true);
+            CraftButton.interactable = HasAllRequirements;
+        }
 
         private void Start()
         {
@@ -100,6 +155,9 @@ namespace Assets.Scripts.Areas.Professions.UI
             RequirementsText = Recipe.transform.Find("RequirementsText").gameObject;
             CraftButton = Crafting.transform.Find("CraftButton").GetComponent<Button>();
             ExitButton = Crafting.transform.Find("ExitButton").GetComponent<Button>();
+
+            ConfigureSlotLayout(Reward.GetComponent<FlexibleGridLayout>());
+            ConfigureSlotLayout(RequirementsFlexibleGridLayout);
 
             _recipesObjectPool = new ObjectPool<RecipesPoolObject>(
                 createFunc: () =>
@@ -133,12 +191,18 @@ namespace Assets.Scripts.Areas.Professions.UI
                     var obj = Instantiate(_inventorySlotPrefab);
 
                     var preview = obj.transform.Find("Preview").gameObject;
+                    var count = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+                    count.enableAutoSizing = true;
+                    count.fontSizeMin = 8;
+                    count.fontSizeMax = 18;
+                    count.textWrappingMode = TextWrappingModes.NoWrap;
+                    count.alignment = TextAlignmentOptions.BottomRight;
 
                     return new RecipePoolObject
                     {
                         GameObject = obj,
                         Image = obj.transform.Find("Background").GetComponent<RawImage>(),
-                        Mesh = obj.transform.Find("Text").GetComponent<TextMeshProUGUI>(),
+                        Mesh = count,
                         HoverUI = obj.GetComponent<HoverUI>(),
                         Preview = preview,
                         PreviewTitleMesh = preview.transform.Find("Title").GetComponent<TextMeshProUGUI>(),
@@ -155,6 +219,12 @@ namespace Assets.Scripts.Areas.Professions.UI
                 actionOnRelease: (RecipePoolObject obj) =>
                 {
                     obj.GameObject.SetActive(false);
+                    obj.Preview.SetActive(false);
+
+                    var key = obj.GameObject.GetInstanceID().ToString();
+                    OnPointerEnterSubscription.Instance.Unsubscribe(key);
+                    OnPointerExitSubscription.Instance.Unsubscribe(key);
+
                     obj.Mesh.gameObject.SetActive(false);
                     obj.Mesh.text = string.Empty;
                     obj.Image.color = ColorUI.Black;
@@ -175,6 +245,8 @@ namespace Assets.Scripts.Areas.Professions.UI
             {
                 return;
             }
+
+            CharacterStash.Local?.Close();
 
             // FIXME: array
             QuestUI.Instance.Hide();
@@ -202,6 +274,16 @@ namespace Assets.Scripts.Areas.Professions.UI
 
         public void Hide()
         {
+            if (BuildHideout != null)
+            {
+                BuildHideout = null;
+                CraftButton.GetComponentInChildren<TMP_Text>().text = _craftButtonText;
+                ClearRecipes();
+                ClearRecipe();
+                CurrentRecipe = null;
+                RewardText.GetComponent<TMP_Text>().text = TranslateManager.Instance.GetByKey("Reward");
+            }
+
             if (Crafting.activeSelf)
             {
                 Crafting.SetActive(false);
@@ -311,12 +393,14 @@ namespace Assets.Scripts.Areas.Professions.UI
         {
             var obj = _recipeObjectPool.Get();
 
-            obj.GameObject.transform.SetParent(parent);
+            obj.GameObject.transform.SetParent(parent, false);
             obj.GameObject.transform.SetAsLastSibling();
 
             obj.Image.texture = InventoryUI.Instance.Textures[item.Type];
-            obj.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
-            obj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(item);
+
+            ConfigurePreview(obj,
+                TranslateManager.Instance.GetByKey($"{item.Type}Title"),
+                InventoryUI.Instance.PrepareDescription(item));
 
             var count = item.Type == InventoryItemEnum.Xp
                 ? UserManager.Instance.GetLevelByRecipeType(CurrentType)
@@ -334,7 +418,19 @@ namespace Assets.Scripts.Areas.Professions.UI
                     ? ColorUI.Green
                     : ColorUI.Red;
 
+            _recipeObjects.Add(item.Type, obj);
+        }
+
+        private static void ConfigurePreview(RecipePoolObject obj, string title, string description)
+        {
+            obj.Preview.SetActive(false);
+            obj.PreviewTitleMesh.text = title;
+            obj.PreviewDescriptionMesh.text = description;
+            obj.HoverUI.enabled = true;
+
             var key = obj.GameObject.GetInstanceID().ToString();
+            OnPointerEnterSubscription.Instance.Unsubscribe(key);
+            OnPointerExitSubscription.Instance.Unsubscribe(key);
 
             OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
             {
@@ -346,7 +442,16 @@ namespace Assets.Scripts.Areas.Professions.UI
                 obj.Preview.SetActive(false);
             });
 
-            _recipeObjects.Add(item.Type, obj);
+        }
+
+        private static void ConfigureSlotLayout(FlexibleGridLayout layout)
+        {
+            layout.fitX = false;
+            layout.fitY = false;
+            layout.cellSize = new Vector2(60, 60);
+            layout.spacing = new Vector2(8, 0);
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.rows = 1;
         }
 
         private void ClearRecipes()

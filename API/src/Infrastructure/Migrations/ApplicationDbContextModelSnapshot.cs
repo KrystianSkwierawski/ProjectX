@@ -293,6 +293,39 @@ namespace ProjectX.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterHideout", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("BuildEndsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("BuildStartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HideoutBuildingTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HideoutBuildingTypeId");
+
+                    b.HasIndex("CharacterId", "HideoutBuildingTypeId")
+                        .IsUnique();
+
+                    b.ToTable("CharacterHideouts");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>
                 {
                     b.Property<int>("Id")
@@ -302,12 +335,15 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasColumnType("smallint");
 
                     b.Property<string>("Inventory")
-                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("ModDate")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -402,6 +438,32 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("CharacterSettings");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterStash", b =>
+                {
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<short>("Count")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)64);
+
+                    b.Property<string>("Inventory")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ApplicationUserId");
+
+                    b.ToTable("CharacterStashes");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>
                 {
                     b.Property<int>("Id")
@@ -427,6 +489,13 @@ namespace ProjectX.Infrastructure.Migrations
 
                     b.Property<float>("RotationY")
                         .HasColumnType("real");
+
+                    b.Property<string>("SceneName")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasDefaultValue("EnvironmentScene");
 
                     b.HasKey("Id");
 
@@ -467,6 +536,33 @@ namespace ProjectX.Infrastructure.Migrations
                         .HasDatabaseName("IX.CraftingRecipe.Type.Status");
 
                     b.ToTable("CraftingRecipes");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.HideoutBuildingType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BuildTime")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Requirement")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("HideoutBuildingTypes");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.InventoryItem", b =>
@@ -687,6 +783,25 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Navigation("SecondCharacter");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterHideout", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", "Character")
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectX.Domain.Entities.HideoutBuildingType", "HideoutBuildingType")
+                        .WithMany()
+                        .HasForeignKey("HideoutBuildingTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("HideoutBuildingType");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventory", b =>
                 {
                     b.HasOne("ProjectX.Domain.Entities.Character", "Character")
@@ -741,6 +856,15 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterStash", b =>
+                {
+                    b.HasOne("ProjectX.Infrastructure.Identity.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("ProjectX.Domain.Entities.CharacterStash", "ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterTransform", b =>

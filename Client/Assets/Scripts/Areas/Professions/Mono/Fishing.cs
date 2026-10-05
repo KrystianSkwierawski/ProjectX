@@ -56,6 +56,7 @@ public class Fishing : NetworkBehaviour
     private float _fishBrokeOffTime = 3f;
 
     private GameObject _bait;
+    private int _baitVersion;
     private ObjectPool<GameObject> _pool;
 
     private readonly NetworkVariable<bool> _active =
@@ -91,7 +92,6 @@ public class Fishing : NetworkBehaviour
         if (IsOwner)
         {
             _input = GetComponent<StarterAssetsInputs>();
-            _waters = GameObject.FindGameObjectsWithTag("Water");
         }
 
         if (IsServer)
@@ -106,6 +106,13 @@ public class Fishing : NetworkBehaviour
     [ServerRpc]
     private void CheckLootServerRpc()
     {
+        if (!DungeonTravel.CanInteract(OwnerClientId) || DungeonTravel.GetInstanceId(OwnerClientId) != 0)
+        {
+            Debug.LogWarning($"World interaction rejected during dungeon travel. ClientId: {OwnerClientId}.");
+
+            return;
+        }
+
         _canFishOut.Value = false;
         var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
@@ -125,7 +132,7 @@ public class Fishing : NetworkBehaviour
 
     private void Update()
     {
-        if (IsOwner)
+        if (IsOwner && !GetComponent<DungeonTravel>().IsTransitioning)
         {
             CheckFishOut();
 
@@ -208,6 +215,7 @@ public class Fishing : NetworkBehaviour
 
     private async UniTask SimulateBaitBiteAsync()
     {
+        var version = _baitVersion;
         var baitTransform = _bait.transform;
         var startPos = baitTransform.position;
 
@@ -224,10 +232,20 @@ public class Fishing : NetworkBehaviour
             float smooth = Mathf.SmoothStep(0f, 1f, t);
             baitTransform.position = Vector3.Lerp(startPos, downPos, smooth);
             await UniTask.Yield();
+
+            if (!IsSpawned || version != _baitVersion || baitTransform == null)
+            {
+                return;
+            }
         }
 
         // short pause at the bottom so movement is noticeable
         await UniTask.Delay(TimeSpan.FromSeconds(UnityEngine.Random.Range(0.05f, 0.15f)));
+
+        if (!IsSpawned || version != _baitVersion || baitTransform == null)
+        {
+            return;
+        }
 
         // Smooth return to start position
         float returnDuration = UnityEngine.Random.Range(0.35f, 0.55f);
@@ -240,6 +258,11 @@ public class Fishing : NetworkBehaviour
             float smooth = Mathf.SmoothStep(0f, 1f, t);
             baitTransform.position = Vector3.Lerp(fromPos, startPos, smooth);
             await UniTask.Yield();
+
+            if (!IsSpawned || version != _baitVersion || baitTransform == null)
+            {
+                return;
+            }
         }
 
         // small, quick bob at the end to make the return feel natural
@@ -253,6 +276,11 @@ public class Fishing : NetworkBehaviour
             float bob = Mathf.Sin(bobElapsed * bobFreq) * bobAmp;
             baitTransform.position = startPos + Vector3.up * bob;
             await UniTask.Yield();
+
+            if (!IsSpawned || version != _baitVersion || baitTransform == null)
+            {
+                return;
+            }
         }
 
         baitTransform.position = startPos;
@@ -325,6 +353,13 @@ public class Fishing : NetworkBehaviour
     [ServerRpc]
     private void SpawnBaitServerRpc(Vector3 spawnPos)
     {
+        if (!DungeonTravel.CanInteract(OwnerClientId) || DungeonTravel.GetInstanceId(OwnerClientId) != 0)
+        {
+            Debug.LogWarning($"World interaction rejected during dungeon travel. ClientId: {OwnerClientId}.");
+
+            return;
+        }
+
         // TODO: validation
         _bait = _pool.Get();
         _bait.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
@@ -339,11 +374,29 @@ public class Fishing : NetworkBehaviour
     [ServerRpc]
     private void DespawnServerRpc()
     {
-        NotifyBaitDespawnedClientRpc();
-
-        _pool.Release(_bait);
+        var bait = _bait;
+        _bait = null;
+        _baitVersion++;
         _active.Value = false;
         _canFishOut.Value = false;
+        _fishBrokeOffTimer = 0f;
+        NotifyBaitDespawnedClientRpc();
+
+        if (bait != null && bait.GetComponent<NetworkObject>().IsSpawned)
+        {
+            _pool.Release(bait);
+        }
+    }
+
+    public void CancelForTravel()
+    {
+        _isCasting = false;
+        _castTimer = 0f;
+        _isInterrupted = false;
+        _interruptTimer = 0f;
+        ToggleLine(false);
+        PlayerUI.Instance.HideCastBar();
+        DespawnServerRpc();
     }
 
     private void CheckCasting()
@@ -414,6 +467,9 @@ public class Fishing : NetworkBehaviour
 
     private bool TryGetNearestWater(out GameObject nearest, out Collider nearestCollider)
     {
+        // Environments are unloaded on travel; resolve the current scene's water per cast.
+        _waters = GameObject.FindGameObjectsWithTag("Water");
+
         nearest = null;
         nearestCollider = null;
 
@@ -577,6 +633,8 @@ public class Fishing : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        _baitVersion++;
+
         _active.OnValueChanged -= OnRodActiveChanged;
         base.OnNetworkDespawn();
     }

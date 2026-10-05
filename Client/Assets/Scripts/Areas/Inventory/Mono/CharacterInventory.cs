@@ -30,6 +30,12 @@ namespace Assets.Scripts.Areas.Inventory.Mono
     public class CharacterInventory : NetworkBehaviour, ICharacterBuffController
     {
         private IList<InventoryItemDto> _currentLoot = new List<InventoryItemDto>();
+        private bool _gearMutationPending;
+        private readonly SemaphoreSlim _equipmentMutationGate = new SemaphoreSlim(1, 1);
+
+        public UniTask WaitForEquipmentMutationAsync(CancellationToken token) => _equipmentMutationGate.WaitAsync(token).AsUniTask();
+
+        public void ReleaseEquipmentMutation() => _equipmentMutationGate.Release();
         private readonly IDictionary<InventoryItemEnum, ActiveBuff> _activeBuffs = new Dictionary<InventoryItemEnum, ActiveBuff>();
         private CancellationTokenSource _networkLifetimeCancellationTokenSource;
 
@@ -425,13 +431,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 return;
             }
 
-            var isValid = request.Add.All(x =>
-            {
-                return _currentLoot
-                    .Where(c => c.Type == x.Type)
-                    .Where(c => c.Count >= x.Count)
-                    .Any();
-            });
+            var isValid = TryReserveLoot(request);
 
             Debug.Log($"UpdateInventoryServerRpc -> IsValid: {isValid}");
 
@@ -443,6 +443,53 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                         playerSessionId,
                         GetNetworkLifetimeCancellationToken())
                     .Forget();
+            }
+        }
+
+        private bool TryReserveLoot(UpdateCharacterInventoryCommand request)
+        {
+            if (request?.Add == null || request.Add.Length == 0 || request.Remove == null
+                || request.Remove.Length != 0 || request.SplitSlotIndex.HasValue
+                || request.MoveSourceSlotIndex.HasValue || request.MoveTargetSlotIndex.HasValue
+                || request.Add.Any(x => x == null || x.Type == InventoryItemEnum.None || x.Count <= 0)
+                || request.Add.Select(x => x.Type).Distinct().Count() != request.Add.Length)
+            {
+                return false;
+            }
+
+            if (!request.Add.All(x => _currentLoot.Any(c => c.Type == x.Type && c.Count >= x.Count)))
+            {
+                return false;
+            }
+
+            foreach (var item in request.Add)
+            {
+                var loot = _currentLoot.Where(x => x.Type == item.Type).Single();
+                loot.Count -= item.Count;
+
+                if (loot.Count == 0)
+                {
+                    _currentLoot.Remove(loot);
+                }
+            }
+
+            return true;
+        }
+
+        private void RestoreReservedLoot(UpdateCharacterInventoryCommand request)
+        {
+            foreach (var item in request.Add)
+            {
+                var loot = _currentLoot.Where(x => x.Type == item.Type).SingleOrDefault();
+
+                if (loot == null)
+                {
+                    _currentLoot.Add(new InventoryItemDto { Type = item.Type, Count = item.Count });
+                }
+                else
+                {
+                    loot.Count += item.Count;
+                }
             }
         }
 
@@ -533,6 +580,18 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private async UniTask ProcessInventoryUpdateAsync(UpdateInventorySubscriptionEvent e)
         {
+            try
+            {
+                await ProcessInventoryUpdateCoreAsync(e);
+            }
+            finally
+            {
+                e.OnCompleted?.Invoke();
+            }
+        }
+
+        private async UniTask ProcessInventoryUpdateCoreAsync(UpdateInventorySubscriptionEvent e)
+        {
             var networkLifetimeCancellationToken = GetNetworkLifetimeCancellationToken();
 
             if (e.PersistInApi && TradeServerState.IsInventoryReserved(OwnerClientId))
@@ -562,12 +621,36 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }
             catch
             {
+                if (e.Request.CharacterUpdate?.Health != null)
+                {
+                    Debug.LogWarning($"Potion save outcome unknown; reconnect required to restore persisted health and inventory. ClientId: {OwnerClientId}.");
+
+                    if (CanUseNetworkLifetime(networkLifetimeCancellationToken))
+                    {
+                        NetworkManager.Singleton.DisconnectClient(OwnerClientId);
+                    }
+
+                    return;
+                }
+
+                if (e.Request.CharacterUpdate != null)
+                {
+                    await ReconcileEquipmentAsync(playerSessionId, operationCancellationToken, networkLifetimeCancellationToken);
+
+                    return;
+                }
+
                 if (CanUseNetworkLifetime(networkLifetimeCancellationToken))
                 {
                     RejectInventoryUpdate(e);
                 }
 
                 throw;
+            }
+
+            if (status == UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                e.OnPersisted?.Invoke();
             }
 
             if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
@@ -593,6 +676,53 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
             SendInventoryUpdateToOwner(e.Request);
             e.OnSucceeded?.Invoke();
+
+            if (e.ResynchronizeCharacterOnRejected)
+            {
+                ResynchronizeCharacterClientRpc(UserManager.Instance.Characters[OwnerClientId],
+                    OwnerClientId.ToClientRpcParams());
+            }
+        }
+
+        private async UniTask ReconcileEquipmentAsync(string session, CancellationToken operationToken, CancellationToken networkToken)
+        {
+            Debug.LogWarning($"Equipment save outcome unknown; reloading authoritative state. ClientId: {OwnerClientId}.");
+
+            try
+            {
+                var characterId = UserManager.Instance.GetPlayerCharacterId(OwnerClientId);
+                var persisted = await UnityWebRequestHelper.ExecuteGetAsync<CharacterDto>(
+                    "Characters/Current", session, cancellationToken: operationToken);
+
+                if (!CanUseNetworkLifetime(networkToken))
+                {
+                    return;
+                }
+
+                if (persisted.Id != characterId)
+                {
+                    throw new InvalidOperationException("Equipment recovery returned a different character.");
+                }
+
+                var current = UserManager.Instance.Characters[OwnerClientId];
+                persisted.Health = current.Health;
+                persisted.Levels = current.Levels;
+                ResynchronizeCharacterClientRpc(persisted, OwnerClientId.ToClientRpcParams());
+                RestoreActiveBuffs(persisted);
+                UserManager.Instance.Characters[OwnerClientId] = persisted;
+                ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+                Assets.Scripts.Areas.Party.Mono.Party.NotifyCharacterChanged(OwnerClientId);
+                Debug.Log($"Equipment state reconciled. ClientId: {OwnerClientId}.");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Equipment recovery failed; disconnecting before further mutations. ClientId: {OwnerClientId}, Error: {exception.GetType().Name}.");
+
+                if (CanUseNetworkLifetime(networkToken))
+                {
+                    NetworkManager.Singleton.DisconnectClient(OwnerClientId);
+                }
+            }
         }
 
         private void RejectInventoryUpdate(UpdateInventorySubscriptionEvent e)
@@ -616,7 +746,29 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         {
             using var inventoryMutation = TradeServerState.TrackInventoryMutation(OwnerClientId);
             var operationCancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
-            var status = await UpdateInventoryAsync(request, playerSessionId, operationCancellationToken);
+            UpdateCharacterInventoryStatusEnum status;
+
+            try
+            {
+                status = await UpdateInventoryAsync(request, playerSessionId, operationCancellationToken);
+            }
+            catch (Exception)
+            {
+                Debug.LogWarning($"Loot persistence outcome unknown; reserved loot will not be offered again. ClientId: {OwnerClientId}.");
+
+                if (CanUseNetworkLifetime(networkLifetimeCancellationToken))
+                {
+                    ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+                    ShowLootClientRpc(_currentLoot.ToArray(), OwnerClientId.ToClientRpcParams());
+                }
+
+                throw;
+            }
+
+            if (status != UpdateCharacterInventoryStatusEnum.Applied)
+            {
+                RestoreReservedLoot(request);
+            }
 
             if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
             {
@@ -637,7 +789,7 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }
 
             SendInventoryUpdateToOwner(request);
-            _currentLoot.Clear();
+            ShowLootClientRpc(_currentLoot.ToArray(), OwnerClientId.ToClientRpcParams());
         }
 
         private async UniTask<UpdateCharacterInventoryStatusEnum> UpdateInventoryAsync(
@@ -709,6 +861,16 @@ namespace Assets.Scripts.Areas.Inventory.Mono
         [ServerRpc]
         private void UseItemServerRpc(InventoryItemDto item, UsableItemFromEnum from)
         {
+            if (_gearMutationPending)
+            {
+                Debug.Log($"Item use rejected while character state is being saved. ClientId: {OwnerClientId}.");
+                ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+                ResynchronizeCharacterClientRpc(UserManager.Instance.Characters[OwnerClientId],
+                    OwnerClientId.ToClientRpcParams());
+
+                return;
+            }
+
             if (TradeServerState.IsInventoryReserved(OwnerClientId))
             {
                 RejectLockedInventoryMutation();
@@ -757,14 +919,64 @@ namespace Assets.Scripts.Areas.Inventory.Mono
                 };
             }
 
-            if (gearItem != null)
+            var healthPotion = item.Type == InventoryItemEnum.HealthPotion
+                ? new HealthPotionUsableItem(item, playerSessionId, OwnerClientId)
+                : null;
+
+            if (gearItem != null || healthPotion != null)
             {
-                return gearItem.TryUse(from);
+#if UNITY_SERVER && !UNITY_EDITOR
+                if (!_equipmentMutationGate.Wait(0))
+                {
+                    ReloadInventoryClientRpc(OwnerClientId.ToClientRpcParams());
+                    ResynchronizeCharacterClientRpc(UserManager.Instance.Characters[OwnerClientId],
+                        OwnerClientId.ToClientRpcParams());
+
+                    return false;
+                }
+
+                _gearMutationPending = true;
+
+                try
+                {
+                    var completed = false;
+                    void Complete()
+                    {
+                        if (completed) return;
+
+                        completed = true;
+                        _gearMutationPending = false;
+                        ReleaseEquipmentMutation();
+                    }
+
+                    var accepted = gearItem != null
+                        ? gearItem.TryUse(from, Complete)
+                        : healthPotion.TryUse(from, Complete);
+
+                    if (!accepted)
+                    {
+                        Complete();
+                    }
+
+                    return accepted;
+                }
+                catch
+                {
+                    if (_gearMutationPending)
+                    {
+                        _gearMutationPending = false;
+                        ReleaseEquipmentMutation();
+                    }
+
+                    throw;
+                }
+#else
+                return gearItem != null ? gearItem.TryUse(from) : healthPotion.TryUse(from);
+#endif
             }
 
             IUsableItem usableItem = item.Type switch
             {
-                InventoryItemEnum.HealthPotion => new HealthPotionUsableItem(item, playerSessionId, OwnerClientId),
                 InventoryItemEnum.StrengthPotion => new StrengthPotionUsableItem(item, playerSessionId, OwnerClientId, this),
                 InventoryItemEnum.SpeedPotion => new SpeedPotionUsableItem(item, playerSessionId, OwnerClientId, this),
                 InventoryItemEnum.Currency => new CurrencyUsableItem(item, playerSessionId, OwnerClientId),

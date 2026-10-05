@@ -10,6 +10,46 @@ public sealed class InMemoryGameSessionServiceTests
     private const int CharacterId = 42;
 
     [Fact]
+    public void Redeem_RejectsSecondActiveCharacterSession_AndAllowsReconnectAfterRevoke()
+    {
+        var service = CreateService(out _);
+        var session = service.Register(ServerUserId, false, null);
+        var first = service.CreateTicket(ClientUserId, CharacterId);
+        var player = service.Redeem(ServerUserId, session.GameSessionId, first.Ticket);
+        var second = service.CreateTicket(ClientUserId, CharacterId);
+
+        Assert.Throws<InvalidGameSessionCredentialException>(() =>
+            service.Redeem(ServerUserId, session.GameSessionId, second.Ticket));
+        Assert.True(service.TryResolvePlayer(ServerUserId, player.PlayerSessionId, out _));
+
+        service.RevokePlayer(ServerUserId, player.PlayerSessionId);
+        var reconnect = service.CreateTicket(ClientUserId, CharacterId);
+        var replacement = service.Redeem(ServerUserId, session.GameSessionId, reconnect.Ticket);
+
+        Assert.True(service.TryResolvePlayer(ServerUserId, replacement.PlayerSessionId, out _));
+    }
+
+    [Fact]
+    public void Redeem_RejectsSameCharacterAcrossGameServers_ButAllowsDifferentCharacter()
+    {
+        var service = CreateService(out var clock);
+        var firstServer = service.Register(ServerUserId, false, null);
+        var first = service.CreateTicket(ClientUserId, CharacterId);
+        service.Redeem(ServerUserId, firstServer.GameSessionId, first.Ticket);
+        clock.Advance(TimeSpan.FromSeconds(1));
+        var otherServer = service.Register("second-server", false, null);
+        var second = service.CreateTicket(ClientUserId, CharacterId);
+
+        Assert.Throws<InvalidGameSessionCredentialException>(() =>
+            service.Redeem("second-server", otherServer.GameSessionId, second.Ticket));
+
+        var otherCharacter = service.CreateTicket(ClientUserId, CharacterId + 1);
+        var player = service.Redeem("second-server", otherServer.GameSessionId, otherCharacter.Ticket);
+
+        Assert.Equal(CharacterId + 1, player.CharacterId);
+    }
+
+    [Fact]
     public void Register_ReturnsUtcLeaseExpiry()
     {
         var service = CreateService(out var timeProvider);

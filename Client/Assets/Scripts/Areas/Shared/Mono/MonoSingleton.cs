@@ -6,7 +6,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
     {
         public static T Instance { get; private set; }
 
-        protected virtual bool PersistBetweenScenes => true;
+        protected virtual bool PersistBetweenScenes => false;
 
         protected virtual void Awake()
         {

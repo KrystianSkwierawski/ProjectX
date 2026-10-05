@@ -408,9 +408,9 @@ namespace Assets.Scripts.Areas.Friends.Mono
                 {
                     QueueRefresh();
 
-                    if (TryGetClientId(result.CharacterId, out var targetClientId))
+                    if (TryGetRecipient(result.CharacterId, out var recipient))
                     {
-                        FriendNotificationClientRpc(FriendNotificationTypeEnum.InvitationReceived, GetOwnerCharacterName(), targetClientId.ToClientRpcParams());
+                        recipient.FriendNotificationClientRpc(FriendNotificationTypeEnum.InvitationReceived, GetOwnerCharacterName(), recipient.OwnerClientId.ToClientRpcParams());
                     }
                 }
             }
@@ -468,10 +468,10 @@ namespace Assets.Scripts.Areas.Friends.Mono
                 {
                     QueueRefresh();
 
-                    if (TryGetClientId(result.CharacterId, out var targetClientId))
+                    if (TryGetRecipient(result.CharacterId, out var recipient))
                     {
                         var notification = accept ? FriendNotificationTypeEnum.InvitationAccepted : FriendNotificationTypeEnum.InvitationDeclined;
-                        FriendNotificationClientRpc(notification, GetOwnerCharacterName(), targetClientId.ToClientRpcParams());
+                        recipient.FriendNotificationClientRpc(notification, GetOwnerCharacterName(), recipient.OwnerClientId.ToClientRpcParams());
                     }
                 }
             }
@@ -526,9 +526,9 @@ namespace Assets.Scripts.Areas.Friends.Mono
                 {
                     QueueRefresh();
 
-                    if (TryGetClientId(result.CharacterId, out var targetClientId))
+                    if (TryGetRecipient(result.CharacterId, out var recipient))
                     {
-                        FriendNotificationClientRpc(FriendNotificationTypeEnum.FriendRemoved, GetOwnerCharacterName(), targetClientId.ToClientRpcParams());
+                        recipient.FriendNotificationClientRpc(FriendNotificationTypeEnum.FriendRemoved, GetOwnerCharacterName(), recipient.OwnerClientId.ToClientRpcParams());
                     }
                 }
             }
@@ -620,14 +620,14 @@ namespace Assets.Scripts.Areas.Friends.Mono
                     return;
                 }
 
-                if (!TryGetClientId(result.CharacterId, out var targetClientId))
+                if (!TryGetRecipient(result.CharacterId, out var recipient))
                 {
                     WhisperRejectedClientRpc(WhisperDeliveryStatusEnum.TargetOffline, OwnerClientId.ToClientRpcParams());
 
                     return;
                 }
 
-                ReceiveWhisperClientRpc(message, GetOwnerCharacterName(), targetClientId.ToClientRpcParams());
+                recipient.ReceiveWhisperClientRpc(message, GetOwnerCharacterName(), recipient.OwnerClientId.ToClientRpcParams());
                 SentWhisperClientRpc(message, result.CharacterName, OwnerClientId.ToClientRpcParams());
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -723,20 +723,19 @@ namespace Assets.Scripts.Areas.Friends.Mono
             return UserManager.Instance.Characters.TryGetValue(OwnerClientId, out var character) ? character.Name : string.Empty;
         }
 
-        private static bool TryGetClientId(int characterId, out ulong clientId)
+        private static bool TryGetRecipient(int characterId, out FriendList recipient)
         {
-            var character = UserManager.Instance.Characters.FirstOrDefault(x => x.Value.Id == characterId);
+            recipient = null;
+            var character = UserManager.Instance.Characters
+                .Where(x => x.Value.Id == characterId)
+                .FirstOrDefault();
 
-            if (character.Value == null)
-            {
-                clientId = default;
-
-                return false;
-            }
-
-            clientId = character.Key;
-
-            return true;
+            return character.Value != null
+                && NetworkManager.Singleton != null
+                && NetworkManager.Singleton.ConnectedClients.TryGetValue(character.Key, out var client)
+                && client.PlayerObject != null
+                && client.PlayerObject.TryGetComponent(out recipient)
+                && recipient.IsSpawned;
         }
 
         private CancellationToken GetNetworkLifetimeCancellationToken()
