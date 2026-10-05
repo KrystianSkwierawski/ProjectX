@@ -16,6 +16,9 @@ namespace Assets.Scripts.Areas.Shared.Mono
         [Tooltip("Replenish removed objects. Disable to spawn only once per instance.")]
         [SerializeField] private bool _maintainPopulation = true;
 
+        [Min(0.1f)]
+        [SerializeField] private float _respawnInterval = 5f;
+
         private ObjectPool<GameObject> _pool;
         private readonly List<GameObject> _objects = new();
         private bool _isSpawning;
@@ -98,7 +101,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             {
                 if (_initialized)
                 {
-                    await UniTask.Delay(TimeSpan.FromSeconds(5), cancellationToken: token);
+                    await UniTask.Delay(TimeSpan.FromSeconds(_respawnInterval), cancellationToken: token);
                 }
 
                 if (token.IsCancellationRequested || _stopped || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)

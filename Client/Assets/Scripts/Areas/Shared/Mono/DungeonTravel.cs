@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Mono;
@@ -42,10 +43,21 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private IDisposable _loading;
         private Scene _clientScene;
         private bool _clientLoading;
+        private int _clientInstanceId;
         private Vector3 _clientDeparturePosition;
 
         public bool IsTransitioning => _stage != TravelStageEnum.Idle || _clientLoading;
         public string CurrentSceneName => _location.Value.ToString();
+        public LocationEnvironment CurrentRoom => _instance?.Room;
+        public int CurrentInstanceId => _instanceId.Value;
+
+        public Pose GetRespawnPose() => _instance != null
+            ? _instance.Room.GetEntryPose(LocationEnum.EnvironmentScene)
+            : new Pose(new Vector3(3.562874f, 1.41359f, 4.244279f), Quaternion.identity);
+
+        public bool IsViewingHideout(int instanceId) => !_clientLoading && _clientScene.IsValid()
+            && _clientScene.isLoaded && _clientScene.name == nameof(LocationEnum.HideoutScene)
+            && _clientInstanceId == instanceId;
         public Pose PersistenceTransform => _instance != null || _pendingInstance != null
             ? _returnPose
             : new Pose(transform.position, transform.rotation);
@@ -65,7 +77,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             }
 
             // A former member immediately loses visibility, even while their return scene is loading.
-            return player._instance.PartyId == PartyServerState.GetPartyId(clientId)
+            return player._instance.Location == LocationEnum.HideoutScene || player._instance.PartyId == PartyServerState.GetPartyId(clientId)
                 ? player._instance.Id
                 : -1 - (int)clientId;
         }
@@ -73,7 +85,8 @@ namespace Assets.Scripts.Areas.Shared.Mono
         public static bool CanInteract(ulong clientId)
         {
             return _players.TryGetValue(clientId, out var player) && player._stage == TravelStageEnum.Idle
-                && (player._instance == null || player._instance.PartyId == PartyServerState.GetPartyId(clientId));
+                && (player._instance == null || player._instance.Location == LocationEnum.HideoutScene
+                    || player._instance.PartyId == PartyServerState.GetPartyId(clientId));
         }
 
         public override void OnNetworkSpawn()
@@ -136,7 +149,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         private void ReconcileParty()
         {
-            if (!IsSpawned || !IsServer)
+            if (!IsSpawned || !IsServer || _instance?.Location == LocationEnum.HideoutScene)
             {
                 return;
             }
@@ -237,10 +250,15 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 return;
             }
 
-            var partyId = PartyServerState.GetPartyId(OwnerClientId);
+            var partyId = portal.Destination == LocationEnum.HideoutScene ? Guid.Empty : PartyServerState.GetPartyId(OwnerClientId);
             var instance = partyId == Guid.Empty ? null : _instances
                 .Where(x => x.PartyId == partyId && x.Location == portal.Destination)
                 .FirstOrDefault();
+
+            if (portal.Destination == LocationEnum.HideoutScene)
+            {
+                instance = _instances.Where(x => x.Location == LocationEnum.HideoutScene && x.CharacterId == character.Id).FirstOrDefault();
+            }
 
             try
             {
@@ -252,6 +270,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 }
 
                 instance ??= CreateInstance(partyId, portal.Destination);
+                instance.CharacterId = portal.Destination == LocationEnum.HideoutScene ? character.Id : 0;
 
                 Physics.SyncTransforms();
                 BeginTransition(instance, instance.Room.GetEntryPose(_location.Value));
@@ -309,7 +328,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
             _instances.Add(instance);
 
-            foreach (var spawner in room.GetComponentsInChildren<Spawner>())
+            foreach (var spawner in room.GetComponentsInChildren<Spawner>(true))
             {
                 spawner.ConfigureInstance(id);
             }
@@ -338,6 +357,16 @@ namespace Assets.Scripts.Areas.Shared.Mono
         {
             try
             {
+                if (_pendingInstance?.Location == LocationEnum.HideoutScene)
+                {
+                    await GetComponent<Assets.Scripts.Areas.Hideout.CharacterHideout>().LoadRoomAsync(_pendingInstance.Room, token);
+
+                    if (!IsCurrentLifetime(token))
+                    {
+                        return;
+                    }
+                }
+
                 await GetComponent<CharacterTransform>().SaveTransformAsync(_returnPose);
 
                 if (!IsCurrentLifetime(token))
@@ -348,8 +377,16 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 RefreshVisibility();
                 _stage = TravelStageEnum.Loading;
 
+                var hideout = _pendingInstance?.Room.GetComponentInChildren<Assets.Scripts.Areas.Hideout.HideoutBuilding>(true);
+                var hideoutJson = hideout == null ? string.Empty : JsonSerializer.Serialize(new Assets.Scripts.Areas.Hideout.HideoutDto
+                {
+                    Buildings = new[] { hideout.Definition },
+                    CurrentTime = hideout.CurrentTime
+                });
+
                 PrepareClientRpc(_transitionId, _pendingInstance?.Location ?? LocationEnum.EnvironmentScene,
-                    _pendingInstance?.Room.transform.position ?? Vector3.zero, OwnerClientId.ToClientRpcParams());
+                    _pendingInstance?.Room.transform.position ?? Vector3.zero, _pendingInstance?.Id ?? 0,
+                    hideoutJson, OwnerClientId.ToClientRpcParams());
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { }
             catch (Exception exception)
@@ -368,16 +405,19 @@ namespace Assets.Scripts.Areas.Shared.Mono
         }
 
         [ClientRpc]
-        private void PrepareClientRpc(int transitionId, LocationEnum location, Vector3 offset, ClientRpcParams rpcParams = default)
+        private void PrepareClientRpc(int transitionId, LocationEnum location, Vector3 offset, int instanceId,
+            string hideoutJson, ClientRpcParams rpcParams = default)
         {
             if (IsOwner && !_clientLoading)
             {
-                LoadDestinationAsync(transitionId, location, offset, _lifetime.Token).Forget();
+                LoadDestinationAsync(transitionId, location, offset, instanceId, hideoutJson, _lifetime.Token).Forget();
             }
         }
 
-        private async UniTask LoadDestinationAsync(int transitionId, LocationEnum location, Vector3 offset, CancellationToken token)
+        private async UniTask LoadDestinationAsync(int transitionId, LocationEnum location, Vector3 offset,
+            int instanceId, string hideoutJson, CancellationToken token)
         {
+            var receivedAt = Time.realtimeSinceStartupAsDouble;
             _clientLoading = true;
             _clientDeparturePosition = transform.position;
             _loading = LoadingScreenUI.Instance.Show(TranslateManager.Instance.GetByKey(Assets.Scripts.Areas.Shared.Enums.TranslateKeyEnum.DungeonLoading));
@@ -434,6 +474,14 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 }
 
                 Physics.SyncTransforms();
+                _clientInstanceId = instanceId;
+
+                if (location == LocationEnum.HideoutScene)
+                {
+                    GetComponent<Assets.Scripts.Areas.Hideout.CharacterHideout>()
+                        .RestoreRoom(hideoutJson, Time.realtimeSinceStartupAsDouble - receivedAt);
+                }
+
                 Debug.Log($"Location loaded. Location: {location}, TransitionId: {transitionId}, EnvironmentSceneLoaded: {SceneManager.GetSceneByName(WorldScene).isLoaded}.");
 
                 ReadyServerRpc(transitionId);
@@ -561,7 +609,14 @@ namespace Assets.Scripts.Areas.Shared.Mono
                     continue;
                 }
 
-                foreach (var spawner in instance.Room.GetComponentsInChildren<Spawner>())
+                // Keep production running while the owner plays anywhere on this server.
+                if (instance.Location == LocationEnum.HideoutScene && _players.Keys.Any(clientId =>
+                    UserManager.Instance.Characters.TryGetValue(clientId, out var character) && character.Id == instance.CharacterId))
+                {
+                    continue;
+                }
+
+                foreach (var spawner in instance.Room.GetComponentsInChildren<Spawner>(true))
                 {
                     spawner.StopSpawning();
                 }
@@ -610,6 +665,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private sealed class Instance
         {
             public int Id;
+            public int CharacterId;
             public Guid PartyId;
             public LocationEnvironment Room;
             public LocationEnum Location;

@@ -60,6 +60,13 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void StartCrafting()
         {
+            if (CraftingUI.Instance.BuildHideout != null)
+            {
+                CraftingUI.Instance.BuildHideout.Invoke();
+
+                return;
+            }
+
             if (GetComponent<DungeonTravel>().IsTransitioning)
             {
                 return;

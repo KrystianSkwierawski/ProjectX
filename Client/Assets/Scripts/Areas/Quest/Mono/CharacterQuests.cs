@@ -81,6 +81,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                             e.QuestType,
                             e.Progress,
                             OwnerClientId,
+                            e.PlayerSessionId,
                             operationCancellationToken,
                             cancellationToken)
                         .SuppressCancellationThrow()
@@ -399,6 +400,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
             QuestTypeEnum questType,
             int progress,
             ulong clientId,
+            string playerSessionId,
             CancellationToken operationCancellationToken,
             CancellationToken networkLifetimeCancellationToken)
         {
@@ -415,6 +417,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     questType,
                     progress,
                     clientId,
+                    playerSessionId,
                     operationCancellationToken,
                     networkLifetimeCancellationToken);
             }
@@ -429,14 +432,10 @@ namespace Assets.Scripts.Areas.Quest.Mono
             QuestTypeEnum questType,
             int progress,
             ulong clientId,
+            string playerSessionId,
             CancellationToken operationCancellationToken,
             CancellationToken networkLifetimeCancellationToken)
         {
-            if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
-            {
-                return;
-            }
-
             var quests = QuestManager.Instance.Quests
                 .Where(x => x.GameObjectName == gameObjectName)
                 .Where(x => x.Type == questType)
@@ -449,14 +448,9 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            var playerSessionId = UserManager.Instance.GetPlayerSessionId(clientId);
-
             foreach (var quest in quests)
             {
-                if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
-                {
-                    return;
-                }
+                operationCancellationToken.ThrowIfCancellationRequested();
 
                 var result = await QuestManager.Instance.CheckProgressAsync(
                     quest.Id,
@@ -464,12 +458,9 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     playerSessionId,
                     operationCancellationToken);
 
-                if (!CanUseNetworkLifetime(networkLifetimeCancellationToken))
-                {
-                    return;
-                }
+                Debug.Log($"Quest progress persisted. ClientId: {clientId}, QuestId: {quest.Id}, Status: {result.Status}, Progress: {result.Progress}.");
 
-                if (result.Status != CharacterQuestStatusEnum.None)
+                if (CanUseNetworkLifetime(networkLifetimeCancellationToken) && result.Status != CharacterQuestStatusEnum.None)
                 {
                     UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, clientId.ToClientRpcParams());
                 }

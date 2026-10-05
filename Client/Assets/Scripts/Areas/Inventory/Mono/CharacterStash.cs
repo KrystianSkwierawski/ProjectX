@@ -235,6 +235,8 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }
         }
 
+        public UniTask RefreshQuestsAsync() => RefreshQuestsAsync(_lifetime.Token);
+
         private async UniTask RefreshQuestsAsync(CancellationToken lifetime)
         {
             var previousQuests = QuestManager.Instance.CharacterQuests;

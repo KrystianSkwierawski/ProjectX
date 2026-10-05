@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Areas.Character;
@@ -35,7 +35,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             TryUse(from);
         }
 
-        public bool TryUse(UsableItemFromEnum from)
+        public bool TryUse(UsableItemFromEnum from, Action onCompleted = null)
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
             var snapshot = new CharacterSnapshot(character);
@@ -86,14 +86,14 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             }
 #endif
 
-#if UNITY_EDITOR
+#if !UNITY_SERVER || UNITY_EDITOR
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.Wear, 0.5f);
 
             UpdateUI(from, character);
 #endif
 
 #if UNITY_SERVER && !UNITY_EDITOR
-            UpdateCharacter(character, snapshot, inventoryRequest);
+            UpdateCharacter(character, snapshot, inventoryRequest, onCompleted);
 #endif
 
             return true;
@@ -102,14 +102,18 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         private void UpdateCharacter(
             CharacterDto character,
             CharacterSnapshot snapshot,
-            UpdateCharacterInventoryCommand inventoryRequest)
+            UpdateCharacterInventoryCommand inventoryRequest,
+            Action onCompleted)
         {
+            inventoryRequest.CharacterUpdate = CreateCharacterRequest(character);
+
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
             {
                 Request = inventoryRequest,
                 PlayerSessionId = PlayerSessionId,
-                OnSucceeded = () => PersistCharacter(character),
+                OnSucceeded = () => PartyController.NotifyCharacterChanged(OwnerClientId),
                 OnRejected = () => snapshot.Restore(character),
+                OnCompleted = onCompleted,
                 ResynchronizeCharacterOnRejected = true,
             });
         }
@@ -128,11 +132,9 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         }
 #endif
 
-        private void PersistCharacter(CharacterDto character)
+        private static UpdateCharacterCommand CreateCharacterRequest(CharacterDto character)
         {
-            PartyController.NotifyCharacterChanged(OwnerClientId);
-
-            UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+            return new UpdateCharacterCommand
             {
                 MaxHealth = character.MaxHealth,
                 Strength = character.Strength,
@@ -146,8 +148,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
                 WeaponType = character.WeaponType,
                 AmmoType = character.AmmoType,
                 AmmoCount = character.AmmoCount,
-            }, PlayerSessionId)
-            .Forget();
+            };
         }
 
         private void UpdateUI(UsableItemFromEnum from, CharacterDto character)

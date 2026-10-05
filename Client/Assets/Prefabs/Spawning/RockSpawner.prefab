@@ -104,6 +104,7 @@ MonoBehaviour:
   _count: 3
   _transformY: 0.947
   _maintainPopulation: 1
+  _respawnInterval: 5
 --- !u!65 &1294064713967650092
 BoxCollider:
   m_ObjectHideFlags: 0

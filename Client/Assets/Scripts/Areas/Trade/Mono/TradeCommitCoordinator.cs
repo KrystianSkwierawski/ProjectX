@@ -185,6 +185,29 @@ namespace Assets.Scripts.Areas.Trade.Mono
                     }
                 }
 
+                if (commitOutcomeUncertain && result.Status != TradeCharacterInventoriesStatusEnum.Applied)
+                {
+                    Debug.LogWarning($"Trade retry rejected; resolving earlier uncertain commit. TradeId: {commit.SessionId}, Status: {result.Status}.");
+                    var receipt = await TryResolveCommitAsync(commit.SessionId, cancellationToken);
+
+                    if (receipt?.Status == TradeCharacterInventoriesStatusEnum.Applied)
+                    {
+                        result = receipt;
+                        Debug.Log($"Trade receipt confirmed the earlier commit. TradeId: {commit.SessionId}.");
+                    }
+                    else if (receipt?.Status != TradeCharacterInventoriesStatusEnum.ReceiptNotFound)
+                    {
+                        // Keep the immutable offer reserved until receipt resolution is definitive.
+                        await UniTask.Delay(
+                            TimeSpan.FromSeconds(retryDelaySeconds),
+                            ignoreTimeScale: true,
+                            cancellationToken: cancellationToken);
+                        retryDelaySeconds = Math.Min(retryDelaySeconds * 2, _maximumCommitRetryDelaySeconds);
+
+                        continue;
+                    }
+                }
+
                 if (result.Status != TradeCharacterInventoriesStatusEnum.Applied)
                 {
                     Trade.FailCommit(commit, MapCommitFailure(result.Status));

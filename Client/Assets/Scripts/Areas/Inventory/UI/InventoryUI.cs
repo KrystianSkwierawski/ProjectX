@@ -939,7 +939,22 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         public void UpdateLoot(InventoryItemDto[] items, ulong clientId)
         {
-            Loot.SetActive(true);
+            var remainingTypes = items.Select(x => x.Type).ToHashSet();
+
+            foreach (var type in _lootPoolObjects.Keys.Where(x => !remainingTypes.Contains(x)).ToArray())
+            {
+                var removedSlot = _lootPoolObjects[type];
+
+                if (_draggedLootSlot == removedSlot)
+                {
+                    ClearDragPreview();
+                }
+
+                _lootPoolObjects.Remove(type);
+                _lootObjectPool.Release(removedSlot);
+            }
+
+            Loot.SetActive(items.Length > 0);
 
             foreach (var item in items)
             {

@@ -180,7 +180,16 @@ namespace Assets.Scripts.Areas.Party.Mono
                     continue;
                 }
 
-                var distanceSquared = (client.PlayerObject.transform.position - sourcePosition).sqrMagnitude;
+                var player = client.PlayerObject.GetComponentInChildren<Assets.Scripts.Areas.Character.Mono.Player>();
+
+                if (player == null)
+                {
+                    Debug.LogWarning($"Party reward ineligible. SourceClientId: {sourceClientId}, MemberClientId: {clientId}, Reason: MissingPlayer.");
+
+                    continue;
+                }
+
+                var distanceSquared = (player.transform.position - sourcePosition).sqrMagnitude;
                 var distance = Mathf.Sqrt(distanceSquared);
 
                 if (distanceSquared > maxDistanceSquared)

@@ -25,7 +25,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private const int _maxConnections = 100;
         private const int _maxTicketPayloadBytes = 256;
         private const int _minimumTicketValiditySeconds = 20;
-        private const int _revokeRetryCount = 3;
+        private const int _maximumRevokeRetryDelaySeconds = 30;
         private const int _serverHeartbeatMaximumIntervalSeconds = 30;
         private const int _serverHeartbeatRetrySeconds = 10;
         private const int _serverLeaseSafetyMarginSeconds = 5;
@@ -358,7 +358,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 return;
             }
 
-            RevokePlayerSessionWhenTradeSettlesAsync(clientId, playerSessionId).Forget();
+            RevokePlayerSessionWhenMutationsSettleAsync(clientId, playerSessionId).Forget();
         }
 
         private static void HandleServerTransportFailure()
@@ -370,33 +370,49 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         private static async UniTask RevokePlayerSessionAsync(string playerSessionId)
         {
-            for (var attempt = 1; attempt <= _revokeRetryCount; attempt++)
+            var cancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+            var retryDelay = 1;
+
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     var command = new RevokePlayerSessionCommand { PlayerSessionId = playerSessionId };
 
-                    await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("GameSessions/RevokePlayer", command, log: false);
+                    await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("GameSessions/RevokePlayer", command,
+                        log: false, cancellationToken: cancellationToken);
 
+                    return;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
                     return;
                 }
                 catch (Exception exception)
                 {
-                    if (attempt == _revokeRetryCount)
+                    Debug.LogWarning($"Player-session revocation failed; retrying in {retryDelay}s. Error: {exception.GetType().Name}.");
+
+                    var canceled = await UniTask.Delay(TimeSpan.FromSeconds(retryDelay), ignoreTimeScale: true,
+                        cancellationToken: cancellationToken).SuppressCancellationThrow();
+
+                    if (canceled)
                     {
-                        Debug.LogWarning($"Player-session revocation failed after {attempt} attempts: {exception.Message}");
                         return;
                     }
 
-                    await UniTask.Delay(TimeSpan.FromSeconds(attempt), ignoreTimeScale: true);
+                    retryDelay = Math.Min(retryDelay * 2, _maximumRevokeRetryDelaySeconds);
                 }
             }
         }
 
-        private static async UniTask RevokePlayerSessionWhenTradeSettlesAsync(ulong clientId, string playerSessionId)
+        private static async UniTask RevokePlayerSessionWhenMutationsSettleAsync(ulong clientId, string playerSessionId)
         {
-            // A retry must keep both delegated credentials valid until the API's idempotent trade commit is resolved.
-            await UniTask.WaitUntil(() => !TradeServerState.IsCommitPendingForPlayer(clientId));
+            // Accepted writes retain their delegated credentials until persistence settles.
+            Debug.Log($"Waiting for accepted mutations before revoking player session. ClientId: {clientId}.");
+
+            await UniTask.WaitUntil(() => !TradeServerState.IsCommitPendingForPlayer(clientId)
+                && !TradeServerState.HasPendingInventoryMutation(clientId));
+
             await RevokePlayerSessionAsync(playerSessionId);
         }
 

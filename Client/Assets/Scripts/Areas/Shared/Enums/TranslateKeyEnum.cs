@@ -225,5 +225,11 @@ namespace Assets.Scripts.Areas.Shared.Enums
         StashHint,
         StashFull,
         StashChanged,
+        ChamomileFarmTitle,
+        HideoutBuildTime,
+        HideoutUnavailable,
+        HideoutMissingMaterials,
+        HideoutBuild,
+        ChamomileFarmDescription,
     }
 }

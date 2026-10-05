@@ -34,6 +34,7 @@ namespace ProjectX.Editor
             "Assets/Scenes/EnvironmentScene.unity",
             "Assets/Scenes/DungeonScene.unity",
             "Assets/Scenes/TemplateScene.unity",
+            "Assets/Scenes/HideoutScene.unity",
         };
         private static readonly string[] ServerRuntimeScenePaths =
         {
@@ -43,6 +44,7 @@ namespace ProjectX.Editor
             "Assets/Scenes/MainScene.unity",
             "Assets/Scenes/DungeonScene.unity",
             "Assets/Scenes/TemplateScene.unity",
+            "Assets/Scenes/HideoutScene.unity",
             "Assets/Scenes/UIScene.unity"
         };
 

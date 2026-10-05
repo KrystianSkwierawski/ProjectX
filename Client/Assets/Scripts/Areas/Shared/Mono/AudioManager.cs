@@ -8,6 +8,8 @@ namespace Assets.Scripts.Areas.Shared.Mono
 {
     public class AudioManager : MonoSingleton<AudioManager>
     {
+        protected override bool PersistBetweenScenes => true;
+
         public readonly IDictionary<AudioTypeEnum, AudioClip> AudioClips = new Dictionary<AudioTypeEnum, AudioClip>();
 
         private AudioSource _mainAudioSource;

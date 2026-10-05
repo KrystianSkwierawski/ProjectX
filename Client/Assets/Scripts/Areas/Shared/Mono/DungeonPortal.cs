@@ -7,7 +7,8 @@ namespace Assets.Scripts.Areas.Shared.Mono
     {
         EnvironmentScene = 0,
         DungeonScene = 1,
-        TemplateScene = 2
+        TemplateScene = 2,
+        HideoutScene = 3
     }
 
     public sealed class DungeonPortal : MonoBehaviour
