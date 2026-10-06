@@ -26,6 +26,7 @@ public static class DependencyInjection
         AddIdentityAndAuthentication(builder, timeProvider);
 
         builder.Services.AddScoped<ITranslateService, JsonFileTranslateService>();
+        builder.Services.AddSingleton<IHideoutStateSerializer, HideoutStateSerializer>();
     }
 
     private static void AddGameSessions(IHostApplicationBuilder builder, TimeProvider timeProvider)

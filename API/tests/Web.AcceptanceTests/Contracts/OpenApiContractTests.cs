@@ -16,6 +16,15 @@ public class OpenApiContractTests
         Assert.True(building.TryGetProperty("buildTime", out _));
         Assert.Equal("date-time", building.GetProperty("buildStartedAt").GetProperty("format").GetString());
         Assert.Equal("date-time", building.GetProperty("buildEndsAt").GetProperty("format").GetString());
+        Assert.True(building.TryGetProperty("farm", out _));
+        Assert.True(building.TryGetProperty("upgradeRequirement", out _));
+        Assert.True(building.TryGetProperty("upgradeTime", out _));
+        Assert.True(command.TryGetProperty("operation", out _));
+        Assert.True(command.TryGetProperty("slot", out _));
+        Assert.True(command.TryGetProperty("revision", out _));
+        Assert.True(command.TryGetProperty("respawnInterval", out _));
+        Assert.True(command.TryGetProperty("harvestExperience", out _));
+        Assert.True(schemas.GetProperty("HideoutDto").GetProperty("properties").TryGetProperty("herbalismLevel", out _));
         Assert.False(command.TryGetProperty("characterId", out _));
         Assert.False(building.TryGetProperty("status", out _));
     }

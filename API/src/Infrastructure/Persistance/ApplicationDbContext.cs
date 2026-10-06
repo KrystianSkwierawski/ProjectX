@@ -44,6 +44,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     private void AdvanceInventoryRevisions()
     {
+        foreach (var entry in ChangeTracker.Entries<CharacterHideout>().Where(x => x.State == EntityState.Modified))
+        {
+            var revision = entry.Property(x => x.Revision);
+            revision.CurrentValue = revision.OriginalValue + 1;
+        }
+
         foreach (var entry in ChangeTracker.Entries<CharacterInventory>().Where(x => x.State == EntityState.Modified))
         {
             var revision = entry.Property(x => x.Revision);

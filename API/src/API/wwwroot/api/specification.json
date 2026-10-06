@@ -1819,8 +1819,8 @@
         "tags": [
           "Hideouts"
         ],
-        "summary": "Read or start construction in the character's hideout",
-        "description": "Uses the session-bound character. None reads the catalog and timestamps; a building ID atomically consumes its catalog materials and starts construction once.",
+        "summary": "Read and manage the character's hideout",
+        "description": "Uses the session-bound character. Reads reconcile elapsed growth and upgrade deadlines. Construction, upgrades, seed transfers and harvests atomically persist building state, inventory and active Collect progress. Mutations require the current farm revision.",
         "operationId": "AccessHideout",
         "parameters": [
           {
@@ -2215,6 +2215,17 @@
           "HealthPotion",
           "StrengthPotion",
           "SpeedPotion",
+          "ChamomileSeed",
+          "Strawberry",
+          "StrawberrySeed",
+          "Mint",
+          "MintSeed",
+          "Lavender",
+          "LavenderSeed",
+          "Calendula",
+          "CalendulaSeed",
+          "Raspberry",
+          "RaspberrySeed",
           "HelmetTemplate",
           "ChestTemplate",
           "BootsTemplate",
@@ -2260,6 +2271,17 @@
           501,
           502,
           503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512,
+          513,
+          514,
           1000,
           1001,
           1002,
@@ -3476,6 +3498,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "herbalismLevel": {
+            "type": "integer",
+            "format": "byte"
+          },
           "buildings": {
             "type": "array",
             "items": {
@@ -3522,6 +3548,21 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "farm": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FarmState"
+              }
+            ]
+          },
+          "upgradeRequirement": {
+            "$ref": "#/components/schemas/CraftingRecipeRequirement"
+          },
+          "upgradeTime": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -3530,7 +3571,7 @@
         "description": "",
         "x-enumNames": [
           "None",
-          "ChamomileFarm"
+          "Farm"
         ],
         "enum": [
           0,
@@ -3566,14 +3607,126 @@
           }
         }
       },
+      "FarmState": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "upgradeEndsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FarmSlot"
+            }
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "FarmSlot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "seeds": {
+            "$ref": "#/components/schemas/InventorySlot"
+          },
+          "ready": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "readyAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "InventorySlot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isEmpty": {
+            "type": "boolean"
+          }
+        }
+      },
       "AccessHideoutCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "building": {
             "$ref": "#/components/schemas/HideoutBuildingEnum"
+          },
+          "operation": {
+            "$ref": "#/components/schemas/HideoutOperationEnum"
+          },
+          "slot": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inventorySlot": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "respawnInterval": {
+            "type": "number",
+            "format": "double"
+          },
+          "harvestExperience": {
+            "type": "integer",
+            "format": "int32"
           }
         }
+      },
+      "HideoutOperationEnum": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Build",
+          "Read",
+          "Upgrade",
+          "Deposit",
+          "Withdraw",
+          "Harvest"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
       },
       "QuestDto": {
         "type": "object",

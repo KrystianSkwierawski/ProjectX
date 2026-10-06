@@ -1,6 +1,7 @@
 using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using ProjectX.Domain.Crafting;
 using ProjectX.Domain.Enums;
+using ProjectX.Domain.Hideouts;
 
 namespace ProjectX.Application.Hideouts;
 
@@ -9,6 +10,8 @@ public class HideoutDto
     public string Outcome { get; set; } = "Applied";
 
     public DateTimeOffset CurrentTime { get; set; }
+
+    public byte HerbalismLevel { get; set; }
 
     public HideoutBuildingDto[] Buildings { get; set; } = [];
 
@@ -28,4 +31,10 @@ public class HideoutBuildingDto
     public DateTimeOffset? BuildStartedAt { get; set; }
 
     public DateTimeOffset? BuildEndsAt { get; set; }
+
+    public FarmState? Farm { get; set; }
+
+    public CraftingRecipeRequirement UpgradeRequirement { get; set; } = new([], 0);
+
+    public int UpgradeTime { get; set; }
 }

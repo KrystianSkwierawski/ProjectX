@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectX.Domain.Crafting;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
+using ProjectX.Domain.Hideouts;
 using ProjectX.Domain.Inventory;
 using ProjectX.Infrastructure.Persistance;
 
@@ -165,6 +166,75 @@ public class JsonValueConverterTests
         Assert.Equal(definition.Requirement.Level, requirement.Level);
         Assert.Equal(definition.Requirement.Items, requirement.Items);
         Assert.Equal(definition.Reward, reward);
+    }
+
+    [Fact]
+    public async Task HideoutJson_PreservesSlotsAndDeadlines_WithSeparateConcurrencyRevision()
+    {
+        await using var context = CreateContext();
+        var entity = context.Model.FindEntityType(typeof(CharacterHideout))!;
+        var property = entity.FindProperty(nameof(CharacterHideout.Data))!;
+        Assert.Null(property.GetValueConverter());
+        var data = new HideoutStateSerializer().Deserialize<FarmState>("{}");
+        var deadline = new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero);
+        data.UpgradeEndsAt = deadline;
+        data.Slots[1].Seeds = new InventorySlot(InventoryItemEnum.RaspberrySeed, 1024);
+        data.Slots[1].ReadyAt = deadline;
+
+        var restored = new HideoutStateSerializer().Deserialize<FarmState>(new HideoutStateSerializer().Serialize(data));
+
+        Assert.False(property.IsConcurrencyToken);
+        Assert.True(entity.FindProperty(nameof(CharacterHideout.Revision))!.IsConcurrencyToken);
+        Assert.Equal(6, restored.Slots.Length);
+        Assert.Equal(InventoryItemEnum.None, restored.Slots[0].Seeds.Type);
+        Assert.Equal(1024, restored.Slots[1].Seeds.Count);
+        Assert.Equal(deadline, restored.Slots[1].ReadyAt);
+        Assert.Equal(deadline, restored.UpgradeEndsAt);
+
+        context.CharacterHideouts.Add(new CharacterHideout { CharacterId = 42, HideoutBuildingTypeId = HideoutBuildingEnum.Farm, Data = new HideoutStateSerializer().Serialize(restored) });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var row = await context.CharacterHideouts.SingleAsync();
+        var farm = new HideoutStateSerializer().Deserialize<FarmState>(row.Data);
+        farm.Advance(deadline);
+        row.Data = new HideoutStateSerializer().Serialize(farm);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        var saved = await context.CharacterHideouts.SingleAsync();
+
+        Assert.Equal(1, saved.Revision);
+        Assert.Equal(2, new HideoutStateSerializer().Deserialize<FarmState>(saved.Data).Level);
+        Assert.Equal(1023, new HideoutStateSerializer().Deserialize<FarmState>(saved.Data).Slots[1].Seeds.Count);
+        Assert.Equal(InventoryItemEnum.Raspberry, new HideoutStateSerializer().Deserialize<FarmState>(saved.Data).Slots[1].Ready);
+    }
+
+    [Fact]
+    public async Task HideoutJson_PreservesUnrelatedPayloadWithoutFarmSchema()
+    {
+        await using var context = CreateContext();
+        const string json = """{"fuel":{"kind":"wood","count":9},"temperature":42,"custom":[1,2]}""";
+        context.CharacterHideouts.Add(new CharacterHideout { CharacterId = 43, Data = json });
+
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var saved = await context.CharacterHideouts.SingleAsync();
+
+        Assert.Equal(json, saved.Data);
+    }
+
+    [Fact]
+    public void FarmJson_RoundTripsIndependentPayload()
+    {
+        var state = new HideoutStateSerializer().Deserialize<FarmState>("""{"level":2,"revision":7}""");
+
+        var json = new HideoutStateSerializer().Serialize(state);
+
+        Assert.Equal(2, state.Level);
+        Assert.Equal(7, state.Revision);
+        Assert.DoesNotContain("\"farm\"", json);
+        Assert.Equal(2, new HideoutStateSerializer().Deserialize<FarmState>(json).Level);
     }
 
     private static ApplicationDbContext CreateContext()
