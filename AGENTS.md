@@ -22,7 +22,7 @@ Current code and verified behavior take precedence over stale documentation abou
 
 - Names of enums introduced or modified in project code must end with `Enum`, including private and nested enums.
 
-- In new and modified LINQ queries, put filtering in `Where(...)` before terminal selectors such as parameterless `FirstOrDefault()`, `First()`, `SingleOrDefault()` or `Single()`. Do not pass predicates directly to those terminal methods.
+- In new and modified LINQ queries, put filtering in `Where(...)` before terminal selectors such as parameterless `FirstOrDefault()`, `First()`, `SingleOrDefault()` or `Single()`. Do not pass predicates directly to those terminal methods. Format fluent LINQ chains with the source on the first line and each operation (including terminal methods such as `SingleOrDefault()` and `ToArray()`) on its own indented line. Separate independent queries and subsequent derived local declarations with a blank line.
 
 - In all new and modified code (API, Unity client/server, tooling and tests), separate logical steps with blank lines so code does not become a dense block. Visibly separate initialization, validation, data preparation, calls/awaits, state changes and result handling; keep closely related statements together. In tests, apply the same rule to setup, mock configuration, execution and assertions.
 
