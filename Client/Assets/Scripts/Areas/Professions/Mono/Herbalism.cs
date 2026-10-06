@@ -20,6 +20,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
         private readonly IDictionary<string, byte> _requiredLevels = new Dictionary<string, byte>
         {
             { "Chamomile(Clone)", 1 },
+            { "Strawberry(Clone)", 1 },
+            { "Mint(Clone)", 1 },
+            { "Lavender(Clone)", 1 },
+            { "Calendula(Clone)", 1 },
+            { "Raspberry(Clone)", 1 },
         };
 
         private const float _maxDistance = 2f;
@@ -186,6 +191,12 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 && HasRequiredLevel(networkObject.gameObject.name))
             {
                 var gameObject = networkObject.gameObject;
+
+                if (GetComponent<Assets.Scripts.Areas.Hideout.CharacterHideout>().TryHarvest(gameObject))
+                {
+                    return;
+                }
+
                 var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
                 CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent

@@ -50,6 +50,17 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         HealthPotion = 501,
         StrengthPotion = 502,
         SpeedPotion = 503,
+        ChamomileSeed = 504,
+        Strawberry = 505,
+        StrawberrySeed = 506,
+        Mint = 507,
+        MintSeed = 508,
+        Lavender = 509,
+        LavenderSeed = 510,
+        Calendula = 511,
+        CalendulaSeed = 512,
+        Raspberry = 513,
+        RaspberrySeed = 514,
 
         #endregion
 

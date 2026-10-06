@@ -27,6 +27,58 @@ namespace Assets.Scripts.Areas.Shared.Mono
         private int _instanceId;
         private Collider _collider;
 
+        private bool _externallyControlled;
+        private GameObject _crop;
+
+        public float RespawnInterval => _respawnInterval;
+
+        public GameObject Crop => _crop;
+
+        public GameObject Prefab => _prefab;
+
+        public void ConfigureCrop(GameObject prefab)
+        {
+            ControlPopulation();
+
+            if (_prefab == prefab)
+            {
+                return;
+            }
+
+            ShowCrop(false);
+            _prefab = prefab;
+        }
+
+        public void ControlPopulation()
+        {
+            _externallyControlled = true;
+        }
+
+        public void ShowCrop(bool ready)
+        {
+            if (!ready)
+            {
+                if (_crop != null)
+                {
+                    _objects.Remove(_crop);
+                    _crop.GetComponent<NetworkObject>().Despawn();
+                    _crop = null;
+                }
+
+                return;
+            }
+
+            if (_crop != null || _stopped || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            {
+                return;
+            }
+
+            _crop = Instantiate(_prefab, transform.position, _prefab.transform.rotation);
+            _objects.Add(_crop);
+            _crop.GetComponent<DungeonWorldObject>().InstanceId = _instanceId;
+            _crop.GetComponent<NetworkObject>().Spawn();
+        }
+
         public void ConfigureInstance(int instanceId)
         {
             _instanceId = instanceId;
@@ -82,7 +134,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
 
         private async void Update()
         {
-            if (_stopped || _isSpawning || _pool == null || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            if (_externallyControlled || _stopped || _isSpawning || _pool == null || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
             {
                 return;
             }

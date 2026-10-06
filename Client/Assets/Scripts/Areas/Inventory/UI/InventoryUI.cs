@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Professions.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -236,6 +237,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     if (Keyboard.current.altKey.isPressed)
                     {
                         SplitStack(slotIndex);
+
+                        return;
+                    }
+
+                    if (CraftingUI.Instance?.IsFarmOpen == true)
+                    {
+                        CraftingUI.Instance.DepositSeed(slotIndex);
 
                         return;
                     }
@@ -584,6 +592,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
             if (ActionBarsUI.Instance?.TryAssignDrop(targetGameObject, item) == true)
             {
                 eventData.eligibleForClick = false;
+                return;
+            }
+
+            var farmIndex = CraftingUI.Instance?.GetFarmSlotIndex(targetGameObject) ?? -1;
+
+            if (farmIndex >= 0)
+            {
+                eventData.eligibleForClick = false;
+                CraftingUI.Instance.DepositSeed(sourceSlotIndex, farmIndex);
+
                 return;
             }
 

@@ -142,6 +142,31 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             },
 
             {
+                "Strawberry(Clone)",
+                new[] { new LootItem { Type = InventoryItemEnum.Strawberry, Chance = 90, Min = 1, Max = 4 } }
+            },
+
+            {
+                "Mint(Clone)",
+                new[] { new LootItem { Type = InventoryItemEnum.Mint, Chance = 90, Min = 1, Max = 4 } }
+            },
+
+            {
+                "Lavender(Clone)",
+                new[] { new LootItem { Type = InventoryItemEnum.Lavender, Chance = 90, Min = 1, Max = 4 } }
+            },
+
+            {
+                "Calendula(Clone)",
+                new[] { new LootItem { Type = InventoryItemEnum.Calendula, Chance = 90, Min = 1, Max = 4 } }
+            },
+
+            {
+                "Raspberry(Clone)",
+                new[] { new LootItem { Type = InventoryItemEnum.Raspberry, Chance = 90, Min = 1, Max = 4 } }
+            },
+
+            {
                 "Tree(Clone)",
                 new LootItem[]
                 {
