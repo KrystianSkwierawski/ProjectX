@@ -81,6 +81,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
         {
             InventoryCanvas = GameObject.Find("InventoryCanvas");
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+            Inventory.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Toggle);
             InventoryContent = Inventory.transform.Find("Viewport/Content").gameObject;
             Loot = InventoryCanvas.transform.Find("Loot").gameObject;
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;

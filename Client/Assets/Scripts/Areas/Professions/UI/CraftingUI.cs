@@ -49,8 +49,6 @@ namespace Assets.Scripts.Areas.Professions.UI
 
         public GameObject Requirements { get; private set; }
 
-        public FlexibleGridLayout RequirementsFlexibleGridLayout { get; private set; }
-
         public GameObject RequirementsText { get; private set; }
 
         #endregion
@@ -71,8 +69,6 @@ namespace Assets.Scripts.Areas.Professions.UI
 
         private string _craftButtonText;
         private HideoutBuildingDto _hideout;
-        private readonly Dictionary<RectTransform, (Vector2 Min, Vector2 Max, Vector2 Position, Vector2 Size)> _hideoutLayout
-            = new Dictionary<RectTransform, (Vector2, Vector2, Vector2, Vector2)>();
         private readonly List<GameObject> _farmSlots = new List<GameObject>();
 
         public bool IsFarmOpen => BuildHideout != null && _hideout?.Farm != null && Crafting.activeSelf
@@ -151,7 +147,6 @@ namespace Assets.Scripts.Areas.Professions.UI
             _recipeObjects.Add(InventoryItemEnum.None, preview);
 
             RequirementsText.SetActive(requirement.Items.Length > 0);
-            RequirementsFlexibleGridLayout.columns = Mathf.Max(1, requirement.Items.Length);
 
             foreach (var item in requirement.Items)
             {
@@ -215,11 +210,6 @@ namespace Assets.Scripts.Areas.Professions.UI
 
         private void ShowFarmSlots(FarmStateDto farm)
         {
-            var layout = Reward.GetComponent<FlexibleGridLayout>();
-            layout.columns = 3;
-            layout.rows = 2;
-            layout.fitType = FlexibleGridLayout.FitType.FixedColumns;
-            layout.spacing = new Vector2(8, 8);
             RewardText.GetComponent<TMP_Text>().text = TranslateManager.Instance.GetByKey("HideoutSeeds")
                 + (_hideout.UpgradeTime > 0 ? $" · {TranslateManager.Instance.GetByKey("HideoutUpgrade")}: {_hideout.UpgradeTime}s" : string.Empty);
 
@@ -293,20 +283,6 @@ namespace Assets.Scripts.Areas.Professions.UI
             _farmSlots.Clear();
             _hideout = null;
 
-            foreach (var pair in _hideoutLayout)
-            {
-                pair.Key.anchorMin = pair.Value.Min;
-                pair.Key.anchorMax = pair.Value.Max;
-                pair.Key.anchoredPosition = pair.Value.Position;
-                pair.Key.sizeDelta = pair.Value.Size;
-            }
-
-            _hideoutLayout.Clear();
-
-            if (Reward != null)
-            {
-                ConfigureSlotLayout(Reward.GetComponent<FlexibleGridLayout>());
-            }
         }
 
         private void LateUpdate()
@@ -315,29 +291,6 @@ namespace Assets.Scripts.Areas.Professions.UI
             {
                 return;
             }
-
-            var canvas = (RectTransform)CraftingCanvas.transform;
-            var width = Mathf.Min(380, canvas.rect.width - 24);
-            var height = 410f;
-            var reference = (RectTransform)QuestUI.Instance.Quest.transform;
-            var left = reference.anchoredPosition.x - reference.rect.width / 2;
-            var limit = Mathf.Max(0, (canvas.rect.width - width) / 2 - 12);
-            var x = Mathf.Clamp(left + width / 2, -limit, limit);
-            var y = reference.anchoredPosition.y;
-
-            SetHideoutRect(Crafting, x, y, width, height);
-            SetHideoutRect(Recipes, 0, 165, width - 24, 54);
-            SetHideoutRect(Recipe, 0, -5, width - 24, 270);
-            var labelWidth = width - 38;
-            var requirementsOffset = RewardText.GetComponent<TMP_Text>().margin.x
-                - RequirementsText.GetComponent<TMP_Text>().margin.x;
-
-            SetHideoutRect(RewardText, 0, 112, labelWidth, 26);
-            SetHideoutRect(Reward, 0, 32, width - 32, 128);
-            SetHideoutRect(RequirementsText, requirementsOffset, -53, labelWidth, 26);
-            SetHideoutRect(Requirements, 0, -101, width - 32, 60);
-            SetHideoutRect(CraftButton.gameObject, width / 4 - 6, -173, width / 2 - 24, 36);
-            SetHideoutRect(ExitButton.gameObject, -width / 4 + 6, -173, width / 2 - 24, 36);
 
             CraftButton.interactable = HasAllRequirements;
 
@@ -365,20 +318,6 @@ namespace Assets.Scripts.Areas.Professions.UI
             }
         }
 
-        private void SetHideoutRect(GameObject obj, float x, float y, float width, float height)
-        {
-            var rect = (RectTransform)obj.transform;
-
-            if (!_hideoutLayout.ContainsKey(rect))
-            {
-                _hideoutLayout.Add(rect, (rect.anchorMin, rect.anchorMax, rect.anchoredPosition, rect.sizeDelta));
-            }
-
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = new Vector2(x, y);
-            rect.sizeDelta = new Vector2(width, height);
-        }
-
         private void Start()
         {
             CraftingCanvas = GameObject.Find("CraftingCanvas");
@@ -389,13 +328,9 @@ namespace Assets.Scripts.Areas.Professions.UI
             Reward = Recipe.transform.Find("Reward").gameObject;
             RewardText = Recipe.transform.Find("RewardText").gameObject;
             Requirements = Recipe.transform.Find("Requirements").gameObject;
-            RequirementsFlexibleGridLayout = Requirements.GetComponent<FlexibleGridLayout>();
             RequirementsText = Recipe.transform.Find("RequirementsText").gameObject;
             CraftButton = Crafting.transform.Find("CraftButton").GetComponent<Button>();
             ExitButton = Crafting.transform.Find("ExitButton").GetComponent<Button>();
-
-            ConfigureSlotLayout(Reward.GetComponent<FlexibleGridLayout>());
-            ConfigureSlotLayout(RequirementsFlexibleGridLayout);
 
             _recipesObjectPool = new ObjectPool<RecipesPoolObject>(
                 createFunc: () =>
@@ -615,7 +550,6 @@ namespace Assets.Scripts.Areas.Professions.UI
         private void SetRequirements(CraftingRecipeDto recipe)
         {
             RequirementsText.SetActive(true);
-            RequirementsFlexibleGridLayout.columns = recipe.Requirement.Items.Length + 1;
 
             foreach (var item in recipe.Requirement.Items)
             {
@@ -693,17 +627,6 @@ namespace Assets.Scripts.Areas.Professions.UI
                 obj.Preview.SetActive(false);
             });
 
-        }
-
-        private static void ConfigureSlotLayout(FlexibleGridLayout layout)
-        {
-            layout.fitX = false;
-            layout.fitY = false;
-            layout.cellSize = new Vector2(60, 60);
-            layout.spacing = new Vector2(8, 0);
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.rows = 1;
-            layout.fitType = FlexibleGridLayout.FitType.FixedRows;
         }
 
         private void ClearRecipes()

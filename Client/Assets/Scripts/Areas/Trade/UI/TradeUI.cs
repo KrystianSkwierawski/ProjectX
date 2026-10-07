@@ -48,14 +48,7 @@ namespace Assets.Scripts.Areas.Trade.UI
         private Button _cancelButton;
         private TextMeshProUGUI _lockLabel;
         private Button _waitingCancelButton;
-        private RectTransform _canvasRect;
-        private RectTransform _panelRect;
         private RectTransform _myOffer;
-        private GridLayoutGroup _myGrid;
-        private GridLayoutGroup _partnerGrid;
-        private Vector2 _preferredSessionSize;
-        private Vector2 _preferredInvitationSize;
-        private readonly Vector3[] _layoutCorners = new Vector3[4];
         private Action _openAfterTrade;
         private readonly TradeInventoryProjection _inventoryProjection = new TradeInventoryProjection();
         private InventoryItemDto[] _pendingOffer;
@@ -84,19 +77,11 @@ namespace Assets.Scripts.Areas.Trade.UI
             _myOffer = (RectTransform)_session.transform.Find("Offers/MyOffer");
             _myOfferSlots = _myOffer.Find("Scroll/Viewport/Content");
             _partnerOfferSlots = _session.transform.Find("Offers/PartnerOffer/Scroll/Viewport/Content");
-            _myGrid = _myOfferSlots.GetComponent<GridLayoutGroup>();
-            _partnerGrid = _partnerOfferSlots.GetComponent<GridLayoutGroup>();
             _lockButton = _session.transform.Find("Actions/Lock").GetComponent<Button>();
             _confirmButton = _session.transform.Find("Actions/Confirm").GetComponent<Button>();
             _cancelButton = _session.transform.Find("Actions/Cancel").GetComponent<Button>();
             _waitingCancelButton = _invitation.transform.Find("Actions/Cancel").GetComponent<Button>();
             _lockLabel = _lockButton.GetComponentInChildren<TextMeshProUGUI>();
-            _canvasRect = (RectTransform)transform;
-            _panelRect = (RectTransform)_panel.transform;
-            var sessionSize = _session.GetComponent<LayoutElement>();
-            var invitationSize = _invitation.GetComponent<LayoutElement>();
-            _preferredSessionSize = new Vector2(sessionSize.preferredWidth, sessionSize.preferredHeight);
-            _preferredInvitationSize = new Vector2(invitationSize.preferredWidth, invitationSize.preferredHeight);
 
             _panel.SetActive(false);
         }
@@ -134,8 +119,6 @@ namespace Assets.Scripts.Areas.Trade.UI
         {
             if (IsOpen)
             {
-                UpdateLayout();
-
                 if (_openAfterTrade != null && !_snapshot.IsCommitting)
                 {
                     _controller?.Cancel();
@@ -219,11 +202,7 @@ namespace Assets.Scripts.Areas.Trade.UI
                 ConfigureSession();
             }
 
-            if (IsOpen)
-            {
-                UpdateLayout();
-            }
-            else
+            if (!IsOpen)
             {
                 var openPanel = _openAfterTrade;
                 _openAfterTrade = null;
@@ -464,143 +443,6 @@ namespace Assets.Scripts.Areas.Trade.UI
             slot.name = mine ? $"MyOffer{index + 1}" : $"PartnerOffer{index + 1}";
 
             return slot;
-        }
-
-        private void UpdateLayout()
-        {
-            const float margin = 16f;
-            var safeArea = _canvasRect.rect;
-            safeArea.xMin += margin;
-            safeArea.xMax -= margin;
-            safeArea.yMin += margin;
-            safeArea.yMax -= 100f;
-            var logContent = LogUI.Instance?.LogContent;
-
-            if (logContent != null && logContent.activeInHierarchy)
-            {
-                ((RectTransform)logContent.transform).GetWorldCorners(_layoutCorners);
-                var logBottom = _canvasRect.InverseTransformPoint(_layoutCorners[0]).y;
-                safeArea.yMax = Mathf.Min(safeArea.yMax, logBottom - margin);
-            }
-
-            var available = safeArea;
-            var preferredSize = HasSession ? _preferredSessionSize : _preferredInvitationSize;
-            var inventory = InventoryUI.Instance?.Inventory;
-
-            if (inventory != null && inventory.activeInHierarchy)
-            {
-                ((RectTransform)inventory.transform).GetWorldCorners(_layoutCorners);
-                var minimum = (Vector2)_canvasRect.InverseTransformPoint(_layoutCorners[0]);
-                var maximum = (Vector2)_canvasRect.InverseTransformPoint(_layoutCorners[2]);
-                var leftWidth = minimum.x - margin - safeArea.xMin;
-
-                if (leftWidth >= Mathf.Min(preferredSize.x, 420f))
-                {
-                    available.xMax = Mathf.Min(available.xMax, minimum.x - margin);
-                }
-                else
-                {
-                    available.yMin = Mathf.Max(available.yMin, maximum.y + margin);
-                }
-            }
-
-            // Keep enough logical space for the headers, grid and actions on narrow screens.
-            // Scale the complete panel when necessary instead of collapsing the offer viewport.
-            CalculatePanelLayout(available, preferredSize, out var size, out var scale);
-            var loot = InventoryUI.Instance?.Loot;
-
-            if (loot != null && loot.activeInHierarchy)
-            {
-                ((RectTransform)loot.transform).GetWorldCorners(_layoutCorners);
-                var lootMinimum = (Vector2)_canvasRect.InverseTransformPoint(_layoutCorners[0]);
-                var lootMaximum = (Vector2)_canvasRect.InverseTransformPoint(_layoutCorners[2]);
-                var lootBounds = Rect.MinMaxRect(lootMinimum.x, lootMinimum.y, lootMaximum.x, lootMaximum.y);
-                var renderedSize = size * scale;
-                var panelBounds = new Rect(available.center - renderedSize * 0.5f, renderedSize);
-
-                if (panelBounds.Overlaps(lootBounds))
-                {
-                    if (TryGetLootFreeArea(available, lootBounds, preferredSize, margin, out var lootFreeArea))
-                    {
-                        available = lootFreeArea;
-                        CalculatePanelLayout(available, preferredSize, out size, out scale);
-                    }
-                }
-            }
-
-            _panelRect.sizeDelta = size;
-            _panelRect.localScale = Vector3.one * scale;
-            _panelRect.localPosition = new Vector3(available.center.x, available.center.y, 0f);
-            UpdateGrid(_myGrid);
-            UpdateGrid(_partnerGrid);
-        }
-
-        private static bool TryGetLootFreeArea(
-            Rect available,
-            Rect lootBounds,
-            Vector2 preferredSize,
-            float margin,
-            out Rect lootFreeArea)
-        {
-            var rightOfLoot = available;
-            rightOfLoot.xMin = Mathf.Max(rightOfLoot.xMin, lootBounds.xMax + margin);
-
-            if (rightOfLoot.width >= Mathf.Min(preferredSize.x, 320f))
-            {
-                lootFreeArea = rightOfLoot;
-
-                return true;
-            }
-
-            var leftOfLoot = available;
-            leftOfLoot.xMax = Mathf.Min(leftOfLoot.xMax, lootBounds.xMin - margin);
-            var aboveLoot = available;
-            aboveLoot.yMin = Mathf.Max(aboveLoot.yMin, lootBounds.yMax + margin);
-            var belowLoot = available;
-            belowLoot.yMax = Mathf.Min(belowLoot.yMax, lootBounds.yMin - margin);
-            var candidates = new[] { rightOfLoot, leftOfLoot, aboveLoot, belowLoot };
-            var bestScale = -1f;
-            lootFreeArea = available;
-
-            foreach (var candidate in candidates)
-            {
-                if (candidate.width <= 0f || candidate.height <= 0f)
-                {
-                    continue;
-                }
-
-                CalculatePanelLayout(candidate, preferredSize, out _, out var candidateScale);
-
-                if (candidateScale <= bestScale)
-                {
-                    continue;
-                }
-
-                bestScale = candidateScale;
-                lootFreeArea = candidate;
-            }
-
-            return bestScale >= 0f;
-        }
-
-        private static void CalculatePanelLayout(Rect available, Vector2 preferredSize, out Vector2 size, out float scale)
-        {
-            size = new Vector2(
-                Mathf.Clamp(available.width, Mathf.Min(preferredSize.x, 520f), preferredSize.x),
-                Mathf.Clamp(available.height, Mathf.Min(preferredSize.y, 360f), preferredSize.y));
-            scale = Mathf.Clamp01(Mathf.Min(available.width / size.x, available.height / size.y));
-        }
-
-        private static void UpdateGrid(GridLayoutGroup grid)
-        {
-            var width = ((RectTransform)grid.transform.parent).rect.width - grid.padding.horizontal;
-            var columns = Mathf.Max(1, grid.constraintCount);
-            var cellSize = Mathf.Max(1f, (width - (columns - 1) * grid.spacing.x) / columns);
-
-            if (!Mathf.Approximately(grid.cellSize.x, cellSize) || !Mathf.Approximately(grid.cellSize.y, cellSize))
-            {
-                grid.cellSize = new Vector2(cellSize, cellSize);
-            }
         }
 
         private void AcceptInvitation()

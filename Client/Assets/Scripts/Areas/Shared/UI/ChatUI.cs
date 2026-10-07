@@ -40,6 +40,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         {
             Canvas = GameObject.Find("ChatCanvas");
             Container = Canvas.transform.Find("Container").gameObject;
+            Container.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Toggle);
             InputField = Container.transform.Find("InputField").GetComponent<TMP_InputField>();
             Chat = Container.transform.Find("Chat").gameObject;
             ChatContent = Chat.transform.Find("Viewport/Content").gameObject;

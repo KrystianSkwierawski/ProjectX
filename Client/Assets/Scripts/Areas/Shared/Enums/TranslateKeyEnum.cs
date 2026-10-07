@@ -259,5 +259,16 @@ namespace Assets.Scripts.Areas.Shared.Enums
         HideoutSeedHint,
         HideoutStaleState,
         HideoutInventoryFull,
+        HelpGear,
+        HelpCharacter,
+        HelpQuest,
+        HelpMerchant,
+        HelpCrafting,
+        HelpStash,
+        HelpInventory,
+        HelpChat,
+        HelpFriends,
+        HelpParty,
+        HelpTrade,
     }
 }

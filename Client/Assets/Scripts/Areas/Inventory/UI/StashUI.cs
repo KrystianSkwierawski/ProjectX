@@ -25,10 +25,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         private GameObject _panel;
         private RectTransform _content;
-        private GridLayoutGroup _grid;
-        private RectTransform _viewport;
-        private Vector2 _defaultPosition;
-        private Vector2 _defaultSize;
         private readonly List<GameObject> _slots = new List<GameObject>();
 
         public CharacterStashDto Dto { get; private set; }
@@ -39,10 +35,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
         {
             _panel = transform.Find("Stash").gameObject;
             _content = (RectTransform)_panel.transform.Find("Viewport/Content");
-            _grid = _content.GetComponent<GridLayoutGroup>();
-            _viewport = _panel.GetComponent<ScrollRect>().viewport;
-            _defaultPosition = ((RectTransform)_panel.transform).anchoredPosition;
-            _defaultSize = ((RectTransform)_panel.transform).sizeDelta;
             transform.Find("Stash/Header/Close").GetComponent<Button>().onClick.AddListener(() => CharacterStash.Local?.Close());
             _panel.SetActive(false);
         }
@@ -93,8 +85,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     slot.transform.Find("Preview/Description").GetComponent<TextMeshProUGUI>().text = InventoryUI.Instance.PrepareDescription(item);
                 }
             }
-
-            UpdateLayout();
         }
 
         private void CreateSlot(int index)
@@ -209,30 +199,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
                     return;
                 }
-
-                UpdateLayout();
             }
-        }
-
-        private void UpdateLayout()
-        {
-            var canvas = (RectTransform)transform;
-            var panel = (RectTransform)_panel.transform;
-            var maximumWidth = Mathf.Min(_defaultSize.x, canvas.rect.width - 24);
-            var horizontalInsets = -_viewport.sizeDelta.x + _grid.padding.horizontal;
-            var columns = Mathf.Max(1, Mathf.FloorToInt(
-                (maximumWidth - horizontalInsets + _grid.spacing.x) / (_grid.cellSize.x + _grid.spacing.x)));
-            var width = horizontalInsets + columns * (_grid.cellSize.x + _grid.spacing.x) - _grid.spacing.x;
-            var height = Mathf.Min(_defaultSize.y, canvas.rect.height - 160);
-            var horizontalLimit = Mathf.Max(0, (canvas.rect.width - width) / 2 - 12);
-            var verticalLimit = Mathf.Max(0, (canvas.rect.height - height) / 2 - 12);
-
-            panel.sizeDelta = new Vector2(width, height);
-            panel.anchoredPosition = new Vector2(
-                Mathf.Clamp(_defaultPosition.x - (_defaultSize.x - width) / 2, -horizontalLimit, horizontalLimit),
-                Mathf.Clamp(_defaultPosition.y, -verticalLimit, verticalLimit));
-
-            _grid.constraintCount = columns;
         }
 
         protected override void OnDestroy()
