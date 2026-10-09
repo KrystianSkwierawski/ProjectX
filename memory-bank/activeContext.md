@@ -52,7 +52,7 @@
 - Keep current character stats as persisted mutable totals until the base-versus-gear model is clarified.
 - Keep ammo consumption/zero-count unequip on Unity server; API persists submitted state.
 - Keep temporary first-character selection isolated; do not schedule a selector unless requested.
-- Keep English client `pl.json` as the intentional development fallback until complete Polish localization is requested.
+- Client and API i18n resources now contain Polish and English copy for ChillDuck. Descriptions use grounded everyday humour without the former Area 05 setting or invented named NPCs; preserve clear objectives and mechanics. Polish UI/help text replaces the former client English fallback. In-game Polish glyph/wrapping and language-switch smoke for this copy revision remain outstanding.
 - Keep Animator root motion disabled unless a root-motion movement model is explicitly requested.
 - Repository instructions and task-dependent documentation routing live in root `AGENTS.md`.
 - Prefer code, builds, tests, logs, and generated previews. Use `computer-use` only when direct UI interaction is necessary or materially simplifies implementation or verification.

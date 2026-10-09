@@ -40,7 +40,7 @@
 - Gear Score.
 - Party reward balancing/configuration after playtesting.
 - Guilds, followed by Auction House once ownership/transaction rules remain stable.
-- Full Polish client localization when explicitly prioritized.
+- ChillDuck Polish/English resource translation is complete: all 267 client and 150 API enum keys are covered, 126 shared entries match per language, JSON/key order/format placeholders and diff checks pass, and all 300 API localization tests pass after building the API/test project. Verify this copy in-game, including Polish glyphs, tooltip/quest wrapping in portrait and landscape, and language switching; this runtime check remains outstanding.
 
 ## Documentation State
 - Memory Bank compacted on 2026-09-08. It records current behavior, decisions, invariants, verification, and gaps; detailed chronological implementation history is intentionally left to Git.
