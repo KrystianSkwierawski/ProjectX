@@ -1,7 +1,8 @@
 using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
-using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Character.Models;
+using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -180,6 +181,9 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 .Single();
 
             var key = OwnerClientId.ToString();
+            var clientId = OwnerClientId;
+            var player = GetComponent<Player>();
+            var spawnId = NetworkObjectId;
             var experienceType = type switch
             {
                 CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
@@ -196,16 +200,22 @@ namespace Assets.Scripts.Areas.Professions.Mono
                     Remove = recipe.Requirement.Items
                 },
                 PlayerSessionId = playerSessionId,
-                OnSucceeded = () =>
+                OnPersistedAsync = async operationToken =>
                 {
                     if (experienceType != ExperienceTypeEnum.None)
                     {
-                        AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
+                        var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                         {
                             Amount = recipe.Reward.Experience,
-                            Type = experienceType,
-                            PlayerSessionId = playerSessionId,
-                        });
+                            type = experienceType,
+                        }, playerSessionId, cancellationToken: operationToken);
+
+                        Debug.Log($"Crafting experience persisted. ClientId: {clientId}, Recipe: {id}, Type: {experienceType}, Amount: {recipe.Reward.Experience}, Level: {result.Level}.");
+
+                        if (player != null && player.IsSpawned && player.NetworkObjectId == spawnId)
+                        {
+                            player.ApplyPersistedExperienceLevel(experienceType, result.Level);
+                        }
                     }
                 }
             });

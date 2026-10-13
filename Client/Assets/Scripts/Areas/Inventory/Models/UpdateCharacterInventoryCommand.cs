@@ -18,6 +18,9 @@ namespace Assets.Scripts.Areas.Inventory.Models
         // Set only by authoritative server gameplay; deliberately excluded from NGO serialization.
         public Assets.Scripts.Areas.Character.Models.UpdateCharacterCommand CharacterUpdate { get; set; }
 
+        // Server-only idempotency identifier; not part of gameplay RPC serialization.
+        public Guid? HealthOperationId { get; set; }
+
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             // Serialize Add array length and elements
@@ -75,6 +78,7 @@ namespace Assets.Scripts.Areas.Inventory.Models
     {
         Applied,
         InventoryFull,
-        InventoryChanged
+        InventoryChanged,
+        OperationRejected
     }
 }

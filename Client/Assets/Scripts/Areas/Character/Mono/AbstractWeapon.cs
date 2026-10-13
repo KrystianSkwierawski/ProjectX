@@ -172,30 +172,45 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
         }
 
-        // FIXME: disconnect error
         private void OnHitTarget()
         {
             if (!_hit)
             {
                 _hit = true;
 
-                var character = UserManager.Instance.Characters[OwnerClientId];
-
-                var damage = character.ApplyWeaponDamage(BaseDamage);
-
-                if (!character.AmmoType.IsArmorAmmo())
-                {
-                    _caster.GetComponent<Player>().ConsumeAmmo();
-                }
+                // The weapon is returned to its pool immediately. Pending equipment writes
+                // must not make the later hit read fields from a reused projectile.
+                var caster = _caster;
+                var target = _target;
+                var clientId = OwnerClientId;
+                var playerSessionId = _playerSessionId;
+                var baseDamage = BaseDamage;
+                var targetNetwork = target.GetComponent<NetworkObject>();
+                var targetNetworkId = targetNetwork.NetworkObjectId;
 
                 OnHitTargetClientRpc();
 
-                AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
+                caster.GetComponent<Player>().ResolveAmmoHit(false, character =>
                 {
-                    ClientId = OwnerClientId,
-                    Value = damage,
-                    PlayerSessionId = _playerSessionId,
-                    Player = _caster
+                    if (target == null || !target.activeInHierarchy || !targetNetwork.IsSpawned
+                        || targetNetwork.NetworkObjectId != targetNetworkId
+                        || !DungeonTravel.CanInteract(clientId) || !DungeonWorldObject.SameInstance(caster, target)
+                        || target.GetComponent<Health>().Network.Value <= 0)
+                    {
+                        return false;
+                    }
+
+                    var damage = character.ApplyWeaponDamage(baseDamage);
+
+                    AttackTargetSubscription.Instance.Invoke(target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
+                    {
+                        ClientId = clientId,
+                        Value = damage,
+                        PlayerSessionId = playerSessionId,
+                        Player = caster
+                    });
+
+                    return true;
                 });
             }
         }

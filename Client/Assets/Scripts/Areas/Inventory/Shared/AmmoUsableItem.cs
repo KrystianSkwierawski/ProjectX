@@ -1,4 +1,4 @@
-using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -11,18 +11,13 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class AmmoUsableItem : AbstractGearUsableItem
     {
-        protected override InventoryItemDto CharacterItem
+        protected override InventoryItemDto GetCharacterItem(CharacterDto character)
         {
-            get
+            return new InventoryItemDto
             {
-                var character = UserManager.Instance.Characters[OwnerClientId];
-
-                return new InventoryItemDto
-                {
-                    Type = character.AmmoType,
-                    Count = character.AmmoCount
-                };
-            }
+                Type = character.AmmoType,
+                Count = character.AmmoCount
+            };
         }
 
         protected override GearSlot Slot => GearUI.Instance.Ammo;
@@ -33,10 +28,8 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         {
         }
 
-        protected override bool Wear()
+        protected override bool Wear(CharacterDto character)
         {
-            var character = UserManager.Instance.Characters[OwnerClientId];
-
             var weaponCategory = Item.Type.GetWeaponCategory();
 
             if (weaponCategory != character.WeaponType.GetWeaponCategory())
@@ -65,10 +58,8 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             return true;
         }
 
-        protected override bool Unwear()
+        protected override bool Unwear(CharacterDto character)
         {
-            var character = UserManager.Instance.Characters[OwnerClientId];
-
             if (character.AmmoType != Item.Type)
             {
                 return false;

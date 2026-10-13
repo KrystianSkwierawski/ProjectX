@@ -18,7 +18,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public abstract class AbstractGearUsableItem : AbstractUsableItem
     {
-        protected abstract InventoryItemDto CharacterItem { get; }
+        protected abstract InventoryItemDto GetCharacterItem(CharacterDto character);
 
         protected abstract GearSlot Slot { get; }
 
@@ -39,9 +39,17 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         {
             var character = UserManager.Instance.Characters[OwnerClientId];
             var snapshot = new CharacterSnapshot(character);
-            var oldItem = CharacterItem;
 
-            var success = from == UsableItemFromEnum.Inventory ? Wear() : Unwear();
+#if UNITY_SERVER && !UNITY_EDITOR
+            var persistedCharacter = character;
+            character = new CharacterDto();
+            snapshot.Restore(character);
+#endif
+
+            UnequipItems.Clear();
+            var oldItem = GetCharacterItem(character);
+
+            var success = from == UsableItemFromEnum.Inventory ? Wear(character) : Unwear(character);
 
             if (!success)
             {
@@ -93,7 +101,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 #endif
 
 #if UNITY_SERVER && !UNITY_EDITOR
-            UpdateCharacter(character, snapshot, inventoryRequest, onCompleted);
+            UpdateCharacter(character, persistedCharacter, inventoryRequest, onCompleted);
 #endif
 
             return true;
@@ -101,18 +109,27 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         private void UpdateCharacter(
             CharacterDto character,
-            CharacterSnapshot snapshot,
+            CharacterDto persistedCharacter,
             UpdateCharacterInventoryCommand inventoryRequest,
             Action onCompleted)
         {
             inventoryRequest.CharacterUpdate = CreateCharacterRequest(character);
+            inventoryRequest.CharacterUpdate.Health = Math.Min(persistedCharacter.Health, character.MaxHealth);
+            inventoryRequest.HealthOperationId = Guid.NewGuid();
+            var committedEquipment = new CharacterSnapshot(character);
 
             UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
             {
                 Request = inventoryRequest,
                 PlayerSessionId = PlayerSessionId,
+                // Clamp live HP rather than restoring the request's snapshot: damage can
+                // arrive during persistence and its queued save shares the equipment gate.
+                OnPersisted = () =>
+                {
+                    committedEquipment.Restore(persistedCharacter);
+                    persistedCharacter.Health = Math.Min(persistedCharacter.Health, persistedCharacter.MaxHealth);
+                },
                 OnSucceeded = () => PartyController.NotifyCharacterChanged(OwnerClientId),
-                OnRejected = () => snapshot.Restore(character),
                 OnCompleted = onCompleted,
                 ResynchronizeCharacterOnRejected = true,
             });
@@ -153,7 +170,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 
         private void UpdateUI(UsableItemFromEnum from, CharacterDto character)
         {
-            GearUI.Instance.Wear(Slot, from == UsableItemFromEnum.Inventory ? CharacterItem : new InventoryItemDto
+            GearUI.Instance.Wear(Slot, from == UsableItemFromEnum.Inventory ? GetCharacterItem(character) : new InventoryItemDto
             {
                 Type = TemplateType,
                 Count = 0
@@ -188,9 +205,9 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             character.Armor -= parameters.Armor;
         }
 
-        protected abstract bool Wear();
+        protected abstract bool Wear(CharacterDto character);
 
-        protected abstract bool Unwear();
+        protected abstract bool Unwear(CharacterDto character);
 
         private sealed class CharacterSnapshot
         {
