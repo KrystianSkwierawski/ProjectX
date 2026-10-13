@@ -9,5 +9,6 @@ public enum UpdateCharacterInventoryStatusEnum
 {
     Applied,
     InventoryFull,
-    InventoryChanged
+    InventoryChanged,
+    OperationRejected
 }

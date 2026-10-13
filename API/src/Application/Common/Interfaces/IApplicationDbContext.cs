@@ -17,6 +17,7 @@ public interface IApplicationDbContext
     DbSet<CharacterQuest> CharacterQuests { get; }
     DbSet<CharacterInventory> CharacterInventories { get; }
     DbSet<CharacterInventoryTradeReceipt> CharacterInventoryTradeReceipts { get; }
+    DbSet<CharacterInventoryHealthReceipt> CharacterInventoryHealthReceipts { get; }
     DbSet<Quest> Quests { get; }
     DbSet<InventoryItem> InventoryItems { get; }
     DbSet<CraftingRecipe> CraftingRecipes { get; }

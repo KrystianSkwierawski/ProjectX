@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CharacterQuest> CharacterQuests => Set<CharacterQuest>();
     public DbSet<CharacterInventory> CharacterInventories => Set<CharacterInventory>();
     public DbSet<CharacterInventoryTradeReceipt> CharacterInventoryTradeReceipts => Set<CharacterInventoryTradeReceipt>();
+    public DbSet<CharacterInventoryHealthReceipt> CharacterInventoryHealthReceipts => Set<CharacterInventoryHealthReceipt>();
     public DbSet<Quest> Quests => Set<Quest>();
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();

@@ -360,6 +360,33 @@ namespace ProjectX.Infrastructure.Migrations
                     b.ToTable("CharacterInventories");
                 });
 
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryHealthReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Applied")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.ToTable("CharacterInventoryHealthReceipts");
+                });
+
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryTradeReceipt", b =>
                 {
                     b.Property<Guid>("Id")
@@ -821,6 +848,15 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryHealthReceipt", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryTradeReceipt", b =>

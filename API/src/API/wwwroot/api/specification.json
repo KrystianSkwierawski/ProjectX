@@ -2322,12 +2322,14 @@
         "x-enumNames": [
           "Applied",
           "InventoryFull",
-          "InventoryChanged"
+          "InventoryChanged",
+          "OperationRejected"
         ],
         "enum": [
           0,
           1,
-          2
+          2,
+          3
         ]
       },
       "UpdateCharacterInventoryCommand": {
@@ -2368,6 +2370,11 @@
                 "$ref": "#/components/schemas/UpdateCharacterCommand"
               }
             ]
+          },
+          "healthOperationId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
           }
         }
       },

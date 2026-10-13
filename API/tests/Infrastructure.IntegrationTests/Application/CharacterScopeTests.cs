@@ -26,6 +26,435 @@ public class CharacterScopeTests
     private const int ForeignCharacterId = 1;
 
     [Fact]
+    public async Task DamageReceipt_ReplayPreservesLaterHealingAndEquipment()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.Health = 100;
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = new UpdateCharacterInventoryCommand([], [],
+            CharacterUpdate: new UpdateCharacterCommand { Health = 40 },
+            HealthOperationId: Guid.NewGuid());
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+
+        var applied = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, applied.Status);
+        Assert.Equal(40, character.Health);
+
+        character.Health = 70;
+        character.Strength = 35;
+
+        await context.SaveChangesAsync();
+
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, replay.Status);
+        Assert.Equal(70, character.Health);
+        Assert.Equal(35, character.Strength);
+        Assert.Single(await context.CharacterInventoryHealthReceipts.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task PotionReceipt_ReplayDoesNotConsumeOrRestoreHealthAgain()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.HealthPotion, 2));
+        character.Health = 50;
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = CreatePotionRequest();
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+        var first = await handler.Handle(request, CancellationToken.None);
+
+        character.Health = 60;
+
+        await context.SaveChangesAsync();
+
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, first.Status);
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, replay.Status);
+        Assert.Equal(60, character.Health);
+        Assert.Equal(1, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.HealthPotion));
+        Assert.Single(await context.CharacterInventoryHealthReceipts.ToArrayAsync());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(
+            request with { CharacterUpdate = new UpdateCharacterCommand { Health = 80 } }, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task PotionReceipt_RejectedReplayRemainsRejectedAfterInventoryChanges()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.Health = 50;
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = CreatePotionRequest();
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+        var first = await handler.Handle(request, CancellationToken.None);
+
+        character.CharacterInventory.Inventory.Add(InventoryItemEnum.HealthPotion, 1, 15);
+
+        await context.SaveChangesAsync();
+
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.OperationRejected, first.Status);
+        Assert.Equal(first.Status, replay.Status);
+        Assert.Equal(50, character.Health);
+        Assert.Equal(1, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.HealthPotion));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CharacterStateReceipt_RetryFinishesWhileOriginalWriteIsStillPending(bool equipment)
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        await using var seed = new ApplicationDbContext(options);
+        var itemType = equipment ? InventoryItemEnum.IronChest : InventoryItemEnum.HealthPotion;
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(itemType, 2));
+        character.Health = 50;
+        seed.Add(character);
+
+        await seed.SaveChangesAsync();
+
+        await using var delayed = new DelayedPotionContext(options);
+        await using var retry = new ApplicationDbContext(options);
+        var request = equipment ? CreateGearRequest() : CreatePotionRequest();
+        var pending = new UpdateCharacterInventoryCommandHandler(delayed, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        await delayed.SaveStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.False(pending.IsCompleted);
+        Assert.Equal(50, (await retry.Characters.Where(x => x.Id == CurrentCharacterId).SingleAsync()).Health);
+
+        retry.ChangeTracker.Clear();
+
+        var retried = await new UpdateCharacterInventoryCommandHandler(retry, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        delayed.ResumeSave.SetResult();
+
+        var original = await pending;
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, original.Status);
+        Assert.Equal(original.Status, retried.Status);
+
+        retry.ChangeTracker.Clear();
+
+        var stored = await retry.CharacterInventories
+            .Include(x => x.Character)
+            .Where(x => x.Id == CurrentCharacterId)
+            .SingleAsync();
+
+        Assert.Equal(equipment ? 50 : 70, stored.Character.Health);
+        Assert.Equal(1, stored.Inventory.GetCount(itemType));
+        if (equipment)
+        {
+            Assert.Equal(InventoryItemEnum.IronChest, stored.Character.ChestType);
+            Assert.Equal(120, stored.Character.MaxHealth);
+        }
+
+        Assert.Single(await retry.CharacterInventoryHealthReceipts.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task GearReceipt_ReplayPreservesLaterDamageAndStatsAndBindsFullPayload()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.IronChest, 2));
+        character.Health = 50;
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = CreateGearRequest();
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+
+        await handler.Handle(request, CancellationToken.None);
+
+        character.Health = 40;
+        character.Strength = 99;
+
+        await context.SaveChangesAsync();
+
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, replay.Status);
+        Assert.Equal(40, character.Health);
+        Assert.Equal(99, character.Strength);
+        Assert.Equal(1, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.IronChest));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(
+            request with { CharacterUpdate = request.CharacterUpdate! with { Strength = 20 } }, CancellationToken.None));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(
+            request with { Add = [new InventoryItemDto { Type = InventoryItemEnum.IronHelmet, Count = 1 }] }, CancellationToken.None));
+    }
+
+    private static UpdateCharacterInventoryCommand CreateGearRequest() => new(
+        [], [new InventoryItemDto { Type = InventoryItemEnum.IronChest, Count = 1 }],
+        CharacterUpdate: new UpdateCharacterCommand { Health = 50, MaxHealth = 120, Strength = 15, ChestType = InventoryItemEnum.IronChest },
+        HealthOperationId: Guid.NewGuid());
+
+    [Fact]
+    public async Task AmmoReceipt_ReplayDoesNotOverwriteLaterEquipmentOrHealth()
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.AmmoType = InventoryItemEnum.AmmoOil1;
+        character.AmmoCount = 1;
+        character.Strength = 25;
+        character.Health = 50;
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = new UpdateCharacterInventoryCommand([], [],
+            CharacterUpdate: new UpdateCharacterCommand
+            {
+                AmmoType = InventoryItemEnum.AmmoTemplate,
+                AmmoCount = 0,
+                Strength = 20
+            },
+            HealthOperationId: Guid.NewGuid());
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+
+        var applied = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, applied.Status);
+        Assert.Equal(50, character.Health);
+        Assert.Equal(20, character.Strength);
+        Assert.Equal(0, character.AmmoCount);
+
+        character.Health = 40;
+        character.Strength = 35;
+        character.AmmoType = InventoryItemEnum.AmmoOil3;
+        character.AmmoCount = 8;
+
+        await context.SaveChangesAsync();
+
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, replay.Status);
+        Assert.Equal(40, character.Health);
+        Assert.Equal(35, character.Strength);
+        Assert.Equal(InventoryItemEnum.AmmoOil3, character.AmmoType);
+        Assert.Equal(8, character.AmmoCount);
+        Assert.Single(await context.CharacterInventoryHealthReceipts.ToArrayAsync());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(
+            request with { CharacterUpdate = request.CharacterUpdate! with { AmmoCount = 2 } }, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task AmmoReceipt_OverlappingRetryDoesNotOverwriteSubsequentEquipment()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        await using var seed = new ApplicationDbContext(options);
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.AmmoType = InventoryItemEnum.AmmoOil1;
+        character.AmmoCount = 3;
+        seed.Add(character);
+
+        await seed.SaveChangesAsync();
+
+        await using var delayed = new DelayedPotionContext(options);
+        await using var retry = new ApplicationDbContext(options);
+        var request = new UpdateCharacterInventoryCommand([], [],
+            CharacterUpdate: new UpdateCharacterCommand { AmmoType = InventoryItemEnum.AmmoOil1, AmmoCount = 2 },
+            HealthOperationId: Guid.NewGuid());
+        var pending = new UpdateCharacterInventoryCommandHandler(delayed, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        await delayed.SaveStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        var handler = new UpdateCharacterInventoryCommandHandler(retry, new TestCurrentUserService());
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        var stored = await retry.Characters
+            .Where(x => x.Id == CurrentCharacterId)
+            .SingleAsync();
+
+        stored.AmmoType = InventoryItemEnum.AmmoOil3;
+        stored.AmmoCount = 8;
+        stored.Strength = 35;
+
+        await retry.SaveChangesAsync();
+
+        delayed.ResumeSave.SetResult();
+
+        var original = await pending;
+
+        retry.ChangeTracker.Clear();
+
+        var final = await retry.Characters
+            .Where(x => x.Id == CurrentCharacterId)
+            .SingleAsync();
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, original.Status);
+        Assert.Equal(original.Status, replay.Status);
+        Assert.Equal(InventoryItemEnum.AmmoOil3, final.AmmoType);
+        Assert.Equal(8, final.AmmoCount);
+        Assert.Equal(35, final.Strength);
+    }
+
+    private static UpdateCharacterInventoryCommand CreatePotionRequest() => new(
+        [], [new InventoryItemDto { Type = InventoryItemEnum.HealthPotion, Count = 1 }],
+        CharacterUpdate: new UpdateCharacterCommand { Health = 70 }, HealthOperationId: Guid.NewGuid());
+
+    private sealed class DelayedPotionContext(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options)
+    {
+        public TaskCompletionSource SaveStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource ResumeSave { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            SaveStarted.SetResult();
+
+            await ResumeSave.Task.WaitAsync(cancellationToken);
+
+            // Model the SQL revision/receipt conflict when an overlapping retry commits first.
+            throw new DbUpdateConcurrencyException("The retry already committed this operation.");
+        }
+    }
+
+    [Theory]
+    [InlineData(1, true, 2, CharacterQuestStatusEnum.Finished)]
+    [InlineData(2, false, 1, CharacterQuestStatusEnum.Accepted)]
+    public async Task InventoryUpdate_PersistsCollectWithoutFollowUpNotification(
+        int initialCount,
+        bool adding,
+        int expectedCount,
+        CharacterQuestStatusEnum expectedStatus)
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, initialCount));
+        var otherCharacter = CreateCharacter(OtherOwnedCharacterId, CurrentUserId);
+        var quest = CreateCollectQuest();
+        var progress = CreateCharacterQuest(31, character, quest,
+            adding ? CharacterQuestStatusEnum.Accepted : CharacterQuestStatusEnum.Finished);
+        progress.Progress = initialCount;
+
+        var otherProgress = CreateCharacterQuest(32, otherCharacter, quest, CharacterQuestStatusEnum.Accepted);
+        var completed = CreateCharacterQuest(33, character, quest, CharacterQuestStatusEnum.Completed);
+        completed.Progress = 2;
+
+        var killQuest = new Quest
+        {
+            Id = QuestEnum.Kill2Beans,
+            Name = nameof(QuestEnum.Kill2Beans),
+            Type = QuestTypeEnum.Kill,
+            GameObjectName = nameof(InventoryItemEnum.Can),
+            Requirement = 2
+        };
+        var killProgress = CreateCharacterQuest(34, character, killQuest, CharacterQuestStatusEnum.Accepted);
+        killProgress.Progress = 1;
+
+        context.AddRange(character, otherCharacter, quest, progress, otherProgress, completed, killQuest, killProgress);
+
+        await context.SaveChangesAsync();
+
+        var saves = 0;
+        context.SavingChanges += (_, _) => saves++;
+        var item = new InventoryItemDto { Type = InventoryItemEnum.Can, Count = 1 };
+        var request = new UpdateCharacterInventoryCommand(adding ? [item] : [], adding ? [] : [item]);
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        // Reload persisted state without CheckCharacterQuestProgress, as after a disconnect.
+        context.ChangeTracker.Clear();
+
+        var storedInventory = await context.CharacterInventories
+            .Where(x => x.Id == CurrentCharacterId)
+            .SingleAsync();
+
+        var storedQuests = await context.CharacterQuests
+            .ToDictionaryAsync(x => x.Id);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, result.Status);
+        Assert.Equal(1, saves);
+        Assert.Equal(expectedCount, storedInventory.Inventory.GetCount(InventoryItemEnum.Can));
+        Assert.Equal(expectedCount, storedQuests[31].Progress);
+        Assert.Equal(expectedStatus, storedQuests[31].Status);
+        Assert.Equal(0, storedQuests[32].Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Accepted, storedQuests[32].Status);
+        Assert.Equal(2, storedQuests[33].Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Completed, storedQuests[33].Status);
+        Assert.Equal(1, storedQuests[34].Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Accepted, storedQuests[34].Status);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InventoryUpdate_WhenRejected_PreservesPersistedCollectProgress(bool concurrencyConflict)
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, 2));
+        character.CharacterInventory.Count = 1;
+
+        var quest = CreateCollectQuest();
+        var progress = CreateCharacterQuest(31, character, quest, CharacterQuestStatusEnum.Finished);
+        progress.Progress = 2;
+        context.AddRange(character, quest, progress);
+
+        await context.SaveChangesAsync();
+
+        if (concurrencyConflict)
+        {
+            context.SavingChanges += (_, _) => throw new DbUpdateConcurrencyException("Simulated inventory conflict");
+        }
+
+        var request = new UpdateCharacterInventoryCommand(
+            concurrencyConflict ? [] : [new InventoryItemDto { Type = InventoryItemEnum.Fish, Count = 1 }],
+            [new InventoryItemDto { Type = InventoryItemEnum.Can, Count = 1 }]);
+
+        var result = await new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        context.ChangeTracker.Clear();
+
+        var storedInventory = await context.CharacterInventories
+            .SingleAsync();
+
+        var storedProgress = await context.CharacterQuests
+            .SingleAsync();
+
+        Assert.Equal(concurrencyConflict
+            ? UpdateCharacterInventoryStatusEnum.InventoryChanged
+            : UpdateCharacterInventoryStatusEnum.InventoryFull, result.Status);
+        Assert.Equal(2, storedInventory.Inventory.GetCount(InventoryItemEnum.Can));
+        Assert.Equal(0, storedInventory.Inventory.GetCount(InventoryItemEnum.Fish));
+        Assert.Equal(2, storedProgress.Progress);
+        Assert.Equal(CharacterQuestStatusEnum.Finished, storedProgress.Status);
+    }
+
+    [Fact]
     public async Task HealthPotion_PersistsHealingAndConsumptionTogether()
     {
         await using var context = CreateContext();
