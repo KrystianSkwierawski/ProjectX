@@ -35,7 +35,6 @@ namespace Assets.Scripts.Areas.Quest.Mono
         private readonly SemaphoreSlim _questMutationSemaphore = new SemaphoreSlim(1, 1);
         private readonly HashSet<int> _presentedQuestCompletions = new HashSet<int>();
         private readonly HashSet<int> _presentedQuestAcceptances = new HashSet<int>();
-        private QuestNpc _questNpc;
         private StarterAssetsInputs _input;
 
         public UniTask WaitForInventoryQuestMutationAsync(CancellationToken cancellationToken)
@@ -376,10 +375,19 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
                 QuestUI.Instance.QuestAcceptButton.onClick.AddListener(() =>
                 {
+                    var questNpc = QuestUI.Instance.DisplayedNpc;
+
+                    if (questNpc == null || questNpc.Quest == null)
+                    {
+                        return;
+                    }
+
+                    var questId = questNpc.Quest.Id;
+
                     QuestUI.Instance.Hide();
 
                     var characterQuest = QuestManager.Instance.CharacterQuests
-                        .Where(x => x.QuestId == _questNpc.Quest.Id)
+                        .Where(x => x.QuestId == questId)
                         .FirstOrDefault();
 
                     if (characterQuest?.Status == CharacterQuestStatusEnum.Finished)
@@ -388,7 +396,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     }
                     else
                     {
-                        AcceptQuestServerRpc(_questNpc.Quest.Id);
+                        AcceptQuestServerRpc(questId);
                     }
                 });
             }
@@ -526,10 +534,11 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            if (_questNpc != null && _input.Move != Vector2.zero && _questNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance) || Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                _questNpc = null;
+            var displayedNpc = QuestUI.Instance.DisplayedNpc;
 
+            if ((displayedNpc != null && _input.Move != Vector2.zero && displayedNpc.transform.IsFarToTarget(transform.gameObject, _npcMaxDistance))
+                || Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
                 QuestUI.Instance.Hide();
 
                 return;
@@ -560,16 +569,16 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            _questNpc = hit.transform.GetComponent<QuestNpc>();
+            var questNpc = hit.transform.GetComponent<QuestNpc>();
 
-            if (_questNpc.Quest == null)
+            if (questNpc == null || questNpc.Quest == null)
             {
                 CursorUI.Instance.ShowDefault();
 
                 return;
             }
 
-            if (_questNpc.CharacterQuest?.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Completed)
+            if (questNpc.CharacterQuest?.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Completed)
             {
                 CursorUI.Instance.ShowDefault();
 
@@ -580,7 +589,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             if (mouse.rightButton.wasPressedThisFrame)
             {
-                QuestUI.Instance.Show(_questNpc);
+                QuestUI.Instance.Show(questNpc);
             }
         }
 

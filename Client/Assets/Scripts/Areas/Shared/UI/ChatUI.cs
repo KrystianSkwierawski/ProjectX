@@ -53,7 +53,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                     var obj = Instantiate(_textPrefab);
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
 
-                    mesh.fontSize = 14;
+                    mesh.fontSize = 16;
                     mesh.alignment = TextAlignmentOptions.TopLeft;
 
                     return new LogPoolObject
