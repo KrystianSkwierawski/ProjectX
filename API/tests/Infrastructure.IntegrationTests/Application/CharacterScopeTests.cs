@@ -25,6 +25,138 @@ public class CharacterScopeTests
     private const int OtherOwnedCharacterId = 43;
     private const int ForeignCharacterId = 1;
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LayoutReceipt_ReplayDoesNotApplyMoveOrSplitTwice(bool split)
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, 8),
+            new InventorySlot(InventoryItemEnum.Wood, 3));
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = CreateLayoutRequest(split);
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+
+        var first = await handler.Handle(request, CancellationToken.None);
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, first.Status);
+        Assert.Equal(first.Status, replay.Status);
+        Assert.Equal(split ? InventoryItemEnum.Can : InventoryItemEnum.Wood, character.CharacterInventory.Inventory.Items[0].Type);
+        Assert.Equal(split ? 4 : 3, character.CharacterInventory.Inventory.Items[0].Count);
+        Assert.Equal(split ? 3 : 2, character.CharacterInventory.Inventory.Items.Count);
+        Assert.Equal(8, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Can));
+        Assert.Single(await context.CharacterInventoryHealthReceipts.ToArrayAsync());
+
+        var changed = split
+            ? request with { SplitSlotIndex = 1 }
+            : request with { MoveTargetSlotIndex = 2 };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(changed, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LayoutReceipt_OverlappingRetryResolvesBeforeOriginalSave(bool split)
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        await using var seed = new ApplicationDbContext(options);
+        seed.Add(CreateCharacter(CurrentCharacterId, CurrentUserId,
+            new InventorySlot(InventoryItemEnum.Can, 8),
+            new InventorySlot(InventoryItemEnum.Wood, 3)));
+
+        await seed.SaveChangesAsync();
+
+        await using var delayed = new DelayedPotionContext(options);
+        await using var retry = new ApplicationDbContext(options);
+        var request = CreateLayoutRequest(split);
+        var originalTask = new UpdateCharacterInventoryCommandHandler(delayed, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        await delayed.SaveStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        var earlier = await retry.CharacterInventories
+            .Where(x => x.Id == CurrentCharacterId)
+            .SingleAsync();
+
+        Assert.False(originalTask.IsCompleted);
+        Assert.Equal(8, earlier.Inventory.Items[0].Count);
+
+        retry.ChangeTracker.Clear();
+
+        var resolved = await new UpdateCharacterInventoryCommandHandler(retry, new TestCurrentUserService())
+            .Handle(request, CancellationToken.None);
+
+        delayed.ResumeSave.SetResult();
+
+        var original = await originalTask;
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.Applied, resolved.Status);
+        Assert.Equal(resolved.Status, original.Status);
+
+        retry.ChangeTracker.Clear();
+
+        var stored = await retry.CharacterInventories
+            .Where(x => x.Id == CurrentCharacterId)
+            .SingleAsync();
+
+        Assert.Equal(split ? 4 : 3, stored.Inventory.Items[0].Count);
+        Assert.Equal(split ? InventoryItemEnum.Can : InventoryItemEnum.Wood, stored.Inventory.Items[0].Type);
+        Assert.Single(await retry.CharacterInventoryHealthReceipts.ToArrayAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LayoutReceipt_RejectionRemainsFinalAfterSlotBecomesValid(bool split)
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        context.Add(character);
+
+        await context.SaveChangesAsync();
+
+        var request = CreateLayoutRequest(split);
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+
+        var rejected = await handler.Handle(request, CancellationToken.None);
+
+        character.CharacterInventory.Inventory.Add(InventoryItemEnum.Can, 8, 15);
+
+        await context.SaveChangesAsync();
+
+        var replay = await handler.Handle(request, CancellationToken.None);
+
+        Assert.Equal(UpdateCharacterInventoryStatusEnum.OperationRejected, rejected.Status);
+        Assert.Equal(rejected.Status, replay.Status);
+        Assert.Single(character.CharacterInventory.Inventory.Items);
+        Assert.Equal(8, character.CharacterInventory.Inventory.Items[0].Count);
+    }
+
+    [Fact]
+    public async Task LayoutReceipt_RejectsMixedLayoutAndCharacterPayload()
+    {
+        await using var context = CreateContext();
+        var handler = new UpdateCharacterInventoryCommandHandler(context, new TestCurrentUserService());
+        var request = CreateLayoutRequest(false) with { CharacterUpdate = new UpdateCharacterCommand { Health = 50 } };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(request, CancellationToken.None));
+
+        Assert.Empty(await context.CharacterInventoryHealthReceipts.ToArrayAsync());
+    }
+
+    private static UpdateCharacterInventoryCommand CreateLayoutRequest(bool split) => split
+        ? new([], [], SplitSlotIndex: 0, HealthOperationId: Guid.NewGuid())
+        : new([], [], MoveSourceSlotIndex: 0, MoveTargetSlotIndex: 1, HealthOperationId: Guid.NewGuid());
+
     [Fact]
     public async Task DamageReceipt_ReplayPreservesLaterHealingAndEquipment()
     {

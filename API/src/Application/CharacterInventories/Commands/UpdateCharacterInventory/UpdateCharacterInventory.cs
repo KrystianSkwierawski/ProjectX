@@ -47,12 +47,17 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
             var hasAmmoUpdate = request.CharacterUpdate?.AmmoType.HasValue == true
                 && request.CharacterUpdate.AmmoCount.HasValue
                 && request.Add.Length == 0 && request.Remove.Length == 0;
+            var hasLayoutFields = request.SplitSlotIndex.HasValue
+                || request.MoveSourceSlotIndex.HasValue || request.MoveTargetSlotIndex.HasValue;
+            var hasLayoutUpdate = request.CharacterUpdate == null
+                && request.Add.Length == 0 && request.Remove.Length == 0
+                && ((request.SplitSlotIndex.HasValue && !request.MoveSourceSlotIndex.HasValue && !request.MoveTargetSlotIndex.HasValue)
+                    || (!request.SplitSlotIndex.HasValue && request.MoveSourceSlotIndex.HasValue && request.MoveTargetSlotIndex.HasValue));
 
-            if (request.HealthOperationId == Guid.Empty || (!hasHealthUpdate && !hasAmmoUpdate)
-                || request.SplitSlotIndex.HasValue
-                || request.MoveSourceSlotIndex.HasValue || request.MoveTargetSlotIndex.HasValue)
+            if (request.HealthOperationId == Guid.Empty
+                || (hasLayoutFields ? !hasLayoutUpdate : !hasHealthUpdate && !hasAmmoUpdate))
             {
-                throw new InvalidOperationException("Character operation receipts require a health or ammo state transaction without layout changes.");
+                throw new InvalidOperationException("Inventory operation receipts require a health/ammo transaction or a standalone layout change.");
             }
 
             var previous = await ReadReceiptAsync(request, selectedCharacterId, fingerprint!, cancellationToken);
@@ -79,16 +84,28 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         if (request.SplitSlotIndex.HasValue)
         {
-            EnsureApplied(
-                inventory.Split(request.SplitSlotIndex.Value, effectiveCapacity),
-                "split inventory stack");
+            if (!inventory.Split(request.SplitSlotIndex.Value, effectiveCapacity))
+            {
+                if (request.HealthOperationId.HasValue)
+                {
+                    return await SaveRejectedReceiptAsync(request, selectedCharacterId, fingerprint!, cancellationToken);
+                }
+
+                EnsureApplied(false, "split inventory stack");
+            }
         }
 
         if (request.MoveSourceSlotIndex.HasValue && request.MoveTargetSlotIndex.HasValue)
         {
-            EnsureApplied(
-                inventory.Move(request.MoveSourceSlotIndex.Value, request.MoveTargetSlotIndex.Value, effectiveCapacity),
-                "move inventory item");
+            if (!inventory.Move(request.MoveSourceSlotIndex.Value, request.MoveTargetSlotIndex.Value, effectiveCapacity))
+            {
+                if (request.HealthOperationId.HasValue)
+                {
+                    return await SaveRejectedReceiptAsync(request, selectedCharacterId, fingerprint!, cancellationToken);
+                }
+
+                EnsureApplied(false, "move inventory item");
+            }
         }
 
         foreach (var item in request.Remove)
@@ -191,6 +208,14 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
     private static string CreateRequestFingerprint(UpdateCharacterInventoryCommand request)
     {
+        if (request.SplitSlotIndex.HasValue || request.MoveSourceSlotIndex.HasValue || request.MoveTargetSlotIndex.HasValue)
+        {
+            var layoutPayload = FormattableString.Invariant(
+                $"layout|{request.SplitSlotIndex}|{request.MoveSourceSlotIndex}|{request.MoveTargetSlotIndex}");
+
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(layoutPayload)));
+        }
+
         // Preserve existing potion fingerprints; gear/ammo receipts bind every stat/equipment
         // field and the complete ordered inventory payload, including ammo returns.
         if (request.CharacterUpdate == new UpdateCharacterCommand { Health = request.CharacterUpdate?.Health }
@@ -235,7 +260,7 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
 
         if (receipt.CharacterId != characterId || receipt.RequestFingerprint != fingerprint)
         {
-            throw new InvalidOperationException("A health operation identifier cannot be reused with another character or payload.");
+            throw new InvalidOperationException("An inventory operation identifier cannot be reused with another character or payload.");
         }
 
         return new UpdateCharacterInventoryDto
