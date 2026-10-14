@@ -18,7 +18,8 @@ namespace Assets.Scripts.Areas.Inventory.Models
         // Set only by authoritative server gameplay; deliberately excluded from NGO serialization.
         public Assets.Scripts.Areas.Character.Models.UpdateCharacterCommand CharacterUpdate { get; set; }
 
-        // Server-only idempotency identifier; not part of gameplay RPC serialization.
+        // Server-only idempotency identifier for health/ammo and standalone layout writes.
+        // Kept under its existing API name; not part of gameplay RPC serialization.
         public Guid? HealthOperationId { get; set; }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
