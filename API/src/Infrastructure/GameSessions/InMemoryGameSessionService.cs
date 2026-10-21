@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using ProjectX.Application.Common.Exceptions;
 using ProjectX.Application.Common.Interfaces;
 using ProjectX.Application.GameSessions.Models;
@@ -18,8 +19,10 @@ public sealed class InMemoryGameSessionService : IGameSessionService
     private readonly TimeSpan _ticketLifetime;
     private readonly TimeSpan _serverLeaseLifetime;
     private readonly bool _allowDirectTransport;
+    private readonly ILogger<InMemoryGameSessionService>? _logger;
 
-    public InMemoryGameSessionService(TimeProvider timeProvider, TimeSpan ticketLifetime, TimeSpan serverLeaseLifetime, bool allowDirectTransport)
+    public InMemoryGameSessionService(TimeProvider timeProvider, TimeSpan ticketLifetime, TimeSpan serverLeaseLifetime, bool allowDirectTransport,
+        ILogger<InMemoryGameSessionService>? logger = null)
     {
         if (ticketLifetime <= TimeSpan.Zero)
         {
@@ -35,6 +38,7 @@ public sealed class InMemoryGameSessionService : IGameSessionService
         _ticketLifetime = ticketLifetime;
         _serverLeaseLifetime = serverLeaseLifetime;
         _allowDirectTransport = allowDirectTransport;
+        _logger = logger;
     }
 
     public RegisteredGameSession Register(string serverUserId, bool usesRelay, string? relayJoinCode)
@@ -156,7 +160,7 @@ public sealed class InMemoryGameSessionService : IGameSessionService
             var playerSessionId = CreateUniqueSecret(_playerSessions);
             _playerSessions.Add(
                 Hash(playerSessionId),
-                new PlayerSessionState(gameSessionId, serverUserId, ticketState.ClientUserId, ticketState.CharacterId));
+                new PlayerSessionState(gameSessionId, serverUserId, ticketState.ClientUserId, ticketState.CharacterId, now.Add(_ticketLifetime)));
 
             return new RedeemedGameSessionTicket(ticketState.ClientUserId, ticketState.CharacterId, playerSessionId);
         }
@@ -180,6 +184,14 @@ public sealed class InMemoryGameSessionService : IGameSessionService
                 || !_sessions.ContainsKey(state.GameSessionId))
             {
                 return false;
+            }
+
+            // Possession of the returned credential confirms admission. A lost Redeem
+            // response cannot confirm its session and must not reserve the character forever.
+            if (state.ConfirmByUtc != null)
+            {
+                _playerSessions[Hash(playerSessionId)] = state with { ConfirmByUtc = null };
+                _logger?.LogInformation("Confirmed player admission for character {CharacterId} in game session {GameSessionId}", state.CharacterId, state.GameSessionId);
             }
 
             playerSession = new ResolvedPlayerSession(state.ClientUserId, state.CharacterId);
@@ -243,6 +255,18 @@ public sealed class InMemoryGameSessionService : IGameSessionService
 
         RemoveSessions(expiredSessionIds);
 
+        var unconfirmedPlayers = _playerSessions
+            .Where(pair => pair.Value.ConfirmByUtc <= now)
+            .Select(pair => pair.Key)
+            .ToArray();
+
+        foreach (var hash in unconfirmedPlayers)
+        {
+            var state = _playerSessions[hash];
+            _playerSessions.Remove(hash);
+            _logger?.LogWarning("Expired unconfirmed player admission for character {CharacterId} in game session {GameSessionId}", state.CharacterId, state.GameSessionId);
+        }
+
         foreach (var ticket in _tickets.Where(pair => pair.Value.ExpiresAtUtc <= now).ToArray())
         {
             _tickets.Remove(ticket.Key);
@@ -302,5 +326,5 @@ public sealed class InMemoryGameSessionService : IGameSessionService
 
     private sealed record TicketState(Guid GameSessionId, string ClientUserId, int CharacterId, DateTimeOffset ExpiresAtUtc);
 
-    private sealed record PlayerSessionState(Guid GameSessionId, string ServerUserId, string ClientUserId, int CharacterId);
+    private sealed record PlayerSessionState(Guid GameSessionId, string ServerUserId, string ClientUserId, int CharacterId, DateTimeOffset? ConfirmByUtc);
 }

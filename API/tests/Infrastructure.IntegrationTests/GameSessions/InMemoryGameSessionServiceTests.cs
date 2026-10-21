@@ -10,6 +10,51 @@ public sealed class InMemoryGameSessionServiceTests
     private const int CharacterId = 42;
 
     [Fact]
+    public void Redeem_LostResponseReservationExpiresDespiteHeartbeat()
+    {
+        var service = CreateService(out var time);
+        var server = service.Register(ServerUserId, false, null);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
+        var lost = service.Redeem(ServerUserId, server.GameSessionId, ticket.Ticket);
+
+        time.Advance(TimeSpan.FromSeconds(59));
+        service.Heartbeat(ServerUserId, server.GameSessionId);
+        Assert.True(service.IsCharacterOnline(ServerUserId, CharacterId));
+        Assert.False(service.TryResolvePlayer("wrong-server", lost.PlayerSessionId, out _));
+
+        time.Advance(TimeSpan.FromSeconds(1));
+        service.Heartbeat(ServerUserId, server.GameSessionId);
+        Assert.False(service.TryResolvePlayer(ServerUserId, lost.PlayerSessionId, out _));
+        Assert.False(service.IsCharacterOnline(ServerUserId, CharacterId));
+
+        var retry = service.CreateTicket(ClientUserId, CharacterId);
+        var replacement = service.Redeem(ServerUserId, server.GameSessionId, retry.Ticket);
+
+        Assert.True(service.TryResolvePlayer(ServerUserId, replacement.PlayerSessionId, out _));
+        Assert.Throws<InvalidGameSessionCredentialException>(() => service.Redeem(ServerUserId, server.GameSessionId, ticket.Ticket));
+    }
+
+    [Fact]
+    public void Redeem_ConfirmedSessionSurvivesAdmissionDeadline()
+    {
+        var service = CreateService(out var time);
+        var server = service.Register(ServerUserId, false, null);
+        var ticket = service.CreateTicket(ClientUserId, CharacterId);
+        var player = service.Redeem(ServerUserId, server.GameSessionId, ticket.Ticket);
+
+        time.Advance(TimeSpan.FromSeconds(59));
+        Assert.True(service.TryResolvePlayer(ServerUserId, player.PlayerSessionId, out _));
+        service.Heartbeat(ServerUserId, server.GameSessionId);
+
+        time.Advance(TimeSpan.FromSeconds(61));
+        service.Heartbeat(ServerUserId, server.GameSessionId);
+
+        Assert.True(service.TryResolvePlayer(ServerUserId, player.PlayerSessionId, out _));
+        var duplicate = service.CreateTicket(ClientUserId, CharacterId);
+        Assert.Throws<InvalidGameSessionCredentialException>(() => service.Redeem(ServerUserId, server.GameSessionId, duplicate.Ticket));
+    }
+
+    [Fact]
     public void Redeem_RejectsSecondActiveCharacterSession_AndAllowsReconnectAfterRevoke()
     {
         var service = CreateService(out _);

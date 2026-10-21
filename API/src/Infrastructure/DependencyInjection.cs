@@ -46,13 +46,12 @@ public static class DependencyInjection
         }
 
         var allowDirectTransport = builder.Configuration.GetValue<bool?>("GameSessionSettings:AllowDirectTransport") ?? builder.Environment.IsDevelopment();
-        var gameSessionService = new InMemoryGameSessionService(
+        builder.Services.AddSingleton<IGameSessionService>(services => new InMemoryGameSessionService(
             timeProvider,
             TimeSpan.FromSeconds(ticketLifetimeSeconds),
             TimeSpan.FromSeconds(serverLeaseSeconds),
-            allowDirectTransport);
-
-        builder.Services.AddSingleton<IGameSessionService>(gameSessionService);
+            allowDirectTransport,
+            services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<InMemoryGameSessionService>>()));
     }
 
     private static void AddPersistence(IHostApplicationBuilder builder)
