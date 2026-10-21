@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Shared.Extensions;
 using System.Collections.Generic;
 using StarterAssets;
 using Unity.Netcode;
@@ -89,6 +90,15 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
             if (_target == null || !_target.activeInHierarchy || _thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump)
             {
+                InterruptCast();
+                return;
+            }
+
+            // Initial focus may still be turning the character. Manual RMB steering
+            // unlocks it; LMB camera orbit must not cancel gathering.
+            if (!_thirdPersonController.LockCameraPosition && !transform.IsFacingTarget(_target.transform))
+            {
+                Debug.Log($"[{GetType().Name}] Interrupted: facing outside 90 degrees; owner={OwnerClientId}, target={_target.name}.");
                 InterruptCast();
                 return;
             }
@@ -211,6 +221,8 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void InterruptCast()
         {
+            _thirdPersonController.UnlockCamera();
+            _target = null;
             _isCasting = false;
             _isInterrupted = true;
             _interruptTimer = 0f;
@@ -226,6 +238,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         public void SetActiveServerRpc(bool value)
         {
             _active.Value = value;
+            GetComponent<DuckActionPresentation>()?.SetProfession(DuckActionEnum.Lumberjack, value);
         }
 
         [ServerRpc]
@@ -237,6 +250,12 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 && DungeonWorldObject.SameInstance(gameObject, networkObject.gameObject)
                 && HasRequiredLevel(networkObject.gameObject.name))
             {
+                if (!transform.IsFacingTarget(networkObject.transform))
+                {
+                    Debug.LogWarning($"[{GetType().Name}] Harvest rejected: facing outside 90 degrees; owner={OwnerClientId}, target={networkObject.NetworkObjectId}.");
+                    return;
+                }
+
                 var gameObject = networkObject.gameObject;
                 var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 

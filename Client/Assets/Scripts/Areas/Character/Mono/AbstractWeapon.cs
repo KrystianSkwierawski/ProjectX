@@ -25,6 +25,36 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         protected virtual Quaternion RotationOffset => Quaternion.identity;
 
+        protected virtual bool HideUntilCast => false;
+        private readonly NetworkVariable<bool> _released = new NetworkVariable<bool>();
+        private Renderer[] _projectileRenderers;
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            _released.OnValueChanged += OnReleasedChanged;
+            ApplyProjectileVisibility();
+        }
+
+        private void OnReleasedChanged(bool previous, bool current)
+        {
+            ApplyProjectileVisibility();
+        }
+
+        private void ApplyProjectileVisibility()
+        {
+            if (!HideUntilCast)
+            {
+                return;
+            }
+
+            _projectileRenderers ??= GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in _projectileRenderers)
+            {
+                renderer.enabled = _released.Value;
+            }
+        }
+
         private string _playerSessionId;
         private AudioSource _audioSource;
         private VisualEffect _visualEffect;
@@ -89,6 +119,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public void Cast()
         {
+            _released.Value = true;
             CastClientRpc();
             _isCasting = false;
         }
@@ -228,6 +259,12 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
+            _released.OnValueChanged -= OnReleasedChanged;
+            if (IsServer)
+            {
+                _released.Value = false;
+            }
+
             _target = null;
             _isCasting = false;
             _caster = null;

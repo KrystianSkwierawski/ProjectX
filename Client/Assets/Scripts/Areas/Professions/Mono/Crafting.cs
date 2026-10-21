@@ -28,6 +28,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private Color _originalBarColor;
         private bool _isCrafting = false;
+        private DuckActionEnum _presentationAction;
         private float _craftingTime = 4f;
         private float _craftingTimer = 0f;
         private float _sfxTimer;
@@ -101,6 +102,9 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
             _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             _isCrafting = true;
+            _presentationAction = CraftingUI.Instance.CurrentType == CraftingRecipeTypeEnum.Cooking ? DuckActionEnum.Cooking
+                : CraftingUI.Instance.CurrentType == CraftingRecipeTypeEnum.Alchemy ? DuckActionEnum.Alchemy : DuckActionEnum.Crafting;
+            GetComponent<DuckActionPresentation>()?.RequestWork(_presentationAction, true, _crafting);
             _craftingTimer = 0f;
             PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
             CraftingUI.Instance.CraftButton.interactable = false;
@@ -136,6 +140,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         private void StopCrafting()
         {
             _isCrafting = false;
+            GetComponent<DuckActionPresentation>()?.RequestWork(_presentationAction, false, null);
             _craftingTimer = 0f;
             PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
             PlayerUI.Instance.HideCastBar();

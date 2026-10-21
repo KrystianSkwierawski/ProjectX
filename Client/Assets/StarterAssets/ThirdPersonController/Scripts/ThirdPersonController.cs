@@ -128,7 +128,7 @@ namespace StarterAssets
 
         private Cinemachine3rdPersonFollow _thirdPersonFollow;
         private float _currentZoom;
-        private GameObject _geometry;
+        [SerializeField] private GameObject _geometry;
 
         private const float _threshold = 0.01f;
 
@@ -138,6 +138,7 @@ namespace StarterAssets
 
         private bool _orbitPending;
         private bool _isOrbiting;
+        private bool _manualTargetCamera;
         private Vector2 _orbitStartPosition;
         private float _orbitMovementYaw;
 
@@ -191,7 +192,17 @@ namespace StarterAssets
 
                 _thirdPersonFollow = _cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
                 _currentZoom = Mathf.Clamp(_thirdPersonFollow.CameraDistance, _minZoom, _maxZoom);
-                _geometry = transform.Find("Geometry").gameObject;
+                if (_geometry == null)
+                {
+                    var visual = transform.Find("DuckVisual") ?? transform.Find("Geometry");
+                    _geometry = visual != null ? visual.gameObject : null;
+                }
+
+                if (_geometry == null)
+                {
+                    Debug.LogWarning($"[CameraZoom] Owner {OwnerClientId}: character visual is missing; close-camera hiding is unavailable.", this);
+                }
+
                 _targetSelector = GetComponent<TargetSelector>();
 
                 Debug.Log($"[CameraZoom] Initialized for owner {OwnerClientId}: distance={_currentZoom}, range={_minZoom}-{_maxZoom}, step={_zoomSpeed}, response={_zoomResponse}.", this);
@@ -293,6 +304,7 @@ namespace StarterAssets
                 // Keep keyboard movement in its original frame while looking around.
                 _orbitMovementYaw = _mainCamera.transform.eulerAngles.y;
                 _isOrbiting = true;
+                _manualTargetCamera = true;
             }
         }
 
@@ -351,7 +363,7 @@ namespace StarterAssets
 
             var showGeometry = distance > 0.5f;
 
-            if (_geometry.activeSelf != showGeometry)
+            if (_geometry != null && _geometry.activeSelf != showGeometry)
             {
                 _geometry.SetActive(showGeometry);
             }
@@ -387,6 +399,22 @@ namespace StarterAssets
             }
 
             CameraRotation();
+            RotateStationaryCharacterWithCamera();
+        }
+
+        private void RotateStationaryCharacterWithCamera()
+        {
+            if (!Input.Rotate || Input.Move.sqrMagnitude > 0f || _lockTarget != null || LockCameraPosition)
+            {
+                return;
+            }
+
+            // RMB steers the actor even without movement; LMB only orbits the camera.
+            _targetRotation = _cinemachineTargetYaw;
+            _rotationVelocity = 0f;
+            var cameraRotation = CinemachineCameraTarget.transform.rotation;
+            transform.rotation = Quaternion.Euler(0f, _targetRotation, 0f);
+            CinemachineCameraTarget.transform.rotation = cameraRotation;
         }
 
         private void AssignAnimationIDs()
@@ -413,7 +441,19 @@ namespace StarterAssets
 
         private void CameraRotation()
         {
-            if (_lockTarget != null && !_isOrbiting)
+            if (_manualTargetCamera && _lockTarget != null && Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
+            {
+                if (_lockTarget.CompareTag("Target"))
+                {
+                    _targetSelector.HandleUnselect();
+                    _targetSelector.UnselectServerRpc();
+                }
+
+                UnlockCamera();
+                return;
+            }
+
+            if (_lockTarget != null && !_isOrbiting && !_manualTargetCamera)
             {
                 if (Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
                 {
@@ -465,7 +505,7 @@ namespace StarterAssets
                 return;
             }
 
-            if (IsCameraRotating && Input.Look.sqrMagnitude >= _threshold && (!LockCameraPosition || _isOrbiting))
+            if (IsCameraRotating && Input.Look.sqrMagnitude >= _threshold && (!LockCameraPosition || _isOrbiting || _manualTargetCamera))
             {
                 //Don't multiply mouse input by Time.deltaTime;
                 float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
@@ -718,6 +758,12 @@ namespace StarterAssets
 
         public void LockCameraToTarget(Transform target, float angleOverride = 10f)
         {
+            if (_lockTarget == target && _manualTargetCamera)
+            {
+                return;
+            }
+
+            _manualTargetCamera = false;
             _cameraAngleOverride = angleOverride;
             _lockTarget = target;
             LockCameraPosition = true;
@@ -745,6 +791,7 @@ namespace StarterAssets
 
         public void UnlockCamera()
         {
+            _manualTargetCamera = false;
             _lockTarget = null;
             LockCameraPosition = false;
             Input.SprintInput(true);

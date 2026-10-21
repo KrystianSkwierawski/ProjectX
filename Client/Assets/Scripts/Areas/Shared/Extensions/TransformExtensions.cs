@@ -4,6 +4,11 @@ namespace Assets.Scripts.Areas.Shared.Extensions
 {
     public static class TransformExtensions
     {
+        public static bool IsFacingTarget(this Transform actor, Transform target)
+        {
+            return target != null && Vector3.Angle(actor.forward, target.position - actor.position) < 90f;
+        }
+
         public static void MoveTowardsTarget(this Transform transform, GameObject target, bool transformY = true, float speed = 3f)
         {
             var direction = target.transform.position - transform.position;
@@ -18,9 +23,7 @@ namespace Assets.Scripts.Areas.Shared.Extensions
                 return;
             }
 
-            direction = direction.normalized;
-
-            transform.position += direction * speed * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, speed * Time.deltaTime);
         }
 
         public static bool IsCloseToTarget(this Transform transform, GameObject target, float distance = 0.5f)
