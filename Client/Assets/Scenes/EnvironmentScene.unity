@@ -272,6 +272,14 @@ PrefabInstance:
       propertyPath: '_questsIds.Array.data[0]'
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: bc75eefe648bc7849a54fa0a7137e402, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: HenVisual
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -451,6 +459,14 @@ PrefabInstance:
       propertyPath: '_questsIds.Array.data[3]'
       value: 15
       objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: dbe7d1b4444bbe743be70dba07279c19, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: StorkVisual
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -1631878246351375439, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
@@ -520,6 +536,14 @@ PrefabInstance:
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[1]'
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 7f4ec21445987d048bf4c42752869c26, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: PigeonVisual
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -691,6 +715,14 @@ PrefabInstance:
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[3]'
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: be3781b23e45abc4b9400130396ebef5, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: SwanVisual
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -1299,6 +1331,14 @@ PrefabInstance:
       propertyPath: '_questsIds.Array.data[3]'
       value: 15
       objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: bc75eefe648bc7849a54fa0a7137e402, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: HenVisual
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -1631878246351375439, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
@@ -1577,6 +1617,14 @@ PrefabInstance:
       propertyPath: '_questsIds.Array.data[3]'
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: dbe7d1b4444bbe743be70dba07279c19, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: StorkVisual
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -1631878246351375439, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
@@ -1654,6 +1702,14 @@ PrefabInstance:
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[3]'
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 7f4ec21445987d048bf4c42752869c26, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: PigeonVisual
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -2345,6 +2401,14 @@ PrefabInstance:
       propertyPath: '_questsIds.Array.data[1]'
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: be3781b23e45abc4b9400130396ebef5, type: 2}
+    - target: {fileID: 6272041266352871192, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: m_Name
+      value: SwanVisual
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -1631878246351375439, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
@@ -2859,7 +2923,95 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _items.Array.size
-      value: 36
+      value: 47
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[36]._type
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[36]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[37]._type
+      value: 201
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[37]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[38]._type
+      value: 202
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[38]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[39]._type
+      value: 203
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[39]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[40]._type
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[40]._count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[41]._type
+      value: 301
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[41]._count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[42]._type
+      value: 302
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[42]._count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[43]._type
+      value: 303
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[43]._count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[44]._type
+      value: 304
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[44]._count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[45]._type
+      value: 305
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[45]._count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[46]._type
+      value: 307
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[46]._count
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _items.Array.data[34]._type
