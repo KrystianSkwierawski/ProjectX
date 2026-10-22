@@ -265,5 +265,10 @@
     "HelpFriends": "Znajomi\nO: otwórz lub zamknij listę.\n\nWpisz nazwę postaci, aby wysłać zaproszenie.\nPrzyjmij lub odrzuć otrzymane zaproszenia.\nUżywaj przycisków obok znajomych.",
     "HelpParty": "Drużyna\nSprawdź członków i zaproszenia.\n\nAkceptuj lub odrzuć zaproszenie.\nOpuść: wyjdź z drużyny.\n\nDostępne działania zależą od twojej roli.",
     "HelpTrade": "Handel\nPrzeciągnij przedmioty do oferty lub kliknij je PPM w ekwipunku.\n\nSprawdź obie oferty.\nZablokuj swoją, a potem potwierdź.\n\nAnuluj: wycofaj się przed przyjęciem transakcji do realizacji.",
-    "Character": "Postać"
+    "Character": "Postać",
+  "ItemRarityCommon": "Zwykły",
+  "ItemRarityUncommon": "Niepospolity",
+  "ItemRarityRare": "Rzadki",
+  "ItemRarityEpic": "Epicki",
+  "ItemRarityLegendary": "Legendarny"
 }

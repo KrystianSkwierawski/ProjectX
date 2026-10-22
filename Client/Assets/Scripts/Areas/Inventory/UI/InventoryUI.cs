@@ -193,6 +193,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 var item = visibleItems.ElementAtOrDefault(i);
                 slot.Item = item;
 
+                ItemRarityUI.Apply(slot.Image.transform.parent, item != null && item.Count > 0 ? item.Type : InventoryItemEnum.None);
+
                 if (item == null || item.Type == InventoryItemEnum.None || item.Count <= 0)
                 {
                     slot.Mesh.gameObject.SetActive(false);
@@ -212,6 +214,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
+
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
 
                 var description = PrepareDescription(item);
@@ -895,7 +898,14 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         public string PrepareDescription(InventoryItemDto item)
         {
-            var sb = new StringBuilder(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
+            var sb = new StringBuilder();
+
+            if (item.Type != InventoryItemEnum.None && item.Type != InventoryItemEnum.Currency && item.Type != InventoryItemEnum.Xp)
+            {
+                sb.AppendLine(ItemRarityUI.Label(item.Type));
+            }
+
+            sb.Append(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
 
             if (item.Type is not InventoryItemEnum.Currency and not InventoryItemEnum.Xp)
             {
@@ -991,6 +1001,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
+
+                ItemRarityUI.Apply(slot.Image.transform.parent, item.Type);
+
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
                 slot.PreviewDescriptionMesh.text = PrepareDescription(item);
                 slot.HoverUI.enabled = true;

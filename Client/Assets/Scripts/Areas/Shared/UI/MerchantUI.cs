@@ -165,6 +165,8 @@ namespace Assets.Scripts.Areas.Shared.UI
             {
                 var itemObj = _itemPool.Get();
 
+                ItemRarityUI.Apply(itemObj.Image.transform.parent, item.Type);
+
                 itemObj.Item = item;
                 itemObj.CanPurchase = true;
                 itemObj.DragTrigger.enabled = true;
@@ -174,6 +176,8 @@ namespace Assets.Scripts.Areas.Shared.UI
                 itemObj.PreviewDescriptionMesh.text = InventoryUI.Instance.PrepareDescription(itemObj.Item);
 
                 var currencyObj = _itemPool.Get();
+
+                ItemRarityUI.Apply(currencyObj.Image.transform.parent, InventoryItemEnum.Currency);
 
                 currencyObj.Item = new InventoryItemDto
                 {

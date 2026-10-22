@@ -270,5 +270,10 @@ namespace Assets.Scripts.Areas.Shared.Enums
         HelpFriends,
         HelpParty,
         HelpTrade,
+        ItemRarityCommon,
+        ItemRarityUncommon,
+        ItemRarityRare,
+        ItemRarityEpic,
+        ItemRarityLegendary,
     }
 }

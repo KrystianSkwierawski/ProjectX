@@ -34,6 +34,16 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public static readonly Color Information = new Color32(0x45, 0xB8, 0xD8, 0xFF);
 
+        public static readonly Color ItemRarityCommon = TextSecondary;
+
+        public static readonly Color ItemRarityUncommon = new Color32(0x65, 0xCF, 0x83, 0xFF);
+
+        public static readonly Color ItemRarityRare = new Color32(0x74, 0xA2, 0xFF, 0xFF);
+
+        public static readonly Color ItemRarityEpic = new Color32(0xBD, 0x86, 0xEB, 0xFF);
+
+        public static readonly Color ItemRarityLegendary = new Color32(0xF2, 0xA6, 0x54, 0xFF);
+
         public static readonly Color Green = new Color(0.0039215686f, 0.7333333333f, 0.0078431373f, 1f);
 
         public static readonly Color White = Color.white;

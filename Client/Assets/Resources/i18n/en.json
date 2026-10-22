@@ -265,5 +265,10 @@
     "HelpFriends": "Friends\nO: toggle the friends list.\n\nEnter a character name to send an invitation.\nAccept or decline incoming requests.\nUse the actions beside each friend.",
     "HelpParty": "Party\nReview members and invitations.\n\nAccept / decline: respond to an invitation.\nLeave: exit the party.\n\nMember actions depend on your role.",
     "HelpTrade": "Trade\nDrag items into your offer, or right-click inventory items.\n\nReview both offers.\nLock your offer, then confirm.\n\nCancel: cancel before the trade commit is accepted.",
-    "Character": "Character"
+    "Character": "Character",
+  "ItemRarityCommon": "Common",
+  "ItemRarityUncommon": "Uncommon",
+  "ItemRarityRare": "Rare",
+  "ItemRarityEpic": "Epic",
+  "ItemRarityLegendary": "Legendary"
 }

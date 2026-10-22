@@ -389,6 +389,8 @@ namespace Assets.Scripts.Areas.Trade.UI
                 button.onClick.RemoveAllListeners();
                 button.OnRightClick.RemoveAllListeners();
 
+                ItemRarityUI.Apply(slot.transform, items[index].Type);
+
                 var item = items[index];
                 preview.transform.Find("Title").GetComponent<TextMeshProUGUI>().text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
                 preview.transform.Find("Description").GetComponent<TextMeshProUGUI>().text = InventoryUI.Instance.PrepareDescription(item);

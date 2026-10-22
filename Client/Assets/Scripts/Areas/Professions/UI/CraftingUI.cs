@@ -384,6 +384,8 @@ namespace Assets.Scripts.Areas.Professions.UI
                 },
                 actionOnGet: (RecipePoolObject obj) =>
                 {
+                    ItemRarityUI.Apply(obj.GameObject.transform, InventoryItemEnum.None);
+
                     obj.GameObject.SetActive(true);
                     obj.Image.color = ColorUI.White;
                     obj.Mesh.gameObject.SetActive(true);
@@ -569,6 +571,8 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             obj.GameObject.transform.SetParent(parent, false);
             obj.GameObject.transform.SetAsLastSibling();
+
+            ItemRarityUI.Apply(obj.Image.transform.parent, item.Type);
 
             obj.Image.texture = InventoryUI.Instance.Textures[item.Type];
 

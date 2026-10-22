@@ -169,4 +169,9 @@ public enum TranslateKeyEnum
     HelpFriends,
     HelpParty,
     HelpTrade,
+    ItemRarityCommon,
+    ItemRarityUncommon,
+    ItemRarityRare,
+    ItemRarityEpic,
+    ItemRarityLegendary,
 }

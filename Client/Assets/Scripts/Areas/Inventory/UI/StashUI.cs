@@ -72,6 +72,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 var image = slot.transform.Find("Background").GetComponent<RawImage>();
                 var text = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>();
 
+                ItemRarityUI.Apply(slot.transform, empty ? InventoryItemEnum.None : item.Type);
+
                 image.texture = empty ? null : InventoryUI.Instance.Textures[item.Type];
                 image.color = empty ? ColorUI.Black : ColorUI.White;
                 text.gameObject.SetActive(!empty);
