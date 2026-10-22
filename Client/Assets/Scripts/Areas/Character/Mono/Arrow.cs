@@ -5,6 +5,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class Arrow : AbstractWeapon
     {
+        protected override bool HideUntilCast => true;
+
         protected override AudioTypeEnum PrecastAudioType => AudioTypeEnum.ArrowPrecast;
 
         protected override AudioTypeEnum CastAudioType => AudioTypeEnum.ArrowCast;

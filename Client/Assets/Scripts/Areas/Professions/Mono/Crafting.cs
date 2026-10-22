@@ -1,7 +1,8 @@
 using System.Linq;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
-using Assets.Scripts.Areas.Character.Subscriptions;
+using Assets.Scripts.Areas.Character.Models;
+using Assets.Scripts.Areas.Character.Mono;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -27,6 +28,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private Color _originalBarColor;
         private bool _isCrafting = false;
+        private DuckActionEnum _presentationAction;
         private float _craftingTime = 4f;
         private float _craftingTimer = 0f;
         private float _sfxTimer;
@@ -100,6 +102,9 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
             _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             _isCrafting = true;
+            _presentationAction = CraftingUI.Instance.CurrentType == CraftingRecipeTypeEnum.Cooking ? DuckActionEnum.Cooking
+                : CraftingUI.Instance.CurrentType == CraftingRecipeTypeEnum.Alchemy ? DuckActionEnum.Alchemy : DuckActionEnum.Crafting;
+            GetComponent<DuckActionPresentation>()?.RequestWork(_presentationAction, true, _crafting);
             _craftingTimer = 0f;
             PlayerUI.Instance.UpdateCastBar(_craftingTimer / _craftingTime);
             CraftingUI.Instance.CraftButton.interactable = false;
@@ -135,6 +140,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         private void StopCrafting()
         {
             _isCrafting = false;
+            GetComponent<DuckActionPresentation>()?.RequestWork(_presentationAction, false, null);
             _craftingTimer = 0f;
             PlayerUI.Instance.CastProgressBar.color = _originalBarColor;
             PlayerUI.Instance.HideCastBar();
@@ -180,6 +186,9 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 .Single();
 
             var key = OwnerClientId.ToString();
+            var clientId = OwnerClientId;
+            var player = GetComponent<Player>();
+            var spawnId = NetworkObjectId;
             var experienceType = type switch
             {
                 CraftingRecipeTypeEnum.Cooking => ExperienceTypeEnum.Cooking,
@@ -196,16 +205,22 @@ namespace Assets.Scripts.Areas.Professions.Mono
                     Remove = recipe.Requirement.Items
                 },
                 PlayerSessionId = playerSessionId,
-                OnSucceeded = () =>
+                OnPersistedAsync = async operationToken =>
                 {
                     if (experienceType != ExperienceTypeEnum.None)
                     {
-                        AddExperienceSubscription.Instance.Invoke(key, new AddExperienceSubscriptionEvent
+                        var result = await UnityWebRequestHelper.ExecutePostAsync<AddCharacterExperienceDto>("CharacterExperiences", new AddCharacterExperienceCommand
                         {
                             Amount = recipe.Reward.Experience,
-                            Type = experienceType,
-                            PlayerSessionId = playerSessionId,
-                        });
+                            type = experienceType,
+                        }, playerSessionId, cancellationToken: operationToken);
+
+                        Debug.Log($"Crafting experience persisted. ClientId: {clientId}, Recipe: {id}, Type: {experienceType}, Amount: {recipe.Reward.Experience}, Level: {result.Level}.");
+
+                        if (player != null && player.IsSpawned && player.NetworkObjectId == spawnId)
+                        {
+                            player.ApplyPersistedExperienceLevel(experienceType, result.Level);
+                        }
                     }
                 }
             });

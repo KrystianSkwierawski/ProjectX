@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CharacterQuest> CharacterQuests => Set<CharacterQuest>();
     public DbSet<CharacterInventory> CharacterInventories => Set<CharacterInventory>();
     public DbSet<CharacterInventoryTradeReceipt> CharacterInventoryTradeReceipts => Set<CharacterInventoryTradeReceipt>();
+    public DbSet<CharacterInventoryHealthReceipt> CharacterInventoryHealthReceipts => Set<CharacterInventoryHealthReceipt>();
     public DbSet<Quest> Quests => Set<Quest>();
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
@@ -44,6 +45,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     private void AdvanceInventoryRevisions()
     {
+        foreach (var entry in ChangeTracker.Entries<CharacterHideout>().Where(x => x.State == EntityState.Modified))
+        {
+            var revision = entry.Property(x => x.Revision);
+            revision.CurrentValue = revision.OriginalValue + 1;
+        }
+
         foreach (var entry in ChangeTracker.Entries<CharacterInventory>().Where(x => x.State == EntityState.Modified))
         {
             var revision = entry.Property(x => x.Revision);

@@ -21,6 +21,8 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         Fish = 200,
         CookedFish = 201,
         Rice = 202,
+
+        [ItemRarity(ItemRarityEnum.Uncommon)]
         Sushi = 203,
 
         #endregion
@@ -31,7 +33,10 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         WhiteOre = 301,
         CopperOre = 302,
         BlackOre = 303,
+
+        [ItemRarity(ItemRarityEnum.Rare)]
         PurpleBar = 304,
+
         WhiteBar = 305,
         CopperBar = 306,
         BlackBar = 307,
@@ -48,8 +53,22 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         Chamomile = 500,
         HealthPotion = 501,
+
+        [ItemRarity(ItemRarityEnum.Uncommon)]
         StrengthPotion = 502,
+
         SpeedPotion = 503,
+        ChamomileSeed = 504,
+        Strawberry = 505,
+        StrawberrySeed = 506,
+        Mint = 507,
+        MintSeed = 508,
+        Lavender = 509,
+        LavenderSeed = 510,
+        Calendula = 511,
+        CalendulaSeed = 512,
+        Raspberry = 513,
+        RaspberrySeed = 514,
 
         #endregion
 
@@ -71,6 +90,7 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         IronBoots = 1007,
 
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Strength = 20)]
+        [ItemRarity(ItemRarityEnum.Legendary)]
         IronSword = 1008,
 
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 5)]
@@ -80,6 +100,7 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         AmmoArrow2 = 1010,
 
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 15)]
+        [ItemRarity(ItemRarityEnum.Rare)]
         AmmoArrow3 = 1011,
 
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Wand, Intellect = 5)]
@@ -110,6 +131,7 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         AmmoOil3 = 1020,
 
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Wand, Intellect = 20)]
+        [ItemRarity(ItemRarityEnum.Epic)]
         IronWand = 1021,
 
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 20)]
@@ -120,6 +142,13 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
     public static class InventoryItemEnumExtensions
     {
+        public static ItemRarityEnum GetRarity(this InventoryItemEnum value)
+        {
+            var member = typeof(InventoryItemEnum).GetField(value.ToString());
+
+            return member?.GetCustomAttribute<ItemRarityAttribute>()?.Rarity ?? ItemRarityEnum.Common;
+        }
+
         public static bool IsActionBarItem(this InventoryItemEnum value) => value.IsGear()
             || value is InventoryItemEnum.Currency or InventoryItemEnum.HealthPotion or InventoryItemEnum.StrengthPotion or InventoryItemEnum.SpeedPotion;
 

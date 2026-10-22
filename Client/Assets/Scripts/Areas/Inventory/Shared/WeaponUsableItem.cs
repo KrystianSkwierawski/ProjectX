@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Areas.Character;
+using Assets.Scripts.Areas.Character.Models;
 using Assets.Scripts.Areas.Character.UI;
 using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Inventory.Models;
@@ -7,9 +7,9 @@ namespace Assets.Scripts.Areas.Inventory.Shared
 {
     public class WeaponUsableItem : AbstractGearUsableItem
     {
-        protected override InventoryItemDto CharacterItem => new InventoryItemDto
+        protected override InventoryItemDto GetCharacterItem(CharacterDto character) => new InventoryItemDto
         {
-            Type = UserManager.Instance.Characters[OwnerClientId].WeaponType,
+            Type = character.WeaponType,
             Count = 1
         };
 
@@ -21,10 +21,8 @@ namespace Assets.Scripts.Areas.Inventory.Shared
         {
         }
 
-        protected override bool Wear()
+        protected override bool Wear(CharacterDto character)
         {
-            var character = UserManager.Instance.Characters[OwnerClientId];
-
             if (character.WeaponType == Item.Type)
             {
                 return false;
@@ -40,10 +38,8 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             return true;
         }
 
-        protected override bool Unwear()
+        protected override bool Unwear(CharacterDto character)
         {
-            var character = UserManager.Instance.Characters[OwnerClientId];
-
             if (character.WeaponType != Item.Type)
             {
                 return false;
@@ -59,7 +55,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             return true;
         }
 
-        private void UnwearAmmo(Character.Models.CharacterDto character)
+        private void UnwearAmmo(CharacterDto character)
         {
             UnequipItems.Add(new InventoryItemDto
             {

@@ -9,9 +9,14 @@ namespace Assets.Scripts.Areas.Shared.UI
     {
         private const float _previewMargin = 8f;
 
+        [SerializeField] private bool _useTooltipLayer;
+
         private string _key;
         private RectTransform _preview;
         private Vector2 _previewDefaultAnchoredPosition;
+        private Transform _previewParent;
+        private Canvas _previewCanvas;
+        private bool _previewOverridesSorting;
 
         public void Start()
         {
@@ -21,6 +26,9 @@ namespace Assets.Scripts.Areas.Shared.UI
             if (_preview != null)
             {
                 _previewDefaultAnchoredPosition = _preview.anchoredPosition;
+                _previewParent = _preview.parent;
+                _previewCanvas = _preview.GetComponent<Canvas>();
+                _previewOverridesSorting = _previewCanvas != null && _previewCanvas.overrideSorting;
             }
         }
 
@@ -33,8 +41,20 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             CursorUI.Instance.ShowPointer();
 
+            RestorePreviewParent();
+
             OnPointerEnterSubscription.Instance.Invoke(_key, new OnPointerEnterEvent());
             ClampPreviewToCanvas();
+
+            if (_useTooltipLayer && _preview != null && _preview.gameObject.activeInHierarchy && TooltipLayerUI.Instance != null)
+            {
+                _preview.SetParent(TooltipLayerUI.Instance.transform, worldPositionStays: true);
+
+                if (_previewCanvas != null)
+                {
+                    _previewCanvas.overrideSorting = false;
+                }
+            }
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -42,6 +62,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             CursorUI.Instance.ShowDefault();
 
             OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
+            RestorePreviewParent();
         }
 
         public void OnDisable()
@@ -49,6 +70,33 @@ namespace Assets.Scripts.Areas.Shared.UI
             CursorUI.Instance?.ShowDefault();
 
             OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
+
+            // Unity cannot reparent children while their owner is being deactivated.
+            // The next pointer enter restores the hierarchy before showing the preview.
+        }
+
+        private void OnDestroy()
+        {
+            if (_useTooltipLayer && _preview != null && _preview.parent != _previewParent)
+            {
+                Destroy(_preview.gameObject);
+            }
+        }
+
+        private void RestorePreviewParent()
+        {
+            if (_preview == null || _previewParent == null || _preview.parent == _previewParent)
+            {
+                return;
+            }
+
+            _preview.SetParent(_previewParent, worldPositionStays: true);
+            _preview.anchoredPosition = _previewDefaultAnchoredPosition;
+
+            if (_previewCanvas != null)
+            {
+                _previewCanvas.overrideSorting = _previewOverridesSorting;
+            }
         }
 
         private void ClampPreviewToCanvas()

@@ -19,5 +19,9 @@ public class CharacterHideout : BaseAuditableEntity
 
     public DateTimeOffset BuildEndsAt { get; set; }
 
+    public string Data { get; set; } = "{}";
+
+    public long Revision { get; set; }
+
     public bool IsUnderConstruction(DateTimeOffset now) => now < BuildEndsAt;
 }

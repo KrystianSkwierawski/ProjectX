@@ -1,7 +1,7 @@
 # Product Context
 
 ## Purpose
-ProjectX provides a persistent multiplayer RPG gameplay loop: players authenticate, control a character, fight and interact, manage equipment and inventory, complete quests, craft/use items, socialize, form parties, and trade.
+ChillDuck (repository name: ProjectX) is intended as a relaxed MMORPG with grinding, professions and farming. The current persistent multiplayer RPG loop includes authentication, character control, combat and interaction, equipment and inventory, quests, crafting, social features, parties and trading. Its story and setting are not yet defined.
 
 ## Player Experience
 - Inventory supports exact-position drag/drop, swapping, merging, stable empty slots, loot pickup, merchant transactions, and Inventory/Gear transfers with visible drag-source placeholders.
@@ -22,6 +22,6 @@ ProjectX provides a persistent multiplayer RPG gameplay loop: players authentica
 - Prioritize systems/mechanics over new art. Defer price, recipe, and drop-rate balancing until systems can be exercised together.
 - Do not add a real character selector until the user reintroduces that scope; keep temporary first-character selection isolated.
 - Planned systems include centralized Escape/UI closure, visible quest rewards, Gear Score, Guilds, and an Auction House.
-- The final genre/platform/session/release model and base-stat-versus-gear-stat model remain undecided.
+- The platform/session/release model and base-stat-versus-gear-stat model remain undecided.
 - Combat behavior beyond current weapon stat selection and ammo bonuses remains open.
-- Client `pl.json` intentionally contains English fallback text; complete Polish localization is future work.
+- Client and API localization resources provide Polish and English text. Item and quest descriptions use understated everyday humour about work, supplies, meals and breaks, with clear gameplay requirements. Avoid invented named locations, NPCs, institutions and supernatural backstory; the story is not yet defined. Functional UI, errors and help remain direct.

@@ -128,6 +128,8 @@ namespace Assets.Scripts.Areas.Character.UI
                 Count = item.Count,
             };
 
+            ItemRarityUI.Apply(slot.Image.transform.parent, item.Type);
+
             slot.Image.texture = InventoryUI.Instance.Textures[item.Type];
 
             if (item.Type == InventoryItemEnum.None || item.Type == InventoryItemEnum.HelmetTemplate || item.Type == InventoryItemEnum.ChestTemplate || item.Type == InventoryItemEnum.BootsTemplate || item.Type == InventoryItemEnum.WeaponTemplate || item.Type == InventoryItemEnum.AmmoTemplate)

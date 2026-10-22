@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Character.Mono;
 using System;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
@@ -17,6 +18,7 @@ using UnityEngine.Pool;
 
 namespace Assets.Scripts.Areas.Professions.Mono
 {
+[DefaultExecutionOrder(200)]
 public class Fishing : NetworkBehaviour
 {
     [SerializeField] private GameObject _baitPrefab;
@@ -59,6 +61,8 @@ public class Fishing : NetworkBehaviour
     private int _baitVersion;
     private ObjectPool<GameObject> _pool;
 
+    private readonly NetworkVariable<NetworkObjectReference> _visibleBait = new NetworkVariable<NetworkObjectReference>();
+
     private readonly NetworkVariable<bool> _active =
         new NetworkVariable<bool>(
             false,
@@ -82,6 +86,7 @@ public class Fishing : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        ToggleLine(false);
         SetFishingRodActive(_active.Value);
         _active.OnValueChanged += OnRodActiveChanged;
         base.OnNetworkSpawn();
@@ -153,6 +158,17 @@ public class Fishing : NetworkBehaviour
 
     private void LateUpdate()
     {
+        if (!IsSpawned)
+        {
+            return;
+        }
+
+        if (_active.Value && _bait == null && _visibleBait.Value.TryGet(out var visibleBait))
+        {
+            _bait = visibleBait.gameObject;
+            ToggleLine(true);
+        }
+
         if (_bait != null)
         {
             DrawSagLine();
@@ -365,8 +381,10 @@ public class Fishing : NetworkBehaviour
         _bait.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
         var networkObject = _bait.GetComponent<NetworkObject>();
         networkObject.SpawnWithOwnership(OwnerClientId);
+        _visibleBait.Value = networkObject;
 
         _active.Value = true;
+        GetComponent<DuckActionPresentation>()?.SetProfession(DuckActionEnum.Fishing, true);
 
         NotifyBaitSpawnedClientRpc((NetworkObjectReference)networkObject);
     }
@@ -377,7 +395,9 @@ public class Fishing : NetworkBehaviour
         var bait = _bait;
         _bait = null;
         _baitVersion++;
+        _visibleBait.Value = default;
         _active.Value = false;
+        GetComponent<DuckActionPresentation>()?.SetProfession(DuckActionEnum.Fishing, false);
         _canFishOut.Value = false;
         _fishBrokeOffTimer = 0f;
         NotifyBaitDespawnedClientRpc();
@@ -634,6 +654,8 @@ public class Fishing : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         _baitVersion++;
+        _bait = null;
+        ToggleLine(false);
 
         _active.OnValueChanged -= OnRodActiveChanged;
         base.OnNetworkDespawn();

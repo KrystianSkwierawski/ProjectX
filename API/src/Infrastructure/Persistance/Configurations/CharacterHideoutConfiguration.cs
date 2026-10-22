@@ -8,6 +8,9 @@ public class CharacterHideoutConfiguration : IEntityTypeConfiguration<CharacterH
 {
     public void Configure(EntityTypeBuilder<CharacterHideout> builder)
     {
+        builder.Property(x => x.Data).IsRequired().HasDefaultValueSql("N'{}'");
+        builder.Property(x => x.Revision).IsConcurrencyToken();
+
         builder.HasIndex(x => new { x.CharacterId, x.HideoutBuildingTypeId }).IsUnique();
 
         builder.HasOne(x => x.Character).WithMany().HasForeignKey(x => x.CharacterId);

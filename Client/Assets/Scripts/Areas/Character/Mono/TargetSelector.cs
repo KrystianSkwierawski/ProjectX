@@ -380,6 +380,9 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
 
+            GetComponent<DuckActionPresentation>()?.BeginCombat(character.WeaponType.GetWeaponCategory(),
+                character.WeaponType.GetWeaponCategory() == WeaponCategoryEnum.Wand ? _castTime * 2 : _castTime);
+
             NotifyWeaponSpawnedClientRpc(OwnerClientId.ToClientRpcParams());
         }
 
@@ -389,6 +392,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             if (_currentWeapon != null && DungeonTravel.CanInteract(OwnerClientId)
                 && DungeonWorldObject.SameInstance(gameObject, _selectedTarget))
             {
+                GetComponent<DuckActionPresentation>()?.ReleaseCombat();
                 _currentWeapon.GetComponent<AbstractWeapon>().Cast();
                 _currentWeapon = null;
             }
@@ -484,6 +488,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         private void DespawnWeapon()
         {
+            GetComponent<DuckActionPresentation>()?.CancelCombat();
+
             if (_currentWeapon != null)
             {
                 _currentWeapon.GetComponent<AbstractWeapon>().Finish();
@@ -498,9 +504,9 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             var maxCastDistance = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() switch
             {
-                WeaponCategoryEnum.Wand => 12f,
-                WeaponCategoryEnum.Bow => 18f,
-                WeaponCategoryEnum.Sword => 3f,
+                WeaponCategoryEnum.Wand => 18f,
+                WeaponCategoryEnum.Bow => 27f,
+                WeaponCategoryEnum.Sword => 4.5f,
                 _ => 0f
             };
 
@@ -529,7 +535,7 @@ namespace Assets.Scripts.Areas.Character.Mono
             var toTarget = (selectedTransform.position - transform.position).normalized;
             var playerForward = transform.forward;
             var angle = Vector3.Angle(playerForward, toTarget);
-            var result = angle < 90f;
+            var result = transform.IsFacingTarget(selectedTransform);
 
             Debug.Log($"CheckAngle -> IsValid: {result}, Angle: {angle}");
 

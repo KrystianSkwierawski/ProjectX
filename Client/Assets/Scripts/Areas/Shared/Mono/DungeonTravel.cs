@@ -359,7 +359,7 @@ namespace Assets.Scripts.Areas.Shared.Mono
             {
                 if (_pendingInstance?.Location == LocationEnum.HideoutScene)
                 {
-                    await GetComponent<Assets.Scripts.Areas.Hideout.CharacterHideout>().LoadRoomAsync(_pendingInstance.Room, token);
+                    await GetComponent<Assets.Scripts.Areas.Hideout.CharacterHideout>().LoadRoomAsync(_pendingInstance.Room, _pendingInstance.Id, token);
 
                     if (!IsCurrentLifetime(token))
                     {
@@ -377,11 +377,11 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 RefreshVisibility();
                 _stage = TravelStageEnum.Loading;
 
-                var hideout = _pendingInstance?.Room.GetComponentInChildren<Assets.Scripts.Areas.Hideout.HideoutBuilding>(true);
-                var hideoutJson = hideout == null ? string.Empty : JsonSerializer.Serialize(new Assets.Scripts.Areas.Hideout.HideoutDto
+                var hideout = _pendingInstance?.Room.GetComponentsInChildren<Assets.Scripts.Areas.Hideout.HideoutBuilding>(true);
+                var hideoutJson = hideout == null || hideout.Length == 0 ? string.Empty : JsonSerializer.Serialize(new Assets.Scripts.Areas.Hideout.HideoutDto
                 {
-                    Buildings = new[] { hideout.Definition },
-                    CurrentTime = hideout.CurrentTime
+                    Buildings = hideout.Select(x => x.Definition).ToArray(),
+                    CurrentTime = hideout[0].CurrentTime
                 });
 
                 PrepareClientRpc(_transitionId, _pendingInstance?.Location ?? LocationEnum.EnvironmentScene,

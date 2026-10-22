@@ -17,15 +17,22 @@ namespace Assets.Scripts.Areas.Inventory
 
         public CharacterInventoryDto Dto { get; private set; }
 
-        public async UniTask LoadAsync(int characterId)
+        public async UniTask<bool> LoadAsync(int characterId, CancellationToken cancellationToken = default)
         {
             var loadVersion = ++_stateVersion;
-            var dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>($"CharacterInventories?CharacterId={characterId}");
+            var dto = await UnityWebRequestHelper.ExecuteGetAsync<CharacterInventoryDto>(
+                $"CharacterInventories?CharacterId={characterId}", cancellationToken: cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (loadVersion == _stateVersion)
             {
                 Dto = dto;
+
+                return true;
             }
+
+            return false;
         }
 
         public bool Replace(CharacterInventoryDto dto)

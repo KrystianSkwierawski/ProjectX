@@ -119,17 +119,30 @@ namespace StarterAssets
         [Header("Camera Zoom")]
         [SerializeField] private float _minZoom = 0f;
         [SerializeField] private float _maxZoom = 8f;
-        [SerializeField] private float _zoomSpeed = 0.1f;
+        [Tooltip("Camera distance per scroll step (independent of frame rate)")]
+        [SerializeField] private float _zoomSpeed = 0.8f;
+
+        [Tooltip("How quickly the camera reaches the requested distance")]
+        [Min(0.01f)]
+        [SerializeField] private float _zoomResponse = 18f;
 
         private Cinemachine3rdPersonFollow _thirdPersonFollow;
         private float _currentZoom;
-        private GameObject _geometry;
+        [SerializeField] private GameObject _geometry;
 
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
 
         private Vector3? _lastMousePos = null;
+
+        private bool _orbitPending;
+        private bool _isOrbiting;
+        private bool _manualTargetCamera;
+        private Vector2 _orbitStartPosition;
+        private float _orbitMovementYaw;
+
+        private bool IsCameraRotating => Input.Rotate || _isOrbiting;
 
         private Transform _lockTarget = null;
         [SerializeField] private float _lockLerpSpeed = 6f;
@@ -178,9 +191,21 @@ namespace StarterAssets
                 AudioManager.Instance.Init(audioSource);
 
                 _thirdPersonFollow = _cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
-                _currentZoom = _thirdPersonFollow.CameraDistance;
-                _geometry = transform.Find("Geometry").gameObject;
+                _currentZoom = Mathf.Clamp(_thirdPersonFollow.CameraDistance, _minZoom, _maxZoom);
+                if (_geometry == null)
+                {
+                    var visual = transform.Find("DuckVisual") ?? transform.Find("Geometry");
+                    _geometry = visual != null ? visual.gameObject : null;
+                }
+
+                if (_geometry == null)
+                {
+                    Debug.LogWarning($"[CameraZoom] Owner {OwnerClientId}: character visual is missing; close-camera hiding is unavailable.", this);
+                }
+
                 _targetSelector = GetComponent<TargetSelector>();
+
+                Debug.Log($"[CameraZoom] Initialized for owner {OwnerClientId}: distance={_currentZoom}, range={_minZoom}-{_maxZoom}, step={_zoomSpeed}, response={_zoomResponse}.", this);
             }
         }
 
@@ -238,20 +263,54 @@ namespace StarterAssets
 
             var allowInput = !InputFocusUI.IsAnyInputFocused;
 
+            HandleCameraOrbit(allowInput);
+            HandleCusor();
+
             JumpAndGravity(allowInput);
             GroundedCheck();
             Move(allowInput);
 
-            if (allowInput)
+            HandleZoom(allowInput);
+        }
+
+        private void HandleCameraOrbit(bool allowInput)
+        {
+            var mouse = Mouse.current;
+
+            if (!allowInput || !Application.isFocused || mouse == null || !mouse.leftButton.isPressed)
             {
-                HandleCusor();
-                HandleZoom();
+                _orbitPending = false;
+                _isOrbiting = false;
+
+                return;
+            }
+
+            if (mouse.leftButton.wasPressedThisFrame)
+            {
+                _orbitPending = EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject();
+                _orbitStartPosition = mouse.position.ReadValue();
+            }
+
+            if (Input.Rotate)
+            {
+                _isOrbiting = false;
+
+                return;
+            }
+
+            if (_orbitPending && !_isOrbiting &&
+                (mouse.position.ReadValue() - _orbitStartPosition).sqrMagnitude >= 16f)
+            {
+                // Keep keyboard movement in its original frame while looking around.
+                _orbitMovementYaw = _mainCamera.transform.eulerAngles.y;
+                _isOrbiting = true;
+                _manualTargetCamera = true;
             }
         }
 
         private void HandleCusor()
         {
-            if (Input.Rotate && Cursor.lockState == CursorLockMode.None)
+            if (IsCameraRotating && Cursor.lockState == CursorLockMode.None)
             {
                 if (_lastMousePos == null)
                 {
@@ -262,7 +321,7 @@ namespace StarterAssets
                 Cursor.lockState = CursorLockMode.Locked;
             }
 
-            if (!Input.Rotate && Cursor.lockState == CursorLockMode.Locked)
+            if (!IsCameraRotating && Cursor.lockState == CursorLockMode.Locked)
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
@@ -275,28 +334,38 @@ namespace StarterAssets
             }
         }
 
-        private void HandleZoom()
+        private void HandleZoom(bool allowInput)
         {
-            if (IsNotScrollReact())
+            if (_thirdPersonFollow == null)
             {
                 return;
             }
 
-            float scroll = Mouse.current.scroll.ReadValue().y;
+            var mouse = Mouse.current;
+            var scroll = allowInput && mouse != null ? mouse.scroll.ReadValue().y : 0f;
 
-            if (Mathf.Abs(scroll) > 0.1f)
+            if (scroll != 0f && !IsNotScrollReact())
             {
-                _currentZoom -= scroll * _zoomSpeed * Time.deltaTime * 100f;
-                _currentZoom = Mathf.Clamp(_currentZoom, _minZoom, _maxZoom);
+                // Scroll is an accumulated delta, not a velocity. Do not scale it by frame time.
+                _currentZoom = Mathf.Clamp(_currentZoom - scroll * _zoomSpeed, _minZoom, _maxZoom);
+            }
 
-                var distance = Mathf.Lerp(_thirdPersonFollow.CameraDistance, _currentZoom, Time.deltaTime * 10f);
+            // Continue settling between scroll events, including when the pointer moves over UI.
+            var blend = 1f - Mathf.Exp(-_zoomResponse * Time.unscaledDeltaTime);
+            var distance = Mathf.Lerp(_thirdPersonFollow.CameraDistance, _currentZoom, blend);
 
-                if (distance > 0)
-                {
-                    _thirdPersonFollow.CameraDistance = distance;
+            if (Mathf.Abs(distance - _currentZoom) < 0.001f)
+            {
+                distance = _currentZoom;
+            }
 
-                    _geometry.SetActive(distance > 0.5f);
-                }
+            _thirdPersonFollow.CameraDistance = distance;
+
+            var showGeometry = distance > 0.5f;
+
+            if (_geometry != null && _geometry.activeSelf != showGeometry)
+            {
+                _geometry.SetActive(showGeometry);
             }
         }
 
@@ -330,6 +399,22 @@ namespace StarterAssets
             }
 
             CameraRotation();
+            RotateStationaryCharacterWithCamera();
+        }
+
+        private void RotateStationaryCharacterWithCamera()
+        {
+            if (!Input.Rotate || Input.Move.sqrMagnitude > 0f || _lockTarget != null || LockCameraPosition)
+            {
+                return;
+            }
+
+            // RMB steers the actor even without movement; LMB only orbits the camera.
+            _targetRotation = _cinemachineTargetYaw;
+            _rotationVelocity = 0f;
+            var cameraRotation = CinemachineCameraTarget.transform.rotation;
+            transform.rotation = Quaternion.Euler(0f, _targetRotation, 0f);
+            CinemachineCameraTarget.transform.rotation = cameraRotation;
         }
 
         private void AssignAnimationIDs()
@@ -356,7 +441,19 @@ namespace StarterAssets
 
         private void CameraRotation()
         {
-            if (_lockTarget != null)
+            if (_manualTargetCamera && _lockTarget != null && Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
+            {
+                if (_lockTarget.CompareTag("Target"))
+                {
+                    _targetSelector.HandleUnselect();
+                    _targetSelector.UnselectServerRpc();
+                }
+
+                UnlockCamera();
+                return;
+            }
+
+            if (_lockTarget != null && !_isOrbiting && !_manualTargetCamera)
             {
                 if (Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
                 {
@@ -408,7 +505,7 @@ namespace StarterAssets
                 return;
             }
 
-            if (Input.Rotate && Input.Look.sqrMagnitude >= _threshold && !LockCameraPosition)
+            if (IsCameraRotating && Input.Look.sqrMagnitude >= _threshold && (!LockCameraPosition || _isOrbiting || _manualTargetCamera))
             {
                 //Don't multiply mouse input by Time.deltaTime;
                 float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
@@ -514,7 +611,9 @@ namespace StarterAssets
             // if there is a move input rotate player when the player is moving (free camera mode)
             if (moveInput != Vector2.zero)
             {
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
+                var movementYaw = _isOrbiting ? _orbitMovementYaw : _mainCamera.transform.eulerAngles.y;
+
+                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + movementYaw;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
 
                 // rotate to face input direction relative to camera position
@@ -659,6 +758,12 @@ namespace StarterAssets
 
         public void LockCameraToTarget(Transform target, float angleOverride = 10f)
         {
+            if (_lockTarget == target && _manualTargetCamera)
+            {
+                return;
+            }
+
+            _manualTargetCamera = false;
             _cameraAngleOverride = angleOverride;
             _lockTarget = target;
             LockCameraPosition = true;
@@ -686,6 +791,7 @@ namespace StarterAssets
 
         public void UnlockCamera()
         {
+            _manualTargetCamera = false;
             _lockTarget = null;
             LockCameraPosition = false;
             Input.SprintInput(true);

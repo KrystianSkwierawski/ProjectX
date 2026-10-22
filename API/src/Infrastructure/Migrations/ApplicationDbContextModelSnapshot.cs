@@ -310,11 +310,21 @@ namespace ProjectX.Infrastructure.Migrations
                     b.Property<int>("CharacterId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValueSql("N'{}'");
+
                     b.Property<int>("HideoutBuildingTypeId")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("ModDate")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -348,6 +358,33 @@ namespace ProjectX.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CharacterInventories");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryHealthReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Applied")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ModDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.ToTable("CharacterInventoryHealthReceipts");
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryTradeReceipt", b =>
@@ -811,6 +848,15 @@ namespace ProjectX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryHealthReceipt", b =>
+                {
+                    b.HasOne("ProjectX.Domain.Entities.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ProjectX.Domain.Entities.CharacterInventoryTradeReceipt", b =>

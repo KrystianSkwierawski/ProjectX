@@ -65,7 +65,10 @@ namespace Assets.Scripts.Areas.Quest.UI
         #endregion
 
         private ObjectPool<QuestLogPoolObject> _questLogObjectPool;
+        private ScrollRect _descriptionScroll;
         private readonly IDictionary<QuestEnum, QuestLogPoolObject> _questLogObjects = new Dictionary<QuestEnum, QuestLogPoolObject>();
+
+        public QuestNpc DisplayedNpc { get; private set; }
 
         public void Start()
         {
@@ -77,6 +80,7 @@ namespace Assets.Scripts.Areas.Quest.UI
             QuestAcceptButtonText = QuestCanvas.transform.Find("Quest/AcceptButton/Text").GetComponent<TextMeshProUGUI>();
             QuestTitleText = QuestCanvas.transform.Find("Quest/Title").GetComponent<TextMeshProUGUI>();
             QuestDescriptionText = QuestCanvas.transform.Find("Quest/Description/Viewport/Content/Text").GetComponent<TextMeshProUGUI>();
+            _descriptionScroll = QuestCanvas.transform.Find("Quest/Description").GetComponent<ScrollRect>();
             QuestAcceptButton = QuestCanvas.transform.Find("Quest/AcceptButton").GetComponent<Button>();
             Material001 = Resources.Load<Material>("Materials/Material.001");
             Material002 = Resources.Load<Material>("Materials/Material.002");
@@ -110,7 +114,7 @@ namespace Assets.Scripts.Areas.Quest.UI
 
         public void Show(QuestNpc questNpc)
         {
-            if (Quest.activeSelf)
+            if (questNpc == null || questNpc.Quest == null)
             {
                 return;
             }
@@ -127,6 +131,8 @@ namespace Assets.Scripts.Areas.Quest.UI
             CraftingUI.Instance.Hide();
             MerchantUI.Instance.Hide();
             GearUI.Instance.Hide();
+
+            DisplayedNpc = questNpc;
             Quest.SetActive(true);
 
             QuestTitleText.text = questNpc.Quest.Title;
@@ -135,16 +141,24 @@ namespace Assets.Scripts.Areas.Quest.UI
             {
                 QuestDescriptionText.text = questNpc.Quest.CompleteDescription;
                 QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Complete);
-
-                return;
+            }
+            else
+            {
+                QuestDescriptionText.text = questNpc.Quest.Description;
+                QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Accept);
             }
 
-            QuestDescriptionText.text = questNpc.Quest.Description;
-            QuestAcceptButtonText.text = TranslateManager.Instance.GetByKey(TranslateKeyEnum.Accept);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_descriptionScroll.content);
+            _descriptionScroll.StopMovement();
+            _descriptionScroll.verticalNormalizedPosition = 1f;
+
+            Debug.Log($"[QuestUI] Displayed quest {questNpc.Quest.Id}, status={questNpc.CharacterQuest?.Status.ToString() ?? "Available"}.", this);
         }
 
         public void Hide()
         {
+            DisplayedNpc = null;
+
             if (Quest.activeSelf)
             {
                 Quest.SetActive(false);

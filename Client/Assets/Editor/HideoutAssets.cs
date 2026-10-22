@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Assets.Scripts.Areas.Hideout;
+using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Mono;
 using TMPro;
 using Unity.AI.Navigation;
@@ -13,7 +14,7 @@ namespace ProjectX.Editor
 {
     public static class HideoutAssets
     {
-        private const string FarmPath = "Assets/Prefabs/Locations/ChamomileFarm.prefab";
+        private const string FarmPath = "Assets/Prefabs/Locations/Farm.prefab";
         private const string RoomPath = "Assets/Prefabs/Locations/Resources/HideoutEnvironmentPrefab.prefab";
         private const string ScenePath = "Assets/Scenes/HideoutScene.unity";
 
@@ -33,25 +34,16 @@ namespace ProjectX.Editor
 
         private static void CreateFarm()
         {
-            var root = new GameObject("ChamomileFarm");
+            var root = new GameObject("Farm");
             var building = root.AddComponent<HideoutBuilding>();
-            var farm = new GameObject("Farm");
+            var farm = new GameObject("Content");
             farm.transform.SetParent(root.transform, false);
             var soil = Cube("Floor", farm.transform, new Vector3(0, 0.025f, 0), new Vector3(3, 0.05f, 3));
             soil.GetComponent<Renderer>().sharedMaterial = GetFloorMaterial();
 
             var station = Cube("BuildStation", root.transform, new Vector3(0, 0.025f, 0), new Vector3(3, 0.05f, 3));
             station.GetComponent<Renderer>().sharedMaterial = soil.GetComponent<Renderer>().sharedMaterial;
-            var spawner = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Spawning/ChamomileSpawner.prefab"));
-            spawner.transform.SetParent(farm.transform, false);
-            spawner.transform.localPosition = Vector3.zero;
-            spawner.transform.localScale = new Vector3(2, 1, 2);
-            spawner.SetActive(false);
-            var spawnSettings = new SerializedObject(spawner.GetComponent<Spawner>());
-            spawnSettings.FindProperty("_maintainPopulation").boolValue = true;
-            spawnSettings.FindProperty("_respawnInterval").floatValue = 5;
-            spawnSettings.FindProperty("_transformY").floatValue = 0.065f;
-            spawnSettings.ApplyModifiedPropertiesWithoutUndo();
+            ConfigureFarmSlots(building);
 
             var labelObject = new GameObject("Countdown");
             labelObject.transform.SetParent(root.transform, false);
@@ -88,16 +80,71 @@ namespace ProjectX.Editor
             ghost.SetColor("_BaseColor", new Color(0.75f, 0.9f, 1, 0.35f));
             EditorUtility.SetDirty(ghost);
             var serialized = new SerializedObject(building);
-            serialized.FindProperty("_buildingId").enumValueIndex = (int)HideoutBuildingEnum.ChamomileFarm;
+            serialized.FindProperty("_buildingId").enumValueIndex = (int)HideoutBuildingEnum.Farm;
+            var crops = serialized.FindProperty("_crops");
+            var names = new[] { "Chamomile", "Strawberry", "Mint", "Lavender", "Calendula", "Raspberry" };
+            crops.arraySize = names.Length;
+
+            for (var i = 0; i < names.Length; i++)
+            {
+                var crop = crops.GetArrayElementAtIndex(i);
+                crop.FindPropertyRelative("Seed").intValue = (int)Enum.Parse<InventoryItemEnum>(names[i] + "Seed");
+                crop.FindPropertyRelative("Product").intValue = (int)Enum.Parse<InventoryItemEnum>(names[i]);
+                crop.FindPropertyRelative("Spawner").objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/Prefabs/Spawning/" + names[i] + "Spawner.prefab").GetComponent<Spawner>();
+            }
+
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             PrefabUtility.SaveAsPrefabAsset(root, FarmPath);
             UnityEngine.Object.DestroyImmediate(root);
         }
 
+        public static void UpdateFarmSlots()
+        {
+            var root = PrefabUtility.LoadPrefabContents(FarmPath);
+
+            ConfigureFarmSlots(root.GetComponent<HideoutBuilding>());
+            PrefabUtility.SaveAsPrefabAsset(root, FarmPath);
+            PrefabUtility.UnloadPrefabContents(root);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void ConfigureFarmSlots(HideoutBuilding building)
+        {
+            var content = building.transform.Find("Content");
+
+            foreach (var old in content.GetComponentsInChildren<Spawner>(true))
+            {
+                UnityEngine.Object.DestroyImmediate(old.gameObject);
+            }
+
+            var serialized = new SerializedObject(building);
+            var slots = serialized.FindProperty("_slots");
+            slots.arraySize = 6;
+
+            for (var i = 0; i < slots.arraySize; i++)
+            {
+                var obj = new GameObject($"SlotSpawner{i + 1}");
+                obj.SetActive(false);
+                obj.transform.SetParent(content, false);
+                obj.transform.localPosition = new Vector3((i % 2 - 0.5f) * 1.2f, 0.065f, (i / 2 - 1) * 0.85f);
+                obj.AddComponent<BoxCollider>().enabled = false;
+
+                var spawner = obj.AddComponent<Spawner>();
+                var settings = new SerializedObject(spawner);
+                settings.FindProperty("_count").intValue = 1;
+                settings.FindProperty("_maintainPopulation").boolValue = false;
+                settings.ApplyModifiedPropertiesWithoutUndo();
+                slots.GetArrayElementAtIndex(i).objectReferenceValue = spawner;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         private static Material GetFloorMaterial()
         {
-            const string path = "Assets/Materials/ChamomileFarmFloor.mat";
+            const string path = "Assets/Materials/FarmFloor.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
 
             if (material == null)
@@ -191,15 +238,34 @@ namespace ProjectX.Editor
             root.GetComponent<LocationEnvironment>().ValidateNavigation();
             var building = root.GetComponentInChildren<HideoutBuilding>(true);
             var spawners = building.GetComponentsInChildren<Spawner>(true);
+            var crops = new SerializedObject(building).FindProperty("_crops");
 
-            if (building.BuildingId != HideoutBuildingEnum.ChamomileFarm)
+            if (spawners.Length != 6)
             {
-                throw new InvalidOperationException("Farm prefab must select ChamomileFarm in its building enum.");
+                throw new InvalidOperationException("Farm must contain six persistent slot spawners.");
             }
 
-            if (spawners.Length != 1 || spawners[0].gameObject.activeSelf)
+            if (crops.arraySize != 6)
             {
-                throw new InvalidOperationException("Hideout must contain exactly one initially inactive farm spawner.");
+                throw new InvalidOperationException("Farm requires six seed/product/spawner definitions.");
+            }
+
+            for (var i = 0; i < crops.arraySize; i++)
+            {
+                if (crops.GetArrayElementAtIndex(i).FindPropertyRelative("Spawner").objectReferenceValue == null)
+                {
+                    throw new InvalidOperationException("Farm has a missing crop spawner reference.");
+                }
+            }
+
+            if (building.BuildingId != HideoutBuildingEnum.Farm)
+            {
+                throw new InvalidOperationException("Farm prefab must select Farm in its building enum.");
+            }
+
+            if (spawners.Any(x => x.gameObject.activeSelf))
+            {
+                throw new InvalidOperationException("Hideout must contain six initially inactive farm spawners.");
             }
 
             if (!root.GetComponentsInChildren<DungeonPortal>().Any(x => x.Destination == LocationEnum.EnvironmentScene))
@@ -221,7 +287,7 @@ namespace ProjectX.Editor
                 var definition = new HideoutBuildingDto { Id = view.BuildingId };
                 view.Apply(definition, now, false);
 
-                if (!view.CanBuild || preview.transform.Find("Farm").gameObject.activeSelf)
+                if (!view.CanBuild || preview.transform.Find("Content").gameObject.activeSelf)
                 {
                     throw new InvalidOperationException("Unbuilt hideout projection failed.");
                 }
@@ -239,7 +305,7 @@ namespace ProjectX.Editor
                 view.Apply(definition, now, false);
                 var countdown = preview.GetComponentInChildren<TMP_Text>(true);
 
-                if (view.CanBuild || !countdown.gameObject.activeSelf || countdown.text != "00:20"
+                if (view.CanBuild || !countdown.gameObject.activeSelf || countdown.text != "00:00:20"
                     || countdown.transform.localPosition.y < 2 || countdown.fontSharedMaterial.GetFloat("_OutlineWidth") <= 0)
                 {
                     throw new InvalidOperationException("Construction/countdown projection failed.");
@@ -247,9 +313,9 @@ namespace ProjectX.Editor
 
                 view.Apply(definition, now.AddSeconds(21), true);
 
-                if (countdown.gameObject.activeSelf || !preview.GetComponentInChildren<Spawner>(true).gameObject.activeInHierarchy)
+                if (countdown.gameObject.activeSelf || preview.GetComponentInChildren<Spawner>(true).gameObject.activeInHierarchy)
                 {
-                    throw new InvalidOperationException("Completed hideout did not activate its spawner.");
+                    throw new InvalidOperationException("Empty completed farm must not spawn a free crop.");
                 }
 
                 Debug.Log("Hideout unbuilt, restored countdown, outline and completed projection checks passed.");

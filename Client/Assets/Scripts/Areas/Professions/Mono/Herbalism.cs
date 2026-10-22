@@ -1,3 +1,5 @@
+using Assets.Scripts.Areas.Shared.Extensions;
+using Assets.Scripts.Areas.Character.Mono;
 using System.Collections.Generic;
 using Assets.Scripts.Areas.Character;
 using Assets.Scripts.Areas.Character.Enums;
@@ -20,6 +22,11 @@ namespace Assets.Scripts.Areas.Professions.Mono
         private readonly IDictionary<string, byte> _requiredLevels = new Dictionary<string, byte>
         {
             { "Chamomile(Clone)", 1 },
+            { "Strawberry(Clone)", 1 },
+            { "Mint(Clone)", 1 },
+            { "Lavender(Clone)", 1 },
+            { "Calendula(Clone)", 1 },
+            { "Raspberry(Clone)", 1 },
         };
 
         private const float _maxDistance = 2f;
@@ -66,6 +73,15 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
             if (_target == null || !_target.activeInHierarchy || _thirdPersonController.Input.Move != Vector2.zero || _thirdPersonController.Input.Jump)
             {
+                InterruptCast();
+                return;
+            }
+
+            // Initial focus may still be turning the character. Manual RMB steering
+            // unlocks it; LMB camera orbit must not cancel gathering.
+            if (!_thirdPersonController.LockCameraPosition && !transform.IsFacingTarget(_target.transform))
+            {
+                Debug.Log($"[{GetType().Name}] Interrupted: facing outside 90 degrees; owner={OwnerClientId}, target={_target.name}.");
                 InterruptCast();
                 return;
             }
@@ -139,6 +155,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             _originalBarColor = PlayerUI.Instance.CastProgressBar.color;
             _isCasting = true;
+            GetComponent<DuckActionPresentation>()?.RequestWork(DuckActionEnum.Herbalism, true, _target);
             _castingTimer = 0f;
             _sfxTimer = 0f;
 
@@ -151,6 +168,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
         {
             _target = null;
             _isCasting = false;
+            GetComponent<DuckActionPresentation>()?.RequestWork(DuckActionEnum.Herbalism, false, null);
             _castingTimer = 0f;
             _sfxTimer = 0f;
             PlayerUI.Instance.HideCastBar();
@@ -167,7 +185,10 @@ namespace Assets.Scripts.Areas.Professions.Mono
 
         private void InterruptCast()
         {
+            _thirdPersonController.UnlockCamera();
+            _target = null;
             _isCasting = false;
+            GetComponent<DuckActionPresentation>()?.RequestWork(DuckActionEnum.Herbalism, false, null);
             _isInterrupted = true;
             _interruptTimer = 0f;
 
@@ -185,7 +206,19 @@ namespace Assets.Scripts.Areas.Professions.Mono
                 && DungeonWorldObject.SameInstance(gameObject, networkObject.gameObject)
                 && HasRequiredLevel(networkObject.gameObject.name))
             {
+                if (!transform.IsFacingTarget(networkObject.transform))
+                {
+                    Debug.LogWarning($"[{GetType().Name}] Harvest rejected: facing outside 90 degrees; owner={OwnerClientId}, target={networkObject.NetworkObjectId}.");
+                    return;
+                }
+
                 var gameObject = networkObject.gameObject;
+
+                if (GetComponent<Assets.Scripts.Areas.Hideout.CharacterHideout>().TryHarvest(gameObject))
+                {
+                    return;
+                }
+
                 var playerSessionId = UserManager.Instance.GetPlayerSessionId(OwnerClientId);
 
                 CheckLootSubscription.Instance.Invoke(OwnerClientId.ToString(), new CheckLootSubscriptionEvent

@@ -25,6 +25,36 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         protected virtual Quaternion RotationOffset => Quaternion.identity;
 
+        protected virtual bool HideUntilCast => false;
+        private readonly NetworkVariable<bool> _released = new NetworkVariable<bool>();
+        private Renderer[] _projectileRenderers;
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            _released.OnValueChanged += OnReleasedChanged;
+            ApplyProjectileVisibility();
+        }
+
+        private void OnReleasedChanged(bool previous, bool current)
+        {
+            ApplyProjectileVisibility();
+        }
+
+        private void ApplyProjectileVisibility()
+        {
+            if (!HideUntilCast)
+            {
+                return;
+            }
+
+            _projectileRenderers ??= GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in _projectileRenderers)
+            {
+                renderer.enabled = _released.Value;
+            }
+        }
+
         private string _playerSessionId;
         private AudioSource _audioSource;
         private VisualEffect _visualEffect;
@@ -89,6 +119,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public void Cast()
         {
+            _released.Value = true;
             CastClientRpc();
             _isCasting = false;
         }
@@ -172,30 +203,45 @@ namespace Assets.Scripts.Areas.Character.Mono
             }
         }
 
-        // FIXME: disconnect error
         private void OnHitTarget()
         {
             if (!_hit)
             {
                 _hit = true;
 
-                var character = UserManager.Instance.Characters[OwnerClientId];
-
-                var damage = character.ApplyWeaponDamage(BaseDamage);
-
-                if (!character.AmmoType.IsArmorAmmo())
-                {
-                    _caster.GetComponent<Player>().ConsumeAmmo();
-                }
+                // The weapon is returned to its pool immediately. Pending equipment writes
+                // must not make the later hit read fields from a reused projectile.
+                var caster = _caster;
+                var target = _target;
+                var clientId = OwnerClientId;
+                var playerSessionId = _playerSessionId;
+                var baseDamage = BaseDamage;
+                var targetNetwork = target.GetComponent<NetworkObject>();
+                var targetNetworkId = targetNetwork.NetworkObjectId;
 
                 OnHitTargetClientRpc();
 
-                AttackTargetSubscription.Instance.Invoke(_target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
+                caster.GetComponent<Player>().ResolveAmmoHit(false, character =>
                 {
-                    ClientId = OwnerClientId,
-                    Value = damage,
-                    PlayerSessionId = _playerSessionId,
-                    Player = _caster
+                    if (target == null || !target.activeInHierarchy || !targetNetwork.IsSpawned
+                        || targetNetwork.NetworkObjectId != targetNetworkId
+                        || !DungeonTravel.CanInteract(clientId) || !DungeonWorldObject.SameInstance(caster, target)
+                        || target.GetComponent<Health>().Network.Value <= 0)
+                    {
+                        return false;
+                    }
+
+                    var damage = character.ApplyWeaponDamage(baseDamage);
+
+                    AttackTargetSubscription.Instance.Invoke(target.GetInstanceID().ToString(), new AttackTargetSubscriptionEvent
+                    {
+                        ClientId = clientId,
+                        Value = damage,
+                        PlayerSessionId = playerSessionId,
+                        Player = caster
+                    });
+
+                    return true;
                 });
             }
         }
@@ -213,6 +259,12 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
+            _released.OnValueChanged -= OnReleasedChanged;
+            if (IsServer)
+            {
+                _released.Value = false;
+            }
+
             _target = null;
             _isCasting = false;
             _caster = null;

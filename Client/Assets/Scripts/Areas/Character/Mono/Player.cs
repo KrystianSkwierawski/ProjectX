@@ -28,12 +28,14 @@ namespace Assets.Scripts.Areas.Character.Mono
     public class Player : NetworkBehaviour
     {
         private CancellationTokenSource _spawnLifetime;
+        private bool _characterLoadStarted;
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
             _spawnLifetime?.Dispose();
             _spawnLifetime = new CancellationTokenSource();
+            _characterLoadStarted = false;
         }
 
         private bool IsCurrentSpawn(CancellationToken token) => IsSpawned && _spawnLifetime != null
@@ -62,24 +64,18 @@ namespace Assets.Scripts.Areas.Character.Mono
                     ApplyPersistedExperienceLevel(e.Type, result.Level);
                 });
 
-                AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) =>
+                AttackPlayerSubscription.Instance.Subscribe(OwnerClientId.ToString(), (e) => ResolveAmmoHit(true, character =>
                 {
                     var playerSessionId = GetCurrentPlayerSessionId();
-                    var character = UserManager.Instance.Characters[OwnerClientId];
 
                     if (character.IsAttackDodged())
                     {
                         Debug.Log($"Player dodged attack. Dexterity: {character.Dexterity}");
 
-                        return;
+                        return false;
                     }
 
                     var damage = character.ApplyArmor(e.Value);
-
-                    if (character.AmmoType.IsArmorAmmo())
-                    {
-                        ConsumeAmmo();
-                    }
 
                     character.Health = Math.Max(character.Health - damage, 0);
                     PartyController.NotifyCharacterChanged(OwnerClientId);
@@ -96,7 +92,9 @@ namespace Assets.Scripts.Areas.Character.Mono
                     AttackPlayerClientRpc(character.Health, respawn.position, respawn.rotation, OwnerClientId.ToClientRpcParams());
 
                     PersistHealthAsync(character, playerSessionId, OwnerClientId).Forget();
-                });
+
+                    return true;
+                }));
             }
         }
 
@@ -105,23 +103,73 @@ namespace Assets.Scripts.Areas.Character.Mono
             var inventory = GetComponent<CharacterInventory>();
             using var mutation = TradeServerState.TrackInventoryMutation(clientId);
             var operationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+            var spawnToken = _spawnLifetime.Token;
+            var disconnected = false;
 
             await inventory.WaitForEquipmentMutationAsync(operationToken);
 
             try
             {
-                // Damage is immediate; its save waits for potion/gear persistence and captures the resulting HP.
+                // The hit already changed HP; capture its current value after earlier character saves.
                 var current = UserManager.Instance.Characters.TryGetValue(clientId, out var connectedCharacter)
                     ? connectedCharacter
                     : character;
-                var health = current.Health;
-
-                await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
+                var request = new UpdateCharacterInventoryCommand
                 {
-                    Health = health
-                }, playerSessionId, cancellationToken: operationToken);
+                    HealthOperationId = Guid.NewGuid(),
+                    CharacterUpdate = new UpdateCharacterCommand { Health = current.Health }
+                };
 
-                Debug.Log($"Health persisted after pending character mutations. ClientId: {clientId}, Health: {health}.");
+                while (true)
+                {
+                    operationToken.ThrowIfCancellationRequested();
+                    UpdateCharacterInventoryDto result;
+
+                    try
+                    {
+                        result = await Assets.Scripts.Areas.Inventory.InventoryManager.Instance.UpdateAsync(request, playerSessionId, operationToken);
+                    }
+                    catch (OperationCanceledException) when (operationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        ReportUncertainHealthSave(exception);
+
+                        await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: operationToken);
+
+                        continue;
+                    }
+
+                    if (result.Status == UpdateCharacterInventoryStatusEnum.Applied)
+                    {
+                        Debug.Log($"Health persisted after pending character mutations. ClientId: {clientId}, OperationId: {request.HealthOperationId}, Health: {request.CharacterUpdate.Health}.");
+
+                        return;
+                    }
+
+                    var failure = new InvalidOperationException($"Health receipt returned {result.Status}.");
+                    ReportUncertainHealthSave(failure);
+
+                    if (result.Status == UpdateCharacterInventoryStatusEnum.OperationRejected)
+                    {
+                        throw failure;
+                    }
+
+                    await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: operationToken);
+                }
+
+                void ReportUncertainHealthSave(Exception exception)
+                {
+                    Debug.LogWarning($"Health save unresolved; equipment writes remain blocked during receipt recovery. ClientId: {clientId}, OperationId: {request.HealthOperationId}, Error: {exception.GetType().Name}.");
+
+                    if (!disconnected && IsCurrentSpawn(spawnToken))
+                    {
+                        disconnected = true;
+                        NetworkManager.Singleton.DisconnectClient(clientId);
+                    }
+                }
             }
             finally
             {
@@ -184,7 +232,18 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         private void LoadCharacterServerRpc()
         {
+            if (!IsSpawned || _spawnLifetime == null || _characterLoadStarted)
+            {
+                return;
+            }
+
             var playerSessionId = GetCurrentPlayerSessionId();
+
+            // Claim initialization before starting the GET, including while it is pending.
+            _characterLoadStarted = true;
+
+            Debug.Log($"Character initialization started. ClientId: {OwnerClientId}.");
+
             LoadCharacterAsync(playerSessionId, _spawnLifetime.Token).Forget();
         }
 
@@ -269,68 +328,63 @@ namespace Assets.Scripts.Areas.Character.Mono
             UpdateLevelClientRpc(type, level, OwnerClientId.ToClientRpcParams());
         }
 
-        public void ConsumeAmmo()
+        public void ResolveAmmoHit(bool defensiveAmmo, Func<CharacterDto, bool> applyHit)
         {
-            ConsumeAmmoAsync(_spawnLifetime.Token).Forget();
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+
+            ResolveAmmoHitAsync(defensiveAmmo, applyHit, _spawnLifetime.Token).Forget();
         }
 
-        private async UniTask ConsumeAmmoAsync(CancellationToken spawnToken)
+        private async UniTask ResolveAmmoHitAsync(bool defensiveAmmo, Func<CharacterDto, bool> applyHit, CancellationToken spawnToken)
         {
             var inventory = GetComponent<CharacterInventory>();
             var clientId = OwnerClientId;
-            var character = UserManager.Instance.Characters[clientId];
-            using var mutation = TradeServerState.TrackInventoryMutation(clientId);
-            var operationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
             var playerSessionId = GetCurrentPlayerSessionId();
+            var operationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
+            using var mutation = TradeServerState.TrackInventoryMutation(clientId);
+            Guid? operationId = null;
+            var disconnected = false;
 
-            await inventory.WaitForEquipmentMutationAsync(operationToken);
-
-            try
-            {
-                // Keep the accepted hit's state after despawn; a live equipment recovery may replace the DTO.
-                if (IsCurrentSpawn(spawnToken)
-                    && UserManager.Instance.Characters.TryGetValue(clientId, out var currentCharacter))
+            await AmmoHitCoordinator.ResolveAsync(
+                inventory.EquipmentMutationGate,
+                () => IsCurrentSpawn(spawnToken) && UserManager.Instance.Characters.TryGetValue(clientId, out var character)
+                    ? character
+                    : null,
+                applyHit,
+                defensiveAmmo,
+                async (request, token) =>
                 {
-                    character = currentCharacter;
-                }
+                    operationId = request.HealthOperationId;
+                    var result = await Assets.Scripts.Areas.Inventory.InventoryManager.Instance.UpdateAsync(request, playerSessionId, token);
 
-                if (character.AmmoType != InventoryItemEnum.AmmoTemplate && character.AmmoCount > 0)
+                    if (result.Status == UpdateCharacterInventoryStatusEnum.Applied)
+                    {
+                        Debug.Log($"Ammo hit persisted. ClientId: {clientId}, OperationId: {operationId}, AmmoType: {request.CharacterUpdate.AmmoType}, AmmoCount: {request.CharacterUpdate.AmmoCount}.");
+                    }
+
+                    return result;
+                },
+                () =>
                 {
                     if (IsCurrentSpawn(spawnToken))
                     {
                         ConsumeAmmoClientRpc(clientId.ToClientRpcParams());
                     }
+                },
+                exception =>
+                {
+                    Debug.LogWarning($"Ammo hit save unresolved; equipment writes remain blocked during receipt recovery. ClientId: {clientId}, OperationId: {operationId}, Error: {exception.GetType().Name}.");
 
-                    character.AmmoCount--;
-
-                    if (character.AmmoCount <= 0)
+                    if (!disconnected && IsCurrentSpawn(spawnToken))
                     {
-                        AbstractGearUsableItem.RemoveStats(character, character.AmmoType);
-
-                        character.AmmoType = InventoryItemEnum.AmmoTemplate;
-                        character.AmmoCount = 0;
+                        disconnected = true;
+                        NetworkManager.Singleton.DisconnectClient(clientId);
                     }
-
-                    // TODO: split to smaller commands
-                    await UnityWebRequestHelper.ExecutePostAsync<EmptyResponse>("Characters", new UpdateCharacterCommand
-                    {
-                        MaxHealth = character.MaxHealth,
-                        Strength = character.Strength,
-                        Dexterity = character.Dexterity,
-                        Speed = character.Speed,
-                        Intellect = character.Intellect,
-                        Armor = character.Armor,
-                        AmmoType = character.AmmoType,
-                        AmmoCount = character.AmmoCount,
-                    }, playerSessionId, cancellationToken: operationToken);
-
-                    Debug.Log($"Accepted ammo consumption persisted. ClientId: {clientId}, CharacterId: {character.Id}, AmmoType: {character.AmmoType}, AmmoCount: {character.AmmoCount}.");
-                }
-            }
-            finally
-            {
-                inventory.ReleaseEquipmentMutation();
-            }
+                },
+                operationToken);
         }
 
         [ClientRpc]

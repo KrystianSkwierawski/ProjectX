@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DuckUpperBody
+  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  m_Elements:
+  - m_Path: 
+    m_Weight: 0
+  - m_Path: DuckVisual
+    m_Weight: 0
+  - m_Path: DuckVisual/Body
+    m_Weight: 0
+  - m_Path: DuckVisual/Body/Neck
+    m_Weight: 1
+  - m_Path: DuckVisual/Body/Neck/Head
+    m_Weight: 1
+  - m_Path: DuckVisual/Body/LeftWing
+    m_Weight: 1
+  - m_Path: DuckVisual/Body/LeftWing/Tip
+    m_Weight: 1
+  - m_Path: DuckVisual/Body/RightWing
+    m_Weight: 1
+  - m_Path: DuckVisual/Body/RightWing/Tip
+    m_Weight: 1
+  - m_Path: DuckVisual/LeftFoot
+    m_Weight: 0
+  - m_Path: DuckVisual/LeftFoot/Toes
+    m_Weight: 0
+  - m_Path: DuckVisual/RightFoot
+    m_Weight: 0
+  - m_Path: DuckVisual/RightFoot/Toes
+    m_Weight: 0
+  - m_Path: DuckVisual/DuckMesh
+    m_Weight: 0

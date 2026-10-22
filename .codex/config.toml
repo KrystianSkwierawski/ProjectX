@@ -1,0 +1,21 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+
+web_search = "indexed"
+
+# ProjectX does not need the office/document-creation plugins.
+# Keep browser/computer-use/visualization tools available for Unity/UI/debug workflows.
+[plugins."documents@openai-primary-runtime"]
+enabled = false
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = false
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = false
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = false
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = false

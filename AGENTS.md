@@ -22,7 +22,7 @@ Current code and verified behavior take precedence over stale documentation abou
 
 - Names of enums introduced or modified in project code must end with `Enum`, including private and nested enums.
 
-- In new and modified LINQ queries, put filtering in `Where(...)` before terminal selectors such as parameterless `FirstOrDefault()`, `First()`, `SingleOrDefault()` or `Single()`. Do not pass predicates directly to those terminal methods.
+- In new and modified LINQ queries, put filtering in `Where(...)` before terminal selectors such as parameterless `FirstOrDefault()`, `First()`, `SingleOrDefault()` or `Single()`. Do not pass predicates directly to those terminal methods. Format fluent LINQ chains with the source on the first line and each operation (including terminal methods such as `SingleOrDefault()` and `ToArray()`) on its own indented line. Separate independent queries and subsequent derived local declarations with a blank line.
 
 - In all new and modified code (API, Unity client/server, tooling and tests), separate logical steps with blank lines so code does not become a dense block. Visibly separate initialization, validation, data preparation, calls/awaits, state changes and result handling; keep closely related statements together. In tests, apply the same rule to setup, mock configuration, execution and assertions.
 
@@ -42,7 +42,7 @@ Current code and verified behavior take precedence over stale documentation abou
 
 ## Contracts and assets
 
-- Synchronize API/Unity DTOs, enum values, localization and checked-in OpenAPI when affected. Append translation keys and mirrored entries in identical order; do not renumber persisted/network enum values. Client `pl.json` intentionally uses English fallback until full Polish localization is requested.
+- Synchronize API/Unity DTOs, enum values, localization and checked-in OpenAPI when affected. Append translation keys and mirrored entries in identical order; do not renumber persisted/network enum values. Maintain complete Polish and English localization in client and API resources. ChillDuck descriptions use grounded, understated everyday humour; do not invent setting lore, named NPCs or locations before the story is defined.
 - Preserve Unity `.meta` identity when editing/moving assets; new assets need `.meta` files. Do not commit generated caches, builds or logs. Preserve unrelated working-tree changes.
 - Use existing scene-backed UI/prefabs, translation and shared interaction paths. Modified UI must remain responsive in landscape and narrow/portrait layouts.
 - Keep `Client/Automation/run.ps1` and `Client/Assets/Editor/ProjectXDevAutomation.cs` aligned when changing startup/build behavior.

@@ -1,3 +1,4 @@
+using Assets.Scripts.Areas.Professions.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,6 +81,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
         {
             InventoryCanvas = GameObject.Find("InventoryCanvas");
             Inventory = InventoryCanvas.transform.Find("Inventory").gameObject;
+            Inventory.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Toggle);
             InventoryContent = Inventory.transform.Find("Viewport/Content").gameObject;
             Loot = InventoryCanvas.transform.Find("Loot").gameObject;
             LootContent = Loot.transform.Find("Viewport/Content").gameObject;
@@ -191,6 +193,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 var item = visibleItems.ElementAtOrDefault(i);
                 slot.Item = item;
 
+                ItemRarityUI.Apply(slot.Image.transform.parent, item != null && item.Count > 0 ? item.Type : InventoryItemEnum.None);
+
                 if (item == null || item.Type == InventoryItemEnum.None || item.Count <= 0)
                 {
                     slot.Mesh.gameObject.SetActive(false);
@@ -210,6 +214,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
+
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
 
                 var description = PrepareDescription(item);
@@ -236,6 +241,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     if (Keyboard.current.altKey.isPressed)
                     {
                         SplitStack(slotIndex);
+
+                        return;
+                    }
+
+                    if (CraftingUI.Instance?.IsFarmOpen == true)
+                    {
+                        CraftingUI.Instance.DepositSeed(slotIndex);
 
                         return;
                     }
@@ -587,6 +599,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 return;
             }
 
+            var farmIndex = CraftingUI.Instance?.GetFarmSlotIndex(targetGameObject) ?? -1;
+
+            if (farmIndex >= 0)
+            {
+                eventData.eligibleForClick = false;
+                CraftingUI.Instance.DepositSeed(sourceSlotIndex, farmIndex);
+
+                return;
+            }
+
             var stashIndex = StashUI.Instance?.GetSlotIndex(targetGameObject) ?? -1;
 
             if (stashIndex >= 0)
@@ -876,7 +898,14 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         public string PrepareDescription(InventoryItemDto item)
         {
-            var sb = new StringBuilder(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
+            var sb = new StringBuilder();
+
+            if (item.Type != InventoryItemEnum.None && item.Type != InventoryItemEnum.Currency && item.Type != InventoryItemEnum.Xp)
+            {
+                sb.AppendLine(ItemRarityUI.Label(item.Type));
+            }
+
+            sb.Append(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
 
             if (item.Type is not InventoryItemEnum.Currency and not InventoryItemEnum.Xp)
             {
@@ -972,6 +1001,9 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 slot.Mesh.text = item.Count.ToString();
                 slot.Image.color = ColorUI.White;
                 slot.Image.texture = Textures[item.Type];
+
+                ItemRarityUI.Apply(slot.Image.transform.parent, item.Type);
+
                 slot.PreviewTitleMesh.text = TranslateManager.Instance.GetByKey($"{item.Type}Title");
                 slot.PreviewDescriptionMesh.text = PrepareDescription(item);
                 slot.HoverUI.enabled = true;

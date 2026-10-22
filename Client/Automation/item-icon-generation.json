@@ -1,0 +1,226 @@
+{
+  "stylePrompt": "Use case: stylized-concept. Asset type: fantasy RPG inventory icon. Generate ONE icon for SUBJECT. References are STYLE ONLY: match hand-painted farm icons with broad visible brush facets, rich natural colors, dimensional soft upper-left lighting and crisp readable silhouette. Center entire object in square canvas with 8% empty margin, large simple masses readable at 43px. Truly transparent background. No backdrop, frame, letters, numbers, watermark or cast shadow. No extra objects. ",
+  "mode": "built-in image_gen",
+  "entries": [
+    {
+      "name": "Chamomile",
+      "subject": "Small bunch of chamomile flowers, white petals, golden centers, green stems",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-3ba0a199-c81a-4904-aada-48ec1dd003c5.png"
+    },
+    {
+      "name": "Can",
+      "subject": "an empty slightly dented open tin can, silver metal, no label",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-5a5bfc20-a265-4f84-b7eb-48ceff68dba1.png"
+    },
+    {
+      "name": "Currency",
+      "subject": "a small stack of warm gold coins with one coin leaning against it, simple embossed duck silhouette",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-14e38e22-6cc5-4310-8579-1dcf340305e1.png"
+    },
+    {
+      "name": "Xp",
+      "subject": "a single luminous golden five-point experience star, sculpted painted form, no letters",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-2f60f97f-aca8-48e1-ac93-66f217a6419b.png"
+    },
+    {
+      "name": "Fish",
+      "subject": "one whole fresh silver-blue freshwater fish diagonal, intact head and tail",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-4a62f29b-4a26-48d3-bb33-f2bf60ffadd8.png"
+    },
+    {
+      "name": "CookedFish",
+      "subject": "one appetizing whole grilled fish with golden brown skin, no plate or garnish",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-5fd75db2-5add-4eec-8333-5b765ffd6950.png"
+    },
+    {
+      "name": "Rice",
+      "subject": "a small compact mound of white rice grains in a plain shallow wooden bowl",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-7e13ffdc-1d3a-48a7-9007-a1cfeff1a3df.png"
+    },
+    {
+      "name": "Sushi",
+      "subject": "two salmon sushi rolls, white rice black nori and orange fish",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-de1f3da5-3816-499a-b1ed-b21e064ef0e4.png"
+    },
+    {
+      "name": "PurpleOre",
+      "subject": "one rugged dark rock cluster with large violet mineral crystal facets",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-3839ed39-7fe7-4e78-8810-8f0e5153091f.png"
+    },
+    {
+      "name": "WhiteOre",
+      "subject": "one rugged rock cluster with pearly white silver mineral facets",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-3e2e900a-a1a5-400e-92dc-dded57c54137.png"
+    },
+    {
+      "name": "CopperOre",
+      "subject": "one rugged rock cluster with orange copper mineral facets",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-36c5fb30-fa49-45ef-a36f-6c4b356e52d1.png"
+    },
+    {
+      "name": "BlackOre",
+      "subject": "one rugged charcoal black ore rock with readable graphite highlights",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-053fc91e-380f-48be-accc-32d2462ad584.png"
+    },
+    {
+      "name": "PurpleBar",
+      "subject": "one refined violet metal ingot, clear trapezoidal bar shape",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-0c6800ff-c2b9-418a-81e1-8c2e5aeef3f0.png"
+    },
+    {
+      "name": "WhiteBar",
+      "subject": "one refined silver-white metal ingot, clear trapezoidal bar shape",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-7f7126e4-6559-464e-b70b-1a0eb729bcdd.png"
+    },
+    {
+      "name": "CopperBar",
+      "subject": "one refined orange copper metal ingot, clear trapezoidal bar shape",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-ec778442-e099-45a5-9ec9-37183e18d30d.png"
+    },
+    {
+      "name": "BlackBar",
+      "subject": "one refined dark graphite metal ingot, clear trapezoidal bar shape and bright edge highlights",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-40fbb075-57c0-486a-988c-7484a430b16b.png"
+    },
+    {
+      "name": "Wood",
+      "subject": "three short cut wooden logs bound with plain twine, visible end grain",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-0bfda766-dfef-41c2-b5e5-89d528f9d98d.png"
+    },
+    {
+      "name": "HealthPotion",
+      "subject": "a round corked glass potion bottle containing ruby red liquid, simple heart-shaped embossed emblem",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-1c86f487-02c8-4743-a08e-edfa57548fc7.png"
+    },
+    {
+      "name": "StrengthPotion",
+      "subject": "a broad square corked glass potion bottle containing orange liquid, simple embossed fist emblem",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-45fafee6-527c-42fc-92b9-0a6a7ea34654.png"
+    },
+    {
+      "name": "SpeedPotion",
+      "subject": "a slender tapered corked glass potion bottle containing cyan blue liquid, simple wing emblem",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-4090f050-61e5-48b2-82ea-fc6a5efab483.png"
+    },
+    {
+      "name": "HelmetTemplate",
+      "subject": "a simple muted desaturated pewter helmet silhouette for an EMPTY equipment slot placeholder, softly painted dimensional edges, restrained contrast",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-b6068999-cb34-4d67-9952-09f7f8571c9a.png"
+    },
+    {
+      "name": "ChestTemplate",
+      "subject": "a simple muted desaturated pewter chest armor silhouette for an EMPTY equipment slot placeholder, softly painted dimensional edges, restrained contrast",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-69e5a007-d54a-47f2-8356-cb9cd0b60f06.png"
+    },
+    {
+      "name": "BootsTemplate",
+      "subject": "a simple muted desaturated pewter pair of boots silhouette for an EMPTY equipment slot placeholder, softly painted dimensional edges, restrained contrast",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-470b1044-d412-4f57-90e4-ae5c0fc73ecd.png"
+    },
+    {
+      "name": "WeaponTemplate",
+      "subject": "a simple muted desaturated pewter sword silhouette for an EMPTY equipment slot placeholder, softly painted dimensional edges, restrained contrast",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-fd812899-8990-4a13-b605-d96ba36aefca.png"
+    },
+    {
+      "name": "AmmoTemplate",
+      "subject": "a simple muted desaturated pewter arrow silhouette for an EMPTY equipment slot placeholder, softly painted dimensional edges, restrained contrast",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-bca0e0b0-5889-4e15-a380-af01b862ff4a.png"
+    },
+    {
+      "name": "IronHelmet",
+      "subject": "one practical iron open-face medieval helmet, silver gray with leather lining",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-451f1a3c-490a-4d87-b955-1510c0627690.png"
+    },
+    {
+      "name": "IronChest",
+      "subject": "one practical iron breastplate chest armor, silver gray with leather straps, no person",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-3c272522-3135-4470-abe6-a706cb522f6c.png"
+    },
+    {
+      "name": "IronBoots",
+      "subject": "a pair of practical iron armored boots with brown leather, no person",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-d6e3ee00-9a6c-4862-96c8-8f4d778ff84c.png"
+    },
+    {
+      "name": "IronSword",
+      "subject": "one practical iron sword diagonal pointing upper right, silver blade brown leather grip",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-6ecc0e89-d639-4e00-92b9-3e4f1dbfb5dd.png"
+    },
+    {
+      "name": "IronWand",
+      "subject": "one short iron magic wand diagonal, silver gray shaft with a modest blue crystal tip",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-f97afc79-6338-4fa1-a5da-03c0438da2a8.png"
+    },
+    {
+      "name": "IronBow",
+      "subject": "one practical curved iron-reinforced bow with taut string and brown leather grip",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-68e1073c-1d33-48cd-b991-307dfac43ffc.png"
+    },
+    {
+      "name": "AmmoArrow1",
+      "subject": "one arrow diagonal pointing upper right, wooden shaft and simple triangular iron head and one white fletching; tier 1 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-6aa9c4e0-02de-4a27-91b1-1d1db92cc629.png"
+    },
+    {
+      "name": "AmmoArrow2",
+      "subject": "one arrow diagonal pointing upper right, wooden shaft and broad barbed steel head and two blue fletchings; tier 2 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-67091fdb-9134-47e3-8f72-49a20089ac95.png"
+    },
+    {
+      "name": "AmmoArrow3",
+      "subject": "one arrow diagonal pointing upper right, wooden shaft and elaborate forked silver head and three violet fletchings; tier 3 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-56ba9703-94c7-4275-8b0b-98ac512ba914.png"
+    },
+    {
+      "name": "AmmoRune1",
+      "subject": "one oval stone rune with one deeply carved cyan rune stroke; tier 1 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-6a692f1a-cf3c-4107-a62b-534484274850.png"
+    },
+    {
+      "name": "AmmoRune2",
+      "subject": "one oval stone rune with two deeply carved blue rune strokes; tier 2 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-98e95546-16ab-4a44-b9b8-18ea8ae6dbce.png"
+    },
+    {
+      "name": "AmmoRune3",
+      "subject": "one oval stone rune with three deeply carved violet rune strokes; tier 3 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-bb34115e-1acc-4925-bdd0-8413bffa7d37.png"
+    },
+    {
+      "name": "AmmoFeather1",
+      "subject": "one broad ivory feather; tier 1 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-cad898e6-6912-4436-81dc-c893724c39dc.png"
+    },
+    {
+      "name": "AmmoFeather2",
+      "subject": "two overlapping blue feathers; tier 2 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-2c16e8c8-1db0-49dd-9c28-507fc05f4148.png"
+    },
+    {
+      "name": "AmmoFeather3",
+      "subject": "three overlapping violet feathers; tier 3 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-a86199f1-9d8a-420e-8dc8-c38d605c0fab.png"
+    },
+    {
+      "name": "AmmoOil1",
+      "subject": "one squat corked oil flask with brown oil and one brass band; tier 1 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-eb5ab475-1719-429d-8fb4-6cff00ae0ef6.png"
+    },
+    {
+      "name": "AmmoOil2",
+      "subject": "one squat corked oil flask with amber oil and two silver bands; tier 2 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-60ff6c0b-ac92-4db2-b93c-d6a86af7703d.png"
+    },
+    {
+      "name": "AmmoOil3",
+      "subject": "one squat corked oil flask with purple oil and three gold bands; tier 3 of three, silhouette details distinguish tiers without text",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-bc20d258-6ee4-4646-94c7-6b78fc40ccb9.png"
+    },
+    {
+      "name": "None",
+      "subject": "a single thick sculpted red question mark symbol, including separate dot, painterly fantasy material, fallback unknown item icon; the question mark is the only allowed symbol",
+      "source": "C:\\Users\\pc\\.codex\\generated_images\\01a13448-5db5-7fd3-8972-ba71fecad94f\\exec-284824f3-a4fd-4d12-84ef-ea0ccefc77c7.png"
+    }
+  ]
+}

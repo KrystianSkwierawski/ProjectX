@@ -38,6 +38,7 @@ namespace Assets.Scripts.Areas.Inventory.Shared
             {
                 Request = new UpdateCharacterInventoryCommand
                 {
+                    HealthOperationId = Guid.NewGuid(),
                     Remove = new[] { new InventoryItemDto { Type = Item.Type, Count = 1 } },
                     CharacterUpdate = new UpdateCharacterCommand { Health = character.Health + healing }
                 },

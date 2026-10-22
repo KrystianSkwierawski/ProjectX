@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <DefineConstants>UNITY_SERVER</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/Scripts/Areas/Character/AmmoHitCoordinator.cs" Link="Source/AmmoHitCoordinator.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/HealthPotionUsableItem.cs" Link="Source/HealthPotionUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/AbstractGearUsableItem.cs" Link="Source/AbstractGearUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/AbstractUsableItem.cs" Link="Source/AbstractUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/IUsableItem.cs" Link="Source/IUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/HelmetUsableItem.cs" Link="Source/HelmetUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/ChestUsableItem.cs" Link="Source/ChestUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/BootsUsableItem.cs" Link="Source/BootsUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/WeaponUsableItem.cs" Link="Source/WeaponUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/AmmoUsableItem.cs" Link="Source/AmmoUsableItem.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Enums/InventoryItemEnum.cs" Link="Source/InventoryItemEnum.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Enums/WeaponCategoryEnum.cs" Link="Source/WeaponCategoryEnum.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Enums/UsableItemFromEnum.cs" Link="Source/UsableItemFromEnum.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Models/InventoryItemDto.cs" Link="Source/InventoryItemDto.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Models/UpdateCharacterInventoryCommand.cs" Link="Source/UpdateCharacterInventoryCommand.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Subscriptions/UpdateInventorySubscription.cs" Link="Source/UpdateInventorySubscription.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Character/Models/CharacterDto.cs" Link="Source/CharacterDto.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Character/Models/UpdateCharacterCommand.cs" Link="Source/UpdateCharacterCommand.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Character/Enums/ExperienceTypeEnum.cs" Link="Source/ExperienceTypeEnum.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Shared/Attributes/InventoryItemParametersAttribute.cs" Link="Source/InventoryItemParametersAttribute.cs" />
+  </ItemGroup>
+</Project>

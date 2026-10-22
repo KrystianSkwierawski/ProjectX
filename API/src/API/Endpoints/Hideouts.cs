@@ -10,8 +10,8 @@ public class Hideouts : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapPost(AccessHideout)
-            .WithSummary("Read or start construction in the character's hideout")
-            .WithDescription("Uses the session-bound character. None reads the catalog and timestamps; a building ID atomically consumes its catalog materials and starts construction once.")
+            .WithSummary("Read and manage the character's hideout")
+            .WithDescription("Uses the session-bound character. Reads reconcile elapsed growth and upgrade deadlines. Construction, upgrades, seed transfers and harvests atomically persist building state, inventory and active Collect progress. Mutations require the current farm revision.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);

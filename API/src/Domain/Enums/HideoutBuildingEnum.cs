@@ -8,7 +8,7 @@ public enum HideoutBuildingEnum
     None = 0,
 
     [HideoutBuildingParameters([InventoryItemEnum.Chamomile], [5], BuildTime = 5)]
-    ChamomileFarm = 1
+    Farm = 1
 }
 
 public static class HideoutBuildingEnumExtensions
