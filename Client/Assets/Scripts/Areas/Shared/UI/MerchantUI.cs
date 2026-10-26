@@ -145,6 +145,8 @@ namespace Assets.Scripts.Areas.Shared.UI
             GearUI.Instance.Hide();
             Merchant.SetActive(true);
 
+            InventoryUI.Instance.Show();
+
             ClearOffers();
             AddOffers(items);
         }

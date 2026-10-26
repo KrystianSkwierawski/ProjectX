@@ -175,6 +175,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 return;
             }
 
+            Show();
+        }
+
+        public void Show()
+        {
+            if (Inventory.activeSelf)
+            {
+                return;
+            }
+
             AudioManager.Instance.TryPlayOneShot(AudioTypeEnum.InventoryOpen, 0.5f);
 
             Inventory.SetActive(true);

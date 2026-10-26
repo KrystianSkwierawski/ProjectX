@@ -187,9 +187,9 @@ namespace Assets.Scripts.Areas.Trade.UI
                 CharacterUI.Instance?.Hide();
             }
 
-            if (_snapshot.HasSession && !hadSession && InventoryUI.Instance?.Inventory.activeSelf == false)
+            if ((IsOpen && !wasOpen) || (_snapshot.HasSession && !hadSession))
             {
-                InventoryUI.Instance.Toggle();
+                InventoryUI.Instance?.Show();
             }
 
             if (showInvitation)
