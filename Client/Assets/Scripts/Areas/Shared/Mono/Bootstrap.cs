@@ -288,6 +288,12 @@ namespace Assets.Scripts.Areas.Shared.Mono
                 Debug.Log("Client started");
 
                 await SceneManager.UnloadSceneAsync(gameObject.scene);
+
+                var networkManager = NetworkManager.Singleton;
+                var monitor = networkManager.GetComponent<ClientConnectionMonitor>()
+                    ?? networkManager.gameObject.AddComponent<ClientConnectionMonitor>();
+
+                monitor.Initialize(networkManager);
             }
             catch
             {
@@ -310,10 +316,26 @@ namespace Assets.Scripts.Areas.Shared.Mono
         {
             SceneManager.SetActiveScene(gameObject.scene);
 
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            var networkManager = NetworkManager.Singleton;
+
+            if (networkManager != null && networkManager.IsListening && !networkManager.ShutdownInProgress)
             {
-                NetworkManager.Singleton.Shutdown();
+                networkManager.Shutdown();
             }
+
+            await UniTask.WaitUntil(() => networkManager == null || !networkManager.ShutdownInProgress,
+                cancellationToken: this.GetCancellationTokenOnDestroy());
+
+            // NGO keeps the manager in DontDestroyOnLoad even if connection startup failed.
+            if (networkManager != null)
+            {
+                Destroy(networkManager.gameObject);
+
+                await UniTask.WaitUntil(() => networkManager == null,
+                    cancellationToken: this.GetCancellationTokenOnDestroy());
+            }
+
+            Debug.Log($"Client startup rollback: network manager disposed; unloading {loadedSceneNames.Count} scenes.");
 
             for (var i = loadedSceneNames.Count - 1; i >= 0; i--)
             {

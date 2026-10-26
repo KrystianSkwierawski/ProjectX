@@ -279,5 +279,6 @@
     "TrailBootsTitle": "Buty wędrowca",
     "TrailBootsDescription": "Miękka skóra i mocna podeszwa. Na spacery, które wyszły dłuższe niż planowano.",
     "BalancedSwordTitle": "Wyważony miecz",
-    "BalancedSwordDescription": "Lżejsze ostrze i pewny chwyt. Wyważenie jest dobre; decyzje nadal należą do ciebie."
+    "BalancedSwordDescription": "Lżejsze ostrze i pewny chwyt. Wyważenie jest dobre; decyzje nadal należą do ciebie.",
+    "ConnectionLost": "Utracono połączenie z serwerem gry. Zaloguj się ponownie."
 }

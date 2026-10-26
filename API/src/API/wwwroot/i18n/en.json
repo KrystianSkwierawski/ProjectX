@@ -202,5 +202,6 @@
     "TrailBootsTitle": "Trail boots",
     "TrailBootsDescription": "Soft leather and a firm sole. For walks that became longer than planned.",
     "BalancedSwordTitle": "Balanced sword",
-    "BalancedSwordDescription": "A lighter blade with a steady grip. The balance is good; the decisions are still yours."
+    "BalancedSwordDescription": "A lighter blade with a steady grip. The balance is good; the decisions are still yours.",
+    "ConnectionLost": "Connection to the game server was lost. Please sign in again."
 }

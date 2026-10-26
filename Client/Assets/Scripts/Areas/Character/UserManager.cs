@@ -196,7 +196,7 @@ namespace Assets.Scripts.Areas.Character
             }
         }
 
-        private void InvalidateSession()
+        public void InvalidateSession(string message = "Your session could not be refreshed. Please sign in again.")
         {
             _sessionRefreshCancellation?.Cancel();
 
@@ -208,8 +208,6 @@ namespace Assets.Scripts.Areas.Character
             SelectedCharacterId = default;
             Characters.Clear();
             _playerSessions.Clear();
-
-            const string message = "Your session could not be refreshed. Please sign in again.";
 
 #if UNITY_SERVER && !UNITY_EDITOR
             Debug.LogError(message);

@@ -183,4 +183,5 @@ public enum TranslateKeyEnum
     TrailBootsDescription,
     BalancedSwordTitle,
     BalancedSwordDescription,
+    ConnectionLost,
 }

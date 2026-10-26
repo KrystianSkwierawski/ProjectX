@@ -86,6 +86,21 @@ namespace Assets.Scripts.Areas.Shared.Mono
                         networkManager.Shutdown();
                     }
 
+                    await UniTask.WaitUntil(() => networkManager == null || !networkManager.ShutdownInProgress,
+                        cancellationToken: this.GetCancellationTokenOnDestroy());
+
+                    // NGO moves its manager to DontDestroyOnLoad. The next MainScene
+                    // supplies a fresh manager, so retire this session's instance first.
+                    if (networkManager != null)
+                    {
+                        Destroy(networkManager.gameObject);
+
+                        await UniTask.WaitUntil(() => networkManager == null,
+                            cancellationToken: this.GetCancellationTokenOnDestroy());
+                    }
+
+                    Debug.Log("Client network shutdown completed. Unloading authenticated scenes.");
+
                     var loadingScene = gameObject.scene;
 
                     if (loadingScene.IsValid() && loadingScene.isLoaded)

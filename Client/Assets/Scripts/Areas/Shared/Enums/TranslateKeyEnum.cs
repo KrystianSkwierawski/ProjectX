@@ -284,5 +284,6 @@ namespace Assets.Scripts.Areas.Shared.Enums
         TrailBootsDescription,
         BalancedSwordTitle,
         BalancedSwordDescription,
+        ConnectionLost,
     }
 }
