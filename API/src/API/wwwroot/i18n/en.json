@@ -193,5 +193,14 @@
   "ItemRarityUncommon": "Uncommon",
   "ItemRarityRare": "Rare",
   "ItemRarityEpic": "Epic",
-  "ItemRarityLegendary": "Legendary"
+  "ItemRarityLegendary": "Legendary",
+    "CurrentlyEquipped": "Currently equipped",
+    "ScoutHelmetTitle": "Scout helmet",
+    "ScoutHelmetDescription": "Light leather with a steel brow guard. Leaves room for a good idea, should one arrive.",
+    "GuardChestTitle": "Guard breastplate",
+    "GuardChestDescription": "Extra steel where it counts. Sitting down takes a little planning.",
+    "TrailBootsTitle": "Trail boots",
+    "TrailBootsDescription": "Soft leather and a firm sole. For walks that became longer than planned.",
+    "BalancedSwordTitle": "Balanced sword",
+    "BalancedSwordDescription": "A lighter blade with a steady grip. The balance is good; the decisions are still yours."
 }

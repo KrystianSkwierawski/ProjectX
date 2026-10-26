@@ -1031,11 +1031,11 @@ namespace Assets.Scripts.Areas.Inventory.Mono
             }
             else
             {
-                gearItem = item.Type switch
+                gearItem = item.Type.GetGearSlot() switch
                 {
-                    InventoryItemEnum.IronHelmet => new HelmetUsableItem(item, playerSessionId, OwnerClientId),
-                    InventoryItemEnum.IronChest => new ChestUsableItem(item, playerSessionId, OwnerClientId),
-                    InventoryItemEnum.IronBoots => new BootsUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.HelmetTemplate => new HelmetUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.ChestTemplate => new ChestUsableItem(item, playerSessionId, OwnerClientId),
+                    InventoryItemEnum.BootsTemplate => new BootsUsableItem(item, playerSessionId, OwnerClientId),
                     _ => null
                 };
             }

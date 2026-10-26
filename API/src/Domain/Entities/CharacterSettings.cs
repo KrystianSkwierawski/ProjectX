@@ -17,7 +17,7 @@ public class CharacterSettings : BaseAuditableEntity
 
     public static bool IsActionBarItem(InventoryItemEnum type) =>
         type is InventoryItemEnum.Currency or InventoryItemEnum.HealthPotion or InventoryItemEnum.StrengthPotion or InventoryItemEnum.SpeedPotion
-        || Enum.IsDefined(type) && type >= InventoryItemEnum.IronHelmet && type <= InventoryItemEnum.IronBow;
+        || Enum.IsDefined(type) && type >= InventoryItemEnum.IronHelmet && type <= InventoryItemEnum.BalancedSword;
 
     public void Update(LanguageEnum language, IReadOnlyList<InventoryItemEnum> actionBars)
     {

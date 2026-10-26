@@ -896,7 +896,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
             });
         }
 
-        public string PrepareDescription(InventoryItemDto item)
+        public string PrepareDescription(InventoryItemDto item, InventoryItemEnum comparedWith = InventoryItemEnum.None)
         {
             var sb = new StringBuilder();
 
@@ -917,35 +917,14 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
             if (parameters != null)
             {
-                if (parameters.MaxHealth > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.MaxHealth)}: {parameters.MaxHealth}");
-                }
+                var equipped = comparedWith.GetInventoryItemParametersAttribute();
 
-                if (parameters.Strength > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Strength)}: {parameters.Strength}");
-                }
-
-                if (parameters.Dexterity > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Dexterity)}: {parameters.Dexterity}");
-                }
-
-                if (parameters.Speed > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Speed)}: {parameters.Speed}");
-                }
-
-                if (parameters.Intellect > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Intellect)}: {parameters.Intellect}");
-                }
-
-                if (parameters.Armor > 0)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Armor)}: {parameters.Armor}");
-                }
+                AppendStat(sb, TranslateKeyEnum.MaxHealth, parameters.MaxHealth, equipped?.MaxHealth);
+                AppendStat(sb, TranslateKeyEnum.Strength, parameters.Strength, equipped?.Strength);
+                AppendStat(sb, TranslateKeyEnum.Dexterity, parameters.Dexterity, equipped?.Dexterity);
+                AppendStat(sb, TranslateKeyEnum.Speed, parameters.Speed, equipped?.Speed);
+                AppendStat(sb, TranslateKeyEnum.Intellect, parameters.Intellect, equipped?.Intellect);
+                AppendStat(sb, TranslateKeyEnum.Armor, parameters.Armor, equipped?.Armor);
 
                 if (item.Type.IsAmmo() && parameters.WeaponCategory != WeaponCategoryEnum.None)
                 {
@@ -964,6 +943,21 @@ namespace Assets.Scripts.Areas.Inventory.UI
             }
 
             return sb.ToString();
+        }
+
+        private static void AppendStat(StringBuilder text, TranslateKeyEnum key, int value, int? equipped)
+        {
+            if (value == 0 && equipped.GetValueOrDefault() == 0)
+            {
+                return;
+            }
+
+            var delta = equipped.HasValue ? value - equipped.Value : 0;
+            var difference = delta == 0 ? string.Empty
+                : delta > 0 ? $" <color=#65D98A>(+{delta})</color>"
+                : $" <color=#FF7474>({delta})</color>";
+
+            text.AppendLine($"{TranslateManager.Instance.GetByKey(key)}: {value}{difference}");
         }
 
         public void UpdateLoot(InventoryItemDto[] items, ulong clientId)
@@ -1092,6 +1086,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
                     Button = slotGameObject.GetComponent<ButtonUI>(),
                     DragTrigger = slotGameObject.AddComponent<EventTrigger>(),
                 };
+
+                ItemComparisonUI.Bind(preview, () => slot.Item);
 
                 var key = slotGameObject.GetInstanceID().ToString();
 

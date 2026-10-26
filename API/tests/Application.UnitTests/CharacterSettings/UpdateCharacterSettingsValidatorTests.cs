@@ -43,6 +43,10 @@ public class UpdateCharacterSettingsValidatorTests
     [InlineData(InventoryItemEnum.StrengthPotion)]
     [InlineData(InventoryItemEnum.SpeedPotion)]
     [InlineData(InventoryItemEnum.IronBow)]
+    [InlineData(InventoryItemEnum.ScoutHelmet)]
+    [InlineData(InventoryItemEnum.GuardChest)]
+    [InlineData(InventoryItemEnum.TrailBoots)]
+    [InlineData(InventoryItemEnum.BalancedSword)]
     [InlineData(InventoryItemEnum.AmmoOil3)]
     public void AcceptsUsableItemsAndEmptySlots(InventoryItemEnum type)
     {

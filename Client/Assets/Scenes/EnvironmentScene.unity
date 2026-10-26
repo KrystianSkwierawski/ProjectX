@@ -2914,6 +2914,38 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[47]._type
+      value: 1023
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[47]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[48]._type
+      value: 1024
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[48]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[49]._type
+      value: 1025
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[49]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[50]._type
+      value: 1026
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
+      propertyPath: _items.Array.data[50]._count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: Items.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -2923,7 +2955,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _items.Array.size
-      value: 47
+      value: 51
       objectReference: {fileID: 0}
     - target: {fileID: 3512269434197849546, guid: 8dd02a10ae0ee744d9d142e0778794cc, type: 3}
       propertyPath: _items.Array.data[36]._type

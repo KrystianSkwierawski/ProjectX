@@ -174,4 +174,13 @@ public enum TranslateKeyEnum
     ItemRarityRare,
     ItemRarityEpic,
     ItemRarityLegendary,
+    CurrentlyEquipped,
+    ScoutHelmetTitle,
+    ScoutHelmetDescription,
+    GuardChestTitle,
+    GuardChestDescription,
+    TrailBootsTitle,
+    TrailBootsDescription,
+    BalancedSwordTitle,
+    BalancedSwordDescription,
 }

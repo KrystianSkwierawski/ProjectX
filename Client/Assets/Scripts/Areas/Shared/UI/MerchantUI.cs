@@ -78,6 +78,8 @@ namespace Assets.Scripts.Areas.Shared.UI
 
                     var key = itemObject.GameObject.GetInstanceID().ToString();
 
+                    ItemComparisonUI.Bind(preview, () => itemObject.Item);
+
                     OnPointerEnterSubscription.Instance.Subscribe(key, (e) =>
                     {
                         if (!InventoryUI.Instance.IsDragging && itemObject.CanPurchase)
