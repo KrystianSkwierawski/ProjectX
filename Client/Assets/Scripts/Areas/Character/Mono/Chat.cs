@@ -23,7 +23,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             if (IsOwner)
             {
-                ChatUI.Instance.InputField.onEndEdit.AddListener(Submit);
+                ChatUI.Instance.InputField.onSubmit.AddListener(Submit);
             }
         }
 
@@ -146,7 +146,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             if (IsOwner && ChatUI.Instance != null)
             {
-                ChatUI.Instance.InputField.onEndEdit.RemoveListener(Submit);
+                ChatUI.Instance.InputField.onSubmit.RemoveListener(Submit);
             }
 
             base.OnDestroy();

@@ -98,6 +98,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
             var preview = slot.transform.Find("Preview").gameObject;
             var key = slot.GetInstanceID().ToString();
 
+            ItemComparisonUI.Bind(preview, () => Item(index));
+
             text.rectTransform.anchorMin = text.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             text.rectTransform.anchoredPosition = Vector2.zero;
             text.rectTransform.sizeDelta = image.rectTransform.sizeDelta - new Vector2(4, 4);

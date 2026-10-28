@@ -44,7 +44,7 @@ namespace Assets.Scripts.Areas.Shared.UI
             RestorePreviewParent();
 
             OnPointerEnterSubscription.Instance.Invoke(_key, new OnPointerEnterEvent());
-            ClampPreviewToCanvas();
+            ClampPreviewToCanvas(resetPosition: true);
 
             if (_useTooltipLayer && _preview != null && _preview.gameObject.activeInHierarchy && TooltipLayerUI.Instance != null)
             {
@@ -99,14 +99,18 @@ namespace Assets.Scripts.Areas.Shared.UI
             }
         }
 
-        private void ClampPreviewToCanvas()
+        public void ClampPreviewToCanvas(bool resetPosition = false)
         {
             if (_preview == null || !_preview.gameObject.activeInHierarchy)
             {
                 return;
             }
 
-            _preview.anchoredPosition = _previewDefaultAnchoredPosition;
+            if (resetPosition)
+            {
+                _preview.anchoredPosition = _previewDefaultAnchoredPosition;
+            }
+
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(_preview);
             Canvas.ForceUpdateCanvases();

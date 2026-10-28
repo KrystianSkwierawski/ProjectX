@@ -275,5 +275,15 @@ namespace Assets.Scripts.Areas.Shared.Enums
         ItemRarityRare,
         ItemRarityEpic,
         ItemRarityLegendary,
+        CurrentlyEquipped,
+        ScoutHelmetTitle,
+        ScoutHelmetDescription,
+        GuardChestTitle,
+        GuardChestDescription,
+        TrailBootsTitle,
+        TrailBootsDescription,
+        BalancedSwordTitle,
+        BalancedSwordDescription,
+        ConnectionLost,
     }
 }

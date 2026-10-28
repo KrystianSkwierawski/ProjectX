@@ -270,5 +270,15 @@
   "ItemRarityUncommon": "Niepospolity",
   "ItemRarityRare": "Rzadki",
   "ItemRarityEpic": "Epicki",
-  "ItemRarityLegendary": "Legendarny"
+  "ItemRarityLegendary": "Legendarny",
+    "CurrentlyEquipped": "Aktualnie założone",
+    "ScoutHelmetTitle": "Hełm zwiadowcy",
+    "ScoutHelmetDescription": "Lekka skóra i stalowa osłona czoła. Zostawia miejsce na dobry pomysł, gdyby się trafił.",
+    "GuardChestTitle": "Napierśnik strażnika",
+    "GuardChestDescription": "Więcej stali tam, gdzie trzeba. Siadanie wymaga odrobiny planowania.",
+    "TrailBootsTitle": "Buty wędrowca",
+    "TrailBootsDescription": "Miękka skóra i mocna podeszwa. Na spacery, które wyszły dłuższe niż planowano.",
+    "BalancedSwordTitle": "Wyważony miecz",
+    "BalancedSwordDescription": "Lżejsze ostrze i pewny chwyt. Wyważenie jest dobre; decyzje nadal należą do ciebie.",
+    "ConnectionLost": "Utracono połączenie z serwerem gry. Zaloguj się ponownie."
 }

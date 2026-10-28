@@ -2248,7 +2248,11 @@
           "AmmoOil2",
           "AmmoOil3",
           "IronWand",
-          "IronBow"
+          "IronBow",
+          "ScoutHelmet",
+          "GuardChest",
+          "TrailBoots",
+          "BalancedSword"
         ],
         "enum": [
           0,
@@ -2304,7 +2308,11 @@
           1019,
           1020,
           1021,
-          1022
+          1022,
+          1023,
+          1024,
+          1025,
+          1026
         ]
       },
       "UpdateCharacterInventoryDto": {

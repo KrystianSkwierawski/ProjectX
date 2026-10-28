@@ -84,6 +84,10 @@ public enum InventoryItemEnum
     AmmoOil3 = 1020,
     IronWand = 1021,
     IronBow = 1022,
+    ScoutHelmet = 1023,
+    GuardChest = 1024,
+    TrailBoots = 1025,
+    BalancedSword = 1026,
 
     #endregion
 }

@@ -137,6 +137,22 @@ namespace Assets.Scripts.Areas.Inventory.Enums
         [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Bow, Dexterity = 20)]
         IronBow = 1022,
 
+        [InventoryItemParameters(MaxHealth = 6, Armor = 4, Dexterity = 8)]
+        [ItemRarity(ItemRarityEnum.Uncommon)]
+        ScoutHelmet = 1023,
+
+        [InventoryItemParameters(MaxHealth = 12, Armor = 32)]
+        [ItemRarity(ItemRarityEnum.Rare)]
+        GuardChest = 1024,
+
+        [InventoryItemParameters(MaxHealth = 8, Speed = 100, Armor = 2)]
+        [ItemRarity(ItemRarityEnum.Uncommon)]
+        TrailBoots = 1025,
+
+        [InventoryItemParameters(WeaponCategory = WeaponCategoryEnum.Sword, Strength = 14, Dexterity = 8, Armor = 3)]
+        [ItemRarity(ItemRarityEnum.Rare)]
+        BalancedSword = 1026,
+
         #endregion
     }
 
@@ -188,11 +204,15 @@ namespace Assets.Scripts.Areas.Inventory.Enums
 
         public static bool IsWeapon(this InventoryItemEnum value) => value 
             is InventoryItemEnum.IronSword
+            or InventoryItemEnum.BalancedSword
             or InventoryItemEnum.IronWand
             or InventoryItemEnum.IronBow;
 
         public static bool IsArmor(this InventoryItemEnum value) => value 
             is InventoryItemEnum.IronHelmet
+            or InventoryItemEnum.ScoutHelmet
+            or InventoryItemEnum.GuardChest
+            or InventoryItemEnum.TrailBoots
             or InventoryItemEnum.IronChest
             or InventoryItemEnum.IronBoots;
 
@@ -202,5 +222,15 @@ namespace Assets.Scripts.Areas.Inventory.Enums
             or InventoryItemEnum.AmmoFeather3;
 
         public static bool IsGear(this InventoryItemEnum value) => value.IsWeapon() || value.IsArmor() || value.IsAmmo();
+
+        public static InventoryItemEnum GetGearSlot(this InventoryItemEnum value) => value switch
+        {
+            InventoryItemEnum.IronHelmet or InventoryItemEnum.ScoutHelmet => InventoryItemEnum.HelmetTemplate,
+            InventoryItemEnum.IronChest or InventoryItemEnum.GuardChest => InventoryItemEnum.ChestTemplate,
+            InventoryItemEnum.IronBoots or InventoryItemEnum.TrailBoots => InventoryItemEnum.BootsTemplate,
+            _ when value.IsWeapon() => InventoryItemEnum.WeaponTemplate,
+            _ when value.IsAmmo() => InventoryItemEnum.AmmoTemplate,
+            _ => InventoryItemEnum.None,
+        };
     }
 }

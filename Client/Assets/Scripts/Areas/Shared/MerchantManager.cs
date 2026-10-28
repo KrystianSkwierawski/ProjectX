@@ -53,6 +53,10 @@ namespace Assets.Scripts.Areas.Shared.Mono
             { InventoryItemEnum.IronSword, 1 },
             { InventoryItemEnum.IronWand, 1 },
             { InventoryItemEnum.IronBow, 1 },
+            { InventoryItemEnum.ScoutHelmet, 1 },
+            { InventoryItemEnum.GuardChest, 1 },
+            { InventoryItemEnum.TrailBoots, 1 },
+            { InventoryItemEnum.BalancedSword, 1 },
 
             { InventoryItemEnum.AmmoArrow1, 1 },
             { InventoryItemEnum.AmmoArrow2, 1 },
