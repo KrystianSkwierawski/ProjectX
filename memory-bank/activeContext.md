@@ -59,7 +59,7 @@
 
 ## Active Decisions
 - Prioritize correct programmer-owned systems/mechanics over art polish and economic balancing.
-- Keep code simple, readable, and consistent with repository conventions; avoid unnecessary abstractions.
+- Aim for clean, simple, maintainable, readable, and efficient code; apply established principles and good practices proportionally to actual requirements and repository conventions. Avoid unnecessary abstractions and premature optimization; see `systemPatterns.md` for coding conventions.
 - Treat Unity dedicated server as gameplay authority and API as durable transactional authority.
 - Preserve exact inventory positions and the atomic `1024` max-stack/capacity rules.
 - Keep the current maximum of six unique offered item types as a review/abuse bound, not as a technical inventory limit.
