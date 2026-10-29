@@ -11,11 +11,14 @@ namespace Assets.Scripts.Areas.Quest.Models
         public int Reward { get; set; }
 
         public byte Level { get; set; }
+
+        public CheckCharacterQuestProgressDto[] CollectProgress { get; set; } = System.Array.Empty<CheckCharacterQuestProgressDto>();
     }
 
     public enum CompleteCharacterQuestStatusEnum
     {
         Applied,
-        InventoryChanged
+        InventoryChanged,
+        InventoryFull
     }
 }

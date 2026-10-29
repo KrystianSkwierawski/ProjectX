@@ -1,4 +1,6 @@
-﻿namespace ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
+using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
+
+namespace ProjectX.Application.CharacterQuests.Commands.CompleteCharacterQuest;
 
 public class CompleteCharacterQuestDto
 {
@@ -10,6 +12,8 @@ public class CompleteCharacterQuestDto
 
     public byte Level { get; set; }
 
+    public CheckCharacterQuestProgressDto[] CollectProgress { get; set; } = [];
+
     public override string ToString()
     {
         return $"{nameof(CompleteCharacterQuestDto)} {{ QuestId = {QuestId}, Status = {Status}, Reward = {Reward}, Level = {Level} }}";
@@ -19,5 +23,6 @@ public class CompleteCharacterQuestDto
 public enum CompleteCharacterQuestStatusEnum
 {
     Applied,
-    InventoryChanged
+    InventoryChanged,
+    InventoryFull
 }

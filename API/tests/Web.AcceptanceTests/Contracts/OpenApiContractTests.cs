@@ -285,6 +285,17 @@ public class OpenApiContractTests
         var progressProperties = schemas.GetProperty("AddCharacterQuestProgressCommand").GetProperty("properties");
         Assert.True(progressProperties.TryGetProperty("progress", out _));
         Assert.False(progressProperties.TryGetProperty("progres", out _));
+        Assert.True(progressProperties.TryGetProperty("requirementId", out _));
+
+        var questProperties = schemas.GetProperty("QuestDto").GetProperty("properties");
+        Assert.True(questProperties.TryGetProperty("requirements", out _));
+        Assert.True(questProperties.TryGetProperty("itemRewards", out _));
+        Assert.False(questProperties.TryGetProperty("gameObjectName", out _));
+        Assert.False(questProperties.TryGetProperty("requirement", out _));
+
+        var characterQuestProperties = schemas.GetProperty("CharacterQuestDto").GetProperty("properties");
+        Assert.True(characterQuestProperties.TryGetProperty("objectiveProgress", out _));
+
 
         Assert.True(schemas.TryGetProperty("SaveCharacterTransformCommand", out _));
         Assert.False(schemas.TryGetProperty("SaveTransformTransformCommand", out _));

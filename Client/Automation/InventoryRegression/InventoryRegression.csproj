@@ -6,6 +6,10 @@
     <DefineConstants>UNITY_SERVER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../Assets/Scripts/Areas/Trade/Mono/TradeServerState.cs" Link="Source/TradeServerState.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Trade/Enums/TradeOperationStatusEnum.cs" Link="Source/TradeOperationStatusEnum.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Inventory/Enums/ItemRarityEnum.cs" Link="Source/ItemRarityEnum.cs" />
+    <Compile Include="../../Assets/Scripts/Areas/Shared/Attributes/ItemRarityAttribute.cs" Link="Source/ItemRarityAttribute.cs" />
     <Compile Include="../../Assets/Scripts/Areas/Character/AmmoHitCoordinator.cs" Link="Source/AmmoHitCoordinator.cs" />
     <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/HealthPotionUsableItem.cs" Link="Source/HealthPotionUsableItem.cs" />
     <Compile Include="../../Assets/Scripts/Areas/Inventory/Shared/AbstractGearUsableItem.cs" Link="Source/AbstractGearUsableItem.cs" />

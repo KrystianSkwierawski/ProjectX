@@ -132,6 +132,8 @@ Console.WriteLine("GEAR_COMMIT_REGRESSION_PASSED: gear, HP clamping and uncertai
 
 await AmmoRegression.RunAsync();
 
+TradeQuestRegression.Run();
+
 static CharacterDto NewCharacter() => new()
 {
     Health = 100,

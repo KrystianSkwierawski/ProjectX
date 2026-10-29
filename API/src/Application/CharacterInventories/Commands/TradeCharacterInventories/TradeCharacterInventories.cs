@@ -258,20 +258,16 @@ public class TradeCharacterInventoriesCommandHandler : IRequestHandler<TradeChar
         var characterQuests = await _context.CharacterQuests
             .Include(x => x.Quest)
             .Where(x => x.CharacterId == sourceCharacterId || x.CharacterId == targetCharacterId)
-            .Where(x => x.Quest.Type == QuestTypeEnum.Collect)
             .Where(x => x.Status == CharacterQuestStatusEnum.Accepted || x.Status == CharacterQuestStatusEnum.Finished)
             .ToArrayAsync(cancellationToken);
 
         foreach (var characterQuest in characterQuests)
         {
-            var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
             var inventory = characterQuest.CharacterId == sourceCharacterId
                 ? sourceInventory
                 : targetInventory;
 
-            characterQuest.SetProgress(
-                inventory.GetCount(itemType),
-                characterQuest.Quest.Requirement);
+            characterQuest.SynchronizeInventory(inventory);
         }
     }
 

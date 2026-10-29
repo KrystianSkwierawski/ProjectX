@@ -75,15 +75,15 @@ public class AccessCharacterStashCommandHandler(IApplicationDbContext context, I
             return new() { Status = StashStatusEnum.Full };
         }
 
-        var quests = await context.CharacterQuests.Include(x => x.Quest)
+        var quests = await context.CharacterQuests
+            .Include(x => x.Quest)
             .Where(x => x.CharacterId == characterId)
-            .Where(x => x.Quest.Type == QuestTypeEnum.Collect)
             .Where(x => x.Status == CharacterQuestStatusEnum.Accepted || x.Status == CharacterQuestStatusEnum.Finished)
             .ToArrayAsync(cancellationToken);
 
         foreach (var quest in quests)
         {
-            quest.SetProgress(inventory.GetCount(Enum.Parse<InventoryItemEnum>(quest.Quest.GameObjectName)), quest.Quest.Requirement);
+            quest.SynchronizeInventory(inventory);
         }
 
         characterInventory.Inventory = inventory;

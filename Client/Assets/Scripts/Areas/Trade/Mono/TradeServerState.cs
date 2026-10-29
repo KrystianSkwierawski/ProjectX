@@ -17,6 +17,7 @@ namespace Assets.Scripts.Areas.Trade.Mono
         private static readonly Dictionary<ulong, TradeSession> _sessionsByPlayer = new Dictionary<ulong, TradeSession>();
         private static readonly Dictionary<ulong, ulong> _invitersByTarget = new Dictionary<ulong, ulong>();
         private static readonly Dictionary<ulong, int> _inventoryMutationsByPlayer = new Dictionary<ulong, int>();
+        private static readonly Dictionary<ulong, int> _deferredInventoryMutationsByPlayer = new Dictionary<ulong, int>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset()
@@ -29,6 +30,7 @@ namespace Assets.Scripts.Areas.Trade.Mono
             _sessionsByPlayer.Clear();
             _invitersByTarget.Clear();
             _inventoryMutationsByPlayer.Clear();
+            _deferredInventoryMutationsByPlayer.Clear();
         }
 
         public static TradeOperationStatusEnum Invite(ulong inviterClientId, ulong targetClientId)
@@ -213,13 +215,30 @@ namespace Assets.Scripts.Areas.Trade.Mono
 
         public static IDisposable TrackInventoryMutation(ulong clientId)
         {
-            _inventoryMutationsByPlayer.TryGetValue(clientId, out var count);
-            _inventoryMutationsByPlayer[clientId] = checked(count + 1);
+            return TrackInventoryMutation(clientId, _inventoryMutationsByPlayer);
+        }
 
-            return new InventoryMutationScope(clientId);
+        public static DeferredInventoryMutationScope DeferInventoryMutation(ulong clientId)
+        {
+            return new DeferredInventoryMutationScope(clientId);
+        }
+
+        private static IDisposable TrackInventoryMutation(ulong clientId, Dictionary<ulong, int> mutationsByPlayer)
+        {
+            mutationsByPlayer.TryGetValue(clientId, out var count);
+            mutationsByPlayer[clientId] = checked(count + 1);
+
+            return new InventoryMutationScope(clientId, mutationsByPlayer);
         }
 
         public static bool HasPendingInventoryMutation(ulong clientId)
+        {
+            // Deferred accepted work still needs its delegated credentials after disconnect.
+            return HasActiveInventoryMutation(clientId)
+                || _deferredInventoryMutationsByPlayer.ContainsKey(clientId);
+        }
+
+        public static bool HasActiveInventoryMutation(ulong clientId)
         {
             return _inventoryMutationsByPlayer.ContainsKey(clientId);
         }
@@ -386,16 +405,16 @@ namespace Assets.Scripts.Areas.Trade.Mono
             _sessionsByPlayer.Remove(session.SecondClientId);
         }
 
-        private static void CompleteInventoryMutation(ulong clientId)
+        private static void CompleteInventoryMutation(ulong clientId, Dictionary<ulong, int> mutationsByPlayer)
         {
-            if (!_inventoryMutationsByPlayer.TryGetValue(clientId, out var count) || count <= 1)
+            if (!mutationsByPlayer.TryGetValue(clientId, out var count) || count <= 1)
             {
-                _inventoryMutationsByPlayer.Remove(clientId);
+                mutationsByPlayer.Remove(clientId);
 
                 return;
             }
 
-            _inventoryMutationsByPlayer[clientId] = count - 1;
+            mutationsByPlayer[clientId] = count - 1;
         }
 
         private static bool RemoveInvitationsFor(ulong clientId)
@@ -527,14 +546,41 @@ namespace Assets.Scripts.Areas.Trade.Mono
             public InventoryItemDto[] SecondOffer { get; }
         }
 
-        private sealed class InventoryMutationScope : IDisposable
+        public sealed class DeferredInventoryMutationScope : IDisposable
         {
             private readonly ulong _clientId;
+            private readonly IDisposable _deferredMutation;
+            private IDisposable _activeMutation;
             private bool _disposed;
 
-            public InventoryMutationScope(ulong clientId)
+            internal DeferredInventoryMutationScope(ulong clientId)
             {
                 _clientId = clientId;
+                _deferredMutation = TrackInventoryMutation(clientId, _deferredInventoryMutationsByPlayer);
+            }
+
+            // Called on the Unity main thread, without yielding between reservation and tracking.
+            public bool TryBegin()
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(nameof(DeferredInventoryMutationScope));
+                }
+
+                if (_activeMutation != null)
+                {
+                    return true;
+                }
+
+                if (IsInventoryReserved(_clientId))
+                {
+                    return false;
+                }
+
+                _activeMutation = TrackInventoryMutation(_clientId);
+                _deferredMutation.Dispose();
+
+                return true;
             }
 
             public void Dispose()
@@ -545,7 +591,32 @@ namespace Assets.Scripts.Areas.Trade.Mono
                 }
 
                 _disposed = true;
-                CompleteInventoryMutation(_clientId);
+                _activeMutation?.Dispose();
+                _deferredMutation.Dispose();
+            }
+        }
+
+        private sealed class InventoryMutationScope : IDisposable
+        {
+            private readonly ulong _clientId;
+            private readonly Dictionary<ulong, int> _mutationsByPlayer;
+            private bool _disposed;
+
+            public InventoryMutationScope(ulong clientId, Dictionary<ulong, int> mutationsByPlayer)
+            {
+                _clientId = clientId;
+                _mutationsByPlayer = mutationsByPlayer;
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _disposed = true;
+                CompleteInventoryMutation(_clientId, _mutationsByPlayer);
             }
         }
     }

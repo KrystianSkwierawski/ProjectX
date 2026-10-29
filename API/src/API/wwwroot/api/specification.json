@@ -2581,6 +2581,13 @@
           "progress": {
             "type": "integer",
             "format": "int32"
+          },
+          "objectiveProgress": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         }
       },
@@ -2604,7 +2611,8 @@
           "Collect2WhiteBars",
           "Collect2CopperBars",
           "Collect2BlackBars",
-          "Collect2HealthPotions"
+          "Collect2HealthPotions",
+          "FieldSupplies"
         ],
         "enum": [
           0,
@@ -2623,7 +2631,8 @@
           13,
           14,
           15,
-          16
+          16,
+          17
         ]
       },
       "CharacterQuestStatusEnum": {
@@ -2677,6 +2686,10 @@
           "progress": {
             "type": "integer",
             "format": "int32"
+          },
+          "requirementId": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -2695,6 +2708,13 @@
             "type": "integer",
             "format": "int32"
           },
+          "objectiveProgress": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
           "status": {
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           }
@@ -2710,6 +2730,10 @@
           "progress": {
             "type": "integer",
             "format": "int32"
+          },
+          "requirementId": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -2730,6 +2754,12 @@
           "level": {
             "type": "integer",
             "format": "byte"
+          },
+          "collectProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckCharacterQuestProgressDto"
+            }
           }
         }
       },
@@ -2738,11 +2768,13 @@
         "description": "",
         "x-enumNames": [
           "Applied",
-          "InventoryChanged"
+          "InventoryChanged",
+          "InventoryFull"
         ],
         "enum": [
           0,
-          1
+          1,
+          2
         ]
       },
       "CompleteCharacterQuestCommand": {
@@ -3750,8 +3782,7 @@
           "title",
           "description",
           "completeDescription",
-          "statusText",
-          "gameObjectName"
+          "statusText"
         ],
         "properties": {
           "id": {
@@ -3759,9 +3790,6 @@
           },
           "previousQuestId": {
             "$ref": "#/components/schemas/QuestEnum"
-          },
-          "type": {
-            "$ref": "#/components/schemas/QuestTypeEnum"
           },
           "title": {
             "type": "string"
@@ -3775,16 +3803,51 @@
           "statusText": {
             "type": "string"
           },
-          "gameObjectName": {
-            "type": "string"
-          },
-          "requirement": {
-            "type": "integer",
-            "format": "int32"
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestRequirementDto"
+            }
           },
           "reward": {
             "type": "integer",
             "format": "int32"
+          },
+          "itemRewards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
+          }
+        }
+      },
+      "QuestRequirementDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "target",
+          "statusText"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestTypeEnum"
+          },
+          "target": {
+            "type": "string"
+          },
+          "itemType": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statusText": {
+            "type": "string"
           }
         }
       },

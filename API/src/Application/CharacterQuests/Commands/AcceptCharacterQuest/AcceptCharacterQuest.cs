@@ -48,13 +48,7 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
             StartDate = _timeProvider.GetUtcNow()
         };
 
-        if (quest.Type == QuestTypeEnum.Collect)
-        {
-            var itemType = Enum.Parse<InventoryItemEnum>(quest.GameObjectName);
-            var progress = character.CharacterInventory.Inventory.GetCount(itemType);
-
-            entity.SetProgress(progress, quest.Requirement);
-        }
+        entity.SynchronizeInventory(character.CharacterInventory.Inventory);
 
         _context.CharacterQuests.Add(entity);
 
@@ -65,6 +59,7 @@ public class AcceptCharacterQuestCommandHandler : IRequestHandler<AcceptCharacte
             Id = entity.Id,
             QuestId = entity.QuestId,
             Progress = entity.Progress,
+            ObjectiveProgress = entity.ObjectiveProgress,
             Status = entity.Status
         };
     }

@@ -498,12 +498,11 @@ public class CharacterScopeTests
         {
             Id = QuestEnum.Kill2Beans,
             Name = nameof(QuestEnum.Kill2Beans),
-            Type = QuestTypeEnum.Kill,
-            GameObjectName = nameof(InventoryItemEnum.Can),
-            Requirement = 2
+
         };
         var killProgress = CreateCharacterQuest(34, character, killQuest, CharacterQuestStatusEnum.Accepted);
         killProgress.Progress = 1;
+        killProgress.ObjectiveProgress["kill:Bean(Clone)"] = 1;
 
         context.AddRange(character, otherCharacter, quest, progress, otherProgress, completed, killQuest, killProgress);
 
@@ -933,10 +932,7 @@ public class CharacterScopeTests
         {
             Id = QuestEnum.Kill2Beans,
             Name = nameof(QuestEnum.Kill2Beans),
-            Type = QuestTypeEnum.Kill,
-            GameObjectName = "Bean(Clone)",
-            Requirement = 2,
-            Reward = 1000,
+
             Status = StatusEnum.Active
         };
 
@@ -997,10 +993,7 @@ public class CharacterScopeTests
         {
             Id = QuestEnum.Collect2Cans,
             Name = nameof(QuestEnum.Collect2Cans),
-            Type = QuestTypeEnum.Collect,
-            GameObjectName = nameof(InventoryItemEnum.Can),
-            Requirement = 2,
-            Reward = 1000,
+
             Status = StatusEnum.Active
         };
 
@@ -1022,7 +1015,11 @@ public class CharacterScopeTests
                 new FixedTimeProvider(completedAtUtc))
             .Handle(new CompleteCharacterQuestCommand(characterQuest.Id), CancellationToken.None);
 
-        var remainingItem = Assert.Single(character.CharacterInventory.Inventory.Items);
+        var remainingItem = character.CharacterInventory.Inventory.Items
+            .Where(x => x.Type == InventoryItemEnum.Can)
+            .Single();
+
+        Assert.Equal(15, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Currency));
 
         Assert.Equal(CompleteCharacterQuestStatusEnum.Applied, result.Status);
         Assert.Equal(QuestEnum.Collect2Cans, result.QuestId);
@@ -1033,6 +1030,130 @@ public class CharacterScopeTests
             .Sum(x => x.Amount));
         Assert.Equal(CharacterQuestStatusEnum.Completed, characterQuest.Status);
         Assert.Equal((InventoryItemEnum.Can, 1), (remainingItem.Type, remainingItem.Count));
+    }
+
+    [Theory]
+    [InlineData(2, 1, CompleteCharacterQuestStatusEnum.Applied)]
+    [InlineData(3, 1, CompleteCharacterQuestStatusEnum.InventoryFull)]
+    [InlineData(1, 2, CompleteCharacterQuestStatusEnum.InventoryChanged)]
+    public async Task CompleteCollectQuest_UsesFreedSlotsAndRejectsWithoutPartialChanges(
+        int cans, short capacity, CompleteCharacterQuestStatusEnum expected)
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId, new InventorySlot(InventoryItemEnum.Can, cans));
+        character.CharacterInventory.Count = capacity;
+        var quest = CreateCollectQuest();
+        var characterQuest = CreateCharacterQuest(31, character, quest, CharacterQuestStatusEnum.Finished);
+
+        context.AddRange(character, quest, characterQuest);
+        await context.SaveChangesAsync();
+
+        var handler = new CompleteCharacterQuestCommandHandler(context, new TestCurrentUserService(), TimeProvider.System);
+        var result = await handler.Handle(new CompleteCharacterQuestCommand(characterQuest.Id), CancellationToken.None);
+
+        Assert.Equal(expected, result.Status);
+
+        if (expected == CompleteCharacterQuestStatusEnum.Applied)
+        {
+            Assert.Equal(0, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Can));
+            Assert.Equal(15, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Currency));
+            Assert.Equal(CharacterQuestStatusEnum.Completed, characterQuest.Status);
+            await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(
+                new CompleteCharacterQuestCommand(characterQuest.Id), CancellationToken.None));
+        }
+        else
+        {
+            Assert.Equal(cans, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Can));
+            Assert.Equal(0, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Currency));
+            Assert.Empty(character.CharacterExperiences);
+            Assert.Equal(CharacterQuestStatusEnum.Finished, characterQuest.Status);
+        }
+    }
+
+    [Fact]
+    public async Task CompleteCollectQuest_UsesCapacityExpandedByLegacyNormalization()
+    {
+        await using var context = CreateContext();
+        var converter = context.Model.FindEntityType(typeof(CharacterInventory))!
+            .FindProperty(nameof(CharacterInventory.Inventory))!.GetValueConverter()!;
+        var legacyJson = $$"""{"Items":[{"Type":{{(int)InventoryItemEnum.Currency}},"Count":2500},{"Type":{{(int)InventoryItemEnum.Can}},"Count":2}]}""";
+        var inventory = Assert.IsType<InventoryState>(converter.ConvertFromProvider(legacyJson));
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.CharacterInventory.Count = 2;
+        character.CharacterInventory.Inventory = inventory;
+
+        var quest = CreateCollectQuest();
+        var characterQuest = CreateCharacterQuest(31, character, quest, CharacterQuestStatusEnum.Finished);
+
+        context.AddRange(character, quest, characterQuest);
+        await context.SaveChangesAsync();
+
+        Assert.True(inventory.Items.Count > character.CharacterInventory.Count);
+
+        var result = await new CompleteCharacterQuestCommandHandler(context, new TestCurrentUserService(), TimeProvider.System)
+            .Handle(new CompleteCharacterQuestCommand(characterQuest.Id), CancellationToken.None);
+
+        Assert.Equal(CompleteCharacterQuestStatusEnum.Applied, result.Status);
+
+        context.ChangeTracker.Clear();
+
+        var storedInventory = await context.CharacterInventories.SingleAsync();
+        var storedQuest = await context.CharacterQuests.SingleAsync();
+
+        Assert.Equal(2515, storedInventory.Inventory.GetCount(InventoryItemEnum.Currency));
+        Assert.Equal(0, storedInventory.Inventory.GetCount(InventoryItemEnum.Can));
+        Assert.Equal(inventory.Items.Count, storedInventory.Inventory.Items.Count);
+        Assert.Equal(CharacterQuestStatusEnum.Completed, storedQuest.Status);
+        Assert.Equal(1000, (await context.CharacterExperiences.SingleAsync()).Amount);
+    }
+
+    [Theory]
+    [InlineData(1, CompleteCharacterQuestStatusEnum.InventoryFull)]
+    [InlineData(2, CompleteCharacterQuestStatusEnum.Applied)]
+    public async Task CompleteKillQuest_GrantsAllRewardsAndSynchronizesCollectProgress(
+        short capacity, CompleteCharacterQuestStatusEnum expected)
+    {
+        await using var context = CreateContext();
+        var character = CreateCharacter(CurrentCharacterId, CurrentUserId);
+        character.CharacterInventory.Count = capacity;
+        var quest = new Quest
+        {
+            Id = QuestEnum.Kill2Beans,
+            Name = nameof(QuestEnum.Kill2Beans),
+
+        };
+        var collect = new Quest
+        {
+            Id = QuestEnum.Collect2HealthPotions,
+            Name = nameof(QuestEnum.Collect2HealthPotions),
+
+        };
+        var finished = CreateCharacterQuest(40, character, quest, CharacterQuestStatusEnum.Finished);
+        var collecting = CreateCharacterQuest(41, character, collect, CharacterQuestStatusEnum.Accepted);
+
+        context.AddRange(character, quest, collect, finished, collecting);
+        await context.SaveChangesAsync();
+
+        var result = await new CompleteCharacterQuestCommandHandler(context, new TestCurrentUserService(), TimeProvider.System)
+            .Handle(new CompleteCharacterQuestCommand(finished.Id), CancellationToken.None);
+
+        Assert.Equal(expected, result.Status);
+
+        if (expected == CompleteCharacterQuestStatusEnum.Applied)
+        {
+            Assert.Equal(25, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.Currency));
+            Assert.Equal(2, character.CharacterInventory.Inventory.GetCount(InventoryItemEnum.HealthPotion));
+            Assert.Equal(CharacterQuestStatusEnum.Finished, collecting.Status);
+            Assert.Equal(2, Assert.Single(result.CollectProgress).Progress);
+            Assert.Equal(1000, Assert.Single(character.CharacterExperiences).Amount);
+        }
+        else
+        {
+            Assert.Empty(character.CharacterInventory.Inventory.Items);
+            Assert.Empty(character.CharacterExperiences);
+            Assert.Equal(CharacterQuestStatusEnum.Finished, finished.Status);
+            Assert.Equal(CharacterQuestStatusEnum.Accepted, collecting.Status);
+        }
     }
 
     [Fact]
@@ -1134,10 +1255,7 @@ public class CharacterScopeTests
         {
             Id = QuestEnum.Kill2Beans,
             Name = nameof(QuestEnum.Kill2Beans),
-            Type = QuestTypeEnum.Kill,
-            GameObjectName = "Bean(Clone)",
-            Requirement = 2,
-            Reward = 1000,
+
             Status = StatusEnum.Active
         };
 
@@ -1223,6 +1341,8 @@ public class CharacterScopeTests
             Character = character,
             QuestId = quest.Id,
             Quest = quest,
+            ObjectiveProgress = status == CharacterQuestStatusEnum.Finished
+                ? quest.Id.GetRequirements().ToDictionary(x => x.Id, x => x.Count) : [],
             Status = status,
             StartDate = new DateTimeOffset(2026, 8, 12, 10, 0, 0, TimeSpan.Zero)
         };
@@ -1234,10 +1354,7 @@ public class CharacterScopeTests
         {
             Id = QuestEnum.Collect2Cans,
             Name = nameof(QuestEnum.Collect2Cans),
-            Type = QuestTypeEnum.Collect,
-            GameObjectName = nameof(InventoryItemEnum.Can),
-            Requirement = 2,
-            Reward = 1000,
+
             Status = StatusEnum.Active
         };
     }

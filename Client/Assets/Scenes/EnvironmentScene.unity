@@ -2391,7 +2391,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: _questsIds.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[0]'
@@ -2400,6 +2400,10 @@ PrefabInstance:
     - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: '_questsIds.Array.data[1]'
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6226183084027333383, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
+      propertyPath: '_questsIds.Array.data[2]'
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 3168597944210499706, guid: e1cad9ea2c279564a8ab53fc23c2cbc1, type: 3}
       propertyPath: m_Mesh

@@ -70,7 +70,7 @@ public class TradeCharacterInventoriesTests
             SourceCharacterId,
             SourceUserId,
             capacity: 2,
-            new InventorySlot(InventoryItemEnum.HealthPotion, 10));
+            new InventorySlot(InventoryItemEnum.HealthPotion, 3));
         var target = CreateCharacter(
             TargetCharacterId,
             TargetUserId,
@@ -78,14 +78,12 @@ public class TradeCharacterInventoriesTests
             InventorySlot.Empty());
         var quest = new Quest
         {
-            Id = QuestEnum.Collect2Cans,
-            Name = nameof(QuestEnum.Collect2Cans),
-            Type = QuestTypeEnum.Collect,
-            GameObjectName = InventoryItemEnum.HealthPotion.ToString(),
-            Requirement = 9,
+            Id = QuestEnum.Collect2HealthPotions,
+            Name = nameof(QuestEnum.Collect2HealthPotions),
+
             Status = StatusEnum.Active
         };
-        var sourceQuest = CreateCharacterQuest(51, source, quest, CharacterQuestStatusEnum.Finished, progress: 10);
+        var sourceQuest = CreateCharacterQuest(51, source, quest, CharacterQuestStatusEnum.Finished, progress: 3);
         var targetQuest = CreateCharacterQuest(52, target, quest, CharacterQuestStatusEnum.Accepted, progress: 0);
 
         context.AddRange(source, target, quest, sourceQuest, targetQuest);
@@ -104,10 +102,10 @@ public class TradeCharacterInventoriesTests
         var persistedTargetQuest = await context.CharacterQuests.SingleAsync(x => x.Id == targetQuest.Id);
 
         Assert.Equal(TradeCharacterInventoriesStatusEnum.Applied, result.Status);
-        Assert.Equal(8, persistedSourceQuest.Progress);
+        Assert.Equal(1, persistedSourceQuest.Progress);
         Assert.Equal(CharacterQuestStatusEnum.Accepted, persistedSourceQuest.Status);
         Assert.Equal(2, persistedTargetQuest.Progress);
-        Assert.Equal(CharacterQuestStatusEnum.Accepted, persistedTargetQuest.Status);
+        Assert.Equal(CharacterQuestStatusEnum.Finished, persistedTargetQuest.Status);
     }
 
     [Fact]

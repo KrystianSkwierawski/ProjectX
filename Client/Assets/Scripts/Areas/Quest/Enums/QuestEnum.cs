@@ -19,5 +19,6 @@ namespace Assets.Scripts.Areas.Quest.Enums
         Collect2CopperBars,
         Collect2BlackBars,
         Collect2HealthPotions,
+        FieldSupplies,
     }
 }

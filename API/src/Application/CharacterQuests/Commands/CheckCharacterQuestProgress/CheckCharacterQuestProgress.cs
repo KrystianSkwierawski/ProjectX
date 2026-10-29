@@ -6,7 +6,7 @@ using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 
-public record CheckCharacterQuestProgressCommand(QuestEnum QuestId, int Progress) : IRequest<CheckCharacterQuestProgressDto>;
+public record CheckCharacterQuestProgressCommand(QuestEnum QuestId, int Progress, string? RequirementId = null) : IRequest<CheckCharacterQuestProgressDto>;
 
 public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCharacterQuestProgressCommand, CheckCharacterQuestProgressDto>
 {
@@ -37,23 +37,27 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
             return new CheckCharacterQuestProgressDto();
         }
 
-        if (characterQuest.Quest.Type == QuestTypeEnum.Collect)
+        var requirements = characterQuest.QuestId.GetRequirements();
+        var requirement = requirements
+            .Where(x => x.Id == request.RequirementId || request.RequirementId == null && requirements.Length == 1)
+            .SingleOrDefault();
+
+        if (requirement == null)
         {
-            var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
-
-            var characterInventory = await _context.CharacterInventories
-                .Where(x => x.Id == selectedCharacterId)
-                .Where(x => x.Character.ApplicationUserId == userId)
-                .SingleOrNotFoundAsync("character inventory", cancellationToken);
-
-            var progress = characterInventory.Inventory.GetCount(itemType);
-
-            characterQuest.SetProgress(progress, characterQuest.Quest.Requirement);
+            throw new InvalidOperationException("A valid requirement ID is required for quest progress.");
         }
-        else if (characterQuest.Status == CharacterQuestStatusEnum.Accepted)
+
+        var inventory = await _context.CharacterInventories
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
+            .SingleOrNotFoundAsync("character inventory", cancellationToken);
+
+        if (requirement.Type == QuestTypeEnum.Kill && characterQuest.Status == CharacterQuestStatusEnum.Accepted)
         {
-            characterQuest.AddProgress(request.Progress, characterQuest.Quest.Requirement);
+            characterQuest.AddKillProgress(requirement.Id, request.Progress);
         }
+
+        characterQuest.SynchronizeInventory(inventory.Inventory);
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -62,6 +66,7 @@ public class CheckCharacterQuestProgressCommandHandler : IRequestHandler<CheckCh
             QuestId = characterQuest.QuestId,
             CharacterQuestId = characterQuest.Id,
             Progress = characterQuest.Progress,
+            ObjectiveProgress = characterQuest.ObjectiveProgress,
             Status = characterQuest.Status
         };
     }

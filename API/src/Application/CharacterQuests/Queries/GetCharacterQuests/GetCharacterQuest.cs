@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Interfaces;
 
@@ -30,6 +30,7 @@ public class GetCharacterQuestsHandler : IRequestHandler<GetCharacterQuestsQuery
                 QuestId = x.QuestId,
                 Status = x.Status,
                 Progress = x.Progress,
+                ObjectiveProgress = x.ObjectiveProgress,
             })
             .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);

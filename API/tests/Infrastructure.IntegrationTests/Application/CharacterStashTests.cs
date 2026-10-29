@@ -44,11 +44,9 @@ public class CharacterStashTests
         var character = Character(41, "owner", 10);
         var quest = new Quest
         {
-            Id = QuestEnum.Collect2Cans,
+            Id = QuestEnum.Collect2HealthPotions,
             Name = "Collect",
-            Type = QuestTypeEnum.Collect,
-            GameObjectName = nameof(InventoryItemEnum.HealthPotion),
-            Requirement = 9
+
         };
         var progress = new CharacterQuest
         {

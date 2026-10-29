@@ -5,5 +5,7 @@ namespace Assets.Scripts.Areas.Quest.Models
         public int CharacterQuestId { get; set; }
 
         public int Progress { get; set; }
+
+        public string RequirementId { get; set; }
     }
 }

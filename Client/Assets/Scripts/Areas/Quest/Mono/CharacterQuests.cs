@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,11 +70,9 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 OwnerClientId.ToString(),
                 e =>
                 {
-                    // Collect persistence must keep the trade barrier until the request settles,
-                    // even if the participant despawns. RPC/UI work still uses the spawn token.
-                    var operationCancellationToken = e.QuestType == QuestTypeEnum.Collect
-                        ? TradeCommitCoordinator.GetServerLifetimeCancellationToken()
-                        : cancellationToken;
+                    // Mixed goals also synchronize inventory. Accepted progress retains the
+                    // server lifetime and mutation barrier; RPC work uses the spawn lifetime.
+                    var operationCancellationToken = TradeCommitCoordinator.GetServerLifetimeCancellationToken();
 
                     CheckProgressSequentiallyAsync(
                             e.GameObjectName,
@@ -113,7 +112,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
         private void AcceptQuestServerRpc(QuestEnum questId)
         {
             var isCollectQuest = QuestManager.Instance.Quests
-                .Any(x => x.Id == questId && x.Type == QuestTypeEnum.Collect);
+                .Any(x => x.Id == questId && x.Requirements.Any(requirement => requirement.Type == QuestTypeEnum.Collect));
 
             if (isCollectQuest && TradeServerState.IsInventoryReserved(OwnerClientId))
             {
@@ -189,7 +188,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 characterQuest.Id,
                 characterQuest.QuestId,
                 characterQuest.Status,
-                characterQuest.Progress,
+                JsonConvert.SerializeObject(characterQuest.ObjectiveProgress),
                 OwnerClientId.ToClientRpcParams());
         }
 
@@ -198,7 +197,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
             int characterQuestId,
             QuestEnum questId,
             CharacterQuestStatusEnum status,
-            int progress,
+            string objectiveProgressJson,
             ClientRpcParams rpcParams = default)
         {
             ApplyAcceptedQuest(new CharacterQuestDto
@@ -206,7 +205,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 Id = characterQuestId,
                 QuestId = questId,
                 Status = status,
-                Progress = progress
+                ObjectiveProgress = JsonConvert.DeserializeObject<Dictionary<string, int>>(objectiveProgressJson)
             });
         }
 
@@ -270,7 +269,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             if (result.Status != CompleteCharacterQuestStatusEnum.Applied)
             {
-                QuestInventoryChangedClientRpc(OwnerClientId.ToClientRpcParams());
+                Debug.Log($"Quest completion rejected. ClientId: {OwnerClientId}, CharacterQuestId: {characterQuestId}, Status: {result.Status}.");
+                QuestInventoryChangedClientRpc(result.Status, OwnerClientId.ToClientRpcParams());
 
                 return;
             }
@@ -279,20 +279,13 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 .Where(x => x.Id == result.QuestId)
                 .Single();
 
-            if (quest.Type == QuestTypeEnum.Collect)
+            if (quest.Requirements.Any(x => x.Type == QuestTypeEnum.Collect) || quest.ItemRewards.Length > 0)
             {
                 UpdateInventorySubscription.Instance.Invoke(OwnerClientId.ToString(), new UpdateInventorySubscriptionEvent
                 {
                     Request = new UpdateCharacterInventoryCommand
                     {
-                        Remove = new InventoryItemDto[]
-                        {
-                            new InventoryItemDto
-                            {
-                                Type = Enum.Parse<InventoryItemEnum>(quest.GameObjectName),
-                                Count = quest.Requirement,
-                            }
-                        }
+                        Add = quest.ItemRewards,
                     },
                     PlayerSessionId = playerSessionId,
                     PersistInApi = false,
@@ -301,15 +294,22 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             GetComponent<Player>()?.ApplyPersistedExperienceLevel(ExperienceTypeEnum.Main, result.Level);
 
+            foreach (var progress in result.CollectProgress)
+            {
+                UpdateQuestClientRpc(progress.CharacterQuestId, JsonConvert.SerializeObject(progress.ObjectiveProgress), progress.Status, OwnerClientId.ToClientRpcParams());
+            }
+
+            Debug.Log($"Quest rewards applied. ClientId: {OwnerClientId}, QuestId: {result.QuestId}, Experience: {result.Reward}, ItemRewards: {quest.ItemRewards.Length}.");
             CompleteQuestClientRpc(characterQuestId, OwnerClientId.ToClientRpcParams());
         }
 
         [ClientRpc]
-        private void QuestInventoryChangedClientRpc(ClientRpcParams rpcParams = default)
+        private void QuestInventoryChangedClientRpc(CompleteCharacterQuestStatusEnum status, ClientRpcParams rpcParams = default)
         {
             GetComponent<CharacterInventory>()?.ReloadAuthoritativeInventory();
             LogUI.Instance.ShowAsync(
-                    TranslateManager.Instance.GetByKey(TranslateKeyEnum.QuestInventoryChanged),
+                    TranslateManager.Instance.GetByKey(status == CompleteCharacterQuestStatusEnum.InventoryFull
+                        ? TranslateKeyEnum.InventoryFull : TranslateKeyEnum.QuestInventoryChanged),
                     color: ColorUI.Error)
                 .Forget();
         }
@@ -394,7 +394,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     {
                         CompleteQuest(characterQuest);
                     }
-                    else
+                    else if (characterQuest == null)
                     {
                         AcceptQuestServerRpc(questId);
                     }
@@ -412,9 +412,16 @@ namespace Assets.Scripts.Areas.Quest.Mono
             CancellationToken operationCancellationToken,
             CancellationToken networkLifetimeCancellationToken)
         {
-            using var inventoryMutation = questType == QuestTypeEnum.Collect
-                ? TradeServerState.TrackInventoryMutation(clientId)
-                : null;
+            using var inventoryMutation = TradeServerState.DeferInventoryMutation(clientId);
+
+            if (!inventoryMutation.TryBegin())
+            {
+                Debug.Log($"Quest progress deferred until trade releases inventory. ClientId: {clientId}, QuestType: {questType}, Target: {gameObjectName}.");
+
+                await UniTask.WaitUntil(inventoryMutation.TryBegin, cancellationToken: operationCancellationToken);
+
+                Debug.Log($"Deferred quest progress admitted. ClientId: {clientId}, QuestType: {questType}, Target: {gameObjectName}.");
+            }
 
             await _questMutationSemaphore.WaitAsync(operationCancellationToken);
 
@@ -445,8 +452,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
             CancellationToken networkLifetimeCancellationToken)
         {
             var quests = QuestManager.Instance.Quests
-                .Where(x => x.GameObjectName == gameObjectName)
-                .Where(x => x.Type == questType)
+                .Where(x => x.Requirements.Any(requirement => requirement.Target == gameObjectName && requirement.Type == questType))
                 .ToArray();
 
             if (quests.Length == 0)
@@ -460,8 +466,13 @@ namespace Assets.Scripts.Areas.Quest.Mono
             {
                 operationCancellationToken.ThrowIfCancellationRequested();
 
+                var requirement = quest.Requirements
+                    .Where(x => x.Target == gameObjectName && x.Type == questType)
+                    .Single();
+
                 var result = await QuestManager.Instance.CheckProgressAsync(
                     quest.Id,
+                    requirement.Id,
                     progress,
                     playerSessionId,
                     operationCancellationToken);
@@ -470,18 +481,19 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
                 if (CanUseNetworkLifetime(networkLifetimeCancellationToken) && result.Status != CharacterQuestStatusEnum.None)
                 {
-                    UpdateQuestClientRpc(result.CharacterQuestId, result.Progress, result.Status, clientId.ToClientRpcParams());
+                    UpdateQuestClientRpc(result.CharacterQuestId, JsonConvert.SerializeObject(result.ObjectiveProgress), result.Status, clientId.ToClientRpcParams());
                 }
             }
         }
 
         [ClientRpc]
-        private void UpdateQuestClientRpc(int characterQuestId, int progress, CharacterQuestStatusEnum status, ClientRpcParams rpcParams = default)
+        private void UpdateQuestClientRpc(int characterQuestId, string objectiveProgressJson, CharacterQuestStatusEnum status, ClientRpcParams rpcParams = default)
         {
             Debug.Log($"UpdateQuestLogClientRpc: {characterQuestId}");
 
             var characterQuest = QuestManager.Instance.CharacterQuests?
-                .FirstOrDefault(x => x.Id == characterQuestId);
+                .Where(x => x.Id == characterQuestId)
+                .FirstOrDefault();
 
             if (characterQuest == null)
             {
@@ -501,7 +513,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
             var previousStatus = characterQuest.Status;
 
             QuestManager.Instance.InvalidatePendingCharacterQuestLoads();
-            characterQuest.Progress = progress;
+            characterQuest.ObjectiveProgress = JsonConvert.DeserializeObject<Dictionary<string, int>>(objectiveProgressJson);
+            characterQuest.Progress = characterQuest.ObjectiveProgress.Values.Sum();
             characterQuest.Status = status;
 
             QuestUI.Instance.UpdateProgress(characterQuest);
@@ -578,7 +591,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
                 return;
             }
 
-            if (questNpc.CharacterQuest?.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Completed)
+            if (questNpc.CharacterQuest?.Status == CharacterQuestStatusEnum.Completed)
             {
                 CursorUI.Instance.ShowDefault();
 

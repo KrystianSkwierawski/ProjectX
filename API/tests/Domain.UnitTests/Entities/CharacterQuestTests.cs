@@ -1,3 +1,4 @@
+using ProjectX.Domain.Inventory;
 using ProjectX.Domain.Entities;
 using ProjectX.Domain.Enums;
 
@@ -13,7 +14,7 @@ public class CharacterQuestTests
     {
         var quest = CreateQuest(CharacterQuestStatusEnum.Accepted);
 
-        quest.AddProgress(progress, requiredProgress: 2);
+        quest.AddKillProgress("kill:Bean(Clone)", progress);
 
         Assert.Equal(progress, quest.Progress);
         Assert.Equal(expectedStatus, quest.Status);
@@ -26,7 +27,7 @@ public class CharacterQuestTests
     {
         var quest = CreateQuest(CharacterQuestStatusEnum.Accepted);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => quest.AddProgress(progress, requiredProgress: 2));
+        Assert.Throws<ArgumentOutOfRangeException>(() => quest.AddKillProgress("kill:Bean(Clone)", progress));
 
         Assert.Equal(0, quest.Progress);
         Assert.Equal(CharacterQuestStatusEnum.Accepted, quest.Status);
@@ -35,12 +36,12 @@ public class CharacterQuestTests
     [Fact]
     public void AddProgress_RejectsQuestThatIsNotAccepted()
     {
-        var quest = CreateQuest(CharacterQuestStatusEnum.Finished);
+        var quest = CreateQuest(CharacterQuestStatusEnum.Completed);
 
-        Assert.Throws<InvalidOperationException>(() => quest.AddProgress(1, requiredProgress: 2));
+        Assert.Throws<InvalidOperationException>(() => quest.AddKillProgress("kill:Bean(Clone)", 1));
 
         Assert.Equal(0, quest.Progress);
-        Assert.Equal(CharacterQuestStatusEnum.Finished, quest.Status);
+        Assert.Equal(CharacterQuestStatusEnum.Completed, quest.Status);
     }
 
     [Theory]
@@ -52,7 +53,8 @@ public class CharacterQuestTests
     {
         var quest = CreateQuest(CharacterQuestStatusEnum.Accepted);
 
-        quest.SetProgress(progress, requiredProgress: 2);
+        quest.QuestId = QuestEnum.Collect2Cans;
+        quest.SynchronizeInventory(new InventoryState([new InventorySlot(InventoryItemEnum.Can, progress)]));
 
         Assert.Equal(progress, quest.Progress);
         Assert.Equal(expectedStatus, quest.Status);
@@ -64,7 +66,8 @@ public class CharacterQuestTests
         var quest = CreateQuest(CharacterQuestStatusEnum.Finished);
         quest.Progress = 2;
 
-        quest.SetProgress(1, requiredProgress: 2);
+        quest.QuestId = QuestEnum.Collect2Cans;
+        quest.SynchronizeInventory(new InventoryState([new InventorySlot(InventoryItemEnum.Can, 1)]));
 
         Assert.Equal(1, quest.Progress);
         Assert.Equal(CharacterQuestStatusEnum.Accepted, quest.Status);
@@ -75,6 +78,8 @@ public class CharacterQuestTests
     {
         var completedAtUtc = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
         var quest = CreateQuest(CharacterQuestStatusEnum.Finished);
+
+        quest.ObjectiveProgress["kill:Bean(Clone)"] = 2;
 
         quest.Complete(completedAtUtc);
 

@@ -1,4 +1,4 @@
-﻿using ProjectX.Domain.Enums;
+using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Queries.GetCharacterQuests;
 
@@ -11,6 +11,8 @@ public class CharacterQuestDto
     public CharacterQuestStatusEnum Status { get; set; }
 
     public int Progress { get; set; }
+
+    public Dictionary<string, int> ObjectiveProgress { get; set; } = [];
 
     public override string ToString()
     {

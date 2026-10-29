@@ -74,10 +74,6 @@ public class ApplicationDbContextInitialiser
                     Id = id,
                     Name = id.ToString(),
                     PreviousQuestId = parameters.PreviousQuestId,
-                    Type = parameters.Type,
-                    GameObjectName = parameters.GameObjectName,
-                    Requirement = parameters.Requirement,
-                    Reward = parameters.Reward,
                     Status = parameters.Status
                 };
             }));
@@ -171,10 +167,14 @@ public class ApplicationDbContextInitialiser
                 Inventory = new InventoryState(
                 [
                     new InventorySlot(InventoryItemEnum.HealthPotion, 4),
+                    new InventorySlot(InventoryItemEnum.AmmoArrow1, InventorySlot.MaxStackSize),
+                    new InventorySlot(InventoryItemEnum.IronBow, 1),
+                    new InventorySlot(InventoryItemEnum.Fish, 5),
+                    new InventorySlot(InventoryItemEnum.IronBoots, 1),
                     new InventorySlot(InventoryItemEnum.Currency, InventorySlot.MaxStackSize),
                     new InventorySlot(InventoryItemEnum.Currency, InventorySlot.MaxStackSize),
                 ]),
-                Count = 15
+                Count = 20
             }
         };
 

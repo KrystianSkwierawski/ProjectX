@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProjectX.Domain.Entities;
 
@@ -11,10 +11,6 @@ public class QuestConfiguration : IEntityTypeConfiguration<Quest>
         builder
             .Property(x => x.Id)
             .ValueGeneratedNever();
-
-        builder
-            .Property(x => x.GameObjectName)
-            .HasMaxLength(255);
 
         builder
             .HasMany(x => x.CharacterQuests)

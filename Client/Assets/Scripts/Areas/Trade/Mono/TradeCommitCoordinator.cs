@@ -83,10 +83,12 @@ namespace Assets.Scripts.Areas.Trade.Mono
             var retryNotificationSent = false;
             var commitOutcomeUncertain = false;
 
+            // Deferred quest writes wait for this reservation to end; only drain
+            // writes admitted before the lock, otherwise both sides would wait forever.
             await UniTask.WaitUntil(
                 () => !TradeServerState.IsCommitPending(commit.SessionId)
-                    || (!TradeServerState.HasPendingInventoryMutation(commit.FirstClientId)
-                        && !TradeServerState.HasPendingInventoryMutation(commit.SecondClientId)),
+                    || (!TradeServerState.HasActiveInventoryMutation(commit.FirstClientId)
+                        && !TradeServerState.HasActiveInventoryMutation(commit.SecondClientId)),
                 cancellationToken: cancellationToken);
 
             if (!TradeServerState.IsCommitPending(commit.SessionId))
