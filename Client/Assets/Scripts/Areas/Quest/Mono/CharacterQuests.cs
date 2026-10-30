@@ -38,6 +38,13 @@ namespace Assets.Scripts.Areas.Quest.Mono
         private readonly HashSet<int> _presentedQuestAcceptances = new HashSet<int>();
         private StarterAssetsInputs _input;
 
+        public static CharacterQuests Local { get; private set; }
+
+        public bool IsAbandonPending { get; private set; }
+
+        private int _pendingAbandonId;
+        private bool _serverAbandonPending;
+
         public UniTask WaitForInventoryQuestMutationAsync(CancellationToken cancellationToken)
         {
             return _questMutationSemaphore.WaitAsync(cancellationToken).AsUniTask();
@@ -54,6 +61,14 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             _presentedQuestCompletions.Clear();
             _presentedQuestAcceptances.Clear();
+            _serverAbandonPending = false;
+
+            if (IsOwner)
+            {
+                Local = this;
+                IsAbandonPending = false;
+                _pendingAbandonId = 0;
+            }
 
             CancelNetworkLifetime();
             _networkLifetimeCancellationTokenSource?.Dispose();
@@ -85,6 +100,170 @@ namespace Assets.Scripts.Areas.Quest.Mono
                         .SuppressCancellationThrow()
                         .Forget();
                 });
+        }
+
+        [ServerRpc]
+        private void AbandonQuestServerRpc(int characterQuestId)
+        {
+            if (_serverAbandonPending || TradeServerState.IsInventoryReserved(OwnerClientId))
+            {
+                AbandonQuestClientRpc(characterQuestId, false, OwnerClientId.ToClientRpcParams());
+
+                return;
+            }
+
+            _serverAbandonPending = true;
+
+            AbandonQuestSequentiallyAsync(
+                    characterQuestId,
+                    UserManager.Instance.GetPlayerSessionId(OwnerClientId),
+                    TradeCommitCoordinator.GetServerLifetimeCancellationToken(),
+                    GetNetworkLifetimeCancellationToken())
+                .SuppressCancellationThrow()
+                .Forget();
+        }
+
+        public void RequestAbandon(int characterQuestId)
+        {
+            if (!IsOwner || !IsSpawned || IsAbandonPending)
+            {
+                return;
+            }
+
+            var quest = QuestManager.Instance.CharacterQuests?
+                .Where(quest => quest.Id == characterQuestId)
+                .SingleOrDefault();
+
+            if (quest == null || quest.Status is not (CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
+            {
+                return;
+            }
+
+            if (TradeController.Local?.IsInventoryLocked == true)
+            {
+                TradeController.NotifyInventoryLocked(OwnerClientId);
+
+                return;
+            }
+
+            _pendingAbandonId = characterQuestId;
+            IsAbandonPending = true;
+            QuestManager.Instance.NotifyCharacterQuestsChanged();
+
+            AbandonQuestServerRpc(characterQuestId);
+        }
+
+        private async UniTask AbandonQuestSequentiallyAsync(
+            int characterQuestId,
+            string playerSessionId,
+            CancellationToken operationCancellationToken,
+            CancellationToken networkLifetimeCancellationToken)
+        {
+            try
+            {
+                using var mutation = TradeServerState.TrackInventoryMutation(OwnerClientId);
+
+                await _questMutationSemaphore.WaitAsync(operationCancellationToken);
+
+                AbandonCharacterQuestDto result;
+
+                try
+                {
+                    result = await QuestManager.Instance.AbandonAsync(characterQuestId, playerSessionId, operationCancellationToken);
+                }
+                finally
+                {
+                    _questMutationSemaphore.Release();
+                }
+
+                Debug.Log($"Quest abandonment settled. ClientId: {OwnerClientId}, CharacterQuestId: {characterQuestId}, Abandoned: {result.Abandoned}.");
+
+                if (CanUseNetworkLifetime(networkLifetimeCancellationToken))
+                {
+                    AbandonQuestClientRpc(characterQuestId, result.Abandoned, OwnerClientId.ToClientRpcParams());
+                }
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException && operationCancellationToken.IsCancellationRequested))
+            {
+                Debug.LogWarning($"Quest abandonment failed. ClientId: {OwnerClientId}, CharacterQuestId: {characterQuestId}, Error: {exception.GetType().Name}.");
+
+                if (CanUseNetworkLifetime(networkLifetimeCancellationToken))
+                {
+                    AbandonQuestClientRpc(characterQuestId, false, OwnerClientId.ToClientRpcParams());
+                }
+            }
+            finally
+            {
+                if (IsCurrentNetworkLifetime(networkLifetimeCancellationToken))
+                {
+                    _serverAbandonPending = false;
+                }
+            }
+        }
+
+        [ClientRpc]
+        private void AbandonQuestClientRpc(int characterQuestId, bool abandoned, ClientRpcParams rpcParams = default)
+        {
+            if (_pendingAbandonId == characterQuestId)
+            {
+                IsAbandonPending = false;
+                _pendingAbandonId = 0;
+            }
+
+            if (abandoned)
+            {
+                QuestManager.Instance.InvalidatePendingCharacterQuestLoads();
+
+                var quest = QuestManager.Instance.CharacterQuests?
+                    .Where(quest => quest.Id == characterQuestId)
+                    .SingleOrDefault();
+
+                if (quest != null)
+                {
+                    QuestManager.Instance.CharacterQuests.Remove(quest);
+                    QuestUI.Instance.RemoveQuest(quest.QuestId);
+                }
+
+                QuestManager.Instance.NotifyCharacterQuestsChanged();
+
+                return;
+            }
+
+            QuestManager.Instance.NotifyCharacterQuestsChanged();
+
+            LogUI.Instance.ShowAsync(TranslateManager.Instance.GetByKey(TranslateKeyEnum.QuestAbandonFailed), color: ColorUI.Error).Forget();
+            RefreshQuestsAfterAbandonFailureAsync(GetNetworkLifetimeCancellationToken()).SuppressCancellationThrow().Forget();
+        }
+
+        private async UniTask RefreshQuestsAfterAbandonFailureAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var characterId = UserManager.Instance.SelectedCharacterId;
+                var loaded = await QuestManager.Instance.LoadCharacterQuestsAsync(characterId, cancellationToken);
+
+                if (!loaded || !CanUseNetworkLifetime(cancellationToken))
+                {
+                    return;
+                }
+
+                // Rebuild the tracker from the authoritative snapshot, including an
+                // abandonment whose HTTP response was lost before reaching the server.
+                foreach (var quest in QuestManager.Instance.Quests)
+                {
+                    QuestUI.Instance.RemoveQuest(quest.Id);
+                }
+
+                foreach (var quest in QuestManager.Instance.CharacterQuests
+                    .Where(quest => quest.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished))
+                {
+                    QuestUI.Instance.Accept(quest);
+                }
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException && cancellationToken.IsCancellationRequested))
+            {
+                Debug.LogWarning($"Quest reload after abandonment failed. Error: {exception.GetType().Name}.");
+            }
         }
 
         [ServerRpc]
@@ -249,6 +428,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
                     IsFinished = true
                 });
             }
+
+            QuestManager.Instance.NotifyCharacterQuestsChanged();
         }
 
         private async UniTask CompleteQuestAsync(
@@ -341,6 +522,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
             CompleteQuestSubscription.Instance.InvokeAndUnsubscribe(
                 characterQuest.QuestId.ToString(),
                 new CompleteQuestSubscriptionEvent());
+
+            QuestManager.Instance.NotifyCharacterQuestsChanged();
         }
 
         private async UniTask CompleteQuestSequentiallyAsync(
@@ -519,6 +702,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
 
             QuestUI.Instance.UpdateProgress(characterQuest);
 
+            QuestManager.Instance.NotifyCharacterQuestsChanged();
+
             if (status != previousStatus)
             {
                 FinishCharacterQuestSubscription.Instance.Invoke(characterQuest.QuestId.ToString(), new FinishCharacterQuestSubscriptionEvent
@@ -610,6 +795,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
         {
             CancelNetworkLifetime();
 
+            ClearLocal();
+
             if (IsServer)
             {
                 CheckCharacterQuestSubscription.Instance.Unsubscribe(OwnerClientId.ToString());
@@ -621,6 +808,7 @@ namespace Assets.Scripts.Areas.Quest.Mono
         public override void OnDestroy()
         {
             CancelNetworkLifetime();
+            ClearLocal();
             _networkLifetimeCancellationTokenSource?.Dispose();
             _networkLifetimeCancellationTokenSource = null;
 
@@ -630,6 +818,15 @@ namespace Assets.Scripts.Areas.Quest.Mono
             }
 
             base.OnDestroy();
+        }
+
+        private void ClearLocal()
+        {
+            if (Local == this)
+            {
+                IsAbandonPending = false;
+                Local = null;
+            }
         }
 
         private CancellationToken GetNetworkLifetimeCancellationToken()

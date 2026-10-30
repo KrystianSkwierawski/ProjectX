@@ -150,6 +150,7 @@ namespace Assets.Scripts.Areas.Quest.UI
             }
 
             CharacterStash.Local?.Close();
+            QuestJournalUI.Instance?.Hide();
 
             // FIXME: array
             CharacterUI.Instance.Hide();
@@ -352,7 +353,7 @@ namespace Assets.Scripts.Areas.Quest.UI
                 && characterQuest.ObjectiveProgress.TryGetValue(requirementId, out var progress) ? progress : 0;
         }
 
-        private static string FormatObjective(QuestRequirementDto requirement, int progress)
+        public static string FormatObjective(QuestRequirementDto requirement, int progress)
         {
             var action = TranslateManager.Instance.GetByKey(requirement.Type == QuestTypeEnum.Kill
                 ? TranslateKeyEnum.QuestObjectiveKill : TranslateKeyEnum.QuestObjectiveCollect);
@@ -488,11 +489,21 @@ namespace Assets.Scripts.Areas.Quest.UI
 
         public void Complete(CharacterQuestDto characterQuest)
         {
-            if (_questLogObjects.TryGetValue(characterQuest.QuestId, out var questLogObject))
+            RemoveQuest(characterQuest.QuestId);
+        }
+
+        public void RemoveQuest(QuestEnum questId)
+        {
+            if (DisplayedNpc != null && DisplayedNpc.Quest != null && DisplayedNpc.Quest.Id == questId)
+            {
+                Hide();
+            }
+
+            if (_questLogObjects.TryGetValue(questId, out var questLogObject))
             {
                 _questLogObjectPool.Release(questLogObject);
 
-                _questLogObjects.Remove(characterQuest.QuestId);
+                _questLogObjects.Remove(questId);
 
                 if (_questLogObjects.Count == 0)
                 {

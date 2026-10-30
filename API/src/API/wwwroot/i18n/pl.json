@@ -226,5 +226,16 @@
     "WhiteBarObjectiveTarget": "Białą sztabę",
     "CopperBarObjectiveTarget": "Miedzianą sztabę",
     "BlackBarObjectiveTarget": "Czarną sztabę",
-    "HealthPotionObjectiveTarget": "Miksturę zdrowia"
+    "HealthPotionObjectiveTarget": "Miksturę zdrowia",
+    "QuickAccessJournal": "Dziennik zadań (J)",
+    "HelpJournal": "Dziennik zadań\nWybierz zadanie, aby zobaczyć jego cele i nagrody.\n\nPorzucenie usuwa postęp zadania i umożliwia jego ponowne przyjęcie. Oddanych zadań nie można porzucić.",
+    "JournalTitle": "Dziennik zadań",
+    "JournalEmpty": "Brak zadań.",
+    "JournalStatusActive": "W trakcie",
+    "JournalStatusReady": "Gotowe do oddania",
+    "JournalStatusCompleted": "Ukończone",
+    "JournalAbandon": "Porzuć zadanie",
+    "JournalConfirmAbandon": "Potwierdź porzucenie",
+    "JournalStatus": "Status:",
+    "QuestAbandonFailed": "Nie udało się porzucić zadania."
 }

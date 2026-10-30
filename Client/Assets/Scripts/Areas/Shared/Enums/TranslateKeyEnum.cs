@@ -308,5 +308,16 @@ namespace Assets.Scripts.Areas.Shared.Enums
         CopperBarObjectiveTarget,
         BlackBarObjectiveTarget,
         HealthPotionObjectiveTarget,
+        QuickAccessJournal,
+        HelpJournal,
+        JournalTitle,
+        JournalEmpty,
+        JournalStatusActive,
+        JournalStatusReady,
+        JournalStatusCompleted,
+        JournalAbandon,
+        JournalConfirmAbandon,
+        JournalStatus,
+        QuestAbandonFailed,
     }
 }

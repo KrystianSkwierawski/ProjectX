@@ -14,6 +14,13 @@ namespace Assets.Scripts.Areas.Quest
         private long _characterQuestsLoadVersion;
         private int? _loadedCharacterId;
 
+        public event System.Action CharacterQuestsChanged;
+
+        public void NotifyCharacterQuestsChanged()
+        {
+            CharacterQuestsChanged?.Invoke();
+        }
+
         public QuestDto[] Quests { get; private set; }
 
         public IList<CharacterQuestDto> CharacterQuests { get; private set; }
@@ -85,6 +92,8 @@ namespace Assets.Scripts.Areas.Quest
 
             CharacterQuests = updated;
             _loadedCharacterId = characterId;
+
+            NotifyCharacterQuestsChanged();
         }
 
         public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(
@@ -130,6 +139,17 @@ namespace Assets.Scripts.Areas.Quest
             return await UnityWebRequestHelper.ExecutePostAsync<CompleteCharacterQuestDto>("CharacterQuests/Complete", new CompleteCharacterQuestCommand
             {
                 CharacterQuestId = characterQuestId,
+            }, playerSessionId, cancellationToken: cancellationToken);
+        }
+
+        public async UniTask<AbandonCharacterQuestDto> AbandonAsync(
+            int characterQuestId,
+            string playerSessionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await UnityWebRequestHelper.ExecutePostAsync<AbandonCharacterQuestDto>("CharacterQuests/Abandon", new AbandonCharacterQuestCommand
+            {
+                CharacterQuestId = characterQuestId
             }, playerSessionId, cancellationToken: cancellationToken);
         }
     }

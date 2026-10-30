@@ -182,6 +182,7 @@ namespace Assets.Scripts.Areas.Trade.UI
             {
                 CraftingUI.Instance?.Hide();
                 QuestUI.Instance?.Hide();
+                QuestJournalUI.Instance?.Hide();
                 MerchantUI.Instance?.Hide();
                 GearUI.Instance?.Hide();
                 CharacterUI.Instance?.Hide();

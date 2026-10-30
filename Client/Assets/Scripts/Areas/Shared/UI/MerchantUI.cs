@@ -140,6 +140,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             // FIXME: array
             QuestUI.Instance.Hide();
+            QuestJournalUI.Instance?.Hide();
             CharacterUI.Instance.Hide();
             CraftingUI.Instance.Hide();
             GearUI.Instance.Hide();

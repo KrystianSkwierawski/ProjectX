@@ -119,6 +119,7 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             CharacterStash.Local?.Close();
             QuestUI.Instance.Hide();
+            QuestJournalUI.Instance?.Hide();
             CharacterUI.Instance.Hide();
             MerchantUI.Instance.Hide();
             GearUI.Instance.Hide();
@@ -426,6 +427,7 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             // FIXME: array
             QuestUI.Instance.Hide();
+            QuestJournalUI.Instance?.Hide();
             CharacterUI.Instance.Hide();
             MerchantUI.Instance.Hide();
             GearUI.Instance.Hide();

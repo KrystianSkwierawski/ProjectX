@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ProjectX.API.Infrastructure;
+using ProjectX.Application.CharacterQuests.Commands.AbandonCharacterQuest;
 using ProjectX.Application.CharacterQuests.Commands.AcceptCharacterQuest;
 using ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
 using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
@@ -38,6 +39,13 @@ public class CharacterQuests : EndpointGroupBase
             .MapPost(CheckCharacterQuestProgress, "CheckProgress")
             .WithSummary("Check quest progress")
             .WithDescription("Adds event progress or synchronizes a matching collect quest with the current inventory.")
+            .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
+
+        groupBuilder
+            .MapPost(AbandonCharacterQuest, "Abandon")
+            .WithSummary("Abandon quest")
+            .WithDescription("Resets an active quest for the session-bound character without changing inventory or granting rewards. Quests with claimed rewards cannot be abandoned.")
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(AuthorizationPolicies.ServerPlayerSession);
 
         groupBuilder
@@ -91,6 +99,16 @@ public class CharacterQuests : EndpointGroupBase
     public static async Task<Ok<CompleteCharacterQuestDto>> CompleteCharacterQuest(
         ISender sender,
         CompleteCharacterQuestCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(command, cancellationToken);
+
+        return TypedResults.Ok(result);
+    }
+
+    public static async Task<Ok<AbandonCharacterQuestDto>> AbandonCharacterQuest(
+        ISender sender,
+        AbandonCharacterQuestCommand command,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(command, cancellationToken);

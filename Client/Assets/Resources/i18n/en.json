@@ -303,5 +303,16 @@
     "WhiteBarObjectiveTarget": "White Bar",
     "CopperBarObjectiveTarget": "Copper Bar",
     "BlackBarObjectiveTarget": "Black Bar",
-    "HealthPotionObjectiveTarget": "Health Potion"
+    "HealthPotionObjectiveTarget": "Health Potion",
+    "QuickAccessJournal": "Quest journal (J)",
+    "HelpJournal": "Quest journal (J)\nSelect a quest to see its objectives and rewards.\n\nAbandoning clears its progress and allows you to accept it again. Turned-in quests cannot be abandoned.",
+    "JournalTitle": "Quest journal",
+    "JournalEmpty": "No quests yet.",
+    "JournalStatusActive": "In progress",
+    "JournalStatusReady": "Ready to turn in",
+    "JournalStatusCompleted": "Completed",
+    "JournalAbandon": "Abandon quest",
+    "JournalConfirmAbandon": "Confirm abandon",
+    "JournalStatus": "Status:",
+    "QuestAbandonFailed": "Could not abandon the quest."
 }

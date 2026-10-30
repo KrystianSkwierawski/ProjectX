@@ -54,6 +54,7 @@ namespace Assets.Scripts.Areas.Character.UI
             // FIXME: array
             CraftingUI.Instance.Hide();
             QuestUI.Instance.Hide();
+            QuestJournalUI.Instance?.Hide();
             MerchantUI.Instance.Hide();
             GearUI.Instance.Hide();
             Character.SetActive(true);
