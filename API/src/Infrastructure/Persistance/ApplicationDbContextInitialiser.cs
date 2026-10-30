@@ -167,7 +167,7 @@ public class ApplicationDbContextInitialiser
                 Inventory = new InventoryState(
                 [
                     new InventorySlot(InventoryItemEnum.HealthPotion, 4),
-                    new InventorySlot(InventoryItemEnum.AmmoArrow1, InventorySlot.MaxStackSize),
+                    new InventorySlot(InventoryItemEnum.AmmoArrow3, InventorySlot.MaxStackSize),
                     new InventorySlot(InventoryItemEnum.IronBow, 1),
                     new InventorySlot(InventoryItemEnum.Fish, 5),
                     new InventorySlot(InventoryItemEnum.IronBoots, 1),
