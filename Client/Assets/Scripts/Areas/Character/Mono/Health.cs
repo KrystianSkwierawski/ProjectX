@@ -15,6 +15,7 @@ namespace Assets.Scripts.Areas.Character.Mono
     {
         private const int _experienceReward = 50;
         private const float _partyRewardMaxDistance = 1000f;
+        private static GameObject _hitEffectPrefab;
 
         public NetworkVariable<float> Network { get; private set; } = new NetworkVariable<float>(100, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -26,7 +27,7 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
-                    if (!IsSpawned || Network.Value <= 0 || !DungeonTravel.CanInteract(e.ClientId)
+                    if (!IsSpawned || Network.Value <= 0 || e.Value <= 0 || !DungeonTravel.CanInteract(e.ClientId)
                         || !DungeonWorldObject.SameInstance(gameObject, e.Player))
                     {
                         return;
@@ -34,7 +35,25 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                     Network.Value -= e.Value;
 
-                    Debug.Log($"Object damaged. Damage: {e.Value}, CurrentValue: {Network.Value}");
+                    var impactPosition = TryGetComponent<Collider>(out var targetCollider)
+                        ? targetCollider.bounds.center
+                        : transform.position + Vector3.up * 0.65f;
+
+                    if (targetCollider != null)
+                    {
+                        var attackerAtImpactHeight = e.Player.transform.position;
+                        attackerAtImpactHeight.y = impactPosition.y;
+                        impactPosition = targetCollider.ClosestPoint(attackerAtImpactHeight);
+                    }
+
+                    var impactDirection = e.Player.transform.position - impactPosition;
+                    impactDirection.y = 0.25f;
+
+                    // Send accepted damage before a lethal hit returns this target to
+                    // its pool. The local effect lives independently of that target.
+                    HitEffectClientRpc(impactPosition, impactDirection.normalized);
+
+                    Debug.Log($"Object damaged. Target: {NetworkObjectId}, Attacker: {e.ClientId}, Damage: {e.Value}, CurrentValue: {Network.Value}");
 
                     var targetSelectorSubscriptionsEvent = new UpdateTargetSelectorSubscriptionsEvent
                     {
@@ -78,6 +97,30 @@ namespace Assets.Scripts.Areas.Character.Mono
                 });
             }
         }
+
+        [ClientRpc]
+        private void HitEffectClientRpc(Vector3 position, Vector3 direction)
+        {
+#if !UNITY_SERVER || UNITY_EDITOR
+            PlayHitEffect(position, direction);
+#endif
+        }
+
+#if !UNITY_SERVER || UNITY_EDITOR
+        private static void PlayHitEffect(Vector3 position, Vector3 direction)
+        {
+            _hitEffectPrefab ??= Resources.Load<GameObject>("CombatHitEffect");
+
+            if (_hitEffectPrefab == null)
+            {
+                Debug.LogWarning("Hit effect prefab missing: Resources/CombatHitEffect.");
+
+                return;
+            }
+
+            Instantiate(_hitEffectPrefab, position, Quaternion.LookRotation(direction));
+        }
+#endif
 
         private IReadOnlyDictionary<ulong, string> GetRewardRecipients(
             ulong killerClientId,

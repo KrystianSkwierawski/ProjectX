@@ -16,6 +16,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class TargetSelector : NetworkBehaviour
     {
+        private const float BowTargetRange = 27f;
+
         [SerializeField] private GameObject _fireballPrefab;
         [SerializeField] private GameObject _arrowPrefab;
         [SerializeField] private GameObject _swordPrefab;
@@ -30,6 +32,8 @@ namespace Assets.Scripts.Areas.Character.Mono
         private float _castTimer = 0f;
 
         private GameObject _selectedTarget;
+        private GameObject _rightClickTarget;
+        private float _rightClickTravel;
 
         private ObjectPool<GameObject> _fireballPool;
         private ObjectPool<GameObject> _arrowPool;
@@ -164,6 +168,41 @@ namespace Assets.Scripts.Areas.Character.Mono
         {
             var mouse = Mouse.current;
 
+            if (mouse == null || !Application.isFocused || InputFocusUI.IsAnyInputFocused)
+            {
+                _rightClickTarget = null;
+
+                return;
+            }
+
+            // Cursor position is locked while RMB steers, so measure mouse delta.
+            if (_rightClickTarget != null)
+            {
+                _rightClickTravel += mouse.delta.ReadValue().magnitude;
+
+                if (mouse.rightButton.wasReleasedThisFrame)
+                {
+                    var unselect = _rightClickTarget == _selectedTarget && _rightClickTravel < 4f;
+                    _rightClickTarget = null;
+
+                    if (unselect)
+                    {
+                        Debug.Log($"Combat target cleared by RMB click; owner={OwnerClientId}.");
+                        HandleUnselect();
+                        UnselectServerRpc();
+                    }
+
+                    return;
+                }
+
+                if (mouse.rightButton.isPressed)
+                {
+                    return;
+                }
+
+                _rightClickTarget = null;
+            }
+
             var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
 
             var hover = Physics.Raycast(ray, out RaycastHit hit) && hit.transform.tag == "Target";
@@ -184,8 +223,23 @@ namespace Assets.Scripts.Areas.Character.Mono
 
             CursorUI.Instance.ShowPointer();
 
+            if (!mouse.leftButton.wasPressedThisFrame && mouse.rightButton.wasPressedThisFrame
+                && UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() == WeaponCategoryEnum.None)
+            {
+                return;
+            }
+
             if (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame)
             {
+                // Defer a second click until release so dragging still steers the camera.
+                if (!_onlyView && mouse.rightButton.wasPressedThisFrame && hit.transform.gameObject == _selectedTarget)
+                {
+                    _rightClickTarget = _selectedTarget;
+                    _rightClickTravel = 0f;
+
+                    return;
+                }
+
                 _onlyView = mouse.leftButton.wasPressedThisFrame || (!_onlyView && mouse.rightButton.wasPressedThisFrame && hit.transform.gameObject == _selectedTarget);
 
                 if (_currentlySelectedRenderer != null)
@@ -216,6 +270,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public void HandleUnselect()
         {
+            _rightClickTarget = null;
+
             StopCasting(failed: true);
             _thirdPersonController.UnlockCamera();
 
@@ -288,6 +344,8 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
+            _rightClickTarget = null;
+
             if (IsServer)
             {
                 ClearTargetSubscription();
@@ -505,7 +563,8 @@ namespace Assets.Scripts.Areas.Character.Mono
             var maxCastDistance = UserManager.Instance.Characters[OwnerClientId].WeaponType.GetWeaponCategory() switch
             {
                 WeaponCategoryEnum.Wand => 18f,
-                WeaponCategoryEnum.Bow => 27f,
+                WeaponCategoryEnum.Bow => BowTargetRange,
+                WeaponCategoryEnum.None => BowTargetRange,
                 WeaponCategoryEnum.Sword => 4.5f,
                 _ => 0f
             };

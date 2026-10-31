@@ -399,17 +399,17 @@ namespace StarterAssets
             }
 
             CameraRotation();
-            RotateStationaryCharacterWithCamera();
+            RotateCharacterWithCamera();
         }
 
-        private void RotateStationaryCharacterWithCamera()
+        private void RotateCharacterWithCamera()
         {
-            if (!Input.Rotate || Input.Move.sqrMagnitude > 0f || _lockTarget != null || LockCameraPosition)
+            if (!Input.Rotate || _lockTarget != null || LockCameraPosition)
             {
                 return;
             }
 
-            // RMB steers the actor even without movement; LMB only orbits the camera.
+            // RMB steers facing during movement and at rest; LMB only orbits the camera.
             _targetRotation = _cinemachineTargetYaw;
             _rotationVelocity = 0f;
             var cameraRotation = CinemachineCameraTarget.transform.rotation;
@@ -443,12 +443,8 @@ namespace StarterAssets
         {
             if (_manualTargetCamera && _lockTarget != null && Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
             {
-                if (_lockTarget.CompareTag("Target"))
-                {
-                    _targetSelector.HandleUnselect();
-                    _targetSelector.UnselectServerRpc();
-                }
-
+                // Manual steering releases camera focus. Combat/gathering own their
+                // facing-angle validation and may continue within that tolerance.
                 UnlockCamera();
                 return;
             }
@@ -457,12 +453,6 @@ namespace StarterAssets
             {
                 if (Input.Rotate && Input.Look.sqrMagnitude >= _threshold)
                 {
-                    if (_lockTarget.tag == "Target")
-                    {
-                        _targetSelector.HandleUnselect();
-                        _targetSelector.UnselectServerRpc();
-                    }
-
                     UnlockCamera();
 
                     return;
@@ -526,8 +516,22 @@ namespace StarterAssets
         {
             var moveInput = allowInput ? Input.Move : Vector2.zero;
 
-            // set target speed based on move speed, sprint speed and if sprint is pressed
-            var baseSpeed = allowInput && Input.Sprint ? SprintSpeed : LockSpeed;
+            // Forward diagonals keep forward speed; backpedaling keeps lock speed.
+            // Strafing is slightly faster than backpedaling while free movement is enabled.
+            var baseSpeed = LockSpeed;
+
+            if (allowInput && Input.Sprint)
+            {
+                if (moveInput.y > 0f)
+                {
+                    baseSpeed = SprintSpeed;
+                }
+                else if (moveInput.y == 0f && moveInput.x != 0f)
+                {
+                    baseSpeed = Mathf.Lerp(LockSpeed, SprintSpeed, 0.2f);
+                }
+            }
+
             var targetSpeed = UserManager.Instance.Characters[NetworkManager.Singleton.LocalClientId].ApplySpeed(baseSpeed);
 
             // if there is no input, set the target speed to 0
@@ -608,19 +612,9 @@ namespace StarterAssets
                 return;
             }
 
-            // if there is a move input rotate player when the player is moving (free camera mode)
-            if (moveInput != Vector2.zero)
-            {
-                var movementYaw = _isOrbiting ? _orbitMovementYaw : _mainCamera.transform.eulerAngles.y;
-
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + movementYaw;
-                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
-
-                // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
-            }
-
-            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            // Movement axes follow actor facing. A/D strafe and S backpedals without
+            // turning the actor; RMB steers facing independently in LateUpdate.
+            var targetDirection = transform.TransformDirection(inputDirection);
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);

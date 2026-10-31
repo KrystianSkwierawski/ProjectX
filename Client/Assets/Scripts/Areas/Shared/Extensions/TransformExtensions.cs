@@ -4,9 +4,12 @@ namespace Assets.Scripts.Areas.Shared.Extensions
 {
     public static class TransformExtensions
     {
+        // Keep sideways movement/camera steering inside the shared combat and gathering cone.
+        public const float MaxFacingAngle = 110f;
+
         public static bool IsFacingTarget(this Transform actor, Transform target)
         {
-            return target != null && Vector3.Angle(actor.forward, target.position - actor.position) < 90f;
+            return target != null && Vector3.Angle(actor.forward, target.position - actor.position) < MaxFacingAngle;
         }
 
         public static void MoveTowardsTarget(this Transform transform, GameObject target, bool transformY = true, float speed = 3f)
