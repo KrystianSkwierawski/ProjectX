@@ -24,6 +24,17 @@
 - Production networking defaults to Relay + DTLS; local automation opts into Direct transport through `PROJECTX_USE_DIRECT_TRANSPORT=true`.
 
 ## Common Workflows
+
+### Unity batch startup and licensing
+
+- Verified 2026-10-31: a sandboxed batch launch stopped after `Successfully launched the LicensingClient`, without completing the IPC connection. Retrying in the normal user context outside the sandbox connected successfully and reported `Successfully resolved entitlement details` and `Successfully updated license`. This is a verified launch workaround, not a permanent license/configuration repair; do not diagnose an invalid license from a stalled client launch alone.
+- For Unity batch validation, use the tool's approved outside-sandbox execution path when needed, with a hidden window and a dedicated log under `Client/Logs`. Inspect the subsequent log outcome: signature/access-token warnings did not prevent successful entitlement resolution in this run. Do not reinstall, reactivate or modify the user's license merely because of those warnings.
+- Check for an existing editor before opening the same project in batch mode. Sandboxed `Get-Process` returned no Unity editor even though one was running; if visibility is uncertain, inspect processes in the normal user context. Return only PID and sanitized project information, never raw command lines: Unity Hub may pass access tokens in launch arguments.
+- The outside-sandbox retry then stopped with `It looks like another Unity instance is running with this project open`; this is a separate project-lock issue, not a licensing failure. Use the existing editor for validation or an isolated validation copy. Do not terminate the user's editor or delete its project lock to force a second instance.
+- Evidence: ignored logs `Client/Logs/movement-unity-import.log` and `Client/Logs/movement-unity-license-retry.log`. That retry did not complete import or gameplay validation; successful licensing alone does not establish either.
+
+### Build and run commands
+
 - Backend: from `API/`, run `dotnet build ProjectX.slnx`, `dotnet test ProjectX.slnx`, and `dotnet format ProjectX.slnx --no-restore` when relevant.
 - EF validation: `dotnet tool restore`, then `dotnet tool run dotnet-ef migrations has-pending-model-changes ...` with SQL Server configuration.
 - Client compile checks use generated `Client/Assembly-CSharp.csproj`; networking changes should compile once with `UNITY_SERVER` and once without it.

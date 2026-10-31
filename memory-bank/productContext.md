@@ -4,6 +4,7 @@
 ChillDuck (repository name: ProjectX) is intended as a relaxed MMORPG with grinding, professions and farming. The current persistent multiplayer RPG loop includes authentication, character control, combat and interaction, equipment and inventory, quests, crafting, social features, parties and trading. Its story and setting are not yet defined.
 
 ## Player Experience
+- Gamepad/controller input (including Xbox-style pads) is currently unsupported. Existing Starter Assets gamepad bindings do not imply supported gameplay; do not treat gamepad-only regressions as defects in the current scope. Revisit this when controller support is explicitly introduced.
 - Inventory supports exact-position drag/drop, swapping, merging, stable empty slots, loot pickup, merchant transactions, and Inventory/Gear transfers with visible drag-source placeholders.
 - A stack holds at most `1024`; additions fill partial stacks then free slots, and any transaction that cannot fully fit fails atomically with visible feedback.
 - Gear exposes helmet, chest, boots, weapon, and ammo slots. Weapon/ammo compatibility is Arrow/Bow, Rune/Wand, Feather+Oil/Sword; whole stacks and bonuses survive equip, merge, swap, and unequip transitions.
