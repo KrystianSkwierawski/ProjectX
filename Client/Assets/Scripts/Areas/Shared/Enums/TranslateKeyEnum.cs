@@ -319,5 +319,6 @@ namespace Assets.Scripts.Areas.Shared.Enums
         JournalConfirmAbandon,
         JournalStatus,
         QuestAbandonFailed,
+        GearScore,
     }
 }

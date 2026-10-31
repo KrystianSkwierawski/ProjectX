@@ -74,6 +74,26 @@ namespace ProjectX.Editor
             {
                 UserManager.Instance.SetCharacterLanguage(language);
 
+                var scoreLabel = language == LanguageEnum.en ? "Gear Score" : "Ocena wyposażenia";
+                Require(TranslateManager.Instance.GetByKey(TranslateKeyEnum.GearScore) == scoreLabel, $"Localized gear score {language}");
+
+                foreach (var type in new[] { InventoryItemEnum.Fish, InventoryItemEnum.HealthPotion, InventoryItemEnum.Currency,
+                    InventoryItemEnum.Xp, InventoryItemEnum.HelmetTemplate, InventoryItemEnum.AmmoTemplate })
+                {
+                    var nonGearDescription = inventory.PrepareDescription(new InventoryItemDto { Type = type, Count = 1 });
+
+                    Require(!nonGearDescription.Contains(scoreLabel), $"No score for {type} in {language}");
+                }
+
+                foreach (var count in new[] { 1, 1024 })
+                {
+                    var ammoDescription = inventory.PrepareDescription(new InventoryItemDto { Type = InventoryItemEnum.AmmoArrow3, Count = count });
+
+                    var requiredWeapon = $"<size=90%><color=#A6A6A6>{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(WeaponCategoryEnum.Bow.ToString())}</color></size>";
+
+                    Require(ammoDescription.Contains($"{scoreLabel}: 15" + Environment.NewLine + requiredWeapon + Environment.NewLine + Environment.NewLine), $"Ammo score and requirement precede description for stack count {count} in {language}");
+                }
+
                 foreach (var size in new[] { new Vector2(1920, 1080), new Vector2(1280, 720), new Vector2(720, 1280), new Vector2(480, 900) })
                 {
                     canvasRect.sizeDelta = size;
@@ -87,6 +107,8 @@ namespace ProjectX.Editor
                     Require(size.x < 532 ? panel.anchorMin == Vector2.zero : panel.anchorMin == Vector2.one, "Responsive pair layout");
 
                     var description = preview.transform.Find("Description").GetComponent<TextMeshProUGUI>().text;
+                    Require(description.StartsWith(ItemRarityUI.Label(item.Type) + Environment.NewLine + $"{scoreLabel}: 25 <color=#65D98A>(+5)</color>" + Environment.NewLine + Environment.NewLine), "Gear score comparison immediately follows rarity with space before description");
+                    Require(panel.Find("Description(Clone)").GetComponent<TextMeshProUGUI>().text.Contains($"{scoreLabel}: 20" + Environment.NewLine + Environment.NewLine), "Equipped companion gear score");
                     Require(description.Contains("<color=#65D98A>(+14)</color>") && description.Contains("<color=#FF7474>(-12)</color>"), "Positive and negative weapon stats");
                     Require(preview.GetComponentsInChildren<Graphic>().Length >= 6, "Both authored card contents exist");
 
@@ -139,7 +161,7 @@ namespace ProjectX.Editor
             }
 
             Unity.CodeEditor.CodeEditor.CurrentEditor.SyncAll();
-            Debug.Log("ITEM_COMPARISON_VALIDATED: slots, deltas, missing stats, pointer exit, pool reuse, PL/EN, four layouts and imported icons.");
+            Debug.Log("ITEM_COMPARISON_VALIDATED: slots, deltas, gear scores, non-gear exclusions, stack independence, missing stats, pointer exit, pool reuse, PL/EN, four layouts and imported icons.");
         }
 
         private static void Capture(RectTransform canvas, Transform preview)

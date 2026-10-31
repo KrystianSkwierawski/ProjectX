@@ -237,5 +237,6 @@
     "JournalAbandon": "Abandon quest",
     "JournalConfirmAbandon": "Confirm abandon",
     "JournalStatus": "Status:",
-    "QuestAbandonFailed": "Could not abandon the quest."
+    "QuestAbandonFailed": "Could not abandon the quest.",
+    "GearScore": "Gear Score"
 }

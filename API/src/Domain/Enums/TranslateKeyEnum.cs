@@ -218,4 +218,5 @@ public enum TranslateKeyEnum
     JournalConfirmAbandon,
     JournalStatus,
     QuestAbandonFailed,
+    GearScore,
 }

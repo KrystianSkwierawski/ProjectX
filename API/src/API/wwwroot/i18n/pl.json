@@ -237,5 +237,6 @@
     "JournalAbandon": "Porzuć zadanie",
     "JournalConfirmAbandon": "Potwierdź porzucenie",
     "JournalStatus": "Status:",
-    "QuestAbandonFailed": "Nie udało się porzucić zadania."
+    "QuestAbandonFailed": "Nie udało się porzucić zadania.",
+    "GearScore": "Ocena wyposażenia"
 }

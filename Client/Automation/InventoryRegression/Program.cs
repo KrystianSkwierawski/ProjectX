@@ -134,6 +134,52 @@ await AmmoRegression.RunAsync();
 
 TradeQuestRegression.Run();
 
+var scoreCases = new (InventoryItemEnum Type, int Score)[]
+{
+    (InventoryItemEnum.IronHelmet, 20),
+    (InventoryItemEnum.ScoutHelmet, 18),
+    (InventoryItemEnum.IronChest, 40),
+    (InventoryItemEnum.GuardChest, 44),
+    (InventoryItemEnum.IronBoots, 18),
+    (InventoryItemEnum.TrailBoots, 20),
+    (InventoryItemEnum.IronSword, 20),
+    (InventoryItemEnum.IronWand, 20),
+    (InventoryItemEnum.IronBow, 20),
+    (InventoryItemEnum.BalancedSword, 25),
+    (InventoryItemEnum.AmmoArrow1, 5),
+    (InventoryItemEnum.AmmoArrow2, 10),
+    (InventoryItemEnum.AmmoArrow3, 15),
+    (InventoryItemEnum.AmmoRune1, 5),
+    (InventoryItemEnum.AmmoRune2, 10),
+    (InventoryItemEnum.AmmoRune3, 15),
+    (InventoryItemEnum.AmmoFeather1, 5),
+    (InventoryItemEnum.AmmoFeather2, 10),
+    (InventoryItemEnum.AmmoFeather3, 15),
+    (InventoryItemEnum.AmmoOil1, 5),
+    (InventoryItemEnum.AmmoOil2, 10),
+    (InventoryItemEnum.AmmoOil3, 15),
+};
+
+foreach (var test in scoreCases)
+{
+    Check(test.Type.GetGearScore() == test.Score, $"Gear score for {test.Type} must be {test.Score}");
+}
+
+var nonGearTypes = Enum.GetValues<InventoryItemEnum>()
+    .Where(type => !type.IsGear())
+    .ToArray();
+
+foreach (var type in nonGearTypes)
+{
+    Check(type.GetGearScore() == null, $"Non-gear and templates must have no score: {type}");
+}
+
+Check(InventoryItemEnum.IronSword.GetRarity() != InventoryItemEnum.IronBow.GetRarity()
+    && InventoryItemEnum.IronWand.GetRarity() != InventoryItemEnum.IronBow.GetRarity(),
+    "Equal weapon scores cover different rarities and primary stats");
+
+Console.WriteLine("GEAR_SCORE_REGRESSION_PASSED: all gear scores, speed weighting, ammo tiers, rarity independence and non-gear exclusions.");
+
 static CharacterDto NewCharacter() => new()
 {
     Health = 100,

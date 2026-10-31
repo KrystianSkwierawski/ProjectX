@@ -915,15 +915,35 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 sb.AppendLine(ItemRarityUI.Label(item.Type));
             }
 
+            var gearScore = item.Type.GetGearScore();
+            var parameters = item.Type.GetInventoryItemParametersAttribute();
+
+            if (gearScore.HasValue)
+            {
+                AppendStat(sb, TranslateKeyEnum.GearScore, gearScore.Value, comparedWith.GetGearScore());
+
+                if (item.Type.IsAmmo() && parameters != null && parameters.WeaponCategory != WeaponCategoryEnum.None)
+                {
+                    sb.AppendLine($"<size=90%><color=#A6A6A6>{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(parameters.WeaponCategory.ToString())}</color></size>");
+                }
+            }
+
+            if (sb.Length > 0)
+            {
+                sb.AppendLine();
+            }
+
             sb.Append(TranslateManager.Instance.GetByKey($"{item.Type}Description"));
 
             if (item.Type is not InventoryItemEnum.Currency and not InventoryItemEnum.Xp)
             {
                 sb.AppendLine();
-                sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}");
             }
 
-            var parameters = item.Type.GetInventoryItemParametersAttribute();
+            if (parameters != null || item.Type is InventoryItemEnum.StrengthPotion or InventoryItemEnum.SpeedPotion)
+            {
+                sb.AppendLine();
+            }
 
             if (parameters != null)
             {
@@ -935,11 +955,6 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 AppendStat(sb, TranslateKeyEnum.Speed, parameters.Speed, equipped?.Speed);
                 AppendStat(sb, TranslateKeyEnum.Intellect, parameters.Intellect, equipped?.Intellect);
                 AppendStat(sb, TranslateKeyEnum.Armor, parameters.Armor, equipped?.Armor);
-
-                if (item.Type.IsAmmo() && parameters.WeaponCategory != WeaponCategoryEnum.None)
-                {
-                    sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Required)}: {TranslateManager.Instance.GetByKey(parameters.WeaponCategory.ToString())}");
-                }
             }
 
             if (item.Type == InventoryItemEnum.StrengthPotion)
@@ -950,6 +965,16 @@ namespace Assets.Scripts.Areas.Inventory.UI
             if (item.Type == InventoryItemEnum.SpeedPotion)
             {
                 sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Speed)}: {SpeedPotionUsableItem.Bonus}");
+            }
+
+            if (item.Type is not InventoryItemEnum.Currency and not InventoryItemEnum.Xp)
+            {
+                if (parameters == null && item.Type is not InventoryItemEnum.StrengthPotion and not InventoryItemEnum.SpeedPotion)
+                {
+                    sb.AppendLine();
+                }
+
+                sb.AppendLine($"{TranslateManager.Instance.GetByKey(TranslateKeyEnum.Price)}: {MerchantManager.Instance.GetSellPrice(item)}");
             }
 
             return sb.ToString();
