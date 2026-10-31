@@ -374,17 +374,21 @@ namespace Assets.Scripts.Areas.Quest.UI
         private static string FormatProgress(QuestDto quest, CharacterQuestDto characterQuest)
         {
             var green = ColorUtility.ToHtmlStringRGB(ColorUI.Green);
+            var muted = ColorUtility.ToHtmlStringRGB(ColorUI.TextSecondary);
+
             var lines = quest.Requirements
                 .Select(requirement =>
                 {
                     var progress = GetProgress(characterQuest, requirement.Id);
                     var text = $"- {FormatObjective(requirement, progress)}";
 
-                    return progress >= requirement.Count ? $"<color=#{green}>{text}</color>" : text;
+                    var color = progress >= requirement.Count ? green : muted;
+
+                    return $"<color=#{color}>{text}</color>";
                 })
                 .ToArray();
 
-            return $"{quest.Title}\n{string.Join("\n", lines)}";
+            return $"{quest.Title}\n<size=85%>{string.Join("\n", lines)}</size>";
         }
 
         private void RefreshRequirements()
