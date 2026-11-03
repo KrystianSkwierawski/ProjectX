@@ -316,4 +316,10 @@
     "JournalStatus": "Status:",
     "QuestAbandonFailed": "Nie udało się porzucić zadania.",
     "GearScore": "Ocena wyposażenia"
+,
+    "DamageMeterTitle": "Miernik obrażeń",
+    "DamageMeterEmpty": "Brak zarejestrowanych obrażeń",
+    "DamageMeterReset": "Resetuj",
+    "HelpDamageMeter": "Miernik obrażeń\n]: otwórz lub zamknij miernik obrażeń.\n\nObrażenia obecnych członków drużyny są rejestrowane niezależnie od odległości. Wiersze pozostają do zresetowania tego lokalnego miernika. Paski pokazują udział w całości obrażeń.",
+    "QuickAccessDamageMeter": "Miernik obrażeń (])"
 }

@@ -320,5 +320,10 @@ namespace Assets.Scripts.Areas.Shared.Enums
         JournalStatus,
         QuestAbandonFailed,
         GearScore,
+        DamageMeterTitle,
+        DamageMeterEmpty,
+        DamageMeterReset,
+        HelpDamageMeter,
+        QuickAccessDamageMeter,
     }
 }

@@ -219,4 +219,9 @@ public enum TranslateKeyEnum
     JournalStatus,
     QuestAbandonFailed,
     GearScore,
+    DamageMeterTitle,
+    DamageMeterEmpty,
+    DamageMeterReset,
+    HelpDamageMeter,
+    QuickAccessDamageMeter,
 }

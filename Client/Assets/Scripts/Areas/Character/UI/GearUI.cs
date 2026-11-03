@@ -54,7 +54,27 @@ namespace Assets.Scripts.Areas.Character.UI
             Boots = GetGearSlot(nameof(Boots));
             Weapon = GetGearSlot(nameof(Weapon));
             Ammo = GetGearSlot(nameof(Ammo));
+            ConfigureAmmoCount(Ammo.Mesh);
             RightPanel = Gear.transform.Find("RightPanel").gameObject;
+        }
+
+        private static void ConfigureAmmoCount(TMP_Text count)
+        {
+            count.transform.SetParent(count.transform.parent.Find("Background"), false);
+            var rect = count.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(.5f, .5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
+
+            count.raycastTarget = false;
+            count.enableAutoSizing = true;
+            count.fontSizeMin = 10;
+            count.fontSizeMax = 22;
+            count.alignment = TextAlignmentOptions.BottomRight;
+            count.textWrappingMode = TextWrappingModes.NoWrap;
+            count.margin = Vector4.zero;
         }
 
         public void Show()

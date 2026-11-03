@@ -239,4 +239,10 @@
     "JournalStatus": "Status:",
     "QuestAbandonFailed": "Could not abandon the quest.",
     "GearScore": "Gear Score"
+,
+    "DamageMeterTitle": "Damage meter",
+    "DamageMeterEmpty": "No damage recorded",
+    "DamageMeterReset": "Reset",
+    "HelpDamageMeter": "Damage meter\n]: toggle damage meter.\n\nDamage from current party members is recorded regardless of distance. Rows remain until you reset this local meter. Bars show the share of all recorded damage.",
+    "QuickAccessDamageMeter": "Damage meter (])"
 }

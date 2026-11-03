@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Combat.UI;
 using Assets.Scripts.Areas.Friends.UI;
 using Assets.Scripts.Areas.Inventory.UI;
 using Assets.Scripts.Areas.Quest.UI;
@@ -41,6 +42,8 @@ namespace Assets.Scripts.Areas.Shared.UI
             ConfigureSlot("Friends", () => FriendListUI.Instance.Toggle());
 
             ConfigureSlot("Journal", () => QuestJournalUI.Instance.Toggle());
+
+            ConfigureSlot("DamageMeter", () => FindFirstObjectByType<DamageMeterUI>().Toggle());
         }
 
         private void Update()
@@ -54,10 +57,10 @@ namespace Assets.Scripts.Areas.Shared.UI
 
             _canvasSize = size;
             var layout = _bar.GetComponent<GridLayoutGroup>();
-            var cell = Mathf.Min(50f, (size.x - 32f - 5 * layout.spacing.x) / 6f);
-            layout.constraintCount = 6;
+            var cell = Mathf.Min(50f, (size.x - 32f - 6 * layout.spacing.x) / 7f);
+            layout.constraintCount = 7;
             layout.cellSize = new Vector2(cell, cell);
-            ((RectTransform)_bar).sizeDelta = new Vector2(6 * cell + 5 * layout.spacing.x, cell);
+            ((RectTransform)_bar).sizeDelta = new Vector2(7 * cell + 6 * layout.spacing.x, cell);
         }
 
         private void ConfigureSlot(string name, UnityAction onClick)
