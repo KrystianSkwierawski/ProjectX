@@ -1,5 +1,8 @@
 using System;
 using System.Threading;
+using System.Collections.Generic;
+using Assets.Scripts.Areas.Combat;
+using Assets.Scripts.Areas.Party.Mono;
 using Assets.Scripts.Areas.Inventory.Mono;
 using Assets.Scripts.Areas.Trade.Mono;
 using Assets.Scripts.Areas.Character.Enums;
@@ -36,6 +39,66 @@ namespace Assets.Scripts.Areas.Character.Mono
             _spawnLifetime?.Dispose();
             _spawnLifetime = new CancellationTokenSource();
             _characterLoadStarted = false;
+
+            if (IsOwner && IsClient)
+            {
+                DamageMeterState.Reset();
+                Debug.Log($"Damage meter reset for owner spawn. ClientId: {OwnerClientId}.");
+            }
+        }
+
+        public void ReportAcceptedDamage(InventoryItemEnum weaponType, float damage)
+        {
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+
+            if (!UserManager.Instance.Characters.TryGetValue(OwnerClientId, out var attacker))
+            {
+                Debug.LogWarning($"Damage meter delivery skipped. ClientId: {OwnerClientId}, Reason: MissingAuthenticatedCharacter.");
+
+                return;
+            }
+
+            foreach (var recipientId in GetDamageMeterRecipients(OwnerClientId))
+            {
+                if (!NetworkManager.ConnectedClients.TryGetValue(recipientId, out var client)
+                    || client.PlayerObject == null)
+                {
+                    continue;
+                }
+
+                // NGO owns the stationary root; gameplay Player lives on its moving child.
+                var recipient = client.PlayerObject.GetComponentInChildren<Player>();
+
+                if (recipient == null || !recipient.IsSpawned || recipient.OwnerClientId != recipientId)
+                {
+                    Debug.LogWarning($"Damage meter delivery skipped. AttackerClientId: {OwnerClientId}, RecipientClientId: {recipientId}, Reason: MissingSpawnedOwnedPlayer.");
+
+                    continue;
+                }
+
+                recipient.RecordDamageClientRpc(attacker.Id, attacker.Name, weaponType, damage,
+                    recipientId.ToClientRpcParams());
+            }
+        }
+
+        private static IReadOnlyList<ulong> GetDamageMeterRecipients(ulong attackerClientId)
+        {
+            return PartyServerState.TryGetParty(attackerClientId, out var members, out _)
+                ? members
+                : new[] { attackerClientId };
+        }
+
+        [ClientRpc]
+        private void RecordDamageClientRpc(int characterId, string nickname, InventoryItemEnum weaponType,
+            float damage, ClientRpcParams rpcParams = default)
+        {
+            if (IsOwner && IsClient && IsSpawned)
+            {
+                DamageMeterState.Record(characterId, nickname, weaponType, damage);
+            }
         }
 
         private bool IsCurrentSpawn(CancellationToken token) => IsSpawned && _spawnLifetime != null
@@ -418,6 +481,12 @@ namespace Assets.Scripts.Areas.Character.Mono
 
         public override void OnNetworkDespawn()
         {
+            if (IsOwner && IsClient)
+            {
+                DamageMeterState.Reset();
+                Debug.Log($"Damage meter reset for owner despawn. ClientId: {OwnerClientId}.");
+            }
+
             _spawnLifetime?.Cancel();
 
             var characterRemoved = UserManager.Instance.Characters.Remove(OwnerClientId);

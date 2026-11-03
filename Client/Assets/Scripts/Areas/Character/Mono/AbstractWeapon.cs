@@ -56,6 +56,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         }
 
         private string _playerSessionId;
+        private InventoryItemEnum _weaponType;
         private AudioSource _audioSource;
         private VisualEffect _visualEffect;
         private GameObject _target;
@@ -85,12 +86,13 @@ namespace Assets.Scripts.Areas.Character.Mono
             _visualEffect = GetComponent<VisualEffect>();
         }
 
-        public void StartCasting(GameObject target, GameObject caster, string playerSessionId)
+        public void StartCasting(GameObject target, GameObject caster, string playerSessionId, InventoryItemEnum weaponType)
         {
             _caster = caster;
             _target = target;
             _isCasting = true;
             _playerSessionId = playerSessionId;
+            _weaponType = weaponType;
             _hit = false;
             Debug.Log("StartCasting");
             StartCastingClientRpc();
@@ -216,6 +218,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                 var clientId = OwnerClientId;
                 var playerSessionId = _playerSessionId;
                 var baseDamage = BaseDamage;
+                var weaponType = _weaponType;
                 var targetNetwork = target.GetComponent<NetworkObject>();
                 var targetNetworkId = targetNetwork.NetworkObjectId;
 
@@ -237,6 +240,7 @@ namespace Assets.Scripts.Areas.Character.Mono
                     {
                         ClientId = clientId,
                         Value = damage,
+                        WeaponType = weaponType,
                         PlayerSessionId = playerSessionId,
                         Player = caster
                     });

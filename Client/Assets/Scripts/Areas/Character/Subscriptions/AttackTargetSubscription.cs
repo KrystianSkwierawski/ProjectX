@@ -1,4 +1,5 @@
 using UnityEngine;
+using Assets.Scripts.Areas.Inventory.Enums;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 
 namespace Assets.Scripts.Areas.Character.Subscriptions
@@ -12,6 +13,8 @@ namespace Assets.Scripts.Areas.Character.Subscriptions
         public ulong ClientId { get; set; }
 
         public float Value { get; set; }
+
+        public InventoryItemEnum WeaponType { get; set; }
 
         public string PlayerSessionId { get; set; }
 

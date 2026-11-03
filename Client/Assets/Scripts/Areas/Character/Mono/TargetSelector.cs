@@ -436,7 +436,8 @@ namespace Assets.Scripts.Areas.Character.Mono
                 return;
             }
 
-            _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject, UserManager.Instance.GetPlayerSessionId(OwnerClientId));
+            _currentWeapon.GetComponent<AbstractWeapon>().StartCasting(_selectedTarget, gameObject,
+                UserManager.Instance.GetPlayerSessionId(OwnerClientId), character.WeaponType);
 
             GetComponent<DuckActionPresentation>()?.BeginCombat(character.WeaponType.GetWeaponCategory(),
                 character.WeaponType.GetWeaponCategory() == WeaponCategoryEnum.Wand ? _castTime * 2 : _castTime);

@@ -27,13 +27,20 @@ namespace Assets.Scripts.Areas.Character.Mono
 
                 AttackTargetSubscription.Instance.Subscribe(gameObjectKey, (e) =>
                 {
-                    if (!IsSpawned || Network.Value <= 0 || e.Value <= 0 || !DungeonTravel.CanInteract(e.ClientId)
+                    if (!IsSpawned || Network.Value <= 0 || e.Value <= 0 || float.IsNaN(e.Value) || float.IsInfinity(e.Value)
+                        || !DungeonTravel.CanInteract(e.ClientId)
                         || !DungeonWorldObject.SameInstance(gameObject, e.Player))
                     {
                         return;
                     }
 
+                    var effectiveDamage = CalculateEffectiveDamage(Network.Value, e.Value);
                     Network.Value -= e.Value;
+
+                    if (e.Player.TryGetComponent<Player>(out var attacker))
+                    {
+                        attacker.ReportAcceptedDamage(e.WeaponType, effectiveDamage);
+                    }
 
                     var impactPosition = TryGetComponent<Collider>(out var targetCollider)
                         ? targetCollider.bounds.center
@@ -96,6 +103,11 @@ namespace Assets.Scripts.Areas.Character.Mono
                     });
                 });
             }
+        }
+
+        private static float CalculateEffectiveDamage(float remainingHealth, float damage)
+        {
+            return Mathf.Min(remainingHealth, damage);
         }
 
         [ClientRpc]
