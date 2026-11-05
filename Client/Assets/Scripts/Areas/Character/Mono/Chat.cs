@@ -14,7 +14,6 @@ namespace Assets.Scripts.Areas.Character.Mono
 {
     public class Chat : NetworkBehaviour
     {
-        private const int _maximumMessageLength = 200;
         private const double _messageCooldownSeconds = 0.5d;
 
         private double _lastMessageAt = double.NegativeInfinity;
@@ -89,7 +88,7 @@ namespace Assets.Scripts.Areas.Character.Mono
         [ServerRpc]
         private void SendServerRpc(string message)
         {
-            if (string.IsNullOrWhiteSpace(message) || message.Length > _maximumMessageLength)
+            if (!ChatItemLink.IsValidMessage(message))
             {
                 MessageRejectedClientRpc(TranslateKeyEnum.ChatMessageInvalid, OwnerClientId.ToClientRpcParams());
 

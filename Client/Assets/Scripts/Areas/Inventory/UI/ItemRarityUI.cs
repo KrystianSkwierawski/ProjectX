@@ -27,6 +27,13 @@ namespace Assets.Scripts.Areas.Inventory.UI
 
         public static void Apply(Transform slot, InventoryItemEnum type)
         {
+            ChatItemSource.Bind(slot, type);
+
+            ApplyColors(slot, type);
+        }
+
+        internal static void ApplyColors(Transform slot, InventoryItemEnum type)
+        {
             var backdrop = slot.Find("IconBackdrop")?.GetComponent<Graphic>();
 
             if (backdrop == null)

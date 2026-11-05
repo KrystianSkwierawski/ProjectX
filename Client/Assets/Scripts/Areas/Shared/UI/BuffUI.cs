@@ -78,6 +78,8 @@ namespace Assets.Scripts.Areas.Shared.UI
                 return;
             }
 
+            ChatItemSource.Bind(root, type);
+
             var image = root.Find("Background").GetComponent<RawImage>();
             image.texture = InventoryUI.Instance.Textures[type];
             image.color = ColorUI.White;

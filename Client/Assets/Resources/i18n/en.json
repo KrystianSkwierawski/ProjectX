@@ -261,7 +261,7 @@
     "HelpCrafting": "Crafting & farm\nChoose a recipe and review its materials and result.\n\nCraft: create the selected item.\nFarm: drag seeds into a slot, or right-click seeds in inventory.\nRight-click a farm slot: withdraw seeds.",
     "HelpStash": "Account stash\nDrag & drop: move items between stash and inventory.\n\nRight-click: transfer a stack.\nAlt + right-click: split a stash stack.",
     "HelpInventory": "Inventory\nB: toggle inventory.\n\nDrag & drop: move, equip or transfer items.\nRight-click: use an item or transfer it to the open stash, farm or trade.\n\nAlt + right-click: split a stack outside trade.",
-    "HelpChat": "Chat\nZ: toggle chat.\nEnter: focus the input / send.\n\n/w \"Name\" message: whisper.\nScroll: read earlier messages.",
+    "HelpChat": "Chat\nZ: toggle chat.\nEnter: focus the input / send.\nCtrl + left-click an item while typing to link it (up to 8 per message).\n\n/w \"Name\" message: whisper.\nScroll: read earlier messages.",
     "HelpFriends": "Friends\nO: toggle the friends list.\n\nEnter a character name to send an invitation.\nAccept or decline incoming requests.\nUse the actions beside each friend.",
     "HelpParty": "Party\nReview members and invitations.\n\nAccept / decline: respond to an invitation.\nLeave: exit the party.\n\nMember actions depend on your role.",
     "HelpTrade": "Trade\nDrag items into your offer, or right-click inventory items.\n\nReview both offers.\nLock your offer, then confirm.\n\nCancel: cancel before the trade commit is accepted.",

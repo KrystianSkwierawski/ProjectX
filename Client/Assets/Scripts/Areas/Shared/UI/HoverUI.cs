@@ -11,12 +11,27 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         [SerializeField] private bool _useTooltipLayer;
 
+        private bool _directPreview;
         private string _key;
         private RectTransform _preview;
         private Vector2 _previewDefaultAnchoredPosition;
         private Transform _previewParent;
         private Canvas _previewCanvas;
         private bool _previewOverridesSorting;
+
+        internal void UseDirectTooltip()
+        {
+            _useTooltipLayer = true;
+            _directPreview = true;
+        }
+
+        internal void HideDirectPreview()
+        {
+            if (_directPreview && _preview != null)
+            {
+                _preview.gameObject.SetActive(false);
+            }
+        }
 
         public void Start()
         {
@@ -39,11 +54,19 @@ namespace Assets.Scripts.Areas.Shared.UI
                 return;
             }
 
-            CursorUI.Instance.ShowPointer();
+            CursorUI.Instance?.ShowPointer();
 
             RestorePreviewParent();
 
-            OnPointerEnterSubscription.Instance.Invoke(_key, new OnPointerEnterEvent());
+            if (_directPreview && _preview != null)
+            {
+                _preview.gameObject.SetActive(true);
+            }
+            else
+            {
+                OnPointerEnterSubscription.Instance.Invoke(_key, new OnPointerEnterEvent());
+            }
+
             ClampPreviewToCanvas(resetPosition: true);
 
             if (_useTooltipLayer && _preview != null && _preview.gameObject.activeInHierarchy && TooltipLayerUI.Instance != null)
@@ -59,9 +82,17 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            CursorUI.Instance.ShowDefault();
+            CursorUI.Instance?.ShowDefault();
 
-            OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
+            if (_directPreview)
+            {
+                HideDirectPreview();
+            }
+            else
+            {
+                OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
+            }
+
             RestorePreviewParent();
         }
 
@@ -69,7 +100,14 @@ namespace Assets.Scripts.Areas.Shared.UI
         {
             CursorUI.Instance?.ShowDefault();
 
-            OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
+            if (_directPreview)
+            {
+                HideDirectPreview();
+            }
+            else
+            {
+                OnPointerExitSubscription.Instance.Invoke(_key, new OnPointerExitSubscriptionEvent());
+            }
 
             // Unity cannot reparent children while their owner is being deactivated.
             // The next pointer enter restores the hierarchy before showing the preview.

@@ -261,7 +261,7 @@
     "HelpCrafting": "Rzemiosło i farma\nWybierz przepis, sprawdź składniki i wynik.\n\nWytwórz: stwórz wybrany przedmiot.\nFarma: przeciągnij nasiona na pole lub kliknij je PPM w ekwipunku.\nPPM na polu farmy: wycofaj nasiona.",
     "HelpStash": "Schowek konta\nPrzeciągaj przedmioty między schowkiem a ekwipunkiem.\n\nPPM: przenieś stos.\nAlt + PPM: podziel stos w schowku.",
     "HelpInventory": "Ekwipunek\nB: otwórz lub zamknij.\n\nPrzeciągnij przedmiot, aby go przenieść lub założyć.\nPPM: użyj albo przenieś do otwartego schowka, farmy lub handlu.\n\nAlt + PPM: podziel stos poza handlem.",
-    "HelpChat": "Czat\nZ: otwórz lub zamknij.\nEnter: przejdź do wpisywania lub wyślij.\n\n/w \"Nazwa\" wiadomość: wyślij szept.\nPrzewijaj, aby czytać wcześniejsze wiadomości.",
+    "HelpChat": "Czat\nZ: otwórz lub zamknij.\nEnter: przejdź do wpisywania lub wyślij.\nCtrl + lewy przycisk myszy na przedmiocie wstawia ikonę podczas pisania (do 8 na wiadomość).\n\n/w \"Nazwa\" wiadomość: wyślij szept.\nPrzewijaj, aby czytać wcześniejsze wiadomości.",
     "HelpFriends": "Znajomi\nO: otwórz lub zamknij listę.\n\nWpisz nazwę postaci, aby wysłać zaproszenie.\nPrzyjmij lub odrzuć otrzymane zaproszenia.\nUżywaj przycisków obok znajomych.",
     "HelpParty": "Drużyna\nSprawdź członków i zaproszenia.\n\nAkceptuj lub odrzuć zaproszenie.\nOpuść: wyjdź z drużyny.\n\nDostępne działania zależą od twojej roli.",
     "HelpTrade": "Handel\nPrzeciągnij przedmioty do oferty lub kliknij je PPM w ekwipunku.\n\nSprawdź obie oferty.\nZablokuj swoją, a potem potwierdź.\n\nAnuluj: wycofaj się przed przyjęciem transakcji do realizacji.",

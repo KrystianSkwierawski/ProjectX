@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using Assets.Scripts.Areas.Inventory.Enums;
+using Assets.Scripts.Areas.Inventory.UI;
 using Assets.Scripts.Areas.Shared.Mono;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
 
@@ -21,7 +24,7 @@ namespace Assets.Scripts.Areas.Shared.UI
 
         public GameObject Container { get; private set; }
 
-        public TMP_InputField InputField { get; private set; }
+        public ChatInputField InputField { get; private set; }
 
         public GameObject Chat { get; private set; }
 
@@ -46,7 +49,8 @@ namespace Assets.Scripts.Areas.Shared.UI
             Canvas = GameObject.Find("ChatCanvas");
             Container = Canvas.transform.Find("Container").gameObject;
             Container.transform.Find("Close").GetComponent<Button>().onClick.AddListener(Toggle);
-            InputField = Container.transform.Find("InputField").GetComponent<TMP_InputField>();
+            InputField = Container.transform.Find("InputField").GetComponent<ChatInputField>();
+            BindItemText((TextMeshProUGUI)InputField.textComponent, linkSource: false);
             Chat = Container.transform.Find("Chat").gameObject;
             ChatContent = Chat.transform.Find("Viewport/Content").gameObject;
             _scrollRect = Chat.GetComponent<ScrollRect>() ?? Chat.GetComponentInChildren<ScrollRect>();
@@ -81,6 +85,7 @@ namespace Assets.Scripts.Areas.Shared.UI
                     var mesh = obj.GetComponent<TextMeshProUGUI>();
 
                     mesh.fontSize = 16;
+                    BindItemText(mesh, linkSource: true);
                     mesh.alignment = TextAlignmentOptions.TopLeft;
 
                     return new LogPoolObject
@@ -104,6 +109,13 @@ namespace Assets.Scripts.Areas.Shared.UI
             );
 
             Add("Welcome to the chat!");
+        }
+
+        private static void BindItemText(TextMeshProUGUI mesh, bool linkSource)
+        {
+            var inventory = InventoryUI.Instance;
+
+            ChatItemText.Bind(mesh, inventory.SlotPrefab, inventory.Textures, linkSource);
         }
 
         private void LateUpdate()
@@ -211,7 +223,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         {
             var obj = _pool.Get();
 
-            obj.Mesh.text = $"{prefix}{Sanitize(sender)}: {Sanitize(message)}";
+            obj.Mesh.text = $"{prefix}{SanitizeSender(sender)}: {Sanitize(message)}";
             obj.Mesh.color = color;
 
             _queue.Enqueue(obj);
@@ -222,6 +234,23 @@ namespace Assets.Scripts.Areas.Shared.UI
             {
                 ScrollToBottom();
             }
+        }
+
+        internal bool TryInsertItem(InventoryItemEnum item, PointerEventData pointer) => InputField?.TryInsertItem(item, pointer) == true;
+
+        private static string SanitizeSender(string value)
+        {
+            var characters = Sanitize(value).ToCharArray();
+
+            for (var index = 0; index < characters.Length; index++)
+            {
+                if (ChatItemLink.IsReserved(characters[index]))
+                {
+                    characters[index] = '\uFFFD';
+                }
+            }
+
+            return new string(characters);
         }
 
         private static string Sanitize(string value)

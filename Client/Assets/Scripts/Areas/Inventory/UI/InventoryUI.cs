@@ -77,6 +77,8 @@ namespace Assets.Scripts.Areas.Inventory.UI
             || _isDraggingMerchantItem
             || _isDraggingTradeItem;
 
+        internal GameObject SlotPrefab => _inventorySlotPrefab;
+
         public void Start()
         {
             InventoryCanvas = GameObject.Find("InventoryCanvas");
@@ -1154,7 +1156,18 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 eventID = eventType,
             };
 
-            entry.callback.AddListener((eventData) => action((PointerEventData)eventData));
+            entry.callback.AddListener((eventData) =>
+            {
+                var pointer = (PointerEventData)eventData;
+                var button = trigger.GetComponent<ButtonUI>();
+
+                if (eventType != EventTriggerType.Scroll && button != null && button.IsConsumedPointer(pointer))
+                {
+                    return;
+                }
+
+                action(pointer);
+            });
 
             trigger.triggers.Add(entry);
         }
