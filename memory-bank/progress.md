@@ -46,4 +46,5 @@
 - ChillDuck Polish/English resource translation is complete: all 267 client and 150 API enum keys are covered, 126 shared entries match per language, JSON/key order/format placeholders and diff checks pass, and all 300 API localization tests pass after building the API/test project. Verify this copy in-game, including Polish glyphs, tooltip/quest wrapping in portrait and landscape, and language switching; this runtime check remains outstanding.
 
 ## Documentation State
+- Public README added on 2026-11-05, replacing the root placeholder with an English overview for external readers and recruiters, architecture diagram, feature/status summary, prerequisites, local automation and test commands. Maintain it according to `projectbrief.md` when public behavior or setup changes. No new runtime verification or gameplay screenshots were produced for this documentation change.
 - Memory Bank compacted on 2026-09-08. It records current behavior, decisions, invariants, verification, and gaps; detailed chronological implementation history is intentionally left to Git.

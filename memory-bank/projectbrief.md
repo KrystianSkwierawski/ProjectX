@@ -14,6 +14,7 @@ ProjectX is a multiplayer RPG-style game with a Unity client, a Unity dedicated 
 - Favor correct, testable systems that one programmer can maintain; defer art-heavy polish and economic balancing.
 
 ## Sources Of Truth
+- Root `README.md` is the public-facing English introduction for external readers and potential recruiters: product/status, implemented features, architecture, technology, local setup, validation and repository layout. Review and update affected sections when meaningful changes alter those facts; do not rewrite it for every internal refactor. Keep implemented/planned features and automated/manual validation distinct. Use actual gameplay captures for future screenshots, with repository-relative assets under `docs/images/`; do not substitute mockups or isolated validation renders for gameplay.
 - Backend architecture follows applicable patterns from `jasontaylordev/CleanArchitecture`, adapted to ProjectX's Unity, authentication, persistence, and deployment needs.
 - This Memory Bank records behavior and decisions; current code and verified behavior take precedence over stale implementation descriptions. Root `AGENTS.md` defines working instructions and documentation routing; detailed implementation history remains available in Git.
 - Product decisions not recorded here should be confirmed when they materially affect implementation.
