@@ -1,4 +1,5 @@
 using MediatR;
+using ProjectX.Application.CharacterQuests.Commands.CheckCharacterQuestProgress;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
@@ -38,16 +39,20 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
             .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("finished character quest", cancellationToken);
 
-        if (characterQuest.Quest.Type == QuestTypeEnum.Collect)
+        var collectProgress = new List<CheckCharacterQuestProgressDto>();
+
+        var inventoryStatus = await ApplyInventoryAsync(userId, selectedCharacterId, characterQuest, collectProgress, cancellationToken);
+
+        if (inventoryStatus != CompleteCharacterQuestStatusEnum.Applied)
         {
-            await CollectItemsAsync(userId, selectedCharacterId, characterQuest, cancellationToken);
+            return new CompleteCharacterQuestDto { QuestId = characterQuest.QuestId, Status = inventoryStatus };
         }
 
         characterQuest.Complete(_timeProvider.GetUtcNow());
 
         characterQuest.Character.CharacterExperiences.Add(new CharacterExperience
         {
-            Amount = characterQuest.Quest.Reward,
+            Amount = characterQuest.QuestId.GetExperienceReward(),
             Type = ExperienceTypeEnum.Main
         });
 
@@ -72,27 +77,77 @@ public class CompleteCharacterQuestCommandHandler : IRequestHandler<CompleteChar
         {
             QuestId = characterQuest.QuestId,
             Status = CompleteCharacterQuestStatusEnum.Applied,
-            Reward = characterQuest.Quest.Reward,
-            Level = ExperienceProgression.GetLevel(experience)
+            Reward = characterQuest.QuestId.GetExperienceReward(),
+            Level = ExperienceProgression.GetLevel(experience),
+            CollectProgress = collectProgress.ToArray()
         };
     }
 
-    private async Task CollectItemsAsync(
+    private async Task<CompleteCharacterQuestStatusEnum> ApplyInventoryAsync(
         string userId,
         int selectedCharacterId,
         CharacterQuest characterQuest,
+        List<CheckCharacterQuestProgressDto> collectProgress,
         CancellationToken cancellationToken)
     {
-        var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
+        var rewards = characterQuest.QuestId.GetItemRewards();
+
+        var requirements = characterQuest.QuestId.GetRequirements();
 
         var characterInventory = await _context.CharacterInventories
             .Where(x => x.Id == selectedCharacterId)
             .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("character inventory", cancellationToken);
 
-        if (!characterInventory.Inventory.Remove(itemType, characterQuest.Quest.Requirement))
+        var inventory = characterInventory.Inventory.Clone();
+        var capacity = Math.Max(characterInventory.Count, inventory.Items.Count);
+
+        if (requirements.Any(x => (x.Type == QuestTypeEnum.Collect
+                ? inventory.GetCount(x.ItemType) : characterQuest.ObjectiveProgress.GetValueOrDefault(x.Id)) < x.Count))
         {
-            throw new InvalidOperationException("The quest requirement is not present in the character inventory.");
+            return CompleteCharacterQuestStatusEnum.InventoryChanged;
         }
+
+        foreach (var requirement in requirements.Where(x => x.Type == QuestTypeEnum.Collect))
+        {
+            if (!inventory.Remove(requirement.ItemType, requirement.Count))
+            {
+                return CompleteCharacterQuestStatusEnum.InventoryChanged;
+            }
+        }
+
+        foreach (var reward in rewards)
+        {
+            if (!inventory.Add(reward.Type, reward.Count, capacity))
+            {
+                return CompleteCharacterQuestStatusEnum.InventoryFull;
+            }
+        }
+
+        characterQuest.SynchronizeInventory(characterInventory.Inventory);
+        characterInventory.Inventory = inventory;
+
+        var activeCollectQuests = await _context.CharacterQuests
+            .Include(x => x.Quest)
+            .Where(x => x.CharacterId == selectedCharacterId)
+            .Where(x => x.Id != characterQuest.Id)
+            .Where(x => x.Status == CharacterQuestStatusEnum.Accepted || x.Status == CharacterQuestStatusEnum.Finished)
+            .ToArrayAsync(cancellationToken);
+
+        foreach (var activeQuest in activeCollectQuests)
+        {
+            activeQuest.SynchronizeInventory(inventory);
+
+            collectProgress.Add(new CheckCharacterQuestProgressDto
+            {
+                QuestId = activeQuest.QuestId,
+                CharacterQuestId = activeQuest.Id,
+                Progress = activeQuest.Progress,
+                ObjectiveProgress = activeQuest.ObjectiveProgress,
+                Status = activeQuest.Status
+            });
+        }
+
+        return CompleteCharacterQuestStatusEnum.Applied;
     }
 }

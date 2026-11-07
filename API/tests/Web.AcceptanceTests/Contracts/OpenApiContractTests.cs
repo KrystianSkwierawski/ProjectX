@@ -112,6 +112,7 @@ public class OpenApiContractTests
             ("/api/CharacterQuests/Progress", "POST"),
             ("/api/CharacterQuests/CheckProgress", "POST"),
             ("/api/CharacterQuests/Complete", "POST"),
+            ("/api/CharacterQuests/Abandon", "POST"),
             ("/api/Characters/Current", "GET"),
             ("/api/Characters", "POST"),
             ("/api/CharacterTransforms", "POST"),
@@ -165,6 +166,7 @@ public class OpenApiContractTests
     [InlineData("AddCharacterQuestProgressCommand")]
     [InlineData("CheckCharacterQuestProgressCommand")]
     [InlineData("CompleteCharacterQuestCommand")]
+    [InlineData("AbandonCharacterQuestCommand")]
     [InlineData("UpdateCharacterCommand")]
     [InlineData("SaveCharacterTransformCommand")]
     public void ServerPlayerSessionCommand_DoesNotExposeCharacterId(string schemaName)
@@ -187,7 +189,7 @@ public class OpenApiContractTests
 
         var operations = GetOperations(specification.RootElement).ToArray();
 
-        Assert.Equal(34, operations.Length);
+        Assert.Equal(35, operations.Length);
 
         foreach (var (path, method, operation) in operations)
         {
@@ -199,6 +201,7 @@ public class OpenApiContractTests
         var expectedOperationIds = new HashSet<string>
         {
             "AcceptCharacterQuest",
+            "AbandonCharacterQuest",
             "AccessCharacterStash",
             "AccessHideout",
             "AddCharacterExperience",
@@ -285,6 +288,17 @@ public class OpenApiContractTests
         var progressProperties = schemas.GetProperty("AddCharacterQuestProgressCommand").GetProperty("properties");
         Assert.True(progressProperties.TryGetProperty("progress", out _));
         Assert.False(progressProperties.TryGetProperty("progres", out _));
+        Assert.True(progressProperties.TryGetProperty("requirementId", out _));
+
+        var questProperties = schemas.GetProperty("QuestDto").GetProperty("properties");
+        Assert.True(questProperties.TryGetProperty("requirements", out _));
+        Assert.True(questProperties.TryGetProperty("itemRewards", out _));
+        Assert.False(questProperties.TryGetProperty("gameObjectName", out _));
+        Assert.False(questProperties.TryGetProperty("requirement", out _));
+
+        var characterQuestProperties = schemas.GetProperty("CharacterQuestDto").GetProperty("properties");
+        Assert.True(characterQuestProperties.TryGetProperty("objectiveProgress", out _));
+
 
         Assert.True(schemas.TryGetProperty("SaveCharacterTransformCommand", out _));
         Assert.False(schemas.TryGetProperty("SaveTransformTransformCommand", out _));

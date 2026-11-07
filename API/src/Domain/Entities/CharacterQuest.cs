@@ -1,4 +1,5 @@
-﻿using ProjectX.Domain.Common;
+using ProjectX.Domain.Common;
+using ProjectX.Domain.Inventory;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
@@ -15,6 +16,8 @@ public class CharacterQuest : BaseAuditableEntity
 
     public int Progress { get; set; }
 
+    public Dictionary<string, int> ObjectiveProgress { get; set; } = [];
+
     public DateTimeOffset StartDate { get; set; }
 
     public DateTimeOffset EndDate { get; set; }
@@ -23,47 +26,56 @@ public class CharacterQuest : BaseAuditableEntity
 
     public virtual Quest Quest { get; set; } = null!;
 
-    public void AddProgress(int amount, int requiredProgress)
+    public void AddKillProgress(string requirementId, int amount)
     {
         if (amount <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(amount));
         }
 
-        if (Status != CharacterQuestStatusEnum.Accepted)
-        {
-            throw new InvalidOperationException("Only an accepted quest can receive progress.");
-        }
+        EnsureActive();
 
-        Progress += amount;
+        var requirement = QuestId.GetRequirements()
+            .Where(x => x.Id == requirementId)
+            .Where(x => x.Type == QuestTypeEnum.Kill)
+            .Single();
 
-        if (Progress >= requiredProgress)
-        {
-            Status = CharacterQuestStatusEnum.Finished;
-        }
+        ObjectiveProgress[requirement.Id] = checked(ObjectiveProgress.GetValueOrDefault(requirement.Id) + amount);
+        RefreshStatus();
     }
 
-    public void SetProgress(int progress, int requiredProgress)
+    public void SynchronizeInventory(InventoryState inventory)
     {
-        if (progress < 0)
+        EnsureActive();
+
+        foreach (var requirement in QuestId.GetRequirements().Where(x => x.Type == QuestTypeEnum.Collect))
         {
-            throw new ArgumentOutOfRangeException(nameof(progress));
+            ObjectiveProgress[requirement.Id] = inventory.GetCount(requirement.ItemType);
         }
 
+        RefreshStatus();
+    }
+
+    public bool RequirementsMet => QuestId.GetRequirements()
+        .All(x => ObjectiveProgress.GetValueOrDefault(x.Id) >= x.Count);
+
+    private void RefreshStatus()
+    {
+        Progress = ObjectiveProgress.Values.Sum();
+        Status = RequirementsMet ? CharacterQuestStatusEnum.Finished : CharacterQuestStatusEnum.Accepted;
+    }
+
+    private void EnsureActive()
+    {
         if (Status is not CharacterQuestStatusEnum.Accepted and not CharacterQuestStatusEnum.Finished)
         {
-            throw new InvalidOperationException("Only an active quest can synchronize progress.");
+            throw new InvalidOperationException("Only an active quest can receive progress.");
         }
-
-        Progress = progress;
-        Status = progress >= requiredProgress
-            ? CharacterQuestStatusEnum.Finished
-            : CharacterQuestStatusEnum.Accepted;
     }
 
     public void Complete(DateTimeOffset completedAtUtc)
     {
-        if (Status != CharacterQuestStatusEnum.Finished)
+        if (Status != CharacterQuestStatusEnum.Finished || !RequirementsMet)
         {
             throw new InvalidOperationException("Only a finished quest can be completed.");
         }

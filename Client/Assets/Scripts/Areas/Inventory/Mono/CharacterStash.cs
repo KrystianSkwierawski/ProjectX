@@ -239,15 +239,13 @@ namespace Assets.Scripts.Areas.Inventory.Mono
 
         private async UniTask RefreshQuestsAsync(CancellationToken lifetime)
         {
-            var previousQuests = QuestManager.Instance.CharacterQuests;
+            var previousStatuses = QuestManager.Instance.CharacterQuests?.ToDictionary(x => x.Id, x => x.Status);
             var applied = await QuestManager.Instance.LoadCharacterQuestsAsync(UserManager.Instance.SelectedCharacterId, lifetime);
 
             if (!Alive(lifetime) || !applied)
             {
                 return;
             }
-
-            var previousStatuses = previousQuests?.ToDictionary(x => x.Id, x => x.Status);
 
             foreach (var quest in QuestManager.Instance.CharacterQuests)
             {

@@ -6,7 +6,7 @@ using ProjectX.Domain.Enums;
 
 namespace ProjectX.Application.CharacterQuests.Commands.AddCharacterQuestProgress;
 
-public record AddCharacterQuestProgressCommand(int CharacterQuestId, int Progress) : IRequest<AddCharacterQuestProgressDto>;
+public record AddCharacterQuestProgressCommand(int CharacterQuestId, int Progress, string? RequirementId = null) : IRequest<AddCharacterQuestProgressDto>;
 
 public class AddCharacterQuestProgressCommandHandler : IRequestHandler<AddCharacterQuestProgressCommand, AddCharacterQuestProgressDto>
 {
@@ -32,14 +32,26 @@ public class AddCharacterQuestProgressCommandHandler : IRequestHandler<AddCharac
             .Where(x => x.Character.ApplicationUserId == userId)
             .SingleOrNotFoundAsync("accepted character quest", cancellationToken);
 
-        characterQuest.AddProgress(request.Progress, characterQuest.Quest.Requirement);
+        var requirements = characterQuest.QuestId.GetRequirements();
+        var requirement = requirements
+            .Where(x => x.Id == request.RequirementId || request.RequirementId == null && requirements.Length == 1)
+            .Where(x => x.Type == QuestTypeEnum.Kill)
+            .Single();
+
+        var inventory = await _context.CharacterInventories
+            .Where(x => x.Id == selectedCharacterId)
+            .Where(x => x.Character.ApplicationUserId == userId)
+            .SingleOrNotFoundAsync("character inventory", cancellationToken);
+
+        characterQuest.AddKillProgress(requirement.Id, request.Progress);
+        characterQuest.SynchronizeInventory(inventory.Inventory);
 
         await _context.SaveChangesAsync(cancellationToken);
 
         return new AddCharacterQuestProgressDto
         {
             Status = characterQuest.Status,
-            Reward = characterQuest.Status == CharacterQuestStatusEnum.Completed ? characterQuest.Quest.Reward : 0
+            Reward = characterQuest.Status == CharacterQuestStatusEnum.Completed ? characterQuest.QuestId.GetExperienceReward() : 0
         };
     }
 }

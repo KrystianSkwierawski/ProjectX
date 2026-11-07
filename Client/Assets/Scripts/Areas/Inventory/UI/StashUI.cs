@@ -50,6 +50,7 @@ namespace Assets.Scripts.Areas.Inventory.UI
                 CraftingUI.Instance.Hide();
                 MerchantUI.Instance.Hide();
                 QuestUI.Instance.Hide();
+                QuestJournalUI.Instance?.Hide();
                 GearUI.Instance.Hide();
                 CharacterUI.Instance.Hide();
                 InventoryUI.Instance.Inventory.SetActive(true);

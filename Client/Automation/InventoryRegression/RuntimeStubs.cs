@@ -21,6 +21,12 @@ namespace Unity.Netcode
 
 namespace UnityEngine
 {
+    public enum RuntimeInitializeLoadType { SubsystemRegistration }
+    public sealed class RuntimeInitializeOnLoadMethodAttribute : Attribute
+    {
+        public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType loadType) { }
+    }
+
     public sealed class SerializeField : Attribute { }
     public static class Mathf
     {

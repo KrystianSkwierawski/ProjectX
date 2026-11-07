@@ -22,7 +22,6 @@ namespace Assets.Scripts.Areas.Friends.Mono
 {
     public class FriendList : NetworkBehaviour
     {
-        private const int _maximumWhisperLength = 200;
         private const double _friendMutationCooldownSeconds = 0.5d;
         private const double _refreshCooldownSeconds = 0.5d;
         private const double _refreshRetrySeconds = 5d;
@@ -186,7 +185,7 @@ namespace Assets.Scripts.Areas.Friends.Mono
                 return true;
             }
 
-            if (string.IsNullOrWhiteSpace(message) || message.Length > _maximumWhisperLength)
+            if (!ChatItemLink.IsValidMessage(message))
             {
                 FriendListUI.Instance.ShowWhisperStatus(WhisperDeliveryStatusEnum.InvalidMessage);
 
@@ -578,7 +577,7 @@ namespace Assets.Scripts.Areas.Friends.Mono
         [ServerRpc]
         private void SendWhisperServerRpc(int characterId, string message)
         {
-            if (string.IsNullOrWhiteSpace(message) || message.Length > _maximumWhisperLength)
+            if (!ChatItemLink.IsValidMessage(message))
             {
                 WhisperRejectedClientRpc(WhisperDeliveryStatusEnum.InvalidMessage, OwnerClientId.ToClientRpcParams());
 

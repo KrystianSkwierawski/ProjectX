@@ -224,6 +224,8 @@ namespace Assets.Scripts.Areas.Shared.UI
                 var count = InventoryManager.Instance.Dto?.Inventory?.Items
                     .Where(x => x.Type == type).Sum(x => x.Count) ?? 0;
 
+                ChatItemSource.Bind(slot.Root, type);
+
                 InventoryUI.Instance.Textures.TryGetValue(type, out var texture);
                 slot.Image.texture = type == InventoryItemEnum.None ? null : texture ?? Resources.Load<Texture>($"Icons/{type}");
                 slot.Image.color = type == InventoryItemEnum.None ? ColorUI.Black : count > 0 ? ColorUI.White : Color.gray;

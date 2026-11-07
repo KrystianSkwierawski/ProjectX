@@ -98,7 +98,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             // unlocks it; LMB camera orbit must not cancel gathering.
             if (!_thirdPersonController.LockCameraPosition && !transform.IsFacingTarget(_target.transform))
             {
-                Debug.Log($"[{GetType().Name}] Interrupted: facing outside 90 degrees; owner={OwnerClientId}, target={_target.name}.");
+                Debug.Log($"[{GetType().Name}] Interrupted: facing outside {TransformExtensions.MaxFacingAngle} degrees; owner={OwnerClientId}, target={_target.name}.");
                 InterruptCast();
                 return;
             }
@@ -252,7 +252,7 @@ namespace Assets.Scripts.Areas.Professions.Mono
             {
                 if (!transform.IsFacingTarget(networkObject.transform))
                 {
-                    Debug.LogWarning($"[{GetType().Name}] Harvest rejected: facing outside 90 degrees; owner={OwnerClientId}, target={networkObject.NetworkObjectId}.");
+                    Debug.LogWarning($"[{GetType().Name}] Harvest rejected: facing outside {TransformExtensions.MaxFacingAngle} degrees; owner={OwnerClientId}, target={networkObject.NetworkObjectId}.");
                     return;
                 }
 

@@ -119,6 +119,7 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             CharacterStash.Local?.Close();
             QuestUI.Instance.Hide();
+            QuestJournalUI.Instance?.Hide();
             CharacterUI.Instance.Hide();
             MerchantUI.Instance.Hide();
             GearUI.Instance.Hide();
@@ -131,6 +132,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             }
 
             title.Mesh.color = ColorUI.Green;
+            ChatItemSource.Bind(title.GameObject.transform, InventoryItemEnum.None);
             _recipesPoolObjects.Add(InventoryItemEnum.Chamomile, title);
             RewardText.SetActive(true);
             RewardText.GetComponent<TMP_Text>().text = TranslateManager.Instance.GetByKey("HideoutBuildTime") + $": {(built ? definition.UpgradeTime : definition.BuildTime)}s";
@@ -223,6 +225,8 @@ namespace Assets.Scripts.Areas.Professions.UI
                 var count = slot.transform.Find("Text").GetComponent<TextMeshProUGUI>();
                 var preview = slot.transform.Find("Preview").gameObject;
                 var shownType = state.Seeds.Count > 0 ? state.Seeds.Type : state.Ready;
+
+                ChatItemSource.Bind(slot.transform, shownType);
 
                 image.texture = shownType == InventoryItemEnum.None ? null : InventoryUI.Instance.Textures[shownType];
                 image.color = shownType == InventoryItemEnum.None ? ColorUI.Black : ColorUI.White;
@@ -426,6 +430,7 @@ namespace Assets.Scripts.Areas.Professions.UI
 
             // FIXME: array
             QuestUI.Instance.Hide();
+            QuestJournalUI.Instance?.Hide();
             CharacterUI.Instance.Hide();
             MerchantUI.Instance.Hide();
             GearUI.Instance.Hide();
@@ -504,6 +509,7 @@ namespace Assets.Scripts.Areas.Professions.UI
             {
                 var obj = _recipesObjectPool.Get();
                 obj.Mesh.text = TranslateManager.Instance.GetByKey($"{recipe.Reward.Item.Type}Title");
+                ChatItemSource.Bind(obj.GameObject.transform, recipe.Reward.Item.Type);
 
                 obj.Button.onClick.AddListener(() =>
                 {
