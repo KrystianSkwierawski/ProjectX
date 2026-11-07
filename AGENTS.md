@@ -54,3 +54,5 @@ Current code and verified behavior take precedence over stale documentation abou
 - Before API runtime verification, rebuild and restart the changed API. Development startup intentionally deletes/recreates/seeds the database; production and NSwag must never initialize it.
 - Unity C#: compile affected generated projects; shared gameplay/networking or conditional server code must compile both with and without `UNITY_SERVER`. Use Unity import/Netcode processing for affected network components/assets; generated compilation alone cannot validate them.
 - UI/assets/localization: validate affected JSON, mirrored keys/contracts, `.meta`/prefab references and relevant layout/interaction behavior. Networking, persistence and lifetime changes need appropriate runtime/full-stack smoke coverage (two authenticated clients for trade); report anything not run and why. Never present compile/static checks as Play Mode, pointer, timing or networking verification.
+
+@RTK.md

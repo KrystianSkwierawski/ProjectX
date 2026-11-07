@@ -66,11 +66,9 @@ public class HideoutTests
             CharacterId = 41,
             Quest = new Quest
             {
-                Id = QuestEnum.Collect2Cans,
+                Id = QuestEnum.Collect2Chamomile,
                 Name = "Collect chamomile",
-                Type = QuestTypeEnum.Collect,
-                GameObjectName = nameof(InventoryItemEnum.Chamomile),
-                Requirement = 5
+
             },
             Progress = 5,
             Status = CharacterQuestStatusEnum.Finished

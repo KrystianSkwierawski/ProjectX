@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using Assets.Scripts.Areas.Character.UI;
+using Assets.Scripts.Areas.Combat.UI;
 using Assets.Scripts.Areas.Friends.UI;
 using Assets.Scripts.Areas.Inventory.UI;
+using Assets.Scripts.Areas.Quest.UI;
 using Assets.Scripts.Areas.Shared.Mono;
 using Assets.Scripts.Areas.Shared.Subscriptions;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Areas.Shared.UI
 {
@@ -15,6 +18,7 @@ namespace Assets.Scripts.Areas.Shared.UI
         private readonly IList<GameObject> _previews = new List<GameObject>();
         private Transform _bar;
         private bool _previewsEnabled = true;
+        private Vector2 _canvasSize;
 
         protected override bool PersistBetweenScenes => false;
 
@@ -36,6 +40,27 @@ namespace Assets.Scripts.Areas.Shared.UI
             ConfigureSlot("Chat", () => ChatUI.Instance.Toggle());
 
             ConfigureSlot("Friends", () => FriendListUI.Instance.Toggle());
+
+            ConfigureSlot("Journal", () => QuestJournalUI.Instance.Toggle());
+
+            ConfigureSlot("DamageMeter", () => FindFirstObjectByType<DamageMeterUI>().Toggle());
+        }
+
+        private void Update()
+        {
+            var size = ((RectTransform)transform).rect.size;
+
+            if (size == _canvasSize)
+            {
+                return;
+            }
+
+            _canvasSize = size;
+            var layout = _bar.GetComponent<GridLayoutGroup>();
+            var cell = Mathf.Min(50f, (size.x - 32f - 6 * layout.spacing.x) / 7f);
+            layout.constraintCount = 7;
+            layout.cellSize = new Vector2(cell, cell);
+            ((RectTransform)_bar).sizeDelta = new Vector2(7 * cell + 6 * layout.spacing.x, cell);
         }
 
         private void ConfigureSlot(string name, UnityAction onClick)

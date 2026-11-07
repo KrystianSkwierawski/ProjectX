@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Assets.Scripts.Areas.Quest.Enums;
@@ -11,6 +12,14 @@ namespace Assets.Scripts.Areas.Quest
     {
         private long _characterQuestsVersion;
         private long _characterQuestsLoadVersion;
+        private int? _loadedCharacterId;
+
+        public event System.Action CharacterQuestsChanged;
+
+        public void NotifyCharacterQuestsChanged()
+        {
+            CharacterQuestsChanged?.Invoke();
+        }
 
         public QuestDto[] Quests { get; private set; }
 
@@ -53,10 +62,38 @@ namespace Assets.Scripts.Areas.Quest
                     continue;
                 }
 
-                CharacterQuests = result.CharacterQuests;
+                ApplyCharacterQuestSnapshot(characterId, result.CharacterQuests);
 
                 return true;
             }
+        }
+
+        private void ApplyCharacterQuestSnapshot(int characterId, IList<CharacterQuestDto> snapshot)
+        {
+            var existing = _loadedCharacterId == characterId && CharacterQuests != null
+                ? CharacterQuests.ToDictionary(quest => quest.Id)
+                : new Dictionary<int, CharacterQuestDto>();
+            var updated = new List<CharacterQuestDto>(snapshot.Count);
+
+            foreach (var incoming in snapshot)
+            {
+                if (existing.TryGetValue(incoming.Id, out var current) && current.QuestId == incoming.QuestId)
+                {
+                    current.Status = incoming.Status;
+                    current.Progress = incoming.Progress;
+                    current.ObjectiveProgress = incoming.ObjectiveProgress;
+                    updated.Add(current);
+                }
+                else
+                {
+                    updated.Add(incoming);
+                }
+            }
+
+            CharacterQuests = updated;
+            _loadedCharacterId = characterId;
+
+            NotifyCharacterQuestsChanged();
         }
 
         public async UniTask<CharacterQuestDto> AcceptCharacterQuestAsync(
@@ -81,6 +118,7 @@ namespace Assets.Scripts.Areas.Quest
 
         public async UniTask<CheckCharacterQuestProgressDto> CheckProgressAsync(
             QuestEnum questId,
+            string requirementId,
             int progress,
             string playerSessionId,
             CancellationToken cancellationToken = default)
@@ -88,6 +126,7 @@ namespace Assets.Scripts.Areas.Quest
             return await UnityWebRequestHelper.ExecutePostAsync<CheckCharacterQuestProgressDto>("CharacterQuests/CheckProgress", new CheckCharacterQuestProgressCommand
             {
                 QuestId = questId,
+                RequirementId = requirementId,
                 Progress = progress,
             }, playerSessionId, cancellationToken: cancellationToken);
         }
@@ -100,6 +139,17 @@ namespace Assets.Scripts.Areas.Quest
             return await UnityWebRequestHelper.ExecutePostAsync<CompleteCharacterQuestDto>("CharacterQuests/Complete", new CompleteCharacterQuestCommand
             {
                 CharacterQuestId = characterQuestId,
+            }, playerSessionId, cancellationToken: cancellationToken);
+        }
+
+        public async UniTask<AbandonCharacterQuestDto> AbandonAsync(
+            int characterQuestId,
+            string playerSessionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await UnityWebRequestHelper.ExecutePostAsync<AbandonCharacterQuestDto>("CharacterQuests/Abandon", new AbandonCharacterQuestCommand
+            {
+                CharacterQuestId = characterQuestId
             }, playerSessionId, cancellationToken: cancellationToken);
         }
     }

@@ -1,4 +1,4 @@
-﻿using ProjectX.Domain.Common;
+using ProjectX.Domain.Common;
 using ProjectX.Domain.Enums;
 
 namespace ProjectX.Domain.Entities;
@@ -10,14 +10,6 @@ public class Quest : BaseAuditableEntity
     public required string Name { get; set; }
 
     public QuestEnum PreviousQuestId { get; set; }
-
-    public QuestTypeEnum Type { get; set; }
-
-    public required string GameObjectName { get; set; }
-
-    public int Requirement { get; set; }
-
-    public int Reward { get; set; }
 
     public StatusEnum Status { get; set; }
 

@@ -261,7 +261,7 @@ namespace ProjectX.Editor
                 Require(!(bool)type.GetField("_manualTargetCamera", flags).GetValue(movement), "Manual camera latch survived unlock.");
                 Debug.Log("TARGET_CAMERA_VALIDATED: released orbit holds yaw/pitch, repeated focus preserves it, gameplay target retained.");
                 var rotateHeld = movement.Input.GetType().GetField("_rotate", flags);
-                var faceCamera = type.GetMethod("RotateStationaryCharacterWithCamera", flags);
+                var faceCamera = type.GetMethod("RotateCharacterWithCamera", flags);
                 var position = movement.transform.position;
                 movement.Input.MoveInput(Vector2.zero);
                 type.GetField("_cinemachineTargetYaw", flags).SetValue(movement, 137f);
@@ -282,16 +282,28 @@ namespace ProjectX.Editor
                 type.GetField("_isOrbiting", flags).SetValue(movement, false);
                 Debug.Log("STATIONARY_CAMERA_VALIDATED: RMB faces camera yaw, LMB preserves actor rotation, position unchanged.");
                 movement.transform.rotation = Quaternion.identity;
-                foreach (float angle in new[] { 0f, 89f, 90f, 91f, 180f, -89f, -90f, -91f })
+                var facingLimit = Assets.Scripts.Areas.Shared.Extensions.TransformExtensions.MaxFacingAngle;
+
+                foreach (float angle in new[] { 0f, 89f, 90f, 91f, facingLimit - 1, facingLimit - 0.01f, facingLimit, facingLimit + 0.01f, facingLimit + 1, 180f,
+                    -89f, -90f, -91f, -facingLimit + 1, -facingLimit + 0.01f, -facingLimit, -facingLimit - 0.01f, -facingLimit - 1 })
                 {
                     var direction = Mathf.Abs(angle) == 90f ? Vector3.right * Mathf.Sign(angle)
                         : Quaternion.Euler(0, angle, 0) * Vector3.forward;
                     target.transform.position = movement.transform.position + direction;
+
+                    if (Mathf.Abs(angle) == facingLimit)
+                    {
+                        var measuredAngle = Vector3.Angle(movement.transform.forward, target.transform.position - movement.transform.position);
+                        Require(Mathf.Abs(measuredAngle - facingLimit) < 0.001f, "Exact gathering boundary angle drifted.");
+
+                        continue;
+                    }
+
                     bool facing = Assets.Scripts.Areas.Shared.Extensions.TransformExtensions.IsFacingTarget(movement.transform, target.transform);
-                    Require(facing == (Mathf.Abs(angle) < 90f), "Combat/gathering facing boundary failed at " + angle);
+                    Require(facing == (Mathf.Abs(angle) < facingLimit), "Combat/gathering facing boundary failed at " + angle);
                 }
 
-                Debug.Log("GATHERING_FACING_VALIDATED: common combat/gathering cone accepts front and rejects both 90-degree boundaries and rear.");
+                Debug.Log($"GATHERING_FACING_VALIDATED: common combat/gathering cone accepts sideways turns and rejects turns beyond {facingLimit} degrees and rear.");
                 target.transform.position = movement.transform.position + new Vector3(0, 0, .1f);
                 Assets.Scripts.Areas.Shared.Extensions.TransformExtensions.MoveTowardsTarget(movement.transform, target, true, 100f);
                 Require(movement.transform.position.z <= target.transform.position.z + .0001f,

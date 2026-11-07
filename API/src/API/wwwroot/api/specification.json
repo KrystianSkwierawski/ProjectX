@@ -659,6 +659,72 @@
         ]
       }
     },
+    "/api/CharacterQuests/Abandon": {
+      "post": {
+        "tags": [
+          "CharacterQuests"
+        ],
+        "summary": "Abandon quest",
+        "description": "Resets an active quest for the session-bound character without changing inventory or granting rewards. Quests with claimed rewards cannot be abandoned.",
+        "operationId": "AbandonCharacterQuest",
+        "parameters": [
+          {
+            "name": "PlayerSessionId",
+            "in": "header",
+            "required": true,
+            "description": "Server-issued player session credential.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbandonCharacterQuestCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AbandonCharacterQuestDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/CharacterQuests/Complete": {
       "post": {
         "tags": [
@@ -2581,6 +2647,13 @@
           "progress": {
             "type": "integer",
             "format": "int32"
+          },
+          "objectiveProgress": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         }
       },
@@ -2604,7 +2677,8 @@
           "Collect2WhiteBars",
           "Collect2CopperBars",
           "Collect2BlackBars",
-          "Collect2HealthPotions"
+          "Collect2HealthPotions",
+          "FieldSupplies"
         ],
         "enum": [
           0,
@@ -2623,7 +2697,8 @@
           13,
           14,
           15,
-          16
+          16,
+          17
         ]
       },
       "CharacterQuestStatusEnum": {
@@ -2677,6 +2752,10 @@
           "progress": {
             "type": "integer",
             "format": "int32"
+          },
+          "requirementId": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -2695,6 +2774,13 @@
             "type": "integer",
             "format": "int32"
           },
+          "objectiveProgress": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
           "status": {
             "$ref": "#/components/schemas/CharacterQuestStatusEnum"
           }
@@ -2708,6 +2794,33 @@
             "$ref": "#/components/schemas/QuestEnum"
           },
           "progress": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "requirementId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AbandonCharacterQuestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "abandoned": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AbandonCharacterQuestCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "characterQuestId": {
             "type": "integer",
             "format": "int32"
           }
@@ -2730,6 +2843,12 @@
           "level": {
             "type": "integer",
             "format": "byte"
+          },
+          "collectProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckCharacterQuestProgressDto"
+            }
           }
         }
       },
@@ -2738,11 +2857,13 @@
         "description": "",
         "x-enumNames": [
           "Applied",
-          "InventoryChanged"
+          "InventoryChanged",
+          "InventoryFull"
         ],
         "enum": [
           0,
-          1
+          1,
+          2
         ]
       },
       "CompleteCharacterQuestCommand": {
@@ -3750,8 +3871,7 @@
           "title",
           "description",
           "completeDescription",
-          "statusText",
-          "gameObjectName"
+          "statusText"
         ],
         "properties": {
           "id": {
@@ -3759,9 +3879,6 @@
           },
           "previousQuestId": {
             "$ref": "#/components/schemas/QuestEnum"
-          },
-          "type": {
-            "$ref": "#/components/schemas/QuestTypeEnum"
           },
           "title": {
             "type": "string"
@@ -3775,16 +3892,51 @@
           "statusText": {
             "type": "string"
           },
-          "gameObjectName": {
-            "type": "string"
-          },
-          "requirement": {
-            "type": "integer",
-            "format": "int32"
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestRequirementDto"
+            }
           },
           "reward": {
             "type": "integer",
             "format": "int32"
+          },
+          "itemRewards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
+          }
+        }
+      },
+      "QuestRequirementDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "target",
+          "statusText"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestTypeEnum"
+          },
+          "target": {
+            "type": "string"
+          },
+          "itemType": {
+            "$ref": "#/components/schemas/InventoryItemEnum"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statusText": {
+            "type": "string"
           }
         }
       },

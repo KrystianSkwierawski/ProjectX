@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using Assets.Scripts.Areas.Quest.Enums;
 using Assets.Scripts.Areas.Quest.Models;
-using Assets.Scripts.Areas.Quest.Subscriptions;
 using Assets.Scripts.Areas.Quest.UI;
 using UnityEngine;
 
@@ -29,69 +28,32 @@ namespace Assets.Scripts.Areas.Quest.Mono
             _exclamationMark = gameObject.transform.Find("ExclamationMark").gameObject;
             _quesionMark = gameObject.transform.Find("QuestionMark").gameObject;
 
-            CharacterQuest = QuestManager.Instance.CharacterQuests
-                .Where(x => _questsIds.Contains(x.QuestId))
-                .Where(x => x.Status != CharacterQuestStatusEnum.Completed)
-                .FirstOrDefault();
-
-            SetStatus();
+            QuestManager.Instance.CharacterQuestsChanged += RefreshQuest;
             _subscribed = true;
 
-            foreach (var questId in _questsIds)
-            {
-                var characterQuest = QuestManager.Instance.CharacterQuests
-                    .Where(x => x.QuestId == questId)
-                    .SingleOrDefault();
-
-                var key = questId.ToString();
-
-                if (characterQuest == null)
-                {
-                    AcceptQuestSubscription.Instance.Subscribe(key, (e) =>
-                    {
-                        CharacterQuest = e.CharacterQuest;
-                        MarkAsAccepted();
-                    });
-                }
-
-                FinishCharacterQuestSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    if (e.IsFinished)
-                    {
-                        HideExclamationMark();
-                        ShowQuestionMark();
-
-                        return;
-                    }
-
-                    HideQuestionMark();
-                    ShowExclamationMark();
-                    MarkAsAccepted();
-                });
-
-                CompleteQuestSubscription.Instance.Subscribe(key, (e) =>
-                {
-                    HideQuestionMark();
-                    CheckNextQuest();
-                });
-            }
+            RefreshQuest();
 #endif
         }
 
         private void OnDestroy()
         {
-            if (!_subscribed)
+            if (_subscribed)
             {
-                return;
+                QuestManager.Instance.CharacterQuestsChanged -= RefreshQuest;
             }
+        }
 
-            foreach (var questId in _questsIds)
-            {
-                var key = questId.ToString();
-                AcceptQuestSubscription.Instance.Unsubscribe(key);
-                FinishCharacterQuestSubscription.Instance.Unsubscribe(key);
-                CompleteQuestSubscription.Instance.Unsubscribe(key);
-            }
+        private void RefreshQuest()
+        {
+            HideQuestionMark();
+            HideExclamationMark();
+
+            CharacterQuest = QuestManager.Instance.CharacterQuests
+                .Where(x => _questsIds.Contains(x.QuestId))
+                .Where(x => x.Status is CharacterQuestStatusEnum.Accepted or CharacterQuestStatusEnum.Finished)
+                .FirstOrDefault();
+
+            SetStatus();
         }
 
         private void SetStatus()
@@ -111,7 +73,8 @@ namespace Assets.Scripts.Areas.Quest.Mono
             var completedQuests = QuestManager.Instance.CharacterQuests
                 .Where(x => x.Status == CharacterQuestStatusEnum.Completed);
 
-            var filteredIds = _questsIds.Where(x => !completedQuests.Any(cq => cq.QuestId == x));
+            var filteredIds = _questsIds
+                .Where(x => !completedQuests.Any(cq => cq.QuestId == x));
 
             Quest = QuestManager.Instance.Quests
                 .Where(x => filteredIds.Contains(x.Id))

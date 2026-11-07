@@ -24,6 +24,17 @@
 - Production networking defaults to Relay + DTLS; local automation opts into Direct transport through `PROJECTX_USE_DIRECT_TRANSPORT=true`.
 
 ## Common Workflows
+
+### Unity batch startup and licensing
+
+- Verified 2026-10-31: a sandboxed batch launch stopped after `Successfully launched the LicensingClient`, without completing the IPC connection. Retrying in the normal user context outside the sandbox connected successfully and reported `Successfully resolved entitlement details` and `Successfully updated license`. This is a verified launch workaround, not a permanent license/configuration repair; do not diagnose an invalid license from a stalled client launch alone.
+- For Unity batch validation, use the tool's approved outside-sandbox execution path when needed, with a hidden window and a dedicated log under `Client/Logs`. Inspect the subsequent log outcome: signature/access-token warnings did not prevent successful entitlement resolution in this run. Do not reinstall, reactivate or modify the user's license merely because of those warnings.
+- Check for an existing editor before opening the same project in batch mode. Sandboxed `Get-Process` returned no Unity editor even though one was running; if visibility is uncertain, inspect processes in the normal user context. Return only PID and sanitized project information, never raw command lines: Unity Hub may pass access tokens in launch arguments.
+- The outside-sandbox retry then stopped with `It looks like another Unity instance is running with this project open`; this is a separate project-lock issue, not a licensing failure. Use the existing editor for validation or an isolated validation copy. Do not terminate the user's editor or delete its project lock to force a second instance.
+- Evidence: ignored logs `Client/Logs/movement-unity-import.log` and `Client/Logs/movement-unity-license-retry.log`. That retry did not complete import or gameplay validation; successful licensing alone does not establish either.
+
+### Build and run commands
+
 - Backend: from `API/`, run `dotnet build ProjectX.slnx`, `dotnet test ProjectX.slnx`, and `dotnet format ProjectX.slnx --no-restore` when relevant.
 - EF validation: `dotnet tool restore`, then `dotnet tool run dotnet-ef migrations has-pending-model-changes ...` with SQL Server configuration.
 - Client compile checks use generated `Client/Assembly-CSharp.csproj`; networking changes should compile once with `UNITY_SERVER` and once without it.
@@ -46,3 +57,7 @@
 - Git status emits a known permission warning for `C:/Users/pc/.config/git/ignore`.
 
 - All prefab assets live under `Assets/Prefabs`: project modules include Character, Combat, Inventory, Professions, Spawning, Locations, Loading, Authentication, Quest, Merchant, Chat, Shared/UI, ActionBars, Friends, Party and Trade. Imported package prefabs are under ThirdParty with their original package hierarchy. Location environment prefabs remain in `Prefabs/Locations/Resources` so `Resources.Load` names are unchanged; the NavMesh baker uses the new asset path. Moves preserve prefab bytes and .meta GUIDs.
+
+- Quest objectives validation (2026-10-28): 631 backend tests passed, including independent mixed-goal persistence across reload, regression after item loss, atomic multi-item consumption/rewards, forged finished-state rejection, unknown objective rejection and OpenAPI contract checks. That validation used command-line NuGetAudit=false because System.Security.Cryptography.Pkcs 9.0.11 audit findings blocked ordinary restore. The dependency is now explicitly pinned to patched 9.0.21 in Infrastructure through central package management; a fresh NuGet audit including transitive packages reports no vulnerable packages across the solution, with audit policy unchanged. Both generated Unity compile variants passed. Isolated Unity import/Netcode and QuestDetailsAuthoring.Validate cover visible icon tint/count fields, mixed goal rows, action states, PL/EN text/layout, narrow canvas bounds and matching section spacing; rendered panel previews are generated under the isolated project's Logs. SQL Server-configured has-pending-model-changes passed. The migration was not applied to a database; authenticated gameplay, actual pointer/scroll behavior, trade timing and reconnect during rewards remain untested.
+
+- Quest/trade review fixes (2026-10-29): both generated Unity client/server define builds passed (0 errors, 10 existing warnings each). The InventoryRegression executable passed gear, ammo and TRADE_QUEST_REGRESSION_PASSED checks using production trade state for deferred admission, commit draining, credential retention and scope cleanup. Isolated Unity import/Netcode processing and QuestDetailsAuthoring.Validate passed, including description changes in both status directions and existing PL/EN layout checks. These probes do not verify authenticated two-client trade/party-kill timing or real disconnect/HTTP recovery.

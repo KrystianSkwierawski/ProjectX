@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using Assets.Scripts.Areas.Shared.Attributes;
@@ -222,6 +223,22 @@ namespace Assets.Scripts.Areas.Inventory.Enums
             or InventoryItemEnum.AmmoFeather3;
 
         public static bool IsGear(this InventoryItemEnum value) => value.IsWeapon() || value.IsArmor() || value.IsAmmo();
+
+        public static int? GetGearScore(this InventoryItemEnum value)
+        {
+            if (!value.IsGear())
+            {
+                return null;
+            }
+
+            var parameters = value.GetInventoryItemParametersAttribute();
+
+            // Informational heuristic: movement speed uses a ten-to-one scale against other bonuses.
+            var score = parameters.MaxHealth + parameters.Strength + parameters.Dexterity
+                + parameters.Intellect + parameters.Armor + parameters.Speed / 10d;
+
+            return (int)Math.Round(score, MidpointRounding.AwayFromZero);
+        }
 
         public static InventoryItemEnum GetGearSlot(this InventoryItemEnum value) => value switch
         {

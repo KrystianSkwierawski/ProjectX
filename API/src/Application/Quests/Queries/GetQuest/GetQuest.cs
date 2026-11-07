@@ -1,4 +1,5 @@
-﻿using MediatR;
+using MediatR;
+using ProjectX.Application.CharacterInventories.Queries.GetCharacterInventory;
 using Microsoft.EntityFrameworkCore;
 using ProjectX.Application.Common.Extensions;
 using ProjectX.Application.Common.Interfaces;
@@ -25,32 +26,8 @@ public class GetQuestQueryHandler : IRequestHandler<GetQuestQuery, QuestDto>
     {
         var quest = await _context.Quests
             .Where(x => x.Id == request.QuestId)
-            .Select(x => new
-            {
-                x.Id,
-                x.PreviousQuestId,
-                x.Type,
-                x.GameObjectName,
-                x.Requirement,
-                x.Reward
-            })
             .SingleOrNotFoundAsync("quest", cancellationToken);
 
-        var parameters = quest.Id.GetParameters();
-        var language = _currentUserService.Language;
-
-        return new QuestDto
-        {
-            Id = quest.Id,
-            PreviousQuestId = quest.PreviousQuestId,
-            Type = quest.Type,
-            Title = _translateService.GetByKey($"{quest.Id}Title", language),
-            Description = _translateService.GetByKey($"{quest.Id}Description", language),
-            CompleteDescription = _translateService.GetByKey($"{quest.Id}CompleteDescription", language),
-            StatusText = _translateService.GetByKey($"{quest.Id}StatusText", language),
-            GameObjectName = quest.GameObjectName,
-            Requirement = quest.Requirement,
-            Reward = quest.Reward
-        };
+        return QuestDto.From(quest, _translateService, _currentUserService.Language);
     }
 }

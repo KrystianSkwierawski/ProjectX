@@ -151,15 +151,13 @@ public class UpdateCharacterInventoryCommandHandler : IRequestHandler<UpdateChar
         var characterQuests = await _context.CharacterQuests
             .Include(x => x.Quest)
             .Where(x => x.CharacterId == selectedCharacterId)
-            .Where(x => x.Quest.Type == QuestTypeEnum.Collect)
             .Where(x => x.Status == CharacterQuestStatusEnum.Accepted || x.Status == CharacterQuestStatusEnum.Finished)
             .ToArrayAsync(cancellationToken);
 
         foreach (var characterQuest in characterQuests)
         {
-            var itemType = Enum.Parse<InventoryItemEnum>(characterQuest.Quest.GameObjectName);
 
-            characterQuest.SetProgress(inventory.GetCount(itemType), characterQuest.Quest.Requirement);
+            characterQuest.SynchronizeInventory(inventory);
         }
 
         // Persist Collect progress with inventory even when the Unity player has despawned

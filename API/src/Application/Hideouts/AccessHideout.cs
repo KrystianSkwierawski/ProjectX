@@ -147,13 +147,13 @@ public class AccessHideoutCommandHandler(IApplicationDbContext context, ICurrent
         {
             var quests = await context.CharacterQuests
                 .Include(x => x.Quest)
-                .Where(x => x.CharacterId == characterId && x.Quest.Type == QuestTypeEnum.Collect)
+                .Where(x => x.CharacterId == characterId)
                 .Where(x => x.Status == CharacterQuestStatusEnum.Accepted || x.Status == CharacterQuestStatusEnum.Finished)
                 .ToArrayAsync(cancellationToken);
 
             foreach (var quest in quests)
             {
-                quest.SetProgress(remaining.GetCount(Enum.Parse<InventoryItemEnum>(quest.Quest.GameObjectName)), quest.Quest.Requirement);
+                quest.SynchronizeInventory(remaining);
             }
 
             inventory.Inventory = remaining;
